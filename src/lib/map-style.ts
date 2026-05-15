@@ -1,7 +1,52 @@
-import type { StyleSpecification } from "maplibre-gl";
+import type { StyleSpecification } from "maplibre-gl"
+
+const steelBlue = "#697b89"
+const nearBlack = "#0e0e0e"
+const silver = "#ddd"
+const paleGreen50 = "rgba(234, 241, 233, 0.5)"
+const charcoal = "#1a1a1a"
+const lightGray = "#e6e6e6"
+const white = "#fff"
+const slateBlueGray = "rgba(65, 71, 88, 1)"
+const darkGray = "#222"
+const deepCharcoal = "#232323"
+const offBlack = "#111"
+const whiteHalo50 = "rgba(255,255,255,0.5)"
+const midGray = "#666"
+const deepBlack = "#0b0b0b"
+const warmWhite = "#fafaf8"
+const transparent = "transparent"
+const paleSilver = "#eee"
+const dimCharcoal = "#161616"
+const creamWhite = "#f5f5f3"
+const blushPink = "#ead5d7"
+const nearWhite = "#fdfdfd"
+const roadNameGray = "#838383"
+const darkWater = "#2C353C"
+const blueGray = "rgba(103, 103, 114, 1)"
+const paleWater = "#d4dadc"
+const pathGray = "#d5d5d5"
+const darkPath = "#262626"
+const serviceDark = "#1c1c1c"
+const buildingLight = "#dfdfdf"
+const tealGray = "#7a96a0"
+const darkHalo = "#181818"
+const residentialLight = "rgba(237, 237, 237, 0.25)"
+const rosePink = "#e1c5c7"
+const aerowayLight = "#e8e8e8"
+const railLight = "#dddddd"
+const dustyRose = "#ebd6d8"
+const steelMist = "#abb6be"
+const darkOceanHalo = "rgba(0,0,0,0.7)"
+const countryLabel = "#8a99a4"
+const countryLabelMid = "#a1adb6"
+const countryLabelLight = "#b9c2c9"
+const parkGreen = "#7d9c83"
+const poiDarkText = "#515151"
+const poiDarkHalo = "#151515"
 
 export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
-  const t = theme;
+  const t = theme
   return {
     version: 8 as const,
     name: t === "light" ? "Positron" : "Dark Matter",
@@ -21,12 +66,12 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         id: "background",
         type: "background",
         layout: {
-          visibility: "visible"
+          visibility: "visible",
         },
         paint: {
-          "background-color": t === "light" ? "#fafaf8" : "#0e0e0e",
-          "background-opacity": 1
-        }
+          "background-color": t === "light" ? warmWhite : nearBlack,
+          "background-opacity": 1,
+        },
       },
       {
         id: "landcover",
@@ -34,29 +79,15 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         source: "carto",
         "source-layer": "landcover",
         filter: [
-        "any",
-        ["==", "class", "wood"],
-        ["==", "class", "grass"],
-        ["==", "subclass", "recreation_ground"]
-      ],
+          "any",
+          ["==", "class", "wood"],
+          ["==", "class", "grass"],
+          ["==", "subclass", "recreation_ground"],
+        ],
         paint: {
-          "fill-color": {
-            stops: t === "light" ? [
-            [8, "rgba(234, 241, 233, 0.5)"],
-            [9, "rgba(234, 241, 233, 0.5)"],
-            [11, "rgba(234, 241, 233, 0.5)"],
-            [13, "rgba(234, 241, 233, 0.5)"],
-            [15, "rgba(234, 241, 233, 0.5)"]
-          ] : [
-            [8, "#0e0e0e"],
-            [9, "#0e0e0e"],
-            [11, "#0e0e0e"],
-            [13, "#0e0e0e"],
-            [15, "#0e0e0e"]
-          ]
-          },
-          "fill-opacity": 1
-        }
+          "fill-color": t === "light" ? paleGreen50 : nearBlack,
+          "fill-opacity": 1,
+        },
       },
       {
         id: "park_national_park",
@@ -66,27 +97,13 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         minzoom: 9,
         filter: ["all", ["==", "class", "national_park"]],
         layout: {
-          visibility: "visible"
+          visibility: "visible",
         },
         paint: {
-          "fill-color": {
-            stops: t === "light" ? [
-            [8, "rgba(234, 241, 233, 0.5)"],
-            [9, "rgba(234, 241, 233, 0.5)"],
-            [11, "rgba(234, 241, 233, 0.5)"],
-            [13, "rgba(234, 241, 233, 0.5)"],
-            [15, "rgba(234, 241, 233, 0.5)"]
-          ] : [
-            [8, "#0e0e0e"],
-            [9, "#0e0e0e"],
-            [11, "#0e0e0e"],
-            [13, "#0e0e0e"],
-            [15, "#0e0e0e"]
-          ]
-          },
+          "fill-color": t === "light" ? paleGreen50 : nearBlack,
           "fill-opacity": 1,
-          "fill-translate-anchor": "map"
-        }
+          "fill-translate-anchor": "map",
+        },
       },
       {
         id: "park_nature_reserve",
@@ -96,29 +113,18 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         minzoom: 0,
         filter: ["all", ["==", "class", "nature_reserve"]],
         layout: {
-          visibility: "visible"
+          visibility: "visible",
         },
         paint: {
-          "fill-color": {
-            stops: t === "light" ? [
-            [8, "rgba(234, 241, 233, 0.5)"],
-            [9, "rgba(234, 241, 233, 0.5)"],
-            [11, "rgba(234, 241, 233, 0.5)"],
-            [13, "rgba(234, 241, 233, 0.5)"],
-            [15, "rgba(234, 241, 233, 0.5)"]
-          ] : [
-            [8, "#0e0e0e"],
-            [9, "#0e0e0e"],
-            [11, "#0e0e0e"],
-            [13, "#0e0e0e"],
-            [15, "#0e0e0e"]
-          ]
-          },
+          "fill-color": t === "light" ? paleGreen50 : nearBlack,
           "fill-antialias": true,
           "fill-opacity": {
-            stops: [[6, 0.7], [9, 0.9]]
-          }
-        }
+            stops: [
+              [6, 0.7],
+              [9, 0.9],
+            ],
+          },
+        },
       },
       {
         id: "landuse_residential",
@@ -129,52 +135,48 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["any", ["==", "class", "residential"]],
         paint: {
           "fill-color": {
-            stops: t === "light" ? [
-            [5, "rgba(237, 237, 237, 0.5)"],
-            [8, "rgba(237, 237, 237, 0.45)"],
-            [9, "rgba(237, 237, 237, 0.4)"],
-            [11, "rgba(237, 237, 237, 0.35)"],
-            [13, "rgba(237, 237, 237, 0.3)"],
-            [15, "rgba(237, 237, 237, 0.25)"],
-            [16, "rgba(237, 237, 237, 0.25)"]
-          ] : [
-            [5, "rgba(0, 0, 0, 0.5)"],
-            [8, "rgba(0, 0, 0, 0.45)"],
-            [9, "rgba(0, 0, 0, 0.4)"],
-            [11, "rgba(0, 0, 0, 0.35)"],
-            [13, "rgba(0, 0, 0, 0.3)"],
-            [15, "rgba(0, 0, 0, 0.25)"],
-            [16, "rgba(0, 0, 0, 0.15)"]
-          ]
+            stops:
+              t === "light"
+                ? [
+                    [5, "rgba(237, 237, 237, 0.5)"],
+                    [8, "rgba(237, 237, 237, 0.45)"],
+                    [9, "rgba(237, 237, 237, 0.4)"],
+                    [11, "rgba(237, 237, 237, 0.35)"],
+                    [13, "rgba(237, 237, 237, 0.3)"],
+                    [15, residentialLight],
+                    [16, residentialLight],
+                  ]
+                : [
+                    [5, "rgba(0, 0, 0, 0.5)"],
+                    [8, "rgba(0, 0, 0, 0.45)"],
+                    [9, "rgba(0, 0, 0, 0.4)"],
+                    [11, "rgba(0, 0, 0, 0.35)"],
+                    [13, "rgba(0, 0, 0, 0.3)"],
+                    [15, "rgba(0, 0, 0, 0.25)"],
+                    [16, "rgba(0, 0, 0, 0.15)"],
+                  ],
           },
           "fill-opacity": {
-            stops: [[6, 0.6], [9, 1]]
-          }
-        }
+            stops: [
+              [6, 0.6],
+              [9, 1],
+            ],
+          },
+        },
       },
       {
         id: "landuse",
         type: "fill",
         source: "carto",
         "source-layer": "landuse",
-        filter: ["any", ["==", "class", "cemetery"], ["==", "class", "stadium"]],
+        filter: [
+          "any",
+          ["==", "class", "cemetery"],
+          ["==", "class", "stadium"],
+        ],
         paint: {
-          "fill-color": {
-            stops: t === "light" ? [
-            [8, "rgba(234, 241, 233, 0.5)"],
-            [9, "rgba(234, 241, 233, 0.5)"],
-            [11, "rgba(234, 241, 233, 0.5)"],
-            [13, "rgba(234, 241, 233, 0.5)"],
-            [15, "rgba(234, 241, 233, 0.5)"]
-          ] : [
-            [8, "#0e0e0e"],
-            [9, "#0e0e0e"],
-            [11, "#0e0e0e"],
-            [13, "#0e0e0e"],
-            [15, "#0e0e0e"]
-          ]
-          }
-        }
+          "fill-color": t === "light" ? paleGreen50 : nearBlack,
+        },
       },
       {
         id: "waterway",
@@ -184,9 +186,14 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         paint: {
           "line-color": t === "light" ? "#d1dbdf" : "rgba(63, 90, 109, 1)",
           "line-width": {
-            stops: [[8, 0.5], [9, 1], [15, 2], [16, 3]]
-          }
-        }
+            stops: [
+              [8, 0.5],
+              [9, 1],
+              [15, 2],
+              [16, 3],
+            ],
+          },
+        },
       },
       {
         id: "boundary_county",
@@ -198,15 +205,25 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["==", "admin_level", 6], ["==", "maritime", 0]],
         paint: {
           "line-color": {
-            stops: t === "light" ? [[4, "#ead5d7"], [5, "#ead5d7"], [6, "#e1c5c7"]] : [[4, "#222"], [5, "#222"], [6, "#2C353C"]]
+            stops: [
+              [4, t === "light" ? blushPink : darkGray],
+              [5, t === "light" ? blushPink : darkGray],
+              [6, t === "light" ? rosePink : darkWater],
+            ],
           },
           "line-width": {
-            stops: [[4, 0.5], [7, 1]]
+            stops: [
+              [4, 0.5],
+              [7, 1],
+            ],
           },
           "line-dasharray": {
-            stops: [[6, [1]], [7, [2, 2]]]
-          }
-        }
+            stops: [
+              [6, [1]],
+              [7, [2, 2]],
+            ],
+          },
+        },
       },
       {
         id: "boundary_state",
@@ -217,19 +234,33 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["==", "admin_level", 4], ["==", "maritime", 0]],
         paint: {
           "line-color": {
-            stops: t === "light" ? [[4, "#ead5d7"], [5, "#ead5d7"], [6, "#e1c5c7"]] : [
-            [4, "rgba(103, 103, 114, 1)"],
-            [5, "rgba(103, 103, 114, 1)"],
-            [6, "rgba(103, 103, 114, 1)"]
-          ]
+            stops:[
+              [4, t === "light" ? blushPink : blueGray],
+              [5, t === "light" ? blushPink : blueGray],
+              [6, t === "light" ? blushPink : blueGray],
+            ]
           },
           "line-width": {
-            stops: [[4, 0.5], [7, 1], [8, 1], [9, 1.2]]
+            stops: [
+              [4, 0.5],
+              [7, 1],
+              [8, 1],
+              [9, 1.2],
+            ],
           },
           "line-dasharray": {
-            stops: t === "light" ? [[6, [1]], [7, [2, 2]]] : [[6, [1, 2, 3]], [7, [1, 2, 3]]]
-          }
-        }
+            stops:
+              t === "light"
+                ? [
+                    [6, [1]],
+                    [7, [2, 2]],
+                  ]
+                : [
+                    [6, [1, 2, 3]],
+                    [7, [1, 2, 3]],
+                  ],
+          },
+        },
       },
       {
         id: "water",
@@ -240,14 +271,14 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         maxzoom: 24,
         filter: ["all", ["==", "$type", "Polygon"]],
         layout: {
-          visibility: "visible"
+          visibility: "visible",
         },
         paint: {
-          "fill-color": t === "light" ? "#d4dadc" : "#2C353C",
+          "fill-color": t === "light" ? paleWater : darkWater,
           "fill-antialias": true,
           "fill-translate-anchor": "map",
-          "fill-opacity": 1
-        }
+          "fill-opacity": 1,
+        },
       },
       {
         id: "water_shadow",
@@ -257,17 +288,22 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         minzoom: 0,
         filter: ["all", ["==", "$type", "Polygon"]],
         layout: {
-          visibility: "visible"
+          visibility: "visible",
         },
         paint: {
-          "fill-color": "transparent",
+          "fill-color": transparent,
           "fill-antialias": true,
           "fill-translate-anchor": "map",
           "fill-opacity": 1,
           "fill-translate": {
-            stops: [[0, [0, 2]], [6, [0, 1]], [14, [0, 1]], [17, [0, 2]]]
-          }
-        }
+            stops: [
+              [0, [0, 2]],
+              [6, [0, 1]],
+              [14, [0, 1]],
+              [17, [0, 2]],
+            ],
+          },
+        },
       },
       {
         id: "aeroway-runway",
@@ -277,14 +313,20 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         minzoom: 12,
         filter: ["all", ["==", "class", "runway"]],
         layout: {
-          "line-cap": "square"
+          "line-cap": "square",
         },
         paint: {
           "line-width": {
-            stops: [[11, 1], [13, 4], [14, 6], [15, 8], [16, 10]]
+            stops: [
+              [11, 1],
+              [13, 4],
+              [14, 6],
+              [15, 8],
+              [16, 10],
+            ],
           },
-          "line-color": t === "light" ? "#e8e8e8" : "#111"
-        }
+          "line-color": t === "light" ? aerowayLight : offBlack,
+        },
       },
       {
         id: "aeroway-taxiway",
@@ -294,11 +336,16 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         minzoom: 13,
         filter: ["all", ["==", "class", "taxiway"]],
         paint: {
-          "line-color": t === "light" ? "#e8e8e8" : "#111",
+          "line-color": t === "light" ? aerowayLight : offBlack,
           "line-width": {
-            stops: [[13, 0.5], [14, 1], [15, 2], [16, 4]]
-          }
-        }
+            stops: [
+              [13, 0.5],
+              [14, 1],
+              [15, 2],
+              [16, 4],
+            ],
+          },
+        },
       },
       {
         id: "tunnel_service_case",
@@ -307,18 +354,27 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         "source-layer": "transportation",
         minzoom: 15,
         maxzoom: 24,
-        filter: ["all", ["==", "class", "service"], ["==", "brunnel", "tunnel"]],
+        filter: [
+          "all",
+          ["==", "class", "service"],
+          ["==", "brunnel", "tunnel"],
+        ],
         layout: {
           "line-cap": "round",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
-            stops: [[15, 1], [16, 3], [17, 6], [18, 8]]
+            stops: [
+              [15, 1],
+              [16, 3],
+              [17, 6],
+              [18, 8],
+            ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? "#ddd" : "#1a1a1a"
-        }
+          "line-color": t === "light" ? silver : charcoal,
+        },
       },
       {
         id: "tunnel_minor_case",
@@ -330,15 +386,23 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["==", "class", "minor"], ["==", "brunnel", "tunnel"]],
         layout: {
           "line-cap": "butt",
-          "line-join": "miter"
+          "line-join": "miter",
         },
         paint: {
           "line-width": {
-            stops: [[11, 0.5], [12, 0.5], [14, 2], [15, 4], [16, 6], [17, 10], [18, 14]]
+            stops: [
+              [11, 0.5],
+              [12, 0.5],
+              [14, 2],
+              [15, 4],
+              [16, 6],
+              [17, 10],
+              [18, 14],
+            ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? "#ddd" : "#1a1a1a"
-        }
+          "line-color": t === "light" ? silver : charcoal,
+        },
       },
       {
         id: "tunnel_sec_case",
@@ -347,18 +411,31 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         "source-layer": "transportation",
         minzoom: 11,
         maxzoom: 24,
-        filter: ["all", ["in", "class", "secondary", "tertiary"], ["==", "brunnel", "tunnel"]],
+        filter: [
+          "all",
+          ["in", "class", "secondary", "tertiary"],
+          ["==", "brunnel", "tunnel"],
+        ],
         layout: {
           "line-cap": "round",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
-            stops: [[11, 0.5], [12, 1], [13, 2], [14, 5], [15, 6], [16, 8], [17, 12], [18, 16]]
+            stops: [
+              [11, 0.5],
+              [12, 1],
+              [13, 2],
+              [14, 5],
+              [15, 6],
+              [16, 8],
+              [17, 12],
+              [18, 16],
+            ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? "#ddd" : "#1a1a1a"
-        }
+          "line-color": t === "light" ? silver : charcoal,
+        },
       },
       {
         id: "tunnel_pri_case",
@@ -368,35 +445,38 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         minzoom: 8,
         maxzoom: 24,
         filter: [
-        "all",
-        ["==", "class", "primary"],
-        ["!=", "ramp", 1],
-        ["==", "brunnel", "tunnel"]
-      ],
+          "all",
+          ["==", "class", "primary"],
+          ["!=", "ramp", 1],
+          ["==", "brunnel", "tunnel"],
+        ],
         layout: {
           "line-cap": "butt",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
             stops: [
-            [6, 0.5],
-            [7, 0.8],
-            [8, 1],
-            [11, 3],
-            [13, 4],
-            [14, 6],
-            [15, 8],
-            [16, 10],
-            [17, 14],
-            [18, 18]
-          ]
+              [6, 0.5],
+              [7, 0.8],
+              [8, 1],
+              [11, 3],
+              [13, 4],
+              [14, 6],
+              [15, 8],
+              [16, 10],
+              [17, 14],
+              [18, 18],
+            ],
           },
           "line-opacity": {
-            stops: [[5, 0.5], [7, 1]]
+            stops: [
+              [5, 0.5],
+              [7, 1],
+            ],
           },
-          "line-color": t === "light" ? "#ddd" : "#1a1a1a"
-        }
+          "line-color": t === "light" ? silver : charcoal,
+        },
       },
       {
         id: "tunnel_trunk_case",
@@ -405,32 +485,40 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         "source-layer": "transportation",
         minzoom: 5,
         maxzoom: 24,
-        filter: ["all", ["==", "class", "trunk"], ["!=", "ramp", 1], ["==", "brunnel", "tunnel"]],
+        filter: [
+          "all",
+          ["==", "class", "trunk"],
+          ["!=", "ramp", 1],
+          ["==", "brunnel", "tunnel"],
+        ],
         layout: {
           "line-cap": "butt",
           "line-join": "round",
-          visibility: "visible"
+          visibility: "visible",
         },
         paint: {
           "line-width": {
             stops: [
-            [6, 0.5],
-            [7, 0.8],
-            [8, 1],
-            [11, 3],
-            [13, 4],
-            [14, 6],
-            [15, 8],
-            [16, 10],
-            [17, 14],
-            [18, 18]
-          ]
+              [6, 0.5],
+              [7, 0.8],
+              [8, 1],
+              [11, 3],
+              [13, 4],
+              [14, 6],
+              [15, 8],
+              [16, 10],
+              [17, 14],
+              [18, 18],
+            ],
           },
           "line-opacity": {
-            stops: [[5, 0.5], [7, 1]]
+            stops: [
+              [5, 0.5],
+              [7, 1],
+            ],
           },
-          "line-color": t === "light" ? "#ddd" : "#232323"
-        }
+          "line-color": t === "light" ? silver : deepCharcoal,
+        },
       },
       {
         id: "tunnel_mot_case",
@@ -440,36 +528,39 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         minzoom: 5,
         maxzoom: 24,
         filter: [
-        "all",
-        ["==", "class", "motorway"],
-        ["!=", "ramp", 1],
-        ["==", "brunnel", "tunnel"]
-      ],
+          "all",
+          ["==", "class", "motorway"],
+          ["!=", "ramp", 1],
+          ["==", "brunnel", "tunnel"],
+        ],
         layout: {
           "line-cap": "butt",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
             stops: [
-            [6, 0.5],
-            [7, 0.8],
-            [8, 1],
-            [11, 3],
-            [12, 4],
-            [13, 5],
-            [14, 7],
-            [15, 9],
-            [16, 11],
-            [17, 13],
-            [18, 22]
-          ]
+              [6, 0.5],
+              [7, 0.8],
+              [8, 1],
+              [11, 3],
+              [12, 4],
+              [13, 5],
+              [14, 7],
+              [15, 9],
+              [16, 11],
+              [17, 13],
+              [18, 22],
+            ],
           },
           "line-opacity": {
-            stops: [[6, 0.5], [7, 1]]
+            stops: [
+              [6, 0.5],
+              [7, 1],
+            ],
           },
-          "line-color": t === "light" ? "#ddd" : "#232323"
-        }
+          "line-color": t === "light" ? silver : deepCharcoal,
+        },
       },
       {
         id: "tunnel_path",
@@ -481,18 +572,25 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["==", "class", "path"], ["==", "brunnel", "tunnel"]],
         layout: {
           "line-cap": "round",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
-            stops: [[15, 0.5], [16, 1], [18, 3]]
+            stops: [
+              [15, 0.5],
+              [16, 1],
+              [18, 3],
+            ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? "#d5d5d5" : "#262626",
+          "line-color": t === "light" ? pathGray : darkPath,
           "line-dasharray": {
-            stops: [[15, [2, 2]], [18, [3, 3]]]
-          }
-        }
+            stops: [
+              [15, [2, 2]],
+              [18, [3, 3]],
+            ],
+          },
+        },
       },
       {
         id: "tunnel_service_fill",
@@ -501,18 +599,27 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         "source-layer": "transportation",
         minzoom: 15,
         maxzoom: 24,
-        filter: ["all", ["==", "class", "service"], ["==", "brunnel", "tunnel"]],
+        filter: [
+          "all",
+          ["==", "class", "service"],
+          ["==", "brunnel", "tunnel"],
+        ],
         layout: {
           "line-cap": "round",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
-            stops: [[15, 2], [16, 2], [17, 4], [18, 6]]
+            stops: [
+              [15, 2],
+              [16, 2],
+              [17, 4],
+              [18, 6],
+            ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? "#eee" : "#161616"
-        }
+          "line-color": t === "light" ? paleSilver : dimCharcoal,
+        },
       },
       {
         id: "tunnel_minor_fill",
@@ -524,15 +631,21 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["==", "class", "minor"], ["==", "brunnel", "tunnel"]],
         layout: {
           "line-cap": "butt",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
-            stops: [[15, 3], [16, 4], [17, 8], [18, 12]]
+            stops: [
+              [15, 3],
+              [16, 4],
+              [17, 8],
+              [18, 12],
+            ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? "rgba(238, 238, 238, 1)" : "rgba(22, 22, 22, 1)"
-        }
+          "line-color":
+            t === "light" ? "rgba(238, 238, 238, 1)" : "rgba(22, 22, 22, 1)",
+        },
       },
       {
         id: "tunnel_sec_fill",
@@ -541,18 +654,30 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         "source-layer": "transportation",
         minzoom: 13,
         maxzoom: 24,
-        filter: ["all", ["in", "class", "secondary", "tertiary"], ["==", "brunnel", "tunnel"]],
+        filter: [
+          "all",
+          ["in", "class", "secondary", "tertiary"],
+          ["==", "brunnel", "tunnel"],
+        ],
         layout: {
           "line-cap": "round",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
-            stops: [[11, 2], [13, 2], [14, 3], [15, 4], [16, 6], [17, 10], [18, 14]]
+            stops: [
+              [11, 2],
+              [13, 2],
+              [14, 3],
+              [15, 4],
+              [16, 6],
+              [17, 10],
+              [18, 14],
+            ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? "#eee" : "#161616"
-        }
+          "line-color": t === "light" ? paleSilver : dimCharcoal,
+        },
       },
       {
         id: "tunnel_pri_fill",
@@ -562,22 +687,30 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         minzoom: 11,
         maxzoom: 24,
         filter: [
-        "all",
-        ["==", "class", "primary"],
-        ["!=", "ramp", 1],
-        ["==", "brunnel", "tunnel"]
-      ],
+          "all",
+          ["==", "class", "primary"],
+          ["!=", "ramp", 1],
+          ["==", "brunnel", "tunnel"],
+        ],
         layout: {
           "line-cap": "butt",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
-            stops: [[11, 1], [13, 2], [14, 4], [15, 6], [16, 8], [17, 12], [18, 16]]
+            stops: [
+              [11, 1],
+              [13, 2],
+              [14, 4],
+              [15, 6],
+              [16, 8],
+              [17, 12],
+              [18, 16],
+            ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? "#eee" : "rgba(65, 71, 88, 1)"
-        }
+          "line-color": t === "light" ? paleSilver : slateBlueGray,
+        },
       },
       {
         id: "tunnel_trunk_fill",
@@ -586,19 +719,32 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         "source-layer": "transportation",
         minzoom: 11,
         maxzoom: 24,
-        filter: ["all", ["==", "class", "trunk"], ["!=", "ramp", 1], ["==", "brunnel", "tunnel"]],
+        filter: [
+          "all",
+          ["==", "class", "trunk"],
+          ["!=", "ramp", 1],
+          ["==", "brunnel", "tunnel"],
+        ],
         layout: {
           "line-cap": "round",
           "line-join": "round",
-          visibility: "visible"
+          visibility: "visible",
         },
         paint: {
           "line-width": {
-            stops: [[11, 1], [13, 2], [14, 4], [15, 6], [16, 8], [17, 12], [18, 16]]
+            stops: [
+              [11, 1],
+              [13, 2],
+              [14, 4],
+              [15, 6],
+              [16, 8],
+              [17, 12],
+              [18, 16],
+            ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? "#eee" : "#161616"
-        }
+          "line-color": t === "light" ? paleSilver : dimCharcoal,
+        },
       },
       {
         id: "tunnel_mot_fill",
@@ -608,22 +754,31 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         minzoom: 10,
         maxzoom: 24,
         filter: [
-        "all",
-        ["==", "class", "motorway"],
-        ["!=", "ramp", 1],
-        ["==", "brunnel", "tunnel"]
-      ],
+          "all",
+          ["==", "class", "motorway"],
+          ["!=", "ramp", 1],
+          ["==", "brunnel", "tunnel"],
+        ],
         layout: {
           "line-cap": "butt",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
-            stops: [[10, 1], [12, 2], [13, 3], [14, 5], [15, 7], [16, 9], [17, 11], [18, 20]]
+            stops: [
+              [10, 1],
+              [12, 2],
+              [13, 3],
+              [14, 5],
+              [15, 7],
+              [16, 9],
+              [17, 11],
+              [18, 20],
+            ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? "#eee" : "rgba(65, 71, 88, 1)"
-        }
+          "line-color": t === "light" ? paleSilver : slateBlueGray,
+        },
       },
       {
         id: "tunnel_rail",
@@ -634,16 +789,22 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["==", "class", "rail"], ["==", "brunnel", "tunnel"]],
         layout: {
           visibility: "visible",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
-          "line-color": t === "light" ? "#dddddd" : "#1a1a1a",
+          "line-color": t === "light" ? "silverDDD" : charcoal,
           "line-width": {
             base: 1.3,
-            stops: [[13, 0.5], [14, 1], [15, 1], [16, 3], [21, 7]]
+            stops: [
+              [13, 0.5],
+              [14, 1],
+              [15, 1],
+              [16, 3],
+              [21, 7],
+            ],
           },
-          "line-opacity": 0.5
-        }
+          "line-opacity": 0.5,
+        },
       },
       {
         id: "tunnel_rail_dash",
@@ -654,19 +815,26 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["==", "class", "rail"], ["==", "brunnel", "tunnel"]],
         layout: {
           visibility: "visible",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
-          "line-color": t === "light" ? "#ffffff" : "#111",
+          "line-color": t === "light" ? white : offBlack,
           "line-width": {
             base: 1.3,
-            stops: [[15, 0.5], [16, 1], [20, 5]]
+            stops: [
+              [15, 0.5],
+              [16, 1],
+              [20, 5],
+            ],
           },
           "line-dasharray": {
-            stops: [[15, [5, 5]], [16, [6, 6]]]
+            stops: [
+              [15, [5, 5]],
+              [16, [6, 6]],
+            ],
           },
-          "line-opacity": 0.5
-        }
+          "line-opacity": 0.5,
+        },
       },
       {
         id: "road_service_case",
@@ -678,15 +846,20 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["==", "class", "service"], ["!has", "brunnel"]],
         layout: {
           "line-cap": "round",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
-            stops: [[15, 1], [16, 3], [17, 6], [18, 8]]
+            stops: [
+              [15, 1],
+              [16, 3],
+              [17, 6],
+              [18, 8],
+            ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? "#ddd" : "#1c1c1c"
-        }
+          "line-color": t === "light" ? silver : serviceDark,
+        },
       },
       {
         id: "road_minor_case",
@@ -698,21 +871,23 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["==", "class", "minor"], ["!has", "brunnel"]],
         layout: {
           "line-cap": "round",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
-            stops: [[11, 0.5], [12, 0.5], [14, 2], [15, 3], [16, 4.3], [17, 10], [18, 14]]
+            stops: [
+              [11, 0.5],
+              [12, 0.5],
+              [14, 2],
+              [15, 3],
+              [16, 4.3],
+              [17, 10],
+              [18, 14],
+            ],
           },
           "line-opacity": 1,
-          "line-color": {
-            stops: t === "light" ? [[13, "#e6e6e6"], [15.7, "#e6e6e6"], [16, "#ddd"]] : [
-            [13, "rgba(65, 71, 88, 1)"],
-            [15.7, "rgba(65, 71, 88, 1)"],
-            [16, "rgba(65, 71, 88, 1)"]
-          ]
-          }
-        }
+          "line-color": t === "light" ? lightGray: slateBlueGray,
+        },
       },
       {
         id: "road_pri_case_ramp",
@@ -724,17 +899,27 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["==", "class", "primary"], ["==", "ramp", 1]],
         layout: {
           "line-cap": "round",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
-            stops: [[12, 2], [13, 3], [14, 4], [15, 5], [16, 8], [17, 10]]
+            stops: [
+              [12, 2],
+              [13, 3],
+              [14, 4],
+              [15, 5],
+              [16, 8],
+              [17, 10],
+            ],
           },
           "line-opacity": {
-            stops: [[5, 0.5], [7, 1]]
+            stops: [
+              [5, 0.5],
+              [7, 1],
+            ],
           },
-          "line-color": t === "light" ? "#ddd" : "#232323"
-        }
+          "line-color": t === "light" ? silver : deepCharcoal,
+        },
       },
       {
         id: "road_trunk_case_ramp",
@@ -746,17 +931,33 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["==", "class", "trunk"], ["==", "ramp", 1]],
         layout: {
           "line-cap": "round",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
-            stops: [[12, 2], [13, 3], [14, 4], [15, 5], [16, 8], [17, 10]]
+            stops: [
+              [12, 2],
+              [13, 3],
+              [14, 4],
+              [15, 5],
+              [16, 8],
+              [17, 10],
+            ],
           },
           "line-opacity": 1,
           "line-color": {
-            stops: t === "light" ? [[12, "#e6e6e6"], [14, "#ddd"]] : [[12, "#1a1a1a"], [14, "#232323"]]
-          }
-        }
+            stops:
+              t === "light"
+                ? [
+                    [12, lightGray],
+                    [14, silver],
+                  ]
+                : [
+                    [12, charcoal],
+                    [14, deepCharcoal],
+                  ],
+          },
+        },
       },
       {
         id: "road_mot_case_ramp",
@@ -768,17 +969,33 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["==", "class", "motorway"], ["==", "ramp", 1]],
         layout: {
           "line-cap": "round",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
-            stops: [[12, 2], [13, 3], [14, 4], [15, 5], [16, 8], [17, 10]]
+            stops: [
+              [12, 2],
+              [13, 3],
+              [14, 4],
+              [15, 5],
+              [16, 8],
+              [17, 10],
+            ],
           },
           "line-opacity": 1,
           "line-color": {
-            stops: t === "light" ? [[12, "#e6e6e6"], [14, "#ddd"]] : [[12, "#1a1a1a"], [14, "#232323"]]
-          }
-        }
+            stops:
+              t === "light"
+                ? [
+                    [12, lightGray],
+                    [14, silver],
+                  ]
+                : [
+                    [12, charcoal],
+                    [14, deepCharcoal],
+                  ],
+          },
+        },
       },
       {
         id: "road_sec_case_noramp",
@@ -787,24 +1004,43 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         "source-layer": "transportation",
         minzoom: 11,
         maxzoom: 24,
-        filter: ["all", ["in", "class", "secondary", "tertiary"], ["!has", "brunnel"]],
+        filter: [
+          "all",
+          ["in", "class", "secondary", "tertiary"],
+          ["!has", "brunnel"],
+        ],
         layout: {
           "line-cap": "round",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
-            stops: t === "light" ? [[11, 0.5], [12, 1.5], [13, 3], [14, 5], [15, 6], [16, 8], [17, 12], [18, 16]] : [[11, 0.9], [12, 1.5], [13, 3], [14, 5], [15, 6], [16, 8], [17, 12], [18, 16]]
+            stops:
+              t === "light"
+                ? [
+                    [11, 0.5],
+                    [12, 1.5],
+                    [13, 3],
+                    [14, 5],
+                    [15, 6],
+                    [16, 8],
+                    [17, 12],
+                    [18, 16],
+                  ]
+                : [
+                    [11, 0.9],
+                    [12, 1.5],
+                    [13, 3],
+                    [14, 5],
+                    [15, 6],
+                    [16, 8],
+                    [17, 12],
+                    [18, 16],
+                  ],
           },
           "line-opacity": 1,
-          "line-color": {
-            stops: t === "light" ? [[11, "#e6e6e6"], [12.99, "#e6e6e6"], [13, "#ddd"]] : [
-            [11, "rgba(65, 71, 88, 1)"],
-            [12.99, "rgba(65, 71, 88, 1)"],
-            [13, "rgba(65, 71, 88, 1)"]
-          ]
-          }
-        }
+          "line-color": t === "light" ? lightGray: slateBlueGray,
+        },
       },
       {
         id: "road_pri_case_noramp",
@@ -813,33 +1049,50 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         "source-layer": "transportation",
         minzoom: 7,
         maxzoom: 24,
-        filter: ["all", ["==", "class", "primary"], ["!=", "ramp", 1], ["!has", "brunnel"]],
+        filter: [
+          "all",
+          ["==", "class", "primary"],
+          ["!=", "ramp", 1],
+          ["!has", "brunnel"],
+        ],
         layout: {
           "line-cap": "round",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
             stops: [
-            [6, 0.5],
-            [7, 0.8],
-            [8, 1],
-            [11, 3],
-            [13, 4],
-            [14, 6],
-            [15, 8],
-            [16, 10],
-            [17, 14],
-            [18, 18]
-          ]
+              [6, 0.5],
+              [7, 0.8],
+              [8, 1],
+              [11, 3],
+              [13, 4],
+              [14, 6],
+              [15, 8],
+              [16, 10],
+              [17, 14],
+              [18, 18],
+            ],
           },
           "line-opacity": {
-            stops: [[5, 0.5], [7, 1]]
+            stops: [
+              [5, 0.5],
+              [7, 1],
+            ],
           },
           "line-color": {
-            stops: t === "light" ? [[7, "#e6e6e6"], [12, "#ddd"]] : [[7, "#1a1a1a"], [12, "#232323"]]
-          }
-        }
+            stops:
+              t === "light"
+                ? [
+                    [7, lightGray],
+                    [12, silver],
+                  ]
+                : [
+                    [7, charcoal],
+                    [12, deepCharcoal],
+                  ],
+          },
+        },
       },
       {
         id: "road_trunk_case_noramp",
@@ -848,33 +1101,50 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         "source-layer": "transportation",
         minzoom: 5,
         maxzoom: 24,
-        filter: ["all", ["==", "class", "trunk"], ["!=", "ramp", 1], ["!has", "brunnel"]],
+        filter: [
+          "all",
+          ["==", "class", "trunk"],
+          ["!=", "ramp", 1],
+          ["!has", "brunnel"],
+        ],
         layout: {
           "line-cap": "round",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
             stops: [
-            [6, 0.5],
-            [7, 0.8],
-            [8, 1],
-            [11, 3],
-            [13, 4],
-            [14, 6],
-            [15, 8],
-            [16, 10],
-            [17, 14],
-            [18, 18]
-          ]
+              [6, 0.5],
+              [7, 0.8],
+              [8, 1],
+              [11, 3],
+              [13, 4],
+              [14, 6],
+              [15, 8],
+              [16, 10],
+              [17, 14],
+              [18, 18],
+            ],
           },
           "line-opacity": {
-            stops: [[5, 0.5], [7, 1]]
+            stops: [
+              [5, 0.5],
+              [7, 1],
+            ],
           },
           "line-color": {
-            stops: t === "light" ? [[5, "#e6e6e6"], [12, "#ddd"]] : [[5, "#1a1a1a"], [12, "#232323"]]
-          }
-        }
+            stops:
+              t === "light"
+                ? [
+                    [5, lightGray],
+                    [12, silver],
+                  ]
+                : [
+                    [5, charcoal],
+                    [12, deepCharcoal],
+                  ],
+          },
+        },
       },
       {
         id: "road_mot_case_noramp",
@@ -883,34 +1153,51 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         "source-layer": "transportation",
         minzoom: 5,
         maxzoom: 24,
-        filter: ["all", ["==", "class", "motorway"], ["!=", "ramp", 1], ["!has", "brunnel"]],
+        filter: [
+          "all",
+          ["==", "class", "motorway"],
+          ["!=", "ramp", 1],
+          ["!has", "brunnel"],
+        ],
         layout: {
           "line-cap": "round",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
             stops: [
-            [6, 0.5],
-            [7, 0.7],
-            [8, 0.8],
-            [11, 3],
-            [12, 4],
-            [13, 5],
-            [14, 7],
-            [15, 9],
-            [16, 11],
-            [17, 13],
-            [18, 22]
-          ]
+              [6, 0.5],
+              [7, 0.7],
+              [8, 0.8],
+              [11, 3],
+              [12, 4],
+              [13, 5],
+              [14, 7],
+              [15, 9],
+              [16, 11],
+              [17, 13],
+              [18, 22],
+            ],
           },
           "line-opacity": {
-            stops: [[6, 0.5], [7, 1]]
+            stops: [
+              [6, 0.5],
+              [7, 1],
+            ],
           },
           "line-color": {
-            stops: t === "light" ? [[5, "#e6e6e6"], [12, "#ddd"]] : [[5, "#1a1a1a"], [12, "#232323"]]
-          }
-        }
+            stops:
+              t === "light"
+                ? [
+                    [5, lightGray],
+                    [12, silver],
+                  ]
+                : [
+                    [5, charcoal],
+                    [12, deepCharcoal],
+                  ],
+          },
+        },
       },
       {
         id: "road_path",
@@ -922,18 +1209,25 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["in", "class", "path", "track"], ["!has", "brunnel"]],
         layout: {
           "line-cap": "round",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
-            stops: [[15, 0.5], [16, 1], [18, 3]]
+            stops: [
+              [15, 0.5],
+              [16, 1],
+              [18, 3],
+            ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? "#d5d5d5" : "#262626",
+          "line-color": t === "light" ? pathGray : darkPath,
           "line-dasharray": {
-            stops: [[15, [2, 2]], [18, [3, 3]]]
-          }
-        }
+            stops: [
+              [15, [2, 2]],
+              [18, [3, 3]],
+            ],
+          },
+        },
       },
       {
         id: "road_service_fill",
@@ -945,15 +1239,20 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["==", "class", "service"], ["!has", "brunnel"]],
         layout: {
           "line-cap": "round",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
-            stops: [[15, 2], [16, 2], [17, 4], [18, 6]]
+            stops: [
+              [15, 2],
+              [16, 2],
+              [17, 4],
+              [18, 6],
+            ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? "#fdfdfd" : "#0b0b0b"
-        }
+          "line-color": t === "light" ? nearWhite : deepBlack,
+        },
       },
       {
         id: "road_minor_fill",
@@ -965,15 +1264,20 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["==", "class", "minor"], ["!has", "brunnel"]],
         layout: {
           "line-cap": "round",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
-            stops: [[15, 3], [16, 4], [17, 8], [18, 12]]
+            stops: [
+              [15, 3],
+              [16, 4],
+              [17, 8],
+              [18, 12],
+            ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? "#fdfdfd" : "rgba(65, 71, 88, 1)"
-        }
+          "line-color": t === "light" ? nearWhite : slateBlueGray,
+        },
       },
       {
         id: "road_pri_fill_ramp",
@@ -985,15 +1289,22 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["==", "class", "primary"], ["==", "ramp", 1]],
         layout: {
           "line-cap": "round",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
-            stops: [[12, 1], [13, 1.5], [14, 2], [15, 3], [16, 6], [17, 8]]
+            stops: [
+              [12, 1],
+              [13, 1.5],
+              [14, 2],
+              [15, 3],
+              [16, 6],
+              [17, 8],
+            ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? "#fff" : "#0b0b0b"
-        }
+          "line-color": t === "light" ? white : deepBlack,
+        },
       },
       {
         id: "road_trunk_fill_ramp",
@@ -1005,15 +1316,22 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["==", "class", "trunk"], ["==", "ramp", 1]],
         layout: {
           "line-cap": "square",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
-            stops: [[12, 1], [13, 1.5], [14, 2], [15, 3], [16, 6], [17, 8]]
+            stops: [
+              [12, 1],
+              [13, 1.5],
+              [14, 2],
+              [15, 3],
+              [16, 6],
+              [17, 8],
+            ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? "#fff" : "#0b0b0b"
-        }
+          "line-color": t === "light" ? white : deepBlack,
+        },
       },
       {
         id: "road_mot_fill_ramp",
@@ -1025,15 +1343,22 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["==", "class", "motorway"], ["==", "ramp", 1]],
         layout: {
           "line-cap": "round",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
-            stops: [[12, 1], [13, 1.5], [14, 2], [15, 3], [16, 6], [17, 8]]
+            stops: [
+              [12, 1],
+              [13, 1.5],
+              [14, 2],
+              [15, 3],
+              [16, 6],
+              [17, 8],
+            ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? "#fff" : "rgba(65, 71, 88, 1)"
-        }
+          "line-color": t === "light" ? white : slateBlueGray,
+        },
       },
       {
         id: "road_sec_fill_noramp",
@@ -1042,18 +1367,30 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         "source-layer": "transportation",
         minzoom: 13,
         maxzoom: 24,
-        filter: ["all", ["in", "class", "secondary", "tertiary"], ["!has", "brunnel"]],
+        filter: [
+          "all",
+          ["in", "class", "secondary", "tertiary"],
+          ["!has", "brunnel"],
+        ],
         layout: {
           "line-cap": "round",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
-            stops: [[11, 2], [13, 2], [14, 3], [15, 4], [16, 6], [17, 10], [18, 14]]
+            stops: [
+              [11, 2],
+              [13, 2],
+              [14, 3],
+              [15, 4],
+              [16, 6],
+              [17, 10],
+              [18, 14],
+            ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? "#fff" : "rgba(65, 71, 88, 1)"
-        }
+          "line-color": t === "light" ? white : slateBlueGray,
+        },
       },
       {
         id: "road_pri_fill_noramp",
@@ -1062,18 +1399,31 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         "source-layer": "transportation",
         minzoom: 10,
         maxzoom: 24,
-        filter: ["all", ["==", "class", "primary"], ["!=", "ramp", 1], ["!has", "brunnel"]],
+        filter: [
+          "all",
+          ["==", "class", "primary"],
+          ["!=", "ramp", 1],
+          ["!has", "brunnel"],
+        ],
         layout: {
           "line-cap": "round",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
-            stops: [[10, 0.3], [13, 2], [14, 4], [15, 6], [16, 8], [17, 12], [18, 16]]
+            stops: [
+              [10, 0.3],
+              [13, 2],
+              [14, 4],
+              [15, 6],
+              [16, 8],
+              [17, 12],
+              [18, 16],
+            ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? "#fff" : "rgba(83, 86, 102, 1)"
-        }
+          "line-color": t === "light" ? white : "rgba(83, 86, 102, 1)",
+        },
       },
       {
         id: "road_trunk_fill_noramp",
@@ -1082,18 +1432,31 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         "source-layer": "transportation",
         minzoom: 10,
         maxzoom: 24,
-        filter: ["all", ["==", "class", "trunk"], ["!=", "ramp", 1], ["!has", "brunnel"]],
+        filter: [
+          "all",
+          ["==", "class", "trunk"],
+          ["!=", "ramp", 1],
+          ["!has", "brunnel"],
+        ],
         layout: {
           "line-cap": "round",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
-            stops: [[11, 1], [13, 2], [14, 4], [15, 6], [16, 8], [17, 12], [18, 16]]
+            stops: [
+              [11, 1],
+              [13, 2],
+              [14, 4],
+              [15, 6],
+              [16, 8],
+              [17, 12],
+              [18, 16],
+            ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? "#fff" : "rgba(65, 71, 88, 1)"
-        }
+          "line-color": t === "light" ? white : slateBlueGray,
+        },
       },
       {
         id: "road_mot_fill_noramp",
@@ -1102,18 +1465,32 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         "source-layer": "transportation",
         minzoom: 10,
         maxzoom: 24,
-        filter: ["all", ["==", "class", "motorway"], ["!=", "ramp", 1], ["!has", "brunnel"]],
+        filter: [
+          "all",
+          ["==", "class", "motorway"],
+          ["!=", "ramp", 1],
+          ["!has", "brunnel"],
+        ],
         layout: {
           "line-cap": "round",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
-            stops: [[10, 1], [12, 2], [13, 3], [14, 5], [15, 7], [16, 9], [17, 11], [18, 20]]
+            stops: [
+              [10, 1],
+              [12, 2],
+              [13, 3],
+              [14, 5],
+              [15, 7],
+              [16, 9],
+              [17, 11],
+              [18, 20],
+            ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? "#fff" : "rgba(73, 73, 73, 1)"
-        }
+          "line-color": t === "light" ? white : "rgba(73, 73, 73, 1)",
+        },
       },
       {
         id: "rail",
@@ -1124,15 +1501,21 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["==", "class", "rail"], ["!=", "brunnel", "tunnel"]],
         layout: {
           visibility: "visible",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
-          "line-color": t === "light" ? "#dddddd" : "#1a1a1a",
+          "line-color": t === "light" ? "silverDDD" : charcoal,
           "line-width": {
             base: 1.3,
-            stops: [[13, 0.5], [14, 1], [15, 1], [16, 3], [21, 7]]
-          }
-        }
+            stops: [
+              [13, 0.5],
+              [14, 1],
+              [15, 1],
+              [16, 3],
+              [21, 7],
+            ],
+          },
+        },
       },
       {
         id: "rail_dash",
@@ -1143,18 +1526,25 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["==", "class", "rail"], ["!=", "brunnel", "tunnel"]],
         layout: {
           visibility: "visible",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
-          "line-color": t === "light" ? "#ffffff" : "#111",
+          "line-color": t === "light" ? white : offBlack,
           "line-width": {
             base: 1.3,
-            stops: [[15, 0.5], [16, 1], [20, 5]]
+            stops: [
+              [15, 0.5],
+              [16, 1],
+              [20, 5],
+            ],
           },
           "line-dasharray": {
-            stops: [[15, [5, 5]], [16, [6, 6]]]
-          }
-        }
+            stops: [
+              [15, [5, 5]],
+              [16, [6, 6]],
+            ],
+          },
+        },
       },
       {
         id: "bridge_service_case",
@@ -1163,18 +1553,27 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         "source-layer": "transportation",
         minzoom: 15,
         maxzoom: 24,
-        filter: ["all", ["==", "class", "service"], ["==", "brunnel", "bridge"]],
+        filter: [
+          "all",
+          ["==", "class", "service"],
+          ["==", "brunnel", "bridge"],
+        ],
         layout: {
           "line-cap": "butt",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
-            stops: [[15, 1], [16, 3], [17, 6], [18, 8]]
+            stops: [
+              [15, 1],
+              [16, 3],
+              [17, 6],
+              [18, 8],
+            ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? "#ddd" : "#1c1c1c"
-        }
+          "line-color": t === "light" ? silver : serviceDark,
+        },
       },
       {
         id: "bridge_minor_case",
@@ -1186,17 +1585,36 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["==", "class", "minor"], ["==", "brunnel", "bridge"]],
         layout: {
           "line-cap": "butt",
-          "line-join": "miter"
+          "line-join": "miter",
         },
         paint: {
           "line-width": {
-            stops: [[11, 0.5], [12, 0.5], [14, 2], [15, 3], [16, 4.3], [17, 10], [18, 14]]
+            stops: [
+              [11, 0.5],
+              [12, 0.5],
+              [14, 2],
+              [15, 3],
+              [16, 4.3],
+              [17, 10],
+              [18, 14],
+            ],
           },
           "line-opacity": 1,
           "line-color": {
-            stops: t === "light" ? [[13, "#e6e6e6"], [15.7, "#e6e6e6"], [16, "#ddd"]] : [[13, "#161616"], [15.7, "#161616"], [16, "#1c1c1c"]]
-          }
-        }
+            stops:
+              t === "light"
+                ? [
+                    [13, lightGray],
+                    [15.7, lightGray],
+                    [16, silver],
+                  ]
+                : [
+                    [13, dimCharcoal],
+                    [15.7, dimCharcoal],
+                    [16, serviceDark],
+                  ],
+          },
+        },
       },
       {
         id: "bridge_sec_case",
@@ -1205,20 +1623,44 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         "source-layer": "transportation",
         minzoom: 11,
         maxzoom: 24,
-        filter: ["all", ["in", "class", "secondary", "tertiary"], ["==", "brunnel", "bridge"]],
+        filter: [
+          "all",
+          ["in", "class", "secondary", "tertiary"],
+          ["==", "brunnel", "bridge"],
+        ],
         layout: {
           "line-cap": "butt",
-          "line-join": "miter"
+          "line-join": "miter",
         },
         paint: {
           "line-width": {
-            stops: [[11, 0.5], [12, 1.5], [13, 3], [14, 5], [15, 6], [16, 8], [17, 12], [18, 16]]
+            stops: [
+              [11, 0.5],
+              [12, 1.5],
+              [13, 3],
+              [14, 5],
+              [15, 6],
+              [16, 8],
+              [17, 12],
+              [18, 16],
+            ],
           },
           "line-opacity": 1,
           "line-color": {
-            stops: t === "light" ? [[11, "#e6e6e6"], [12.99, "#e6e6e6"], [13, "#ddd"]] : [[11, "#1a1a1a"], [12.99, "#1a1a1a"], [13, "#232323"]]
-          }
-        }
+            stops:
+              t === "light"
+                ? [
+                    [11, lightGray],
+                    [12.99, lightGray],
+                    [13, silver],
+                  ]
+                : [
+                    [11, charcoal],
+                    [12.99, charcoal],
+                    [13, deepCharcoal],
+                  ],
+          },
+        },
       },
       {
         id: "bridge_pri_case",
@@ -1228,37 +1670,49 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         minzoom: 8,
         maxzoom: 24,
         filter: [
-        "all",
-        ["==", "class", "primary"],
-        ["!=", "ramp", 1],
-        ["==", "brunnel", "bridge"]
-      ],
+          "all",
+          ["==", "class", "primary"],
+          ["!=", "ramp", 1],
+          ["==", "brunnel", "bridge"],
+        ],
         layout: {
           "line-cap": "butt",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
             stops: [
-            [6, 0.5],
-            [7, 0.8],
-            [8, 1],
-            [11, 3],
-            [13, 4],
-            [14, 6],
-            [15, 8],
-            [16, 10],
-            [17, 14],
-            [18, 18]
-          ]
+              [6, 0.5],
+              [7, 0.8],
+              [8, 1],
+              [11, 3],
+              [13, 4],
+              [14, 6],
+              [15, 8],
+              [16, 10],
+              [17, 14],
+              [18, 18],
+            ],
           },
           "line-opacity": {
-            stops: [[5, 0.5], [7, 1]]
+            stops: [
+              [5, 0.5],
+              [7, 1],
+            ],
           },
           "line-color": {
-            stops: t === "light" ? [[8, "#e6e6e6"], [12, "#ddd"]] : [[8, "#1a1a1a"], [12, "#232323"]]
-          }
-        }
+            stops:
+              t === "light"
+                ? [
+                    [8, lightGray],
+                    [12, silver],
+                  ]
+                : [
+                    [8, charcoal],
+                    [12, deepCharcoal],
+                  ],
+          },
+        },
       },
       {
         id: "bridge_trunk_case",
@@ -1267,34 +1721,51 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         "source-layer": "transportation",
         minzoom: 5,
         maxzoom: 24,
-        filter: ["all", ["==", "class", "trunk"], ["!=", "ramp", 1], ["==", "brunnel", "bridge"]],
+        filter: [
+          "all",
+          ["==", "class", "trunk"],
+          ["!=", "ramp", 1],
+          ["==", "brunnel", "bridge"],
+        ],
         layout: {
           "line-cap": "butt",
           "line-join": "round",
-          visibility: "visible"
+          visibility: "visible",
         },
         paint: {
           "line-width": {
             stops: [
-            [6, 0.5],
-            [7, 0.8],
-            [8, 1],
-            [11, 3],
-            [13, 4],
-            [14, 6],
-            [15, 8],
-            [16, 10],
-            [17, 14],
-            [18, 18]
-          ]
+              [6, 0.5],
+              [7, 0.8],
+              [8, 1],
+              [11, 3],
+              [13, 4],
+              [14, 6],
+              [15, 8],
+              [16, 10],
+              [17, 14],
+              [18, 18],
+            ],
           },
           "line-opacity": {
-            stops: [[5, 0.5], [7, 1]]
+            stops: [
+              [5, 0.5],
+              [7, 1],
+            ],
           },
           "line-color": {
-            stops: t === "light" ? [[5, "#e6e6e6"], [12, "#ddd"]] : [[5, "#1a1a1a"], [12, "#232323"]]
-          }
-        }
+            stops:
+              t === "light"
+                ? [
+                    [5, lightGray],
+                    [12, silver],
+                  ]
+                : [
+                    [5, charcoal],
+                    [12, deepCharcoal],
+                  ],
+          },
+        },
       },
       {
         id: "bridge_mot_case",
@@ -1304,38 +1775,50 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         minzoom: 5,
         maxzoom: 24,
         filter: [
-        "all",
-        ["==", "class", "motorway"],
-        ["!=", "ramp", 1],
-        ["==", "brunnel", "bridge"]
-      ],
+          "all",
+          ["==", "class", "motorway"],
+          ["!=", "ramp", 1],
+          ["==", "brunnel", "bridge"],
+        ],
         layout: {
           "line-cap": "butt",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
             stops: [
-            [6, 0.5],
-            [7, 0.8],
-            [8, 1],
-            [11, 3],
-            [12, 4],
-            [13, 5],
-            [14, 7],
-            [15, 9],
-            [16, 11],
-            [17, 13],
-            [18, 22]
-          ]
+              [6, 0.5],
+              [7, 0.8],
+              [8, 1],
+              [11, 3],
+              [12, 4],
+              [13, 5],
+              [14, 7],
+              [15, 9],
+              [16, 11],
+              [17, 13],
+              [18, 22],
+            ],
           },
           "line-opacity": {
-            stops: [[6, 0.5], [7, 1]]
+            stops: [
+              [6, 0.5],
+              [7, 1],
+            ],
           },
           "line-color": {
-            stops: t === "light" ? [[5, "#e6e6e6"], [10, "#ddd"]] : [[5, "#1a1a1a"], [10, "#232323"]]
-          }
-        }
+            stops:
+              t === "light"
+                ? [
+                    [5, lightGray],
+                    [10, silver],
+                  ]
+                : [
+                    [5, charcoal],
+                    [10, deepCharcoal],
+                  ],
+          },
+        },
       },
       {
         id: "bridge_path",
@@ -1347,18 +1830,25 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["==", "class", "path"], ["==", "brunnel", "bridge"]],
         layout: {
           "line-cap": "round",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
-            stops: [[15, 0.5], [16, 1], [18, 3]]
+            stops: [
+              [15, 0.5],
+              [16, 1],
+              [18, 3],
+            ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? "#d5d5d5" : "#262626",
+          "line-color": t === "light" ? pathGray : darkPath,
           "line-dasharray": {
-            stops: [[15, [2, 2]], [18, [3, 3]]]
-          }
-        }
+            stops: [
+              [15, [2, 2]],
+              [18, [3, 3]],
+            ],
+          },
+        },
       },
       {
         id: "bridge_service_fill",
@@ -1367,18 +1857,27 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         "source-layer": "transportation",
         minzoom: 15,
         maxzoom: 24,
-        filter: ["all", ["==", "class", "service"], ["==", "brunnel", "bridge"]],
+        filter: [
+          "all",
+          ["==", "class", "service"],
+          ["==", "brunnel", "bridge"],
+        ],
         layout: {
           "line-cap": "round",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
-            stops: [[15, 2], [16, 2], [17, 4], [18, 6]]
+            stops: [
+              [15, 2],
+              [16, 2],
+              [17, 4],
+              [18, 6],
+            ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? "#fdfdfd" : "#0b0b0b"
-        }
+          "line-color": t === "light" ? nearWhite : deepBlack,
+        },
       },
       {
         id: "bridge_minor_fill",
@@ -1390,15 +1889,20 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["==", "class", "minor"], ["==", "brunnel", "bridge"]],
         layout: {
           "line-cap": "butt",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
-            stops: [[15, 3], [16, 4], [17, 8], [18, 12]]
+            stops: [
+              [15, 3],
+              [16, 4],
+              [17, 8],
+              [18, 12],
+            ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? "#fdfdfd" : "#0b0b0b"
-        }
+          "line-color": t === "light" ? nearWhite : deepBlack,
+        },
       },
       {
         id: "bridge_sec_fill",
@@ -1407,18 +1911,30 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         "source-layer": "transportation",
         minzoom: 13,
         maxzoom: 24,
-        filter: ["all", ["in", "class", "secondary", "tertiary"], ["==", "brunnel", "bridge"]],
+        filter: [
+          "all",
+          ["in", "class", "secondary", "tertiary"],
+          ["==", "brunnel", "bridge"],
+        ],
         layout: {
           "line-cap": "round",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
-            stops: [[11, 2], [13, 2], [14, 3], [15, 4], [16, 6], [17, 10], [18, 14]]
+            stops: [
+              [11, 2],
+              [13, 2],
+              [14, 3],
+              [15, 4],
+              [16, 6],
+              [17, 10],
+              [18, 14],
+            ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? "#fff" : "#0b0b0b"
-        }
+          "line-color": t === "light" ? white : deepBlack,
+        },
       },
       {
         id: "bridge_pri_fill",
@@ -1428,22 +1944,30 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         minzoom: 11,
         maxzoom: 24,
         filter: [
-        "all",
-        ["==", "class", "primary"],
-        ["!=", "ramp", 1],
-        ["==", "brunnel", "bridge"]
-      ],
+          "all",
+          ["==", "class", "primary"],
+          ["!=", "ramp", 1],
+          ["==", "brunnel", "bridge"],
+        ],
         layout: {
           "line-cap": "butt",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
-            stops: [[11, 1], [13, 2], [14, 4], [15, 6], [16, 8], [17, 12], [18, 16]]
+            stops: [
+              [11, 1],
+              [13, 2],
+              [14, 4],
+              [15, 6],
+              [16, 8],
+              [17, 12],
+              [18, 16],
+            ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? "#fff" : "#0b0b0b"
-        }
+          "line-color": t === "light" ? white : deepBlack,
+        },
       },
       {
         id: "bridge_trunk_fill",
@@ -1452,19 +1976,32 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         "source-layer": "transportation",
         minzoom: 11,
         maxzoom: 24,
-        filter: ["all", ["==", "class", "trunk"], ["!=", "ramp", 1], ["==", "brunnel", "bridge"]],
+        filter: [
+          "all",
+          ["==", "class", "trunk"],
+          ["!=", "ramp", 1],
+          ["==", "brunnel", "bridge"],
+        ],
         layout: {
           "line-cap": "butt",
           "line-join": "round",
-          visibility: "visible"
+          visibility: "visible",
         },
         paint: {
           "line-width": {
-            stops: [[11, 1], [13, 2], [14, 4], [15, 6], [16, 8], [17, 12], [18, 16]]
+            stops: [
+              [11, 1],
+              [13, 2],
+              [14, 4],
+              [15, 6],
+              [16, 8],
+              [17, 12],
+              [18, 16],
+            ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? "#fff" : "rgba(65, 71, 88, 1)"
-        }
+          "line-color": t === "light" ? white : slateBlueGray,
+        },
       },
       {
         id: "bridge_mot_fill",
@@ -1474,22 +2011,31 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         minzoom: 10,
         maxzoom: 24,
         filter: [
-        "all",
-        ["==", "class", "motorway"],
-        ["!=", "ramp", 1],
-        ["==", "brunnel", "bridge"]
-      ],
+          "all",
+          ["==", "class", "motorway"],
+          ["!=", "ramp", 1],
+          ["==", "brunnel", "bridge"],
+        ],
         layout: {
           "line-cap": "butt",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-width": {
-            stops: [[10, 1], [12, 2], [13, 3], [14, 5], [15, 7], [16, 9], [17, 11], [18, 20]]
+            stops: [
+              [10, 1],
+              [12, 2],
+              [13, 3],
+              [14, 5],
+              [15, 7],
+              [16, 9],
+              [17, 11],
+              [18, 20],
+            ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? "#fff" : "rgba(65, 71, 88, 1)"
-        }
+          "line-color": t === "light" ? white : slateBlueGray,
+        },
       },
       {
         id: "building",
@@ -1497,15 +2043,12 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         source: "carto",
         "source-layer": "building",
         layout: {
-          visibility: "visible"
+          visibility: "visible",
         },
         paint: {
-          "fill-color": {
-            base: 1,
-            stops: t === "light" ? [[15.5, "#dfdfdf"], [16, "#dfdfdf"]] : [[15.5, "transparent"], [16, "transparent"]]
-          },
-          "fill-antialias": true
-        }
+          "fill-color": t === "light" ? buildingLight : transparent,
+          "fill-antialias": true,
+        },
       },
       {
         id: "building-top",
@@ -1513,20 +2056,26 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         source: "carto",
         "source-layer": "building",
         layout: {
-          visibility: "visible"
+          visibility: "visible",
         },
         paint: {
           "fill-translate": {
             base: 1,
-            stops: [[14, [0, 0]], [16, [-2, -2]]]
+            stops: [
+              [14, [0, 0]],
+              [16, [-2, -2]],
+            ],
           },
-          "fill-outline-color": t === "light" ? "#dfdfdf" : "#0e0e0e",
+          "fill-outline-color": t === "light" ? buildingLight : nearBlack,
           "fill-color": t === "light" ? "#ededed" : "rgba(57, 57, 57, 1)",
           "fill-opacity": {
             base: 1,
-            stops: [[13, 0], [16, 1]]
-          }
-        }
+            stops: [
+              [13, 0],
+              [16, 1],
+            ],
+          },
+        },
       },
       {
         id: "boundary_country_outline",
@@ -1538,14 +2087,14 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["==", "admin_level", 2], ["==", "maritime", 0]],
         layout: {
           "line-cap": "round",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
-          "line-color": t === "light" ? "#f3efed" : "#2C353C",
+          "line-color": t === "light" ? "#f3efed" : darkWater,
           "line-opacity": 0.5,
           "line-width": 8,
-          "line-offset": 0
-        }
+          "line-offset": 0,
+        },
       },
       {
         id: "boundary_country_inner",
@@ -1556,22 +2105,32 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["==", "admin_level", 2], ["==", "maritime", 0]],
         layout: {
           "line-cap": "round",
-          "line-join": "round"
+          "line-join": "round",
         },
         paint: {
           "line-color": {
-            stops: t === "light" ? [[4, "#f2e6e7"], [5, "#ebd6d8"], [6, "#ebd6d8"]] : [
-            [4, "rgba(92, 94, 94, 1)"],
-            [5, "rgba(96, 96, 96, 1)"],
-            [6, "rgba(102, 102, 102, 1)"]
-          ]
+            stops:
+              t === "light"
+                ? [
+                    [4, "#f2e6e7"],
+                    [5, dustyRose],
+                    [6, dustyRose],
+                  ]
+                : [
+                    [4, "rgba(92, 94, 94, 1)"],
+                    [5, "rgba(96, 96, 96, 1)"],
+                    [6, "rgba(102, 102, 102, 1)"],
+                  ],
           },
           "line-opacity": 1,
           "line-width": {
-            stops: [[3, 1], [6, 1.5]]
+            stops: [
+              [3, 1],
+              [6, 1.5],
+            ],
           },
-          "line-offset": 0
-        }
+          "line-offset": 0,
+        },
       },
       {
         id: "waterway_label",
@@ -1582,32 +2141,39 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: {
           "text-field": "{name_en}",
           "text-font": [
-          "Montserrat Regular Italic",
-          "Open Sans Italic",
-          "Noto Sans Regular",
-          "HanWangHeiLight Regular",
-          "NanumBarunGothic Regular"
-        ],
+            "Montserrat Regular Italic",
+            "Open Sans Italic",
+            "Noto Sans Regular",
+            "HanWangHeiLight Regular",
+            "NanumBarunGothic Regular",
+          ],
           "symbol-placement": "line",
           "symbol-spacing": 300,
           "symbol-avoid-edges": false,
           "text-size": {
-            stops: [[9, 8], [10, 9]]
+            stops: [
+              [9, 8],
+              [10, 9],
+            ],
           },
           "text-padding": 2,
           "text-pitch-alignment": "auto",
           "text-rotation-alignment": "auto",
           "text-offset": {
-            stops: [[6, [0, -0.2]], [11, [0, -0.4]], [12, [0, -0.6]]]
+            stops: [
+              [6, [0, -0.2]],
+              [11, [0, -0.4]],
+              [12, [0, -0.6]],
+            ],
           },
           "text-letter-spacing": 0,
-          "text-keep-upright": true
+          "text-keep-upright": true,
         },
         paint: {
-          "text-color": t === "light" ? "#7a96a0" : "rgba(164, 164, 164, 1)",
-          "text-halo-color": t === "light" ? "#f5f5f3" : "#181818",
-          "text-halo-width": 1
-        }
+          "text-color": t === "light" ? tealGray : "rgba(164, 164, 164, 1)",
+          "text-halo-color": t === "light" ? creamWhite : darkHalo,
+          "text-halo-width": 1,
+        },
       },
       {
         id: "watername_ocean",
@@ -1616,20 +2182,29 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         "source-layer": "water_name",
         minzoom: 0,
         maxzoom: 5,
-        filter: ["all", ["has", "name"], ["==", "$type", "Point"], ["==", "class", "ocean"]],
+        filter: [
+          "all",
+          ["has", "name"],
+          ["==", "$type", "Point"],
+          ["==", "class", "ocean"],
+        ],
         layout: {
           "text-field": "{name}",
           "symbol-placement": "point",
           "text-size": {
-            stops: [[0, 13], [2, 14], [4, 18]]
+            stops: [
+              [0, 13],
+              [2, 14],
+              [4, 18],
+            ],
           },
           "text-font": [
-          "Montserrat Medium Italic",
-          "Open Sans Italic",
-          "Noto Sans Regular",
-          "HanWangHeiLight Regular",
-          "NanumBarunGothic Regular"
-        ],
+            "Montserrat Medium Italic",
+            "Open Sans Italic",
+            "Noto Sans Regular",
+            "HanWangHeiLight Regular",
+            "NanumBarunGothic Regular",
+          ],
           "text-line-height": 1.2,
           "text-padding": 2,
           "text-allow-overlap": false,
@@ -1637,14 +2212,14 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "text-pitch-alignment": "auto",
           "text-rotation-alignment": "auto",
           "text-max-width": 6,
-          "text-letter-spacing": 0.1
+          "text-letter-spacing": 0.1,
         },
         paint: {
-          "text-color": t === "light" ? "#abb6be" : "rgba(109, 123, 129, 1)",
-          "text-halo-color": t === "light" ? "#d4dadc" : "rgba(0,0,0,0.7)",
+          "text-color": t === "light" ? steelMist : "rgba(109, 123, 129, 1)",
+          "text-halo-color": t === "light" ? paleWater : darkOceanHalo,
           "text-halo-width": 1,
-          "text-halo-blur": 0
-        }
+          "text-halo-blur": 0,
+        },
       },
       {
         id: "watername_sea",
@@ -1652,18 +2227,23 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         source: "carto",
         "source-layer": "water_name",
         minzoom: 5,
-        filter: ["all", ["has", "name"], ["==", "$type", "Point"], ["==", "class", "sea"]],
+        filter: [
+          "all",
+          ["has", "name"],
+          ["==", "$type", "Point"],
+          ["==", "class", "sea"],
+        ],
         layout: {
           "text-field": "{name}",
           "symbol-placement": "point",
           "text-size": 12,
           "text-font": [
-          "Montserrat Medium Italic",
-          "Open Sans Italic",
-          "Noto Sans Regular",
-          "HanWangHeiLight Regular",
-          "NanumBarunGothic Regular"
-        ],
+            "Montserrat Medium Italic",
+            "Open Sans Italic",
+            "Noto Sans Regular",
+            "HanWangHeiLight Regular",
+            "NanumBarunGothic Regular",
+          ],
           "text-line-height": 1.2,
           "text-padding": 2,
           "text-allow-overlap": false,
@@ -1671,14 +2251,14 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "text-pitch-alignment": "auto",
           "text-rotation-alignment": "auto",
           "text-max-width": 6,
-          "text-letter-spacing": 0.1
+          "text-letter-spacing": 0.1,
         },
         paint: {
-          "text-color": t === "light" ? "#abb6be" : "#3c3c3c",
-          "text-halo-color": t === "light" ? "#d4dadc" : "rgba(0,0,0,0.7)",
+          "text-color": t === "light" ? steelMist : "#3c3c3c",
+          "text-halo-color": t === "light" ? paleWater : darkOceanHalo,
           "text-halo-width": 1,
-          "text-halo-blur": 0
-        }
+          "text-halo-blur": 0,
+        },
       },
       {
         id: "watername_lake",
@@ -1686,35 +2266,49 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         source: "carto",
         "source-layer": "water_name",
         minzoom: 4,
-        filter: ["all", ["has", "name"], ["==", "$type", "Point"], ["==", "class", "lake"]],
+        filter: [
+          "all",
+          ["has", "name"],
+          ["==", "$type", "Point"],
+          ["==", "class", "lake"],
+        ],
         layout: {
           "text-field": {
-            stops: [[8, "{name_en}"], [13, "{name}"]]
+            stops: [
+              [8, "{name_en}"],
+              [13, "{name}"],
+            ],
           },
           "symbol-placement": "point",
           "text-size": {
-            stops: [[13, 9], [14, 10], [15, 11], [16, 12], [17, 13]]
+            stops: [
+              [13, 9],
+              [14, 10],
+              [15, 11],
+              [16, 12],
+              [17, 13],
+            ],
           },
           "text-font": [
-          "Montserrat Regular Italic",
-          "Open Sans Italic",
-          "Noto Sans Regular",
-          "HanWangHeiLight Regular",
-          "NanumBarunGothic Regular"
-        ],
+            "Montserrat Regular Italic",
+            "Open Sans Italic",
+            "Noto Sans Regular",
+            "HanWangHeiLight Regular",
+            "NanumBarunGothic Regular",
+          ],
           "text-line-height": 1.2,
           "text-padding": 2,
           "text-allow-overlap": false,
           "text-ignore-placement": false,
           "text-pitch-alignment": "auto",
-          "text-rotation-alignment": "auto"
+          "text-rotation-alignment": "auto",
         },
         paint: {
-          "text-color": t === "light" ? "#7a96a0" : "rgba(155, 155, 155, 1)",
-          "text-halo-color": t === "light" ? "#f5f5f3" : "#181818",
+          "text-color": t === "light" ? tealGray : "rgba(155, 155, 155, 1)",
+          "text-halo-color": t === "light" ? creamWhite : darkHalo,
           "text-halo-width": 1,
-          "text-halo-blur": 1
-        }
+          "text-halo-blur": 1,
+        },
       },
       {
         id: "watername_lake_line",
@@ -1724,30 +2318,39 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["has", "name"], ["==", "$type", "LineString"]],
         layout: {
           "text-field": {
-            stops: [[8, "{name_en}"], [13, "{name}"]]
+            stops: [
+              [8, "{name_en}"],
+              [13, "{name}"],
+            ],
           },
           "symbol-placement": "line",
           "text-size": {
-            stops: [[13, 9], [14, 10], [15, 11], [16, 12], [17, 13]]
+            stops: [
+              [13, 9],
+              [14, 10],
+              [15, 11],
+              [16, 12],
+              [17, 13],
+            ],
           },
           "text-font": [
-          "Montserrat Regular Italic",
-          "Open Sans Italic",
-          "Noto Sans Regular",
-          "HanWangHeiLight Regular",
-          "NanumBarunGothic Regular"
-        ],
+            "Montserrat Regular Italic",
+            "Open Sans Italic",
+            "Noto Sans Regular",
+            "HanWangHeiLight Regular",
+            "NanumBarunGothic Regular",
+          ],
           "symbol-spacing": 350,
           "text-pitch-alignment": "auto",
           "text-rotation-alignment": "auto",
-          "text-line-height": 1.2
+          "text-line-height": 1.2,
         },
         paint: {
-          "text-color": t === "light" ? "#7a96a0" : "#444",
-          "text-halo-color": t === "light" ? "#f5f5f3" : "#181818",
+          "text-color": t === "light" ? tealGray : "#444",
+          "text-halo-color": t === "light" ? creamWhite : darkHalo,
           "text-halo-width": 1,
-          "text-halo-blur": 1
-        }
+          "text-halo-blur": 1,
+        },
       },
       {
         id: "place_hamlet",
@@ -1756,20 +2359,31 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         "source-layer": "place",
         minzoom: 12,
         maxzoom: 16,
-        filter: ["any", ["==", "class", "neighbourhood"], ["==", "class", "hamlet"]],
+        filter: [
+          "any",
+          ["==", "class", "neighbourhood"],
+          ["==", "class", "hamlet"],
+        ],
         layout: {
           "text-field": {
-            stops: [[8, "{name_en}"], [14, "{name}"]]
+            stops: [
+              [8, "{name_en}"],
+              [14, "{name}"],
+            ],
           },
           "text-font": [
-          "Montserrat Regular",
-          "Open Sans Regular",
-          "Noto Sans Regular",
-          "HanWangHeiLight Regular",
-          "NanumBarunGothic Regular"
-        ],
+            "Montserrat Regular",
+            "Open Sans Regular",
+            "Noto Sans Regular",
+            "HanWangHeiLight Regular",
+            "NanumBarunGothic Regular",
+          ],
           "text-size": {
-            stops: [[13, 8], [14, 10], [16, 11]]
+            stops: [
+              [13, 8],
+              [14, 10],
+              [16, 11],
+            ],
           },
           "icon-image": "",
           "icon-offset": [16, 0],
@@ -1779,16 +2393,20 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "text-keep-upright": true,
           "text-offset": [0.2, 0.2],
           "text-transform": {
-            stops: [[12, "none"], [14, "uppercase"]]
-          }
+            stops: [
+              [12, "none"],
+              [14, "uppercase"],
+            ],
+          },
         },
         paint: {
-          "text-color": t === "light" ? "#697b89" : "rgba(182, 180, 180, 1)",
-          "icon-color": t === "light" ? "#697b89" : "#666",
+          "text-color": t === "light" ? steelBlue : "rgba(182, 180, 180, 1)",
+          "icon-color": t === "light" ? steelBlue : midGray,
           "icon-translate-anchor": "map",
-          "text-halo-color": t === "light" ? "rgba(255,255,255,0.5)" : "rgba(53, 52, 52, 1)",
-          "text-halo-width": 1
-        }
+          "text-halo-color":
+            t === "light" ? whiteHalo50 : "rgba(53, 52, 52, 1)",
+          "text-halo-width": 1,
+        },
       },
       {
         id: "place_suburbs",
@@ -1800,17 +2418,26 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["==", "class", "suburb"]],
         layout: {
           "text-field": {
-            stops: [[8, "{name_en}"], [13, "{name}"]]
+            stops: [
+              [8, "{name_en}"],
+              [13, "{name}"],
+            ],
           },
           "text-font": [
-          "Montserrat Regular",
-          "Open Sans Regular",
-          "Noto Sans Regular",
-          "HanWangHeiLight Regular",
-          "NanumBarunGothic Regular"
-        ],
+            "Montserrat Regular",
+            "Open Sans Regular",
+            "Noto Sans Regular",
+            "HanWangHeiLight Regular",
+            "NanumBarunGothic Regular",
+          ],
           "text-size": {
-            stops: [[12, 9], [13, 10], [14, 11], [15, 12], [16, 13]]
+            stops: [
+              [12, 9],
+              [13, 10],
+              [14, 11],
+              [15, 12],
+              [16, 13],
+            ],
           },
           "icon-image": "",
           "icon-offset": [16, 0],
@@ -1820,16 +2447,19 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "text-keep-upright": true,
           "text-offset": [0.2, 0.2],
           "text-transform": {
-            stops: [[8, "none"], [12, "uppercase"]]
-          }
+            stops: [
+              [8, "none"],
+              [12, "uppercase"],
+            ],
+          },
         },
         paint: {
-          "text-color": t === "light" ? "#697b89" : "#666",
-          "icon-color": t === "light" ? "#697b89" : "#666",
+          "text-color": t === "light" ? steelBlue : midGray,
+          "icon-color": t === "light" ? steelBlue : midGray,
           "icon-translate-anchor": "map",
-          "text-halo-color": t === "light" ? "rgba(255,255,255,0.5)" : "#222",
-          "text-halo-width": 1
-        }
+          "text-halo-color": t === "light" ? whiteHalo50 : darkGray,
+          "text-halo-width": 1,
+        },
       },
       {
         id: "place_villages",
@@ -1841,17 +2471,26 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["==", "class", "village"]],
         layout: {
           "text-field": {
-            stops: [[8, "{name_en}"], [13, "{name}"]]
+            stops: [
+              [8, "{name_en}"],
+              [13, "{name}"],
+            ],
           },
           "text-font": [
-          "Montserrat Medium",
-          "Open Sans Bold",
-          "Noto Sans Regular",
-          "HanWangHeiLight Regular",
-          "NanumBarunGothic Regular"
-        ],
+            "Montserrat Medium",
+            "Open Sans Bold",
+            "Noto Sans Regular",
+            "HanWangHeiLight Regular",
+            "NanumBarunGothic Regular",
+          ],
           "text-size": {
-            stops: [[10, 9], [12, 10], [13, 11], [14, 12], [16, 13]]
+            stops: [
+              [10, 9],
+              [12, 10],
+              [13, 11],
+              [14, 12],
+              [16, 13],
+            ],
           },
           "icon-image": "",
           "icon-offset": [16, 0],
@@ -1860,15 +2499,15 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "text-max-width": 10,
           "text-keep-upright": true,
           "text-offset": [0.2, 0.2],
-          "text-transform": "none"
+          "text-transform": "none",
         },
         paint: {
-          "text-color": t === "light" ? "#697b89" : "rgba(154, 153, 153, 1)",
-          "icon-color": t === "light" ? "#697b89" : "#666",
+          "text-color": t === "light" ? steelBlue : "rgba(154, 153, 153, 1)",
+          "icon-color": t === "light" ? steelBlue : midGray,
           "icon-translate-anchor": "map",
-          "text-halo-color": t === "light" ? "rgba(255,255,255,0.5)" : "#222",
-          "text-halo-width": 1
-        }
+          "text-halo-color": t === "light" ? whiteHalo50 : darkGray,
+          "text-halo-width": 1,
+        },
       },
       {
         id: "place_town",
@@ -1880,17 +2519,26 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["==", "class", "town"]],
         layout: {
           "text-field": {
-            stops: [[8, "{name_en}"], [13, "{name}"]]
+            stops: [
+              [8, "{name_en}"],
+              [13, "{name}"],
+            ],
           },
           "text-font": [
-          "Montserrat Medium",
-          "Open Sans Bold",
-          "Noto Sans Regular",
-          "HanWangHeiLight Regular",
-          "NanumBarunGothic Regular"
-        ],
+            "Montserrat Medium",
+            "Open Sans Bold",
+            "Noto Sans Regular",
+            "HanWangHeiLight Regular",
+            "NanumBarunGothic Regular",
+          ],
           "text-size": {
-            stops: [[8, 10], [9, 10], [10, 11], [13, 14], [14, 15]]
+            stops: [
+              [8, 10],
+              [9, 10],
+              [10, 11],
+              [13, 14],
+              [14, 15],
+            ],
           },
           "icon-image": "",
           "icon-offset": [16, 0],
@@ -1899,15 +2547,15 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "text-max-width": 10,
           "text-keep-upright": true,
           "text-offset": [0.2, 0.2],
-          "text-transform": "none"
+          "text-transform": "none",
         },
         paint: {
-          "text-color": t === "light" ? "#697b89" : "rgba(204, 208, 228, 1)",
-          "icon-color": t === "light" ? "#697b89" : "#666",
+          "text-color": t === "light" ? steelBlue : "rgba(204, 208, 228, 1)",
+          "icon-color": t === "light" ? steelBlue : midGray,
           "icon-translate-anchor": "map",
-          "text-halo-color": t === "light" ? "rgba(255,255,255,0.5)" : "#222",
-          "text-halo-width": 1
-        }
+          "text-halo-color": t === "light" ? whiteHalo50 : darkGray,
+          "text-halo-width": 1,
+        },
       },
       {
         id: "place_country_2",
@@ -1916,32 +2564,50 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         "source-layer": "place",
         minzoom: 3,
         maxzoom: 10,
-        filter: ["all", ["==", "class", "country"], [">=", "rank", 3], ["has", "iso_a2"]],
+        filter: [
+          "all",
+          ["==", "class", "country"],
+          [">=", "rank", 3],
+          ["has", "iso_a2"],
+        ],
         layout: {
           "text-field": "{name_en}",
           "text-font": [
-          "Montserrat Medium",
-          "Open Sans Bold",
-          "Noto Sans Regular",
-          "HanWangHeiLight Regular",
-          "NanumBarunGothic Regular"
-        ],
+            "Montserrat Medium",
+            "Open Sans Bold",
+            "Noto Sans Regular",
+            "HanWangHeiLight Regular",
+            "NanumBarunGothic Regular",
+          ],
           "text-size": {
-            stops: [[3, 10], [5, 11], [6, 12], [7, 13], [8, 14]]
+            stops: [
+              [3, 10],
+              [5, 11],
+              [6, 12],
+              [7, 13],
+              [8, 14],
+            ],
           },
-          "text-transform": "uppercase"
+          "text-transform": "uppercase",
         },
         paint: {
           "text-color": {
-            stops: t === "light" ? [[3, "#8a99a4"], [5, "#a1adb6"], [6, "#b9c2c9"]] : [
-            [3, "rgba(157, 157, 157, 1)"],
-            [5, "rgba(114, 114, 114, 1)"],
-            [6, "rgba(112, 112, 112, 1)"]
-          ]
+            stops:
+              t === "light"
+                ? [
+                    [3, countryLabel],
+                    [5, countryLabelMid],
+                    [6, countryLabelLight],
+                  ]
+                : [
+                    [3, "rgba(157, 157, 157, 1)"],
+                    [5, "rgba(114, 114, 114, 1)"],
+                    [6, "rgba(112, 112, 112, 1)"],
+                  ],
           },
-          "text-halo-color": t === "light" ? "#fafaf8" : "#111",
-          "text-halo-width": 1
-        }
+          "text-halo-color": t === "light" ? warmWhite : offBlack,
+          "text-halo-width": 1,
+        },
       },
       {
         id: "place_country_1",
@@ -1954,31 +2620,48 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: {
           "text-field": "{name_en}",
           "text-font": [
-          "Montserrat Medium",
-          "Open Sans Bold",
-          "Noto Sans Regular",
-          "HanWangHeiLight Regular",
-          "NanumBarunGothic Regular"
-        ],
+            "Montserrat Medium",
+            "Open Sans Bold",
+            "Noto Sans Regular",
+            "HanWangHeiLight Regular",
+            "NanumBarunGothic Regular",
+          ],
           "text-size": {
-            stops: [[3, 11], [4, 12], [5, 13], [6, 14]]
+            stops: [
+              [3, 11],
+              [4, 12],
+              [5, 13],
+              [6, 14],
+            ],
           },
           "text-transform": "uppercase",
           "text-max-width": {
-            stops: [[2, 6], [3, 6], [4, 9], [5, 12]]
-          }
+            stops: [
+              [2, 6],
+              [3, 6],
+              [4, 9],
+              [5, 12],
+            ],
+          },
         },
         paint: {
           "text-color": {
-            stops: t === "light" ? [[3, "#8a99a4"], [5, "#a1adb6"], [6, "#b9c2c9"]] : [
-            [3, "rgba(158, 182, 189, 1)"],
-            [5, "rgba(118, 126, 137, 1)"],
-            [6, "rgba(120, 141, 147, 1)"]
-          ]
+            stops:
+              t === "light"
+                ? [
+                    [3, countryLabel],
+                    [5, countryLabelMid],
+                    [6, countryLabelLight],
+                  ]
+                : [
+                    [3, "rgba(158, 182, 189, 1)"],
+                    [5, "rgba(118, 126, 137, 1)"],
+                    [6, "rgba(120, 141, 147, 1)"],
+                  ],
           },
-          "text-halo-color": t === "light" ? "#fafaf8" : "#111",
-          "text-halo-width": 1
-        }
+          "text-halo-color": t === "light" ? warmWhite : offBlack,
+          "text-halo-width": 1,
+        },
       },
       {
         id: "place_state",
@@ -1991,23 +2674,26 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: {
           "text-field": "{name_en}",
           "text-font": [
-          "Montserrat Medium",
-          "Open Sans Bold",
-          "Noto Sans Regular",
-          "HanWangHeiLight Regular",
-          "NanumBarunGothic Regular"
-        ],
+            "Montserrat Medium",
+            "Open Sans Bold",
+            "Noto Sans Regular",
+            "HanWangHeiLight Regular",
+            "NanumBarunGothic Regular",
+          ],
           "text-size": {
-            stops: [[5, 12], [7, 14]]
+            stops: [
+              [5, 12],
+              [7, 14],
+            ],
           },
           "text-transform": "uppercase",
-          "text-max-width": 9
+          "text-max-width": 9,
         },
         paint: {
           "text-color": t === "light" ? "#97a4ae" : "rgba(203, 230, 230, 1)",
-          "text-halo-color": t === "light" ? "#fafaf8" : "#111",
-          "text-halo-width": 0
-        }
+          "text-halo-color": t === "light" ? warmWhite : offBlack,
+          "text-halo-width": 0,
+        },
       },
       {
         id: "place_continent",
@@ -2020,24 +2706,24 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: {
           "text-field": "{name_en}",
           "text-font": [
-          "Montserrat Medium",
-          "Open Sans Bold",
-          "Noto Sans Regular",
-          "HanWangHeiLight Regular",
-          "NanumBarunGothic Regular"
-        ],
+            "Montserrat Medium",
+            "Open Sans Bold",
+            "Noto Sans Regular",
+            "HanWangHeiLight Regular",
+            "NanumBarunGothic Regular",
+          ],
           "text-transform": "uppercase",
           "text-size": 14,
           "text-letter-spacing": 0.1,
           "text-max-width": 9,
           "text-justify": "center",
-          "text-keep-upright": false
+          "text-keep-upright": false,
         },
         paint: {
-          "text-color": t === "light" ? "#697b89" : "rgba(135, 164, 179, 1)",
-          "text-halo-color": t === "light" ? "#fafaf8" : "#111",
-          "text-halo-width": 1
-        }
+          "text-color": t === "light" ? steelBlue : "rgba(135, 164, 179, 1)",
+          "text-halo-color": t === "light" ? warmWhite : offBlack,
+          "text-halo-width": 1,
+        },
       },
       {
         id: "place_city_r6",
@@ -2049,17 +2735,26 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["==", "class", "city"], [">=", "rank", 6]],
         layout: {
           "text-field": {
-            stops: [[8, "{name_en}"], [13, "{name}"]]
+            stops: [
+              [8, "{name_en}"],
+              [13, "{name}"],
+            ],
           },
           "text-font": [
-          "Montserrat Medium",
-          "Open Sans Bold",
-          "Noto Sans Regular",
-          "HanWangHeiLight Regular",
-          "NanumBarunGothic Regular"
-        ],
+            "Montserrat Medium",
+            "Open Sans Bold",
+            "Noto Sans Regular",
+            "HanWangHeiLight Regular",
+            "NanumBarunGothic Regular",
+          ],
           "text-size": {
-            stops: [[8, 12], [9, 13], [10, 14], [13, 17], [14, 20]]
+            stops: [
+              [8, 12],
+              [9, 13],
+              [10, 14],
+              [13, 17],
+              [14, 20],
+            ],
           },
           "icon-image": "",
           "icon-offset": [16, 0],
@@ -2068,15 +2763,15 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "text-max-width": 10,
           "text-keep-upright": true,
           "text-offset": [0.2, 0.2],
-          "text-transform": "uppercase"
+          "text-transform": "uppercase",
         },
         paint: {
-          "text-color": t === "light" ? "#697b89" : "rgba(168, 176, 180, 1)",
-          "icon-color": t === "light" ? "#697b89" : "#666",
+          "text-color": t === "light" ? steelBlue : "rgba(168, 176, 180, 1)",
+          "icon-color": t === "light" ? steelBlue : midGray,
           "icon-translate-anchor": "map",
-          "text-halo-color": t === "light" ? "rgba(255,255,255,0.5)" : "#222",
-          "text-halo-width": 1
-        }
+          "text-halo-color": t === "light" ? whiteHalo50 : darkGray,
+          "text-halo-width": 1,
+        },
       },
       {
         id: "place_city_r5",
@@ -2085,20 +2780,33 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         "source-layer": "place",
         minzoom: 8,
         maxzoom: 15,
-        filter: ["all", ["==", "class", "city"], [">=", "rank", 0], ["<=", "rank", 5]],
+        filter: [
+          "all",
+          ["==", "class", "city"],
+          [">=", "rank", 0],
+          ["<=", "rank", 5],
+        ],
         layout: {
           "text-field": {
-            stops: [[8, "{name_en}"], [13, "{name}"]]
+            stops: [
+              [8, "{name_en}"],
+              [13, "{name}"],
+            ],
           },
           "text-font": [
-          "Montserrat Medium",
-          "Open Sans Bold",
-          "Noto Sans Regular",
-          "HanWangHeiLight Regular",
-          "NanumBarunGothic Regular"
-        ],
+            "Montserrat Medium",
+            "Open Sans Bold",
+            "Noto Sans Regular",
+            "HanWangHeiLight Regular",
+            "NanumBarunGothic Regular",
+          ],
           "text-size": {
-            stops: [[8, 14], [10, 16], [13, 19], [14, 22]]
+            stops: [
+              [8, 14],
+              [10, 16],
+              [13, 19],
+              [14, 22],
+            ],
           },
           "icon-image": "",
           "icon-offset": [16, 0],
@@ -2107,15 +2815,15 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "text-max-width": 10,
           "text-keep-upright": true,
           "text-offset": [0.2, 0.2],
-          "text-transform": "uppercase"
+          "text-transform": "uppercase",
         },
         paint: {
-          "text-color": t === "light" ? "#697b89" : "rgba(211, 228, 236, 1)",
-          "icon-color": t === "light" ? "#697b89" : "#666",
+          "text-color": t === "light" ? steelBlue : "rgba(211, 228, 236, 1)",
+          "icon-color": t === "light" ? steelBlue : midGray,
           "icon-translate-anchor": "map",
-          "text-halo-color": t === "light" ? "rgba(255,255,255,0.5)" : "#222",
-          "text-halo-width": 1
-        }
+          "text-halo-color": t === "light" ? whiteHalo50 : darkGray,
+          "text-halo-width": 1,
+        },
       },
       {
         id: "place_city_dot_r7",
@@ -2128,12 +2836,12 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: {
           "text-field": "{name_en}",
           "text-font": [
-          "Montserrat Medium",
-          "Open Sans Bold",
-          "Noto Sans Regular",
-          "HanWangHeiLight Regular",
-          "NanumBarunGothic Regular"
-        ],
+            "Montserrat Medium",
+            "Open Sans Bold",
+            "Noto Sans Regular",
+            "HanWangHeiLight Regular",
+            "NanumBarunGothic Regular",
+          ],
           "text-size": 12,
           "icon-image": "circle-11",
           "icon-offset": [16, 5],
@@ -2141,15 +2849,15 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "icon-size": 0.4,
           "text-max-width": 8,
           "text-keep-upright": true,
-          "text-offset": [0.2, 0.2]
+          "text-offset": [0.2, 0.2],
         },
         paint: {
-          "text-color": t === "light" ? "#697b89" : "rgba(174, 191, 207, 1)",
-          "icon-color": t === "light" ? "#697b89" : "rgba(94, 105, 106, 1)",
+          "text-color": t === "light" ? steelBlue : "rgba(174, 191, 207, 1)",
+          "icon-color": t === "light" ? steelBlue : "rgba(94, 105, 106, 1)",
           "icon-translate-anchor": "map",
-          "text-halo-color": t === "light" ? "rgba(255,255,255,0.5)" : "#222",
-          "text-halo-width": 1
-        }
+          "text-halo-color": t === "light" ? whiteHalo50 : darkGray,
+          "text-halo-width": 1,
+        },
       },
       {
         id: "place_city_dot_r4",
@@ -2162,12 +2870,12 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: {
           "text-field": "{name_en}",
           "text-font": [
-          "Montserrat Medium",
-          "Open Sans Bold",
-          "Noto Sans Regular",
-          "HanWangHeiLight Regular",
-          "NanumBarunGothic Regular"
-        ],
+            "Montserrat Medium",
+            "Open Sans Bold",
+            "Noto Sans Regular",
+            "HanWangHeiLight Regular",
+            "NanumBarunGothic Regular",
+          ],
           "text-size": 12,
           "icon-image": "circle-11",
           "icon-offset": [16, 5],
@@ -2175,15 +2883,15 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "icon-size": 0.4,
           "text-max-width": 8,
           "text-keep-upright": true,
-          "text-offset": [0.2, 0.2]
+          "text-offset": [0.2, 0.2],
         },
         paint: {
-          "text-color": t === "light" ? "#697b89" : "rgba(233, 239, 246, 1)",
-          "icon-color": t === "light" ? "#697b89" : "#666",
+          "text-color": t === "light" ? steelBlue : "rgba(233, 239, 246, 1)",
+          "icon-color": t === "light" ? steelBlue : midGray,
           "icon-translate-anchor": "map",
-          "text-halo-color": t === "light" ? "rgba(255,255,255,0.5)" : "#222",
-          "text-halo-width": 1
-        }
+          "text-halo-color": t === "light" ? whiteHalo50 : darkGray,
+          "text-halo-width": 1,
+        },
       },
       {
         id: "place_city_dot_r2",
@@ -2196,12 +2904,12 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: {
           "text-field": "{name_en}",
           "text-font": [
-          "Montserrat Medium",
-          "Open Sans Bold",
-          "Noto Sans Regular",
-          "HanWangHeiLight Regular",
-          "NanumBarunGothic Regular"
-        ],
+            "Montserrat Medium",
+            "Open Sans Bold",
+            "Noto Sans Regular",
+            "HanWangHeiLight Regular",
+            "NanumBarunGothic Regular",
+          ],
           "text-size": 12,
           "icon-image": "circle-11",
           "icon-offset": [16, 5],
@@ -2209,15 +2917,15 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "icon-size": 0.4,
           "text-max-width": 8,
           "text-keep-upright": true,
-          "text-offset": [0.2, 0.2]
+          "text-offset": [0.2, 0.2],
         },
         paint: {
-          "text-color": t === "light" ? "#697b89" : "rgba(175, 194, 217, 1)",
-          "icon-color": t === "light" ? "#697b89" : "rgba(131, 164, 189, 1)",
+          "text-color": t === "light" ? steelBlue : "rgba(175, 194, 217, 1)",
+          "icon-color": t === "light" ? steelBlue : "rgba(131, 164, 189, 1)",
           "icon-translate-anchor": "map",
-          "text-halo-color": t === "light" ? "rgba(255,255,255,0.5)" : "#222",
-          "text-halo-width": 1
-        }
+          "text-halo-color": t === "light" ? whiteHalo50 : darkGray,
+          "text-halo-width": 1,
+        },
       },
       {
         id: "place_city_dot_z7",
@@ -2226,16 +2934,20 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         "source-layer": "place",
         minzoom: 7,
         maxzoom: 8,
-        filter: ["all", ["!has", "capital"], ["!in", "class", "country", "state"]],
+        filter: [
+          "all",
+          ["!has", "capital"],
+          ["!in", "class", "country", "state"],
+        ],
         layout: {
           "text-field": "{name_en}",
           "text-font": [
-          "Montserrat Medium",
-          "Open Sans Bold",
-          "Noto Sans Regular",
-          "HanWangHeiLight Regular",
-          "NanumBarunGothic Regular"
-        ],
+            "Montserrat Medium",
+            "Open Sans Bold",
+            "Noto Sans Regular",
+            "HanWangHeiLight Regular",
+            "NanumBarunGothic Regular",
+          ],
           "text-size": 12,
           "icon-image": "circle-11",
           "icon-offset": [16, 5],
@@ -2243,15 +2955,15 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "icon-size": 0.4,
           "text-max-width": 8,
           "text-keep-upright": true,
-          "text-offset": [0.2, 0.2]
+          "text-offset": [0.2, 0.2],
         },
         paint: {
-          "text-color": t === "light" ? "#697b89" : "rgba(160, 179, 191, 1)",
-          "icon-color": t === "light" ? "#697b89" : "rgba(113, 128, 147, 1)",
+          "text-color": t === "light" ? steelBlue : "rgba(160, 179, 191, 1)",
+          "icon-color": t === "light" ? steelBlue : "rgba(113, 128, 147, 1)",
           "icon-translate-anchor": "map",
-          "text-halo-color": t === "light" ? "rgba(255,255,255,0.5)" : "#222",
-          "text-halo-width": 1
-        }
+          "text-halo-color": t === "light" ? whiteHalo50 : darkGray,
+          "text-halo-width": 1,
+        },
       },
       {
         id: "place_capital_dot_z7",
@@ -2264,12 +2976,12 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: {
           "text-field": "{name_en}",
           "text-font": [
-          "Montserrat Medium",
-          "Open Sans Bold",
-          "Noto Sans Regular",
-          "HanWangHeiLight Regular",
-          "NanumBarunGothic Regular"
-        ],
+            "Montserrat Medium",
+            "Open Sans Bold",
+            "Noto Sans Regular",
+            "HanWangHeiLight Regular",
+            "NanumBarunGothic Regular",
+          ],
           "text-size": 12,
           "icon-image": "circle-11",
           "icon-offset": [16, 5],
@@ -2278,15 +2990,15 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "text-max-width": 8,
           "text-keep-upright": true,
           "text-offset": [0.2, 0.2],
-          "text-transform": "uppercase"
+          "text-transform": "uppercase",
         },
         paint: {
-          "text-color": t === "light" ? "#697b89" : "rgba(177, 201, 214, 1)",
-          "icon-color": t === "light" ? "#697b89" : "#666",
+          "text-color": t === "light" ? steelBlue : "rgba(177, 201, 214, 1)",
+          "icon-color": t === "light" ? steelBlue : midGray,
           "icon-translate-anchor": "map",
-          "text-halo-color": t === "light" ? "rgba(255,255,255,0.5)" : "#222",
-          "text-halo-width": 1
-        }
+          "text-halo-color": t === "light" ? whiteHalo50 : darkGray,
+          "text-halo-width": 1,
+        },
       },
       {
         id: "poi_stadium",
@@ -2294,26 +3006,34 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         source: "carto",
         "source-layer": "poi",
         minzoom: 15,
-        filter: ["all", ["in", "class", "stadium", "cemetery", "attraction"], ["<=", "rank", 3]],
+        filter: [
+          "all",
+          ["in", "class", "stadium", "cemetery", "attraction"],
+          ["<=", "rank", 3],
+        ],
         layout: {
           "text-field": "{name}",
           "text-font": [
-          "Montserrat Medium",
-          "Open Sans Bold",
-          "Noto Sans Regular",
-          "HanWangHeiLight Regular",
-          "NanumBarunGothic Regular"
-        ],
+            "Montserrat Medium",
+            "Open Sans Bold",
+            "Noto Sans Regular",
+            "HanWangHeiLight Regular",
+            "NanumBarunGothic Regular",
+          ],
           "text-size": {
-            stops: [[15, 8], [17, 9], [18, 10]]
+            stops: [
+              [15, 8],
+              [17, 9],
+              [18, 10],
+            ],
           },
-          "text-transform": "uppercase"
+          "text-transform": "uppercase",
         },
         paint: {
-          "text-color": t === "light" ? "#7d9c83" : "#515151",
-          "text-halo-color": t === "light" ? "#f5f5f3" : "#151515",
-          "text-halo-width": 1
-        }
+          "text-color": t === "light" ? parkGreen : poiDarkText,
+          "text-halo-color": t === "light" ? creamWhite : poiDarkHalo,
+          "text-halo-width": 1,
+        },
       },
       {
         id: "poi_park",
@@ -2325,22 +3045,26 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: {
           "text-field": "{name}",
           "text-font": [
-          "Montserrat Medium",
-          "Open Sans Bold",
-          "Noto Sans Regular",
-          "HanWangHeiLight Regular",
-          "NanumBarunGothic Regular"
-        ],
+            "Montserrat Medium",
+            "Open Sans Bold",
+            "Noto Sans Regular",
+            "HanWangHeiLight Regular",
+            "NanumBarunGothic Regular",
+          ],
           "text-size": {
-            stops: [[15, 8], [17, 9], [18, 10]]
+            stops: [
+              [15, 8],
+              [17, 9],
+              [18, 10],
+            ],
           },
-          "text-transform": "uppercase"
+          "text-transform": "uppercase",
         },
         paint: {
-          "text-color": t === "light" ? "#7d9c83" : "#515151",
-          "text-halo-color": t === "light" ? "#f5f5f3" : "#151515",
-          "text-halo-width": 1
-        }
+          "text-color": t === "light" ? parkGreen : poiDarkText,
+          "text-halo-color": t === "light" ? creamWhite : poiDarkHalo,
+          "text-halo-width": 1,
+        },
       },
       {
         id: "roadname_minor",
@@ -2352,25 +3076,25 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: {
           "symbol-placement": "line",
           "text-font": [
-          "Montserrat Regular",
-          "Open Sans Regular",
-          "Noto Sans Regular",
-          "HanWangHeiLight Regular",
-          "NanumBarunGothic Regular"
-        ],
+            "Montserrat Regular",
+            "Open Sans Regular",
+            "Noto Sans Regular",
+            "HanWangHeiLight Regular",
+            "NanumBarunGothic Regular",
+          ],
           "text-size": 9,
           "text-field": "{name}",
           "symbol-avoid-edges": false,
           "symbol-spacing": 200,
           "text-pitch-alignment": "auto",
           "text-rotation-alignment": "auto",
-          "text-justify": "center"
+          "text-justify": "center",
         },
         paint: {
-          "text-color": t === "light" ? "#838383" : "rgba(181, 180, 180, 1)",
-          "text-halo-color": t === "light" ? "#fff" : "#111",
-          "text-halo-width": 1
-        }
+          "text-color": t === "light" ? roadNameGray : "rgba(181, 180, 180, 1)",
+          "text-halo-color": t === "light" ? white : offBlack,
+          "text-halo-width": 1,
+        },
       },
       {
         id: "roadname_sec",
@@ -2382,27 +3106,31 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: {
           "symbol-placement": "line",
           "text-font": [
-          "Montserrat Regular",
-          "Open Sans Regular",
-          "Noto Sans Regular",
-          "HanWangHeiLight Regular",
-          "NanumBarunGothic Regular"
-        ],
+            "Montserrat Regular",
+            "Open Sans Regular",
+            "Noto Sans Regular",
+            "HanWangHeiLight Regular",
+            "NanumBarunGothic Regular",
+          ],
           "text-size": {
-            stops: [[15, 9], [16, 11], [18, 12]]
+            stops: [
+              [15, 9],
+              [16, 11],
+              [18, 12],
+            ],
           },
           "text-field": "{name}",
           "symbol-avoid-edges": false,
           "symbol-spacing": 200,
           "text-pitch-alignment": "auto",
           "text-rotation-alignment": "auto",
-          "text-justify": "center"
+          "text-justify": "center",
         },
         paint: {
-          "text-color": t === "light" ? "#838383" : "rgba(146, 146, 146, 1)",
-          "text-halo-color": t === "light" ? "#fff" : "rgba(34, 34, 34, 1)",
-          "text-halo-width": 1
-        }
+          "text-color": t === "light" ? roadNameGray : "rgba(146, 146, 146, 1)",
+          "text-halo-color": t === "light" ? white : "rgba(34, 34, 34, 1)",
+          "text-halo-width": 1,
+        },
       },
       {
         id: "roadname_pri",
@@ -2414,32 +3142,43 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: {
           "symbol-placement": "line",
           "text-font": [
-          "Montserrat Regular",
-          "Open Sans Regular",
-          "Noto Sans Regular",
-          "HanWangHeiLight Regular",
-          "NanumBarunGothic Regular"
-        ],
+            "Montserrat Regular",
+            "Open Sans Regular",
+            "Noto Sans Regular",
+            "HanWangHeiLight Regular",
+            "NanumBarunGothic Regular",
+          ],
           "text-size": {
-            stops: [[14, 10], [15, 10], [16, 11], [18, 12]]
+            stops: [
+              [14, 10],
+              [15, 10],
+              [16, 11],
+              [18, 12],
+            ],
           },
           "text-field": "{name}",
           "symbol-avoid-edges": false,
           "symbol-spacing": {
-            stops: [[6, 200], [16, 250]]
+            stops: [
+              [6, 200],
+              [16, 250],
+            ],
           },
           "text-pitch-alignment": "auto",
           "text-rotation-alignment": "auto",
           "text-justify": "center",
           "text-letter-spacing": {
-            stops: [[14, 0], [16, 0.2]]
-          }
+            stops: [
+              [14, 0],
+              [16, 0.2],
+            ],
+          },
         },
         paint: {
-          "text-color": t === "light" ? "#838383" : "rgba(189, 189, 189, 1)",
-          "text-halo-color": t === "light" ? "#fff" : "#111",
-          "text-halo-width": 1
-        }
+          "text-color": t === "light" ? roadNameGray : "rgba(189, 189, 189, 1)",
+          "text-halo-color": t === "light" ? white : offBlack,
+          "text-halo-width": 1,
+        },
       },
       {
         id: "roadname_major",
@@ -2451,32 +3190,43 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: {
           "symbol-placement": "line",
           "text-font": [
-          "Montserrat Regular",
-          "Open Sans Regular",
-          "Noto Sans Regular",
-          "HanWangHeiLight Regular",
-          "NanumBarunGothic Regular"
-        ],
+            "Montserrat Regular",
+            "Open Sans Regular",
+            "Noto Sans Regular",
+            "HanWangHeiLight Regular",
+            "NanumBarunGothic Regular",
+          ],
           "text-size": {
-            stops: [[14, 10], [15, 10], [16, 11], [18, 12]]
+            stops: [
+              [14, 10],
+              [15, 10],
+              [16, 11],
+              [18, 12],
+            ],
           },
           "text-field": "{name}",
           "symbol-avoid-edges": false,
           "symbol-spacing": {
-            stops: [[6, 200], [16, 250]]
+            stops: [
+              [6, 200],
+              [16, 250],
+            ],
           },
           "text-pitch-alignment": "auto",
           "text-rotation-alignment": "auto",
           "text-justify": "center",
           "text-letter-spacing": {
-            stops: [[13, 0], [16, 0.2]]
-          }
+            stops: [
+              [13, 0],
+              [16, 0.2],
+            ],
+          },
         },
         paint: {
-          "text-color": t === "light" ? "#838383" : "#383838",
-          "text-halo-color": t === "light" ? "#fff" : "#111",
-          "text-halo-width": 1
-        }
+          "text-color": t === "light" ? roadNameGray : "#383838",
+          "text-halo-color": t === "light" ? white : offBlack,
+          "text-halo-width": 1,
+        },
       },
       {
         id: "housenumber",
@@ -2488,21 +3238,24 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: {
           "text-field": "{housenumber}",
           "text-size": {
-            stops: [[17, 9], [18, 11]]
+            stops: [
+              [17, 9],
+              [18, 11],
+            ],
           },
           "text-font": [
             "Montserrat Regular",
             "Open Sans Regular",
             "Noto Sans Regular",
             "HanWangHeiLight Regular",
-            "NanumBarunGothic Regular"
-          ]
+            "NanumBarunGothic Regular",
+          ],
         },
         paint: {
-          "text-halo-color": "transparent",
-          "text-color": "transparent",
-          "text-halo-width": 0.75
-        }
+          "text-halo-color": transparent,
+          "text-color": transparent,
+          "text-halo-width": 0.75,
+        },
       },
     ],
     id: "voyager",
