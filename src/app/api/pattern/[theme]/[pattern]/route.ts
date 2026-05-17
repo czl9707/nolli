@@ -2,11 +2,15 @@ import sharp from "sharp"
 import { NextResponse } from "next/server"
 import { type Theme, THEMES } from "./_constant"
 import { waterPattern } from "./_water"
+import { grassPattern } from "./_grass"
+import { forestPattern } from "./_forest"
 
 export const dynamic = 'force-static';
 
 const patterns: Record<string, (theme: Theme) => string> = { 
-  water: waterPattern
+  water: waterPattern,
+  grass: grassPattern,
+  forest: forestPattern,
 }
 
 export async function generateStaticParams() {

@@ -34,7 +34,6 @@ const darkHalo = "#181818"
 const residentialLight = "rgba(237, 237, 237, 0.25)"
 const rosePink = "#e1c5c7"
 const aerowayLight = "#e8e8e8"
-const railLight = "#dddddd"
 const dustyRose = "#ebd6d8"
 const steelMist = "#abb6be"
 const darkOceanHalo = "rgba(0,0,0,0.7)"
@@ -56,11 +55,6 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         url: "https://tiles.basemaps.cartocdn.com/vector/carto.streets/v1/tiles.json",
       },
     },
-    // sprite:
-    //   t === "light"
-    //     ? "https://tiles.basemaps.cartocdn.com/gl/positron-gl-style/sprite"
-    //     : "https://tiles.basemaps.cartocdn.com/gl/dark-matter-gl-style/sprite",
-    // glyphs: "https://tiles.basemaps.cartocdn.com/fonts/{fontstack}/{range}.pbf",
     layers: [
       {
         id: "background",
@@ -85,39 +79,26 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           ["==", "subclass", "recreation_ground"],
         ],
         paint: {
-          "fill-color": t === "light" ? paleGreen50 : nearBlack,
+          "fill-pattern": "forest-pattern",
           "fill-opacity": 1,
         },
       },
       {
-        id: "park_national_park",
-        type: "fill",
-        source: "carto",
-        "source-layer": "park",
-        minzoom: 9,
-        filter: ["all", ["==", "class", "national_park"]],
-        layout: {
-          visibility: "visible",
-        },
-        paint: {
-          "fill-color": t === "light" ? paleGreen50 : nearBlack,
-          "fill-opacity": 1,
-          "fill-translate-anchor": "map",
-        },
-      },
-      {
-        id: "park_nature_reserve",
+        id: "park",
         type: "fill",
         source: "carto",
         "source-layer": "park",
         minzoom: 0,
-        filter: ["all", ["==", "class", "nature_reserve"]],
+        filter: [
+          "any",
+          ["==", "class", "national_park"],
+          ["==", "class", "nature_reserve"],
+        ],
         layout: {
           visibility: "visible",
         },
         paint: {
-          "fill-color": t === "light" ? paleGreen50 : nearBlack,
-          "fill-antialias": true,
+          "fill-pattern": "forest-pattern",
           "fill-opacity": {
             stops: [
               [6, 0.7],
@@ -348,502 +329,13 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         },
       },
       {
-        id: "tunnel_service_case",
+        id: "service_case",
         type: "line",
         source: "carto",
         "source-layer": "transportation",
         minzoom: 15,
         maxzoom: 24,
-        filter: [
-          "all",
-          ["==", "class", "service"],
-          ["==", "brunnel", "tunnel"],
-        ],
-        layout: {
-          "line-cap": "round",
-          "line-join": "round",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [15, 1],
-              [16, 3],
-              [17, 6],
-              [18, 8],
-            ],
-          },
-          "line-opacity": 1,
-          "line-color": t === "light" ? silver : charcoal,
-        },
-      },
-      {
-        id: "tunnel_minor_case",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 13,
-        maxzoom: 24,
-        filter: ["all", ["==", "class", "minor"], ["==", "brunnel", "tunnel"]],
-        layout: {
-          "line-cap": "butt",
-          "line-join": "miter",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [11, 0.5],
-              [12, 0.5],
-              [14, 2],
-              [15, 4],
-              [16, 6],
-              [17, 10],
-              [18, 14],
-            ],
-          },
-          "line-opacity": 1,
-          "line-color": t === "light" ? silver : charcoal,
-        },
-      },
-      {
-        id: "tunnel_sec_case",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 11,
-        maxzoom: 24,
-        filter: [
-          "all",
-          ["in", "class", "secondary", "tertiary"],
-          ["==", "brunnel", "tunnel"],
-        ],
-        layout: {
-          "line-cap": "round",
-          "line-join": "round",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [11, 0.5],
-              [12, 1],
-              [13, 2],
-              [14, 5],
-              [15, 6],
-              [16, 8],
-              [17, 12],
-              [18, 16],
-            ],
-          },
-          "line-opacity": 1,
-          "line-color": t === "light" ? silver : charcoal,
-        },
-      },
-      {
-        id: "tunnel_pri_case",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 8,
-        maxzoom: 24,
-        filter: [
-          "all",
-          ["==", "class", "primary"],
-          ["!=", "ramp", 1],
-          ["==", "brunnel", "tunnel"],
-        ],
-        layout: {
-          "line-cap": "butt",
-          "line-join": "round",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [6, 0.5],
-              [7, 0.8],
-              [8, 1],
-              [11, 3],
-              [13, 4],
-              [14, 6],
-              [15, 8],
-              [16, 10],
-              [17, 14],
-              [18, 18],
-            ],
-          },
-          "line-opacity": {
-            stops: [
-              [5, 0.5],
-              [7, 1],
-            ],
-          },
-          "line-color": t === "light" ? silver : charcoal,
-        },
-      },
-      {
-        id: "tunnel_trunk_case",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 5,
-        maxzoom: 24,
-        filter: [
-          "all",
-          ["==", "class", "trunk"],
-          ["!=", "ramp", 1],
-          ["==", "brunnel", "tunnel"],
-        ],
-        layout: {
-          "line-cap": "butt",
-          "line-join": "round",
-          visibility: "visible",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [6, 0.5],
-              [7, 0.8],
-              [8, 1],
-              [11, 3],
-              [13, 4],
-              [14, 6],
-              [15, 8],
-              [16, 10],
-              [17, 14],
-              [18, 18],
-            ],
-          },
-          "line-opacity": {
-            stops: [
-              [5, 0.5],
-              [7, 1],
-            ],
-          },
-          "line-color": t === "light" ? silver : deepCharcoal,
-        },
-      },
-      {
-        id: "tunnel_mot_case",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 5,
-        maxzoom: 24,
-        filter: [
-          "all",
-          ["==", "class", "motorway"],
-          ["!=", "ramp", 1],
-          ["==", "brunnel", "tunnel"],
-        ],
-        layout: {
-          "line-cap": "butt",
-          "line-join": "round",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [6, 0.5],
-              [7, 0.8],
-              [8, 1],
-              [11, 3],
-              [12, 4],
-              [13, 5],
-              [14, 7],
-              [15, 9],
-              [16, 11],
-              [17, 13],
-              [18, 22],
-            ],
-          },
-          "line-opacity": {
-            stops: [
-              [6, 0.5],
-              [7, 1],
-            ],
-          },
-          "line-color": t === "light" ? silver : deepCharcoal,
-        },
-      },
-      {
-        id: "tunnel_path",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 15,
-        maxzoom: 24,
-        filter: ["all", ["==", "class", "path"], ["==", "brunnel", "tunnel"]],
-        layout: {
-          "line-cap": "round",
-          "line-join": "round",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [15, 0.5],
-              [16, 1],
-              [18, 3],
-            ],
-          },
-          "line-opacity": 1,
-          "line-color": t === "light" ? pathGray : darkPath,
-          "line-dasharray": {
-            stops: [
-              [15, [2, 2]],
-              [18, [3, 3]],
-            ],
-          },
-        },
-      },
-      {
-        id: "tunnel_service_fill",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 15,
-        maxzoom: 24,
-        filter: [
-          "all",
-          ["==", "class", "service"],
-          ["==", "brunnel", "tunnel"],
-        ],
-        layout: {
-          "line-cap": "round",
-          "line-join": "round",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [15, 2],
-              [16, 2],
-              [17, 4],
-              [18, 6],
-            ],
-          },
-          "line-opacity": 1,
-          "line-color": t === "light" ? paleSilver : dimCharcoal,
-        },
-      },
-      {
-        id: "tunnel_minor_fill",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 15,
-        maxzoom: 24,
-        filter: ["all", ["==", "class", "minor"], ["==", "brunnel", "tunnel"]],
-        layout: {
-          "line-cap": "butt",
-          "line-join": "round",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [15, 3],
-              [16, 4],
-              [17, 8],
-              [18, 12],
-            ],
-          },
-          "line-opacity": 1,
-          "line-color":
-            t === "light" ? "rgba(238, 238, 238, 1)" : "rgba(22, 22, 22, 1)",
-        },
-      },
-      {
-        id: "tunnel_sec_fill",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 13,
-        maxzoom: 24,
-        filter: [
-          "all",
-          ["in", "class", "secondary", "tertiary"],
-          ["==", "brunnel", "tunnel"],
-        ],
-        layout: {
-          "line-cap": "round",
-          "line-join": "round",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [11, 2],
-              [13, 2],
-              [14, 3],
-              [15, 4],
-              [16, 6],
-              [17, 10],
-              [18, 14],
-            ],
-          },
-          "line-opacity": 1,
-          "line-color": t === "light" ? paleSilver : dimCharcoal,
-        },
-      },
-      {
-        id: "tunnel_pri_fill",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 11,
-        maxzoom: 24,
-        filter: [
-          "all",
-          ["==", "class", "primary"],
-          ["!=", "ramp", 1],
-          ["==", "brunnel", "tunnel"],
-        ],
-        layout: {
-          "line-cap": "butt",
-          "line-join": "round",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [11, 1],
-              [13, 2],
-              [14, 4],
-              [15, 6],
-              [16, 8],
-              [17, 12],
-              [18, 16],
-            ],
-          },
-          "line-opacity": 1,
-          "line-color": t === "light" ? paleSilver : slateBlueGray,
-        },
-      },
-      {
-        id: "tunnel_trunk_fill",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 11,
-        maxzoom: 24,
-        filter: [
-          "all",
-          ["==", "class", "trunk"],
-          ["!=", "ramp", 1],
-          ["==", "brunnel", "tunnel"],
-        ],
-        layout: {
-          "line-cap": "round",
-          "line-join": "round",
-          visibility: "visible",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [11, 1],
-              [13, 2],
-              [14, 4],
-              [15, 6],
-              [16, 8],
-              [17, 12],
-              [18, 16],
-            ],
-          },
-          "line-opacity": 1,
-          "line-color": t === "light" ? paleSilver : dimCharcoal,
-        },
-      },
-      {
-        id: "tunnel_mot_fill",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 10,
-        maxzoom: 24,
-        filter: [
-          "all",
-          ["==", "class", "motorway"],
-          ["!=", "ramp", 1],
-          ["==", "brunnel", "tunnel"],
-        ],
-        layout: {
-          "line-cap": "butt",
-          "line-join": "round",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [10, 1],
-              [12, 2],
-              [13, 3],
-              [14, 5],
-              [15, 7],
-              [16, 9],
-              [17, 11],
-              [18, 20],
-            ],
-          },
-          "line-opacity": 1,
-          "line-color": t === "light" ? paleSilver : slateBlueGray,
-        },
-      },
-      {
-        id: "tunnel_rail",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 13,
-        filter: ["all", ["==", "class", "rail"], ["==", "brunnel", "tunnel"]],
-        layout: {
-          visibility: "visible",
-          "line-join": "round",
-        },
-        paint: {
-          "line-color": t === "light" ? silver : charcoal,
-          "line-width": {
-            base: 1.3,
-            stops: [
-              [13, 0.5],
-              [14, 1],
-              [15, 1],
-              [16, 3],
-              [21, 7],
-            ],
-          },
-          "line-opacity": 0.5,
-        },
-      },
-      {
-        id: "tunnel_rail_dash",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 15,
-        filter: ["all", ["==", "class", "rail"], ["==", "brunnel", "tunnel"]],
-        layout: {
-          visibility: "visible",
-          "line-join": "round",
-        },
-        paint: {
-          "line-color": t === "light" ? white : offBlack,
-          "line-width": {
-            base: 1.3,
-            stops: [
-              [15, 0.5],
-              [16, 1],
-              [20, 5],
-            ],
-          },
-          "line-dasharray": {
-            stops: [
-              [15, [5, 5]],
-              [16, [6, 6]],
-            ],
-          },
-          "line-opacity": 0.5,
-        },
-      },
-      {
-        id: "road_service_case",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 15,
-        maxzoom: 24,
-        filter: ["all", ["==", "class", "service"], ["!has", "brunnel"]],
+        filter: ["all", ["==", "class", "service"]],
         layout: {
           "line-cap": "round",
           "line-join": "round",
@@ -862,13 +354,13 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         },
       },
       {
-        id: "road_minor_case",
+        id: "minor_case",
         type: "line",
         source: "carto",
         "source-layer": "transportation",
         minzoom: 13,
         maxzoom: 24,
-        filter: ["all", ["==", "class", "minor"], ["!has", "brunnel"]],
+        filter: ["all", ["==", "class", "minor"]],
         layout: {
           "line-cap": "round",
           "line-join": "round",
@@ -886,129 +378,17 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? lightGray: slateBlueGray,
+          "line-color": t === "light" ? lightGray : slateBlueGray,
         },
       },
       {
-        id: "road_pri_case_ramp",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 12,
-        maxzoom: 24,
-        filter: ["all", ["==", "class", "primary"], ["==", "ramp", 1]],
-        layout: {
-          "line-cap": "round",
-          "line-join": "round",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [12, 2],
-              [13, 3],
-              [14, 4],
-              [15, 5],
-              [16, 8],
-              [17, 10],
-            ],
-          },
-          "line-opacity": {
-            stops: [
-              [5, 0.5],
-              [7, 1],
-            ],
-          },
-          "line-color": t === "light" ? silver : deepCharcoal,
-        },
-      },
-      {
-        id: "road_trunk_case_ramp",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 12,
-        maxzoom: 24,
-        filter: ["all", ["==", "class", "trunk"], ["==", "ramp", 1]],
-        layout: {
-          "line-cap": "round",
-          "line-join": "round",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [12, 2],
-              [13, 3],
-              [14, 4],
-              [15, 5],
-              [16, 8],
-              [17, 10],
-            ],
-          },
-          "line-opacity": 1,
-          "line-color": {
-            stops:
-              t === "light"
-                ? [
-                    [12, lightGray],
-                    [14, silver],
-                  ]
-                : [
-                    [12, charcoal],
-                    [14, deepCharcoal],
-                  ],
-          },
-        },
-      },
-      {
-        id: "road_mot_case_ramp",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 12,
-        maxzoom: 24,
-        filter: ["all", ["==", "class", "motorway"], ["==", "ramp", 1]],
-        layout: {
-          "line-cap": "round",
-          "line-join": "round",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [12, 2],
-              [13, 3],
-              [14, 4],
-              [15, 5],
-              [16, 8],
-              [17, 10],
-            ],
-          },
-          "line-opacity": 1,
-          "line-color": {
-            stops:
-              t === "light"
-                ? [
-                    [12, lightGray],
-                    [14, silver],
-                  ]
-                : [
-                    [12, charcoal],
-                    [14, deepCharcoal],
-                  ],
-          },
-        },
-      },
-      {
-        id: "road_sec_case_noramp",
+        id: "sec_case",
         type: "line",
         source: "carto",
         "source-layer": "transportation",
         minzoom: 11,
         maxzoom: 24,
-        filter: [
-          "all",
-          ["in", "class", "secondary", "tertiary"],
-          ["!has", "brunnel"],
-        ],
+        filter: ["all", ["in", "class", "secondary", "tertiary"]],
         layout: {
           "line-cap": "round",
           "line-join": "round",
@@ -1039,22 +419,17 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
                   ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? lightGray: slateBlueGray,
+          "line-color": t === "light" ? lightGray : slateBlueGray,
         },
       },
       {
-        id: "road_pri_case_noramp",
+        id: "pri_case_noramp",
         type: "line",
         source: "carto",
         "source-layer": "transportation",
         minzoom: 7,
         maxzoom: 24,
-        filter: [
-          "all",
-          ["==", "class", "primary"],
-          ["!=", "ramp", 1],
-          ["!has", "brunnel"],
-        ],
+        filter: ["all", ["==", "class", "primary"], ["!=", "ramp", 1]],
         layout: {
           "line-cap": "round",
           "line-join": "round",
@@ -1095,18 +470,45 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         },
       },
       {
-        id: "road_trunk_case_noramp",
+        id: "pri_case_ramp",
+        type: "line",
+        source: "carto",
+        "source-layer": "transportation",
+        minzoom: 12,
+        maxzoom: 24,
+        filter: ["all", ["==", "class", "primary"], ["==", "ramp", 1]],
+        layout: {
+          "line-cap": "round",
+          "line-join": "round",
+        },
+        paint: {
+          "line-width": {
+            stops: [
+              [12, 2],
+              [13, 3],
+              [14, 4],
+              [15, 5],
+              [16, 8],
+              [17, 10],
+            ],
+          },
+          "line-opacity": {
+            stops: [
+              [5, 0.5],
+              [7, 1],
+            ],
+          },
+          "line-color": t === "light" ? silver : deepCharcoal,
+        },
+      },
+      {
+        id: "trunk_case_noramp",
         type: "line",
         source: "carto",
         "source-layer": "transportation",
         minzoom: 5,
         maxzoom: 24,
-        filter: [
-          "all",
-          ["==", "class", "trunk"],
-          ["!=", "ramp", 1],
-          ["!has", "brunnel"],
-        ],
+        filter: ["all", ["==", "class", "trunk"], ["!=", "ramp", 1]],
         layout: {
           "line-cap": "round",
           "line-join": "round",
@@ -1147,18 +549,51 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         },
       },
       {
-        id: "road_mot_case_noramp",
+        id: "trunk_case_ramp",
+        type: "line",
+        source: "carto",
+        "source-layer": "transportation",
+        minzoom: 12,
+        maxzoom: 24,
+        filter: ["all", ["==", "class", "trunk"], ["==", "ramp", 1]],
+        layout: {
+          "line-cap": "round",
+          "line-join": "round",
+        },
+        paint: {
+          "line-width": {
+            stops: [
+              [12, 2],
+              [13, 3],
+              [14, 4],
+              [15, 5],
+              [16, 8],
+              [17, 10],
+            ],
+          },
+          "line-opacity": 1,
+          "line-color": {
+            stops:
+              t === "light"
+                ? [
+                    [12, lightGray],
+                    [14, silver],
+                  ]
+                : [
+                    [12, charcoal],
+                    [14, deepCharcoal],
+                  ],
+          },
+        },
+      },
+      {
+        id: "mot_case_noramp",
         type: "line",
         source: "carto",
         "source-layer": "transportation",
         minzoom: 5,
         maxzoom: 24,
-        filter: [
-          "all",
-          ["==", "class", "motorway"],
-          ["!=", "ramp", 1],
-          ["!has", "brunnel"],
-        ],
+        filter: ["all", ["==", "class", "motorway"], ["!=", "ramp", 1]],
         layout: {
           "line-cap": "round",
           "line-join": "round",
@@ -1200,13 +635,51 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         },
       },
       {
-        id: "road_path",
+        id: "mot_case_ramp",
+        type: "line",
+        source: "carto",
+        "source-layer": "transportation",
+        minzoom: 12,
+        maxzoom: 24,
+        filter: ["all", ["==", "class", "motorway"], ["==", "ramp", 1]],
+        layout: {
+          "line-cap": "round",
+          "line-join": "round",
+        },
+        paint: {
+          "line-width": {
+            stops: [
+              [12, 2],
+              [13, 3],
+              [14, 4],
+              [15, 5],
+              [16, 8],
+              [17, 10],
+            ],
+          },
+          "line-opacity": 1,
+          "line-color": {
+            stops:
+              t === "light"
+                ? [
+                    [12, lightGray],
+                    [14, silver],
+                  ]
+                : [
+                    [12, charcoal],
+                    [14, deepCharcoal],
+                  ],
+          },
+        },
+      },
+      {
+        id: "path",
         type: "line",
         source: "carto",
         "source-layer": "transportation",
         minzoom: 15,
         maxzoom: 24,
-        filter: ["all", ["in", "class", "path", "track"], ["!has", "brunnel"]],
+        filter: ["all", ["in", "class", "path", "track"]],
         layout: {
           "line-cap": "round",
           "line-join": "round",
@@ -1230,13 +703,13 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         },
       },
       {
-        id: "road_service_fill",
+        id: "service_fill",
         type: "line",
         source: "carto",
         "source-layer": "transportation",
         minzoom: 15,
         maxzoom: 24,
-        filter: ["all", ["==", "class", "service"], ["!has", "brunnel"]],
+        filter: ["all", ["==", "class", "service"]],
         layout: {
           "line-cap": "round",
           "line-join": "round",
@@ -1255,13 +728,13 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         },
       },
       {
-        id: "road_minor_fill",
+        id: "minor_fill",
         type: "line",
         source: "carto",
         "source-layer": "transportation",
         minzoom: 15,
         maxzoom: 24,
-        filter: ["all", ["==", "class", "minor"], ["!has", "brunnel"]],
+        filter: ["all", ["==", "class", "minor"]],
         layout: {
           "line-cap": "round",
           "line-join": "round",
@@ -1280,7 +753,63 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         },
       },
       {
-        id: "road_pri_fill_ramp",
+        id: "sec_fill",
+        type: "line",
+        source: "carto",
+        "source-layer": "transportation",
+        minzoom: 13,
+        maxzoom: 24,
+        filter: ["all", ["in", "class", "secondary", "tertiary"]],
+        layout: {
+          "line-cap": "round",
+          "line-join": "round",
+        },
+        paint: {
+          "line-width": {
+            stops: [
+              [11, 2],
+              [13, 2],
+              [14, 3],
+              [15, 4],
+              [16, 6],
+              [17, 10],
+              [18, 14],
+            ],
+          },
+          "line-opacity": 1,
+          "line-color": t === "light" ? white : slateBlueGray,
+        },
+      },
+      {
+        id: "pri_fill_noramp",
+        type: "line",
+        source: "carto",
+        "source-layer": "transportation",
+        minzoom: 10,
+        maxzoom: 24,
+        filter: ["all", ["==", "class", "primary"], ["!=", "ramp", 1]],
+        layout: {
+          "line-cap": "round",
+          "line-join": "round",
+        },
+        paint: {
+          "line-width": {
+            stops: [
+              [10, 0.3],
+              [13, 2],
+              [14, 4],
+              [15, 6],
+              [16, 8],
+              [17, 12],
+              [18, 16],
+            ],
+          },
+          "line-opacity": 1,
+          "line-color": t === "light" ? white : "rgba(83, 86, 102, 1)",
+        },
+      },
+      {
+        id: "pri_fill_ramp",
         type: "line",
         source: "carto",
         "source-layer": "transportation",
@@ -1307,7 +836,35 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         },
       },
       {
-        id: "road_trunk_fill_ramp",
+        id: "trunk_fill_noramp",
+        type: "line",
+        source: "carto",
+        "source-layer": "transportation",
+        minzoom: 10,
+        maxzoom: 24,
+        filter: ["all", ["==", "class", "trunk"], ["!=", "ramp", 1]],
+        layout: {
+          "line-cap": "round",
+          "line-join": "round",
+        },
+        paint: {
+          "line-width": {
+            stops: [
+              [11, 1],
+              [13, 2],
+              [14, 4],
+              [15, 6],
+              [16, 8],
+              [17, 12],
+              [18, 16],
+            ],
+          },
+          "line-opacity": 1,
+          "line-color": t === "light" ? white : slateBlueGray,
+        },
+      },
+      {
+        id: "trunk_fill_ramp",
         type: "line",
         source: "carto",
         "source-layer": "transportation",
@@ -1334,7 +891,36 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         },
       },
       {
-        id: "road_mot_fill_ramp",
+        id: "mot_fill_noramp",
+        type: "line",
+        source: "carto",
+        "source-layer": "transportation",
+        minzoom: 10,
+        maxzoom: 24,
+        filter: ["all", ["==", "class", "motorway"], ["!=", "ramp", 1]],
+        layout: {
+          "line-cap": "round",
+          "line-join": "round",
+        },
+        paint: {
+          "line-width": {
+            stops: [
+              [10, 1],
+              [12, 2],
+              [13, 3],
+              [14, 5],
+              [15, 7],
+              [16, 9],
+              [17, 11],
+              [18, 20],
+            ],
+          },
+          "line-opacity": 1,
+          "line-color": t === "light" ? white : "rgba(73, 73, 73, 1)",
+        },
+      },
+      {
+        id: "mot_fill_ramp",
         type: "line",
         source: "carto",
         "source-layer": "transportation",
@@ -1361,144 +947,12 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         },
       },
       {
-        id: "road_sec_fill_noramp",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 13,
-        maxzoom: 24,
-        filter: [
-          "all",
-          ["in", "class", "secondary", "tertiary"],
-          ["!has", "brunnel"],
-        ],
-        layout: {
-          "line-cap": "round",
-          "line-join": "round",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [11, 2],
-              [13, 2],
-              [14, 3],
-              [15, 4],
-              [16, 6],
-              [17, 10],
-              [18, 14],
-            ],
-          },
-          "line-opacity": 1,
-          "line-color": t === "light" ? white : slateBlueGray,
-        },
-      },
-      {
-        id: "road_pri_fill_noramp",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 10,
-        maxzoom: 24,
-        filter: [
-          "all",
-          ["==", "class", "primary"],
-          ["!=", "ramp", 1],
-          ["!has", "brunnel"],
-        ],
-        layout: {
-          "line-cap": "round",
-          "line-join": "round",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [10, 0.3],
-              [13, 2],
-              [14, 4],
-              [15, 6],
-              [16, 8],
-              [17, 12],
-              [18, 16],
-            ],
-          },
-          "line-opacity": 1,
-          "line-color": t === "light" ? white : "rgba(83, 86, 102, 1)",
-        },
-      },
-      {
-        id: "road_trunk_fill_noramp",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 10,
-        maxzoom: 24,
-        filter: [
-          "all",
-          ["==", "class", "trunk"],
-          ["!=", "ramp", 1],
-          ["!has", "brunnel"],
-        ],
-        layout: {
-          "line-cap": "round",
-          "line-join": "round",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [11, 1],
-              [13, 2],
-              [14, 4],
-              [15, 6],
-              [16, 8],
-              [17, 12],
-              [18, 16],
-            ],
-          },
-          "line-opacity": 1,
-          "line-color": t === "light" ? white : slateBlueGray,
-        },
-      },
-      {
-        id: "road_mot_fill_noramp",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 10,
-        maxzoom: 24,
-        filter: [
-          "all",
-          ["==", "class", "motorway"],
-          ["!=", "ramp", 1],
-          ["!has", "brunnel"],
-        ],
-        layout: {
-          "line-cap": "round",
-          "line-join": "round",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [10, 1],
-              [12, 2],
-              [13, 3],
-              [14, 5],
-              [15, 7],
-              [16, 9],
-              [17, 11],
-              [18, 20],
-            ],
-          },
-          "line-opacity": 1,
-          "line-color": t === "light" ? white : "rgba(73, 73, 73, 1)",
-        },
-      },
-      {
         id: "rail",
         type: "line",
         source: "carto",
         "source-layer": "transportation",
         minzoom: 13,
-        filter: ["all", ["==", "class", "rail"], ["!=", "brunnel", "tunnel"]],
+        filter: ["all", ["==", "class", "rail"]],
         layout: {
           visibility: "visible",
           "line-join": "round",
@@ -1523,7 +977,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         source: "carto",
         "source-layer": "transportation",
         minzoom: 15,
-        filter: ["all", ["==", "class", "rail"], ["!=", "brunnel", "tunnel"]],
+        filter: ["all", ["==", "class", "rail"]],
         layout: {
           visibility: "visible",
           "line-join": "round",
@@ -1544,497 +998,6 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
               [16, [6, 6]],
             ],
           },
-        },
-      },
-      {
-        id: "bridge_service_case",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 15,
-        maxzoom: 24,
-        filter: [
-          "all",
-          ["==", "class", "service"],
-          ["==", "brunnel", "bridge"],
-        ],
-        layout: {
-          "line-cap": "butt",
-          "line-join": "round",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [15, 1],
-              [16, 3],
-              [17, 6],
-              [18, 8],
-            ],
-          },
-          "line-opacity": 1,
-          "line-color": t === "light" ? silver : serviceDark,
-        },
-      },
-      {
-        id: "bridge_minor_case",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 13,
-        maxzoom: 24,
-        filter: ["all", ["==", "class", "minor"], ["==", "brunnel", "bridge"]],
-        layout: {
-          "line-cap": "butt",
-          "line-join": "miter",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [11, 0.5],
-              [12, 0.5],
-              [14, 2],
-              [15, 3],
-              [16, 4.3],
-              [17, 10],
-              [18, 14],
-            ],
-          },
-          "line-opacity": 1,
-          "line-color": {
-            stops:
-              t === "light"
-                ? [
-                    [13, lightGray],
-                    [15.7, lightGray],
-                    [16, silver],
-                  ]
-                : [
-                    [13, dimCharcoal],
-                    [15.7, dimCharcoal],
-                    [16, serviceDark],
-                  ],
-          },
-        },
-      },
-      {
-        id: "bridge_sec_case",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 11,
-        maxzoom: 24,
-        filter: [
-          "all",
-          ["in", "class", "secondary", "tertiary"],
-          ["==", "brunnel", "bridge"],
-        ],
-        layout: {
-          "line-cap": "butt",
-          "line-join": "miter",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [11, 0.5],
-              [12, 1.5],
-              [13, 3],
-              [14, 5],
-              [15, 6],
-              [16, 8],
-              [17, 12],
-              [18, 16],
-            ],
-          },
-          "line-opacity": 1,
-          "line-color": {
-            stops:
-              t === "light"
-                ? [
-                    [11, lightGray],
-                    [12.99, lightGray],
-                    [13, silver],
-                  ]
-                : [
-                    [11, charcoal],
-                    [12.99, charcoal],
-                    [13, deepCharcoal],
-                  ],
-          },
-        },
-      },
-      {
-        id: "bridge_pri_case",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 8,
-        maxzoom: 24,
-        filter: [
-          "all",
-          ["==", "class", "primary"],
-          ["!=", "ramp", 1],
-          ["==", "brunnel", "bridge"],
-        ],
-        layout: {
-          "line-cap": "butt",
-          "line-join": "round",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [6, 0.5],
-              [7, 0.8],
-              [8, 1],
-              [11, 3],
-              [13, 4],
-              [14, 6],
-              [15, 8],
-              [16, 10],
-              [17, 14],
-              [18, 18],
-            ],
-          },
-          "line-opacity": {
-            stops: [
-              [5, 0.5],
-              [7, 1],
-            ],
-          },
-          "line-color": {
-            stops:
-              t === "light"
-                ? [
-                    [8, lightGray],
-                    [12, silver],
-                  ]
-                : [
-                    [8, charcoal],
-                    [12, deepCharcoal],
-                  ],
-          },
-        },
-      },
-      {
-        id: "bridge_trunk_case",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 5,
-        maxzoom: 24,
-        filter: [
-          "all",
-          ["==", "class", "trunk"],
-          ["!=", "ramp", 1],
-          ["==", "brunnel", "bridge"],
-        ],
-        layout: {
-          "line-cap": "butt",
-          "line-join": "round",
-          visibility: "visible",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [6, 0.5],
-              [7, 0.8],
-              [8, 1],
-              [11, 3],
-              [13, 4],
-              [14, 6],
-              [15, 8],
-              [16, 10],
-              [17, 14],
-              [18, 18],
-            ],
-          },
-          "line-opacity": {
-            stops: [
-              [5, 0.5],
-              [7, 1],
-            ],
-          },
-          "line-color": {
-            stops:
-              t === "light"
-                ? [
-                    [5, lightGray],
-                    [12, silver],
-                  ]
-                : [
-                    [5, charcoal],
-                    [12, deepCharcoal],
-                  ],
-          },
-        },
-      },
-      {
-        id: "bridge_mot_case",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 5,
-        maxzoom: 24,
-        filter: [
-          "all",
-          ["==", "class", "motorway"],
-          ["!=", "ramp", 1],
-          ["==", "brunnel", "bridge"],
-        ],
-        layout: {
-          "line-cap": "butt",
-          "line-join": "round",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [6, 0.5],
-              [7, 0.8],
-              [8, 1],
-              [11, 3],
-              [12, 4],
-              [13, 5],
-              [14, 7],
-              [15, 9],
-              [16, 11],
-              [17, 13],
-              [18, 22],
-            ],
-          },
-          "line-opacity": {
-            stops: [
-              [6, 0.5],
-              [7, 1],
-            ],
-          },
-          "line-color": {
-            stops:
-              t === "light"
-                ? [
-                    [5, lightGray],
-                    [10, silver],
-                  ]
-                : [
-                    [5, charcoal],
-                    [10, deepCharcoal],
-                  ],
-          },
-        },
-      },
-      {
-        id: "bridge_path",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 15,
-        maxzoom: 24,
-        filter: ["all", ["==", "class", "path"], ["==", "brunnel", "bridge"]],
-        layout: {
-          "line-cap": "round",
-          "line-join": "round",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [15, 0.5],
-              [16, 1],
-              [18, 3],
-            ],
-          },
-          "line-opacity": 1,
-          "line-color": t === "light" ? pathGray : darkPath,
-          "line-dasharray": {
-            stops: [
-              [15, [2, 2]],
-              [18, [3, 3]],
-            ],
-          },
-        },
-      },
-      {
-        id: "bridge_service_fill",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 15,
-        maxzoom: 24,
-        filter: [
-          "all",
-          ["==", "class", "service"],
-          ["==", "brunnel", "bridge"],
-        ],
-        layout: {
-          "line-cap": "round",
-          "line-join": "round",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [15, 2],
-              [16, 2],
-              [17, 4],
-              [18, 6],
-            ],
-          },
-          "line-opacity": 1,
-          "line-color": t === "light" ? nearWhite : deepBlack,
-        },
-      },
-      {
-        id: "bridge_minor_fill",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 15,
-        maxzoom: 24,
-        filter: ["all", ["==", "class", "minor"], ["==", "brunnel", "bridge"]],
-        layout: {
-          "line-cap": "butt",
-          "line-join": "round",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [15, 3],
-              [16, 4],
-              [17, 8],
-              [18, 12],
-            ],
-          },
-          "line-opacity": 1,
-          "line-color": t === "light" ? nearWhite : deepBlack,
-        },
-      },
-      {
-        id: "bridge_sec_fill",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 13,
-        maxzoom: 24,
-        filter: [
-          "all",
-          ["in", "class", "secondary", "tertiary"],
-          ["==", "brunnel", "bridge"],
-        ],
-        layout: {
-          "line-cap": "round",
-          "line-join": "round",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [11, 2],
-              [13, 2],
-              [14, 3],
-              [15, 4],
-              [16, 6],
-              [17, 10],
-              [18, 14],
-            ],
-          },
-          "line-opacity": 1,
-          "line-color": t === "light" ? white : deepBlack,
-        },
-      },
-      {
-        id: "bridge_pri_fill",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 11,
-        maxzoom: 24,
-        filter: [
-          "all",
-          ["==", "class", "primary"],
-          ["!=", "ramp", 1],
-          ["==", "brunnel", "bridge"],
-        ],
-        layout: {
-          "line-cap": "butt",
-          "line-join": "round",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [11, 1],
-              [13, 2],
-              [14, 4],
-              [15, 6],
-              [16, 8],
-              [17, 12],
-              [18, 16],
-            ],
-          },
-          "line-opacity": 1,
-          "line-color": t === "light" ? white : deepBlack,
-        },
-      },
-      {
-        id: "bridge_trunk_fill",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 11,
-        maxzoom: 24,
-        filter: [
-          "all",
-          ["==", "class", "trunk"],
-          ["!=", "ramp", 1],
-          ["==", "brunnel", "bridge"],
-        ],
-        layout: {
-          "line-cap": "butt",
-          "line-join": "round",
-          visibility: "visible",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [11, 1],
-              [13, 2],
-              [14, 4],
-              [15, 6],
-              [16, 8],
-              [17, 12],
-              [18, 16],
-            ],
-          },
-          "line-opacity": 1,
-          "line-color": t === "light" ? white : slateBlueGray,
-        },
-      },
-      {
-        id: "bridge_mot_fill",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 10,
-        maxzoom: 24,
-        filter: [
-          "all",
-          ["==", "class", "motorway"],
-          ["!=", "ramp", 1],
-          ["==", "brunnel", "bridge"],
-        ],
-        layout: {
-          "line-cap": "butt",
-          "line-join": "round",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [10, 1],
-              [12, 2],
-              [13, 3],
-              [14, 5],
-              [15, 7],
-              [16, 9],
-              [17, 11],
-              [18, 20],
-            ],
-          },
-          "line-opacity": 1,
-          "line-color": t === "light" ? white : slateBlueGray,
         },
       },
       {
@@ -2843,7 +1806,6 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             "NanumBarunGothic Regular",
           ],
           "text-size": 12,
-          // "icon-image": "circle-11",
           "icon-offset": [16, 5],
           "text-anchor": "right",
           "icon-size": 0.4,
@@ -2877,7 +1839,6 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             "NanumBarunGothic Regular",
           ],
           "text-size": 12,
-          // "icon-image": "circle-11",
           "icon-offset": [16, 5],
           "text-anchor": "right",
           "icon-size": 0.4,
@@ -2911,7 +1872,6 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             "NanumBarunGothic Regular",
           ],
           "text-size": 12,
-          // "icon-image": "circle-11",
           "icon-offset": [16, 5],
           "text-anchor": "right",
           "icon-size": 0.4,
@@ -2949,7 +1909,6 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             "NanumBarunGothic Regular",
           ],
           "text-size": 12,
-          // "icon-image": "circle-11",
           "icon-offset": [16, 5],
           "text-anchor": "right",
           "icon-size": 0.4,
@@ -2983,7 +1942,6 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             "NanumBarunGothic Regular",
           ],
           "text-size": 12,
-          // "icon-image": "circle-11",
           "icon-offset": [16, 5],
           "text-anchor": "right",
           "icon-size": 0.4,
@@ -3001,47 +1959,16 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         },
       },
       {
-        id: "poi_stadium",
+        id: "poi",
         type: "symbol",
         source: "carto",
         "source-layer": "poi",
         minzoom: 15,
         filter: [
           "all",
-          ["in", "class", "stadium", "cemetery", "attraction"],
+          ["in", "class", "park", "stadium", "cemetery", "attraction"],
           ["<=", "rank", 3],
         ],
-        layout: {
-          "text-field": "{name}",
-          "text-font": [
-            "Montserrat Medium",
-            "Open Sans Bold",
-            "Noto Sans Regular",
-            "HanWangHeiLight Regular",
-            "NanumBarunGothic Regular",
-          ],
-          "text-size": {
-            stops: [
-              [15, 8],
-              [17, 9],
-              [18, 10],
-            ],
-          },
-          "text-transform": "uppercase",
-        },
-        paint: {
-          "text-color": t === "light" ? parkGreen : poiDarkText,
-          "text-halo-color": t === "light" ? creamWhite : poiDarkHalo,
-          "text-halo-width": 1,
-        },
-      },
-      {
-        id: "poi_park",
-        type: "symbol",
-        source: "carto",
-        "source-layer": "poi",
-        minzoom: 15,
-        filter: ["all", ["==", "class", "park"]],
         layout: {
           "text-field": "{name}",
           "text-font": [
@@ -3228,37 +2155,8 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "text-halo-width": 1,
         },
       },
-      {
-        id: "housenumber",
-        type: "symbol",
-        source: "carto",
-        "source-layer": "housenumber",
-        minzoom: 17,
-        maxzoom: 24,
-        layout: {
-          "text-field": "{housenumber}",
-          "text-size": {
-            stops: [
-              [17, 9],
-              [18, 11],
-            ],
-          },
-          "text-font": [
-            "Montserrat Regular",
-            "Open Sans Regular",
-            "Noto Sans Regular",
-            "HanWangHeiLight Regular",
-            "NanumBarunGothic Regular",
-          ],
-        },
-        paint: {
-          "text-halo-color": transparent,
-          "text-color": transparent,
-          "text-halo-width": 0.75,
-        },
-      },
     ],
     id: "voyager",
     owner: "Carto",
-  } as StyleSpecification;
+  } as StyleSpecification
 }

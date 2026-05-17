@@ -6,6 +6,8 @@ import type { MapRef } from "@/components/ui/map"
 import { useCallback, useRef } from "react"
 
 const WATER_PATTERN_ID = "water-pattern"
+const GRASS_PATTERN_ID = "grass-pattern"
+const FOREST_PATTERN_ID = "forest-pattern"
 
 function patternUrl(pattern: string, dark: boolean) {
   return `/api/pattern/${dark ? 'dark' : 'light'}/${pattern}`
@@ -14,21 +16,25 @@ function patternUrl(pattern: string, dark: boolean) {
 export default function Page() {
   const mapRefStore = useRef<MapRef | null>(null)
 
-  const loadPattern = useCallback(async (map: MapRef, pattern: string) => {
+  const loadPattern = useCallback(async (map: MapRef, pattern: string, patternId: string) => {
     const dark = document.documentElement.classList.contains("dark")
     const image = await map.loadImage(patternUrl(pattern, dark))
-    if (map.hasImage(WATER_PATTERN_ID)) map.updateImage(WATER_PATTERN_ID, image.data)
-    else map.addImage(WATER_PATTERN_ID, image.data, { pixelRatio: 2 })
+    if (map.hasImage(patternId)) map.updateImage(patternId, image.data)
+    else map.addImage(patternId, image.data, { pixelRatio: 2 })
   }, [])
 
   const handleRef = useCallback(
     (map: MapRef | null) => {
       if (!map) return
       mapRefStore.current = map
-      loadPattern(map, "water")
+      loadPattern(map, "water", WATER_PATTERN_ID)
+      loadPattern(map, "grass", GRASS_PATTERN_ID)
+      loadPattern(map, "forest", FOREST_PATTERN_ID)
 
       const onStyleLoad = () => {
-        loadPattern(map, "water")
+        loadPattern(map, "water", WATER_PATTERN_ID)
+        loadPattern(map, "grass", GRASS_PATTERN_ID)
+        loadPattern(map, "forest", FOREST_PATTERN_ID)
       }
 
       map.on("style.load", onStyleLoad)

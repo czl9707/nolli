@@ -1,14 +1,18 @@
 import { type Theme } from "./_constant"
+import { MAP_COLORS } from "@/lib/map-color"
 
 export function waterPattern(theme: Theme): string {
   const colors = {
-    light: { bg: "#fff", stroke: "#000" },
-    dark: { bg: "#000", stroke: "#fff" },
+    light: {
+      bg: MAP_COLORS.light.waterBg,
+      stroke: MAP_COLORS.light.waterStroke,
+    },
+    dark: { bg: MAP_COLORS.dark.waterBg, stroke: MAP_COLORS.dark.waterStroke },
   }
   const c = colors[theme]
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
-<rect width="258" height="258" fill="${c.bg}"/>
+<rect width="258" height="258" cx="128" cy="128" fill="${c.bg}"/>
 <g stroke="${c.stroke}" stroke-width="1" opacity=".15">${paths}</g>
 </svg>`
 }
@@ -248,4 +252,4 @@ const paths = `
 		<path d="M204.7,238.7c5.8-0.4,11.5-0.6,17.3-0.4"/>
 		<path d="M202.6,251.1c8.8-0.8,17.6-1.1,26.4-0.9"/>
 		<path d="M226.8,245.8c3.9,0,7.8,0,11.7,0"/>
-`;
+`
