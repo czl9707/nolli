@@ -18,7 +18,7 @@ export default function Page() {
     const dark = document.documentElement.classList.contains("dark")
     const image = await map.loadImage(patternUrl(pattern, dark))
     if (map.hasImage(WATER_PATTERN_ID)) map.updateImage(WATER_PATTERN_ID, image.data)
-    else map.addImage(WATER_PATTERN_ID, image.data, { pixelRatio: 1 })
+    else map.addImage(WATER_PATTERN_ID, image.data, { pixelRatio: 2 })
   }, [])
 
   const handleRef = useCallback(
