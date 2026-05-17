@@ -274,7 +274,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           visibility: "visible",
         },
         paint: {
-          "fill-color": t === "light" ? paleWater : darkWater,
+          "fill-pattern": "water-pattern",
           "fill-antialias": true,
           "fill-translate-anchor": "map",
           "fill-opacity": 1,
@@ -792,7 +792,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "line-join": "round",
         },
         paint: {
-          "line-color": t === "light" ? "silverDDD" : charcoal,
+          "line-color": t === "light" ? silver : charcoal,
           "line-width": {
             base: 1.3,
             stops: [
@@ -1504,7 +1504,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "line-join": "round",
         },
         paint: {
-          "line-color": t === "light" ? "silverDDD" : charcoal,
+          "line-color": t === "light" ? silver : charcoal,
           "line-width": {
             base: 1.3,
             stops: [
@@ -2843,7 +2843,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             "NanumBarunGothic Regular",
           ],
           "text-size": 12,
-          "icon-image": "circle-11",
+          // "icon-image": "circle-11",
           "icon-offset": [16, 5],
           "text-anchor": "right",
           "icon-size": 0.4,
@@ -2877,7 +2877,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             "NanumBarunGothic Regular",
           ],
           "text-size": 12,
-          "icon-image": "circle-11",
+          // "icon-image": "circle-11",
           "icon-offset": [16, 5],
           "text-anchor": "right",
           "icon-size": 0.4,
@@ -2911,7 +2911,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             "NanumBarunGothic Regular",
           ],
           "text-size": 12,
-          "icon-image": "circle-11",
+          // "icon-image": "circle-11",
           "icon-offset": [16, 5],
           "text-anchor": "right",
           "icon-size": 0.4,
@@ -2949,7 +2949,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             "NanumBarunGothic Regular",
           ],
           "text-size": 12,
-          "icon-image": "circle-11",
+          // "icon-image": "circle-11",
           "icon-offset": [16, 5],
           "text-anchor": "right",
           "icon-size": 0.4,
@@ -2983,7 +2983,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             "NanumBarunGothic Regular",
           ],
           "text-size": 12,
-          "icon-image": "circle-11",
+          // "icon-image": "circle-11",
           "icon-offset": [16, 5],
           "text-anchor": "right",
           "icon-size": 0.4,
