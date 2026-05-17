@@ -1,9 +1,9 @@
 import sharp from "sharp"
 import { NextResponse } from "next/server"
-import { type Theme, THEMES } from "./_constant"
-import { waterPattern } from "./_water"
-import { grassPattern } from "./_grass"
-import { forestPattern } from "./_forest"
+import { type Theme, THEMES } from "@/lib/map-texture/constant"
+import { waterPattern } from "@/lib/map-texture/water"
+import { grassPattern } from "@/lib/map-texture/grass"
+import { forestPattern } from "@/lib/map-texture/forest"
 
 export const dynamic = 'force-static';
 

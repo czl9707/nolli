@@ -1,6 +1,7 @@
 const DARK_MAP_COLORS = {
     waterBg: '#000',
     waterStroke: '#fff',
+    waterLabelColor: '#bbb',
     landcoverBg: '#000',
     landcoverStroke: '#fff',
 } as const;
@@ -8,6 +9,7 @@ const DARK_MAP_COLORS = {
 const LIGHT_MAP_COLORS = {
     waterBg: '#fff',
     waterStroke: '#000',
+    waterLabelColor: '#444',
     landcoverBg: '#fff',
     landcoverStroke: '#000',
 } as const;

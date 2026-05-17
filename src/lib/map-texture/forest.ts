@@ -1,4 +1,4 @@
-import { type Theme } from "./_constant"
+import { type Theme } from "./constant"
 import { MAP_COLORS } from "@/lib/map-color"
 
 export function forestPattern(theme: Theme): string {

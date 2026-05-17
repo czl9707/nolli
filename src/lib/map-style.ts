@@ -1,7 +1,8 @@
 import type { StyleSpecification } from "maplibre-gl"
+import { MAP_COLORS } from "./map-color"
 
-const steelBlue = "#697b89"
 const nearBlack = "#0e0e0e"
+const steelBlue = "#697b89"
 const silver = "#ddd"
 const paleGreen50 = "rgba(234, 241, 233, 0.5)"
 const charcoal = "#1a1a1a"
@@ -16,27 +17,20 @@ const midGray = "#666"
 const deepBlack = "#0b0b0b"
 const warmWhite = "#fafaf8"
 const transparent = "transparent"
-const paleSilver = "#eee"
-const dimCharcoal = "#161616"
 const creamWhite = "#f5f5f3"
 const blushPink = "#ead5d7"
 const nearWhite = "#fdfdfd"
 const roadNameGray = "#838383"
 const darkWater = "#2C353C"
 const blueGray = "rgba(103, 103, 114, 1)"
-const paleWater = "#d4dadc"
 const pathGray = "#d5d5d5"
 const darkPath = "#262626"
 const serviceDark = "#1c1c1c"
 const buildingLight = "#dfdfdf"
-const tealGray = "#7a96a0"
-const darkHalo = "#181818"
 const residentialLight = "rgba(237, 237, 237, 0.25)"
 const rosePink = "#e1c5c7"
 const aerowayLight = "#e8e8e8"
 const dustyRose = "#ebd6d8"
-const steelMist = "#abb6be"
-const darkOceanHalo = "rgba(0,0,0,0.7)"
 const countryLabel = "#8a99a4"
 const countryLabelMid = "#a1adb6"
 const countryLabelLight = "#b9c2c9"
@@ -46,6 +40,7 @@ const poiDarkHalo = "#151515"
 
 export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
   const t = theme
+  const c = MAP_COLORS[t]
   return {
     version: 8 as const,
     name: t === "light" ? "Positron" : "Dark Matter",
@@ -165,7 +160,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         source: "carto",
         "source-layer": "waterway",
         paint: {
-          "line-color": t === "light" ? "#d1dbdf" : "rgba(63, 90, 109, 1)",
+          "line-color": c.waterBg,
           "line-width": {
             stops: [
               [8, 0.5],
@@ -1133,9 +1128,10 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "text-keep-upright": true,
         },
         paint: {
-          "text-color": t === "light" ? tealGray : "rgba(164, 164, 164, 1)",
-          "text-halo-color": t === "light" ? creamWhite : darkHalo,
-          "text-halo-width": 1,
+          "text-color": c.waterLabelColor,
+          "text-halo-color": c.waterBg,
+          "text-halo-width": 10,
+          "text-halo-blur": 0,
         },
       },
       {
@@ -1178,9 +1174,9 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "text-letter-spacing": 0.1,
         },
         paint: {
-          "text-color": t === "light" ? steelMist : "rgba(109, 123, 129, 1)",
-          "text-halo-color": t === "light" ? paleWater : darkOceanHalo,
-          "text-halo-width": 1,
+          "text-color": c.waterLabelColor,
+          "text-halo-color": c.waterBg,
+          "text-halo-width": 10,
           "text-halo-blur": 0,
         },
       },
@@ -1217,9 +1213,9 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "text-letter-spacing": 0.1,
         },
         paint: {
-          "text-color": t === "light" ? steelMist : "#3c3c3c",
-          "text-halo-color": t === "light" ? paleWater : darkOceanHalo,
-          "text-halo-width": 1,
+          "text-color": c.waterLabelColor,
+          "text-halo-color": c.waterBg,
+          "text-halo-width": 10,
           "text-halo-blur": 0,
         },
       },
@@ -1267,10 +1263,10 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "text-rotation-alignment": "auto",
         },
         paint: {
-          "text-color": t === "light" ? tealGray : "rgba(155, 155, 155, 1)",
-          "text-halo-color": t === "light" ? creamWhite : darkHalo,
-          "text-halo-width": 1,
-          "text-halo-blur": 1,
+          "text-color": c.waterLabelColor,
+          "text-halo-color": c.waterBg,
+          "text-halo-width": 10,
+          "text-halo-blur": 0,
         },
       },
       {
@@ -1309,10 +1305,10 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "text-line-height": 1.2,
         },
         paint: {
-          "text-color": t === "light" ? tealGray : "#444",
-          "text-halo-color": t === "light" ? creamWhite : darkHalo,
-          "text-halo-width": 1,
-          "text-halo-blur": 1,
+          "text-color": c.waterLabelColor,
+          "text-halo-color": c.waterBg,
+          "text-halo-width": 10,
+          "text-halo-blur": 0,
         },
       },
       {
