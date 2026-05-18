@@ -412,8 +412,14 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           },
           "line-color": {
             stops: [
-              [7, c.roadFill],
-              [12, c.roadCase],
+              [7, c.roadLinePri],
+              [12, c.roadCasePri],
+            ],
+          },
+          "line-opacity": {
+            stops: [
+              [12, 0.5],
+              [15, 1],
             ],
           },
         },
@@ -443,8 +449,14 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           },
           "line-color": {
             stops: [
-              [5, c.roadFill],
-              [7, c.roadCase],
+              [5, c.roadLinePri],
+              [7, c.roadCasePri],
+            ],
+          },
+          "line-opacity": {
+            stops: [
+              [5, 0.5],
+              [7, 1],
             ],
           },
         },
@@ -483,16 +495,10 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             ],
           },
           "line-color": {
-            stops:
-              t === "light"
-                ? [
-                    [5, lightGray],
-                    [12, silver],
-                  ]
-                : [
-                    [5, charcoal],
-                    [12, deepCharcoal],
-                  ],
+            stops: [
+              [5, c.roadLineTrunk],
+              [12, c.roadCaseTrunk],
+            ],
           },
         },
       },
@@ -521,16 +527,10 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           },
           "line-opacity": 1,
           "line-color": {
-            stops:
-              t === "light"
-                ? [
-                    [12, lightGray],
-                    [14, silver],
-                  ]
-                : [
-                    [12, charcoal],
-                    [14, deepCharcoal],
-                  ],
+            stops: [
+              [12, c.roadLineTrunk],
+              [14, c.roadCaseTrunk],
+            ],
           },
         },
       },
@@ -569,16 +569,10 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             ],
           },
           "line-color": {
-            stops:
-              t === "light"
-                ? [
-                    [5, lightGray],
-                    [12, silver],
-                  ]
-                : [
-                    [5, charcoal],
-                    [12, deepCharcoal],
-                  ],
+            stops: [
+              [5, c.roadLineMot],
+              [12, c.roadCaseMot],
+            ],
           },
         },
       },
@@ -607,16 +601,10 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           },
           "line-opacity": 1,
           "line-color": {
-            stops:
-              t === "light"
-                ? [
-                    [12, lightGray],
-                    [14, silver],
-                  ]
-                : [
-                    [12, charcoal],
-                    [14, deepCharcoal],
-                  ],
+            stops: [
+              [12, c.roadLineMot],
+              [14, c.roadCaseMot],
+            ],
           },
         },
       },
@@ -753,7 +741,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             ],
           },
           "line-opacity": 1,
-          "line-color": c.roadFill,
+          "line-color": c.roadFillPri,
         },
       },
       {
@@ -780,7 +768,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             ],
           },
           "line-opacity": 1,
-          "line-color": c.roadFill,
+          "line-color": c.roadFillPri,
         },
       },
       {
@@ -808,7 +796,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? white : slateBlueGray,
+          "line-color": c.roadFillTrunk,
         },
       },
       {
@@ -835,7 +823,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? white : deepBlack,
+          "line-color": c.roadFillTrunk,
         },
       },
       {
@@ -864,7 +852,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? white : "rgba(73, 73, 73, 1)",
+          "line-color": c.roadFillMot,
         },
       },
       {
@@ -891,7 +879,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? white : slateBlueGray,
+          "line-color": c.roadFillMot,
         },
       },
       {

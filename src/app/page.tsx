@@ -47,7 +47,9 @@ export default function Page() {
 
   return (
     <div className="w-full h-full">
-      <Map ref={handleRef} styles={{ light: getMapStyle("light"), dark: getMapStyle("dark") }}>
+      <Map ref={handleRef} 
+        styles={{ light: getMapStyle("light"), dark: getMapStyle("dark") }}
+      >
         <MapControls className="right-2 bottom-16" showZoom showCompass showLocate />
       </Map>
     </div>
