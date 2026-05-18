@@ -1,35 +1,15 @@
 import type { StyleSpecification } from "maplibre-gl"
 import { MAP_COLORS } from "./map-color"
 
-const nearBlack = "#0e0e0e"
 const steelBlue = "#697b89"
-const silver = "#ddd"
-const paleGreen50 = "rgba(234, 241, 233, 0.5)"
-const charcoal = "#1a1a1a"
-const lightGray = "#e6e6e6"
 const white = "#fff"
-const slateBlueGray = "rgba(65, 71, 88, 1)"
 const darkGray = "#222"
-const deepCharcoal = "#232323"
 const offBlack = "#111"
 const whiteHalo50 = "rgba(255,255,255,0.5)"
 const midGray = "#666"
-const deepBlack = "#0b0b0b"
 const warmWhite = "#fafaf8"
-const transparent = "transparent"
 const creamWhite = "#f5f5f3"
-const blushPink = "#ead5d7"
-const nearWhite = "#fdfdfd"
 const roadNameGray = "#838383"
-const darkWater = "#2C353C"
-const blueGray = "rgba(103, 103, 114, 1)"
-const pathGray = "#d5d5d5"
-const darkPath = "#262626"
-const serviceDark = "#1c1c1c"
-const residentialLight = "rgba(237, 237, 237, 0.25)"
-const rosePink = "#e1c5c7"
-const aerowayLight = "#e8e8e8"
-const dustyRose = "#ebd6d8"
 const countryLabel = "#8a99a4"
 const countryLabelMid = "#a1adb6"
 const countryLabelLight = "#b9c2c9"
@@ -73,7 +53,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           ["==", "subclass", "recreation_ground"],
         ],
         paint: {
-          "fill-pattern": "forest-pattern",
+          "fill-pattern": "grass-pattern",
           "fill-opacity": 1,
         },
       },
@@ -101,44 +81,24 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           },
         },
       },
-      // {
-      //   id: "landuse_residential",
-      //   type: "fill",
-      //   source: "carto",
-      //   "source-layer": "landuse",
-      //   minzoom: 6,
-      //   filter: ["any", ["==", "class", "residential"]],
-      //   paint: {
-      //     "fill-color": {
-      //       stops:
-      //         t === "light"
-      //           ? [
-      //               [5, "rgba(237, 237, 237, 0.5)"],
-      //               [8, "rgba(237, 237, 237, 0.45)"],
-      //               [9, "rgba(237, 237, 237, 0.4)"],
-      //               [11, "rgba(237, 237, 237, 0.35)"],
-      //               [13, "rgba(237, 237, 237, 0.3)"],
-      //               [15, residentialLight],
-      //               [16, residentialLight],
-      //             ]
-      //           : [
-      //               [5, "rgba(0, 0, 0, 0.5)"],
-      //               [8, "rgba(0, 0, 0, 0.45)"],
-      //               [9, "rgba(0, 0, 0, 0.4)"],
-      //               [11, "rgba(0, 0, 0, 0.35)"],
-      //               [13, "rgba(0, 0, 0, 0.3)"],
-      //               [15, "rgba(0, 0, 0, 0.25)"],
-      //               [16, "rgba(0, 0, 0, 0.15)"],
-      //             ],
-      //     },
-      //     "fill-opacity": {
-      //       stops: [
-      //         [6, 0.6],
-      //         [9, 1],
-      //       ],
-      //     },
-      //   },
-      // },
+      {
+        id: "landuse_residential",
+        type: "fill",
+        source: "carto",
+        "source-layer": "landuse",
+        minzoom: 6,
+        maxzoom: 13,
+        filter: ["any", ["==", "class", "residential"]],
+        paint: {
+          "fill-pattern": "landuse-pattern",
+          "fill-opacity": {
+            stops: [
+              [6, 0.6],
+              [9, 1],
+            ],
+          },
+        },
+      },
       {
         id: "landuse",
         type: "fill",
@@ -150,7 +110,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           ["==", "class", "stadium"],
         ],
         paint: {
-          "fill-color": t === "light" ? paleGreen50 : nearBlack,
+          "fill-pattern": "landuse-pattern",
         },
       },
       {
@@ -332,7 +292,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           },
           "line-color": {
             stops: [
-              [15, c.roadFill],
+              [15, c.roadLine],
               [16, c.roadCase],
             ],
           },
@@ -377,7 +337,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           },
           "line-color": {
             stops: [
-              [13, c.roadFill],
+              [13, c.roadLine],
               [14, c.roadCase],
             ],
           },
@@ -628,8 +588,8 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
               [18, 3],
             ],
           },
-          "line-opacity": 1,
-          "line-color": t === "light" ? pathGray : darkPath,
+          "line-opacity": .25,
+          "line-color": c.roadCase,
           "line-dasharray": {
             stops: [
               [15, [2, 2]],
@@ -685,7 +645,12 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             ],
           },
           "line-opacity": 1,
-          "line-color": c.roadFill,
+          "line-color": {
+            stops: [
+              [15, c.roadLine],
+              [17, c.roadFill],
+            ],
+          }
         },
       },
       {
@@ -894,7 +859,8 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "line-join": "round",
         },
         paint: {
-          "line-color": t === "light" ? silver : charcoal,
+          "line-color": c.roadCase,
+          "line-opacity": .2,
           "line-width": {
             base: 1.3,
             stops: [
@@ -919,7 +885,8 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "line-join": "round",
         },
         paint: {
-          "line-color": t === "light" ? white : offBlack,
+          "line-color": c.roadCase,
+          "line-opacity": .2,
           "line-width": {
             base: 1.3,
             stops: [
@@ -937,7 +904,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         },
       },
       {
-        id: "building-top",
+        id: "building",
         type: "fill",
         source: "carto",
         "source-layer": "building",
@@ -945,20 +912,13 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           visibility: "visible",
         },
         paint: {
-          "fill-translate": {
-            base: 1,
-            stops: [
-              [14, [0, 0]],
-              [16, [-2, -2]],
-            ],
-          },
           "fill-pattern": "building-pattern",
           "fill-outline-color": c.buildingStroke,
           "fill-opacity": {
             base: 1,
             stops: [
-              [13, 0],
-              [16, 1],
+              [13, 0.1],
+              [18, 1],
             ],
           },
         },

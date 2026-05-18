@@ -4,7 +4,7 @@ import { type Theme, THEMES } from "@/lib/map-texture/constant"
 import { waterPattern } from "@/lib/map-texture/water"
 import { grassPattern } from "@/lib/map-texture/grass"
 import { forestPattern } from "@/lib/map-texture/forest"
-import { buildingPattern } from "@/lib/map-texture/building"
+import { buildingPattern, landusePattern } from "@/lib/map-texture/building"
 
 export const dynamic = 'force-static';
 
@@ -13,6 +13,7 @@ const patterns: Record<string, (theme: Theme) => string> = {
   grass: grassPattern,
   forest: forestPattern,
   building: buildingPattern,
+  landuse: landusePattern,
 }
 
 export async function generateStaticParams() {

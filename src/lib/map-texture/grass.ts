@@ -3,8 +3,8 @@ import { MAP_COLORS } from "@/lib/map-color"
 
 export function grassPattern(theme: Theme): string {
   const colors = {
-    light: { bg: MAP_COLORS.light.landcoverBg },
-    dark: { bg: MAP_COLORS.dark.landcoverBg },
+    light: { bg: MAP_COLORS.light.bg },
+    dark: { bg: MAP_COLORS.dark.bg },
   }
   const c = colors[theme]
 

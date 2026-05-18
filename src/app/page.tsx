@@ -9,6 +9,7 @@ const WATER_PATTERN_ID = "water-pattern"
 const GRASS_PATTERN_ID = "grass-pattern"
 const FOREST_PATTERN_ID = "forest-pattern"
 const BUILDING_PATTERN_ID = "building-pattern"
+const LANDUSE_PATTERN_ID = "landuse-pattern"
 
 function patternUrl(pattern: string, dark: boolean) {
   return `/api/pattern/${dark ? 'dark' : 'light'}/${pattern}`
@@ -37,7 +38,8 @@ export default function Page() {
         loadPattern(map, "water", WATER_PATTERN_ID)
         loadPattern(map, "grass", GRASS_PATTERN_ID)
         loadPattern(map, "forest", FOREST_PATTERN_ID)
-        loadPattern(map, "building", BUILDING_PATTERN_ID)
+      loadPattern(map, "building", BUILDING_PATTERN_ID)
+      loadPattern(map, "landuse", LANDUSE_PATTERN_ID)
       }
 
       map.on("style.load", onStyleLoad)

@@ -3,8 +3,8 @@ import { MAP_COLORS } from "@/lib/map-color"
 
 export function forestPattern(theme: Theme): string {
   const colors = {
-    light: { bg: MAP_COLORS.light.landcoverBg, stroke: MAP_COLORS.light.landcoverStroke },
-    dark: { bg: MAP_COLORS.dark.landcoverBg, stroke: MAP_COLORS.dark.landcoverStroke },
+    light: { bg: MAP_COLORS.light.bg, stroke: MAP_COLORS.light.landcoverStroke },
+    dark: { bg: MAP_COLORS.dark.bg, stroke: MAP_COLORS.dark.landcoverStroke },
   }
   const c = colors[theme]
 

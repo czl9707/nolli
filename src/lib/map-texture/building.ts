@@ -1,12 +1,10 @@
 import { type Theme } from "./constant"
 import { MAP_COLORS } from "@/lib/map-color"
 
-export function buildingPattern(theme: Theme): string {
-  const c = MAP_COLORS[theme]
-
+function hatchPattern(bg: string, stroke: string): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" fill="${c.buildingBg}"/>
-  <g stroke="${c.buildingStroke}" stroke-width="0.75" opacity="0.75">
+  <rect width="34" height="34" cx="16" cy="16" fill="${bg}"/>
+  <g stroke="${stroke}" stroke-width="0.75">
     <line x1="0" y1="0" x2="32" y2="32"/>
     <line x1="0" y1="8" x2="24" y2="32"/>
     <line x1="24" y1="0" x2="32" y2="8"/>
@@ -16,4 +14,14 @@ export function buildingPattern(theme: Theme): string {
     <line x1="8" y1="0" x2="32" y2="24"/>
   </g>
 </svg>`
+}
+
+export function buildingPattern(theme: Theme): string {
+  const c = MAP_COLORS[theme]
+  return hatchPattern(c.buildingBg, c.buildingStroke)
+}
+
+export function landusePattern(theme: Theme): string {
+  const c = MAP_COLORS[theme]
+  return hatchPattern(c.landuseBg, c.landuseStroke)
 }
