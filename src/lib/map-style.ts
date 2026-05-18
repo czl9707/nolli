@@ -26,7 +26,6 @@ const blueGray = "rgba(103, 103, 114, 1)"
 const pathGray = "#d5d5d5"
 const darkPath = "#262626"
 const serviceDark = "#1c1c1c"
-const buildingLight = "#dfdfdf"
 const residentialLight = "rgba(237, 237, 237, 0.25)"
 const rosePink = "#e1c5c7"
 const aerowayLight = "#e8e8e8"
@@ -58,7 +57,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           visibility: "visible",
         },
         paint: {
-          "background-color": t === "light" ? warmWhite : nearBlack,
+          "background-color": c.bg,
           "background-opacity": 1,
         },
       },
@@ -102,44 +101,44 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           },
         },
       },
-      {
-        id: "landuse_residential",
-        type: "fill",
-        source: "carto",
-        "source-layer": "landuse",
-        minzoom: 6,
-        filter: ["any", ["==", "class", "residential"]],
-        paint: {
-          "fill-color": {
-            stops:
-              t === "light"
-                ? [
-                    [5, "rgba(237, 237, 237, 0.5)"],
-                    [8, "rgba(237, 237, 237, 0.45)"],
-                    [9, "rgba(237, 237, 237, 0.4)"],
-                    [11, "rgba(237, 237, 237, 0.35)"],
-                    [13, "rgba(237, 237, 237, 0.3)"],
-                    [15, residentialLight],
-                    [16, residentialLight],
-                  ]
-                : [
-                    [5, "rgba(0, 0, 0, 0.5)"],
-                    [8, "rgba(0, 0, 0, 0.45)"],
-                    [9, "rgba(0, 0, 0, 0.4)"],
-                    [11, "rgba(0, 0, 0, 0.35)"],
-                    [13, "rgba(0, 0, 0, 0.3)"],
-                    [15, "rgba(0, 0, 0, 0.25)"],
-                    [16, "rgba(0, 0, 0, 0.15)"],
-                  ],
-          },
-          "fill-opacity": {
-            stops: [
-              [6, 0.6],
-              [9, 1],
-            ],
-          },
-        },
-      },
+      // {
+      //   id: "landuse_residential",
+      //   type: "fill",
+      //   source: "carto",
+      //   "source-layer": "landuse",
+      //   minzoom: 6,
+      //   filter: ["any", ["==", "class", "residential"]],
+      //   paint: {
+      //     "fill-color": {
+      //       stops:
+      //         t === "light"
+      //           ? [
+      //               [5, "rgba(237, 237, 237, 0.5)"],
+      //               [8, "rgba(237, 237, 237, 0.45)"],
+      //               [9, "rgba(237, 237, 237, 0.4)"],
+      //               [11, "rgba(237, 237, 237, 0.35)"],
+      //               [13, "rgba(237, 237, 237, 0.3)"],
+      //               [15, residentialLight],
+      //               [16, residentialLight],
+      //             ]
+      //           : [
+      //               [5, "rgba(0, 0, 0, 0.5)"],
+      //               [8, "rgba(0, 0, 0, 0.45)"],
+      //               [9, "rgba(0, 0, 0, 0.4)"],
+      //               [11, "rgba(0, 0, 0, 0.35)"],
+      //               [13, "rgba(0, 0, 0, 0.3)"],
+      //               [15, "rgba(0, 0, 0, 0.25)"],
+      //               [16, "rgba(0, 0, 0, 0.15)"],
+      //             ],
+      //     },
+      //     "fill-opacity": {
+      //       stops: [
+      //         [6, 0.6],
+      //         [9, 1],
+      //       ],
+      //     },
+      //   },
+      // },
       {
         id: "landuse",
         type: "fill",
@@ -180,17 +179,11 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         maxzoom: 24,
         filter: ["all", ["==", "admin_level", 6], ["==", "maritime", 0]],
         paint: {
-          "line-color": {
-            stops: [
-              [4, t === "light" ? blushPink : darkGray],
-              [5, t === "light" ? blushPink : darkGray],
-              [6, t === "light" ? rosePink : darkWater],
-            ],
-          },
+          "line-color": c.boundary,
           "line-width": {
             stops: [
               [4, 0.5],
-              [7, 1],
+              [7, 1.5],
             ],
           },
           "line-dasharray": {
@@ -209,32 +202,20 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         minzoom: 4,
         filter: ["all", ["==", "admin_level", 4], ["==", "maritime", 0]],
         paint: {
-          "line-color": {
-            stops:[
-              [4, t === "light" ? blushPink : blueGray],
-              [5, t === "light" ? blushPink : blueGray],
-              [6, t === "light" ? blushPink : blueGray],
-            ]
-          },
+          "line-color": c.boundary,
           "line-width": {
             stops: [
               [4, 0.5],
               [7, 1],
-              [8, 1],
-              [9, 1.2],
+              [8, 1.2],
+              [9, 1.5],
             ],
           },
           "line-dasharray": {
-            stops:
-              t === "light"
-                ? [
-                    [6, [1]],
-                    [7, [2, 2]],
-                  ]
-                : [
-                    [6, [1, 2, 3]],
-                    [7, [1, 2, 3]],
-                  ],
+            stops: [
+              [6, [1]],
+              [7, [1, 2, 3]],
+            ]
           },
         },
       },
@@ -257,31 +238,6 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         },
       },
       {
-        id: "water_shadow",
-        type: "fill",
-        source: "carto",
-        "source-layer": "water",
-        minzoom: 0,
-        filter: ["all", ["==", "$type", "Polygon"]],
-        layout: {
-          visibility: "visible",
-        },
-        paint: {
-          "fill-color": transparent,
-          "fill-antialias": true,
-          "fill-translate-anchor": "map",
-          "fill-opacity": 1,
-          "fill-translate": {
-            stops: [
-              [0, [0, 2]],
-              [6, [0, 1]],
-              [14, [0, 1]],
-              [17, [0, 2]],
-            ],
-          },
-        },
-      },
-      {
         id: "aeroway-runway",
         type: "line",
         source: "carto",
@@ -301,7 +257,8 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
               [16, 10],
             ],
           },
-          "line-color": t === "light" ? aerowayLight : offBlack,
+          "line-color": c.roadCase,
+          "line-opacity": .1,
         },
       },
       {
@@ -312,7 +269,8 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         minzoom: 13,
         filter: ["all", ["==", "class", "taxiway"]],
         paint: {
-          "line-color": t === "light" ? aerowayLight : offBlack,
+          "line-color": c.roadCase,
+          "line-opacity": .1,
           "line-width": {
             stops: [
               [13, 0.5],
@@ -323,31 +281,31 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           },
         },
       },
-      {
-        id: "service_case",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 15,
-        maxzoom: 24,
-        filter: ["all", ["==", "class", "service"]],
-        layout: {
-          "line-cap": "round",
-          "line-join": "round",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [15, 1],
-              [16, 3],
-              [17, 6],
-              [18, 8],
-            ],
-          },
-          "line-opacity": 1,
-          "line-color": t === "light" ? silver : serviceDark,
-        },
-      },
+      // {
+      //   id: "service_case",
+      //   type: "line",
+      //   source: "carto",
+      //   "source-layer": "transportation",
+      //   minzoom: 15,
+      //   maxzoom: 24,
+      //   filter: ["all", ["==", "class", "service"]],
+      //   layout: {
+      //     "line-cap": "round",
+      //     "line-join": "round",
+      //   },
+      //   paint: {
+      //     "line-width": {
+      //       stops: [
+      //         [15, 1],
+      //         [16, 3],
+      //         [17, 6],
+      //         [18, 8],
+      //       ],
+      //     },
+      //     "line-opacity": 1,
+      //     "line-color": t === "light" ? silver : serviceDark,
+      //   },
+      // },
       {
         id: "minor_case",
         type: "line",
@@ -372,8 +330,12 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
               [18, 14],
             ],
           },
-          "line-opacity": 1,
-          "line-color": t === "light" ? lightGray : slateBlueGray,
+          "line-color": {
+            stops: [
+              [15, c.roadFill],
+              [16, c.roadCase],
+            ],
+          },
         },
       },
       {
@@ -413,8 +375,12 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
                     [18, 16],
                   ],
           },
-          "line-opacity": 1,
-          "line-color": t === "light" ? lightGray : slateBlueGray,
+          "line-color": {
+            stops: [
+              [13, c.roadFill],
+              [14, c.roadCase],
+            ],
+          },
         },
       },
       {
@@ -444,23 +410,11 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
               [18, 18],
             ],
           },
-          "line-opacity": {
-            stops: [
-              [5, 0.5],
-              [7, 1],
-            ],
-          },
           "line-color": {
-            stops:
-              t === "light"
-                ? [
-                    [7, lightGray],
-                    [12, silver],
-                  ]
-                : [
-                    [7, charcoal],
-                    [12, deepCharcoal],
-                  ],
+            stops: [
+              [7, c.roadFill],
+              [12, c.roadCase],
+            ],
           },
         },
       },
@@ -487,13 +441,12 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
               [17, 10],
             ],
           },
-          "line-opacity": {
+          "line-color": {
             stops: [
-              [5, 0.5],
-              [7, 1],
+              [5, c.roadFill],
+              [7, c.roadCase],
             ],
           },
-          "line-color": t === "light" ? silver : deepCharcoal,
         },
       },
       {
@@ -697,31 +650,31 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           },
         },
       },
-      {
-        id: "service_fill",
-        type: "line",
-        source: "carto",
-        "source-layer": "transportation",
-        minzoom: 15,
-        maxzoom: 24,
-        filter: ["all", ["==", "class", "service"]],
-        layout: {
-          "line-cap": "round",
-          "line-join": "round",
-        },
-        paint: {
-          "line-width": {
-            stops: [
-              [15, 2],
-              [16, 2],
-              [17, 4],
-              [18, 6],
-            ],
-          },
-          "line-opacity": 1,
-          "line-color": t === "light" ? nearWhite : deepBlack,
-        },
-      },
+      // {
+      //   id: "service_fill",
+      //   type: "line",
+      //   source: "carto",
+      //   "source-layer": "transportation",
+      //   minzoom: 15,
+      //   maxzoom: 24,
+      //   filter: ["all", ["==", "class", "service"]],
+      //   layout: {
+      //     "line-cap": "round",
+      //     "line-join": "round",
+      //   },
+      //   paint: {
+      //     "line-width": {
+      //       stops: [
+      //         [15, 2],
+      //         [16, 2],
+      //         [17, 4],
+      //         [18, 6],
+      //       ],
+      //     },
+      //     "line-opacity": 1,
+      //     "line-color": t === "light" ? nearWhite : deepBlack,
+      //   },
+      // },
       {
         id: "minor_fill",
         type: "line",
@@ -744,7 +697,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? nearWhite : slateBlueGray,
+          "line-color": c.roadFill,
         },
       },
       {
@@ -772,7 +725,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? white : slateBlueGray,
+          "line-color": c.roadFill,
         },
       },
       {
@@ -800,7 +753,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? white : "rgba(83, 86, 102, 1)",
+          "line-color": c.roadFill,
         },
       },
       {
@@ -827,7 +780,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             ],
           },
           "line-opacity": 1,
-          "line-color": t === "light" ? white : deepBlack,
+          "line-color": c.roadFill,
         },
       },
       {
@@ -996,19 +949,6 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         },
       },
       {
-        id: "building",
-        type: "fill",
-        source: "carto",
-        "source-layer": "building",
-        layout: {
-          visibility: "visible",
-        },
-        paint: {
-          "fill-color": t === "light" ? buildingLight : transparent,
-          "fill-antialias": true,
-        },
-      },
-      {
         id: "building-top",
         type: "fill",
         source: "carto",
@@ -1024,8 +964,8 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
               [16, [-2, -2]],
             ],
           },
-          "fill-outline-color": t === "light" ? buildingLight : nearBlack,
-          "fill-color": t === "light" ? "#ededed" : "rgba(57, 57, 57, 1)",
+          "fill-pattern": "building-pattern",
+          "fill-outline-color": c.buildingStroke,
           "fill-opacity": {
             base: 1,
             stops: [
@@ -1048,9 +988,9 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "line-join": "round",
         },
         paint: {
-          "line-color": t === "light" ? "#f3efed" : darkWater,
-          "line-opacity": 0.5,
-          "line-width": 8,
+          "line-color": c.boundary,
+          "line-opacity": 1,
+          "line-width": 6,
           "line-offset": 0,
         },
       },
@@ -1066,25 +1006,17 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "line-join": "round",
         },
         paint: {
-          "line-color": {
-            stops:
-              t === "light"
-                ? [
-                    [4, "#f2e6e7"],
-                    [5, dustyRose],
-                    [6, dustyRose],
-                  ]
-                : [
-                    [4, "rgba(92, 94, 94, 1)"],
-                    [5, "rgba(96, 96, 96, 1)"],
-                    [6, "rgba(102, 102, 102, 1)"],
-                  ],
+          "line-color": c.boundary,
+          "line-opacity": {
+            stops: [
+              [3, 0.3],
+              [6, 1],
+            ],
           },
-          "line-opacity": 1,
           "line-width": {
             stops: [
-              [3, 1],
-              [6, 1.5],
+              [3, 1.5],
+              [6, 3],
             ],
           },
           "line-offset": 0,

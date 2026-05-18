@@ -4,16 +4,19 @@ import { MAP_COLORS } from "@/lib/map-color"
 export function waterPattern(theme: Theme): string {
   const colors = {
     light: {
-      bg: MAP_COLORS.light.waterBg,
-      stroke: MAP_COLORS.light.waterStroke,
+		bg: MAP_COLORS.light.waterBg,
+		stroke: MAP_COLORS.light.waterStroke,
     },
-    dark: { bg: MAP_COLORS.dark.waterBg, stroke: MAP_COLORS.dark.waterStroke },
+    dark: { 
+		bg: MAP_COLORS.dark.waterBg, 
+		stroke: MAP_COLORS.dark.waterStroke 
+	},
   }
   const c = colors[theme]
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
 <rect width="258" height="258" cx="128" cy="128" fill="${c.bg}"/>
-<g stroke="${c.stroke}" stroke-width="1" opacity=".15">${paths}</g>
+<g stroke="${c.stroke}" stroke-width="1" opacity=".8" fill="transparent">${paths}</g>
 </svg>`
 }
 
