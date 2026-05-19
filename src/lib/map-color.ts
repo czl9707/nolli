@@ -17,12 +17,21 @@ const DARK_MAP_COLORS = {
 
     waterBg: 'rgb(21, 30, 36)',
     waterStroke: '#000',
-    waterLabelColor: '#bbb',
     landcoverStroke: '#fff',
     buildingBg: '#080808',
     buildingStroke: '#444',
     landuseBg: '#0A0A0A',
     landuseStroke: '#666',
+    
+    waterLabelColor: '#bbb',
+    placeLabelMajor: '#bec8d7',
+    placeLabelMinor: '#969696',
+    countryLabel: '#879ba5',
+    stateLabel: '#cbe6e6',
+    continentLabel: '#87a4b3',
+    poiLabel: '#515151',
+    roadLabel: '#afafaf',
+    roadLabelMajor: '#383838',
 } as const;
 
 const LIGHT_MAP_COLORS = {
@@ -44,12 +53,21 @@ const LIGHT_MAP_COLORS = {
     
     waterBg: 'rgb(212, 218, 220)', 
     waterStroke: '#fafaf8',
-    waterLabelColor: '#444',
     landcoverStroke: '#000',
     buildingBg: '#eee',
     buildingStroke: '#aaa',
     landuseBg: '#fafaf8',
     landuseStroke: '#aaa',
+    
+    waterLabelColor: '#444',
+    placeLabelMajor: '#697b89',
+    placeLabelMinor: '#697b89',
+    countryLabel: '#8a99a4',
+    stateLabel: '#97a4ae',
+    continentLabel: '#697b89',
+    poiLabel: '#7d9c83',
+    roadLabel: '#838383',
+    roadLabelMajor: '#838383',
 } as const;
 
 export const MAP_COLORS = {

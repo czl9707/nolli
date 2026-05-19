@@ -1,21 +1,7 @@
 import type { StyleSpecification } from "maplibre-gl"
 import { MAP_COLORS } from "./map-color"
 
-const steelBlue = "#697b89"
-const white = "#fff"
-const darkGray = "#222"
-const offBlack = "#111"
-const whiteHalo50 = "rgba(255,255,255,0.5)"
-const midGray = "#666"
-const warmWhite = "#fafaf8"
-const creamWhite = "#f5f5f3"
-const roadNameGray = "#838383"
-const countryLabel = "#8a99a4"
-const countryLabelMid = "#a1adb6"
-const countryLabelLight = "#b9c2c9"
-const parkGreen = "#7d9c83"
-const poiDarkText = "#515151"
-const poiDarkHalo = "#151515"
+const fontFamily = "Architects Daughter"
 
 export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
   const t = theme
@@ -93,8 +79,8 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "fill-pattern": "landuse-pattern",
           "fill-opacity": {
             stops: [
-              [6, 0.6],
-              [9, 1],
+              [6, 0.3],
+              [9, 0.5],
             ],
           },
         },
@@ -110,7 +96,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           ["==", "class", "stadium"],
         ],
         paint: {
-          "fill-pattern": "landuse-pattern",
+          "fill-pattern": "grass-pattern",
         },
       },
       {
@@ -979,11 +965,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: {
           "text-field": "{name_en}",
           "text-font": [
-            "Montserrat Regular Italic",
-            "Open Sans Italic",
-            "Noto Sans Regular",
-            "HanWangHeiLight Regular",
-            "NanumBarunGothic Regular",
+            fontFamily,
           ],
           "symbol-placement": "line",
           "symbol-spacing": 300,
@@ -1010,7 +992,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         paint: {
           "text-color": c.waterLabelColor,
           "text-halo-color": c.waterBg,
-          "text-halo-width": 10,
+          "text-halo-width": 2,
           "text-halo-blur": 0,
         },
       },
@@ -1038,11 +1020,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             ],
           },
           "text-font": [
-            "Montserrat Medium Italic",
-            "Open Sans Italic",
-            "Noto Sans Regular",
-            "HanWangHeiLight Regular",
-            "NanumBarunGothic Regular",
+            fontFamily,
           ],
           "text-line-height": 1.2,
           "text-padding": 2,
@@ -1056,7 +1034,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         paint: {
           "text-color": c.waterLabelColor,
           "text-halo-color": c.waterBg,
-          "text-halo-width": 10,
+          "text-halo-width": 2,
           "text-halo-blur": 0,
         },
       },
@@ -1077,11 +1055,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "symbol-placement": "point",
           "text-size": 12,
           "text-font": [
-            "Montserrat Medium Italic",
-            "Open Sans Italic",
-            "Noto Sans Regular",
-            "HanWangHeiLight Regular",
-            "NanumBarunGothic Regular",
+            fontFamily,
           ],
           "text-line-height": 1.2,
           "text-padding": 2,
@@ -1095,7 +1069,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         paint: {
           "text-color": c.waterLabelColor,
           "text-halo-color": c.waterBg,
-          "text-halo-width": 10,
+          "text-halo-width": 2,
           "text-halo-blur": 0,
         },
       },
@@ -1129,11 +1103,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             ],
           },
           "text-font": [
-            "Montserrat Regular Italic",
-            "Open Sans Italic",
-            "Noto Sans Regular",
-            "HanWangHeiLight Regular",
-            "NanumBarunGothic Regular",
+            fontFamily,
           ],
           "text-line-height": 1.2,
           "text-padding": 2,
@@ -1145,7 +1115,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         paint: {
           "text-color": c.waterLabelColor,
           "text-halo-color": c.waterBg,
-          "text-halo-width": 10,
+          "text-halo-width": 2,
           "text-halo-blur": 0,
         },
       },
@@ -1173,11 +1143,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             ],
           },
           "text-font": [
-            "Montserrat Regular Italic",
-            "Open Sans Italic",
-            "Noto Sans Regular",
-            "HanWangHeiLight Regular",
-            "NanumBarunGothic Regular",
+            fontFamily,
           ],
           "symbol-spacing": 350,
           "text-pitch-alignment": "auto",
@@ -1187,7 +1153,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         paint: {
           "text-color": c.waterLabelColor,
           "text-halo-color": c.waterBg,
-          "text-halo-width": 10,
+          "text-halo-width": 2,
           "text-halo-blur": 0,
         },
       },
@@ -1211,11 +1177,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             ],
           },
           "text-font": [
-            "Montserrat Regular",
-            "Open Sans Regular",
-            "Noto Sans Regular",
-            "HanWangHeiLight Regular",
-            "NanumBarunGothic Regular",
+            fontFamily,
           ],
           "text-size": {
             stops: [
@@ -1239,12 +1201,11 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           },
         },
         paint: {
-          "text-color": t === "light" ? steelBlue : "rgba(182, 180, 180, 1)",
-          "icon-color": t === "light" ? steelBlue : midGray,
+          "text-color": c.placeLabelMinor,
+          "icon-color": c.placeLabelMajor,
           "icon-translate-anchor": "map",
-          "text-halo-color":
-            t === "light" ? whiteHalo50 : "rgba(53, 52, 52, 1)",
-          "text-halo-width": 1,
+          "text-halo-color": c.bg,
+          "text-halo-width": 2,
         },
       },
       {
@@ -1263,11 +1224,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             ],
           },
           "text-font": [
-            "Montserrat Regular",
-            "Open Sans Regular",
-            "Noto Sans Regular",
-            "HanWangHeiLight Regular",
-            "NanumBarunGothic Regular",
+            fontFamily,
           ],
           "text-size": {
             stops: [
@@ -1293,11 +1250,11 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           },
         },
         paint: {
-          "text-color": t === "light" ? steelBlue : midGray,
-          "icon-color": t === "light" ? steelBlue : midGray,
+          "text-color": c.placeLabelMinor,
+          "icon-color": c.placeLabelMinor,
           "icon-translate-anchor": "map",
-          "text-halo-color": t === "light" ? whiteHalo50 : darkGray,
-          "text-halo-width": 1,
+          "text-halo-color": c.bg,
+          "text-halo-width": 2,
         },
       },
       {
@@ -1316,11 +1273,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             ],
           },
           "text-font": [
-            "Montserrat Medium",
-            "Open Sans Bold",
-            "Noto Sans Regular",
-            "HanWangHeiLight Regular",
-            "NanumBarunGothic Regular",
+            fontFamily,
           ],
           "text-size": {
             stops: [
@@ -1341,11 +1294,11 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "text-transform": "none",
         },
         paint: {
-          "text-color": t === "light" ? steelBlue : "rgba(154, 153, 153, 1)",
-          "icon-color": t === "light" ? steelBlue : midGray,
+          "text-color": c.placeLabelMinor,
+          "icon-color": c.placeLabelMinor,
           "icon-translate-anchor": "map",
-          "text-halo-color": t === "light" ? whiteHalo50 : darkGray,
-          "text-halo-width": 1,
+          "text-halo-color": c.bg,
+          "text-halo-width": 2,
         },
       },
       {
@@ -1364,11 +1317,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             ],
           },
           "text-font": [
-            "Montserrat Medium",
-            "Open Sans Bold",
-            "Noto Sans Regular",
-            "HanWangHeiLight Regular",
-            "NanumBarunGothic Regular",
+            fontFamily,
           ],
           "text-size": {
             stops: [
@@ -1389,11 +1338,11 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "text-transform": "none",
         },
         paint: {
-          "text-color": t === "light" ? steelBlue : "rgba(204, 208, 228, 1)",
-          "icon-color": t === "light" ? steelBlue : midGray,
+          "text-color": c.placeLabelMajor,
+          "icon-color": c.placeLabelMinor,
           "icon-translate-anchor": "map",
-          "text-halo-color": t === "light" ? whiteHalo50 : darkGray,
-          "text-halo-width": 1,
+          "text-halo-color": c.bg,
+          "text-halo-width": 2,
         },
       },
       {
@@ -1412,11 +1361,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: {
           "text-field": "{name_en}",
           "text-font": [
-            "Montserrat Medium",
-            "Open Sans Bold",
-            "Noto Sans Regular",
-            "HanWangHeiLight Regular",
-            "NanumBarunGothic Regular",
+            fontFamily,
           ],
           "text-size": {
             stops: [
@@ -1430,22 +1375,9 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "text-transform": "uppercase",
         },
         paint: {
-          "text-color": {
-            stops:
-              t === "light"
-                ? [
-                    [3, countryLabel],
-                    [5, countryLabelMid],
-                    [6, countryLabelLight],
-                  ]
-                : [
-                    [3, "rgba(157, 157, 157, 1)"],
-                    [5, "rgba(114, 114, 114, 1)"],
-                    [6, "rgba(112, 112, 112, 1)"],
-                  ],
-          },
-          "text-halo-color": t === "light" ? warmWhite : offBlack,
-          "text-halo-width": 1,
+          "text-color": c.countryLabel,
+          "text-halo-color": c.bg,
+          "text-halo-width": 2,
         },
       },
       {
@@ -1459,11 +1391,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: {
           "text-field": "{name_en}",
           "text-font": [
-            "Montserrat Medium",
-            "Open Sans Bold",
-            "Noto Sans Regular",
-            "HanWangHeiLight Regular",
-            "NanumBarunGothic Regular",
+            fontFamily,
           ],
           "text-size": {
             stops: [
@@ -1484,22 +1412,9 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           },
         },
         paint: {
-          "text-color": {
-            stops:
-              t === "light"
-                ? [
-                    [3, countryLabel],
-                    [5, countryLabelMid],
-                    [6, countryLabelLight],
-                  ]
-                : [
-                    [3, "rgba(158, 182, 189, 1)"],
-                    [5, "rgba(118, 126, 137, 1)"],
-                    [6, "rgba(120, 141, 147, 1)"],
-                  ],
-          },
-          "text-halo-color": t === "light" ? warmWhite : offBlack,
-          "text-halo-width": 1,
+          "text-color": c.countryLabel,
+          "text-halo-color": c.bg,
+          "text-halo-width": 2,
         },
       },
       {
@@ -1513,11 +1428,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: {
           "text-field": "{name_en}",
           "text-font": [
-            "Montserrat Medium",
-            "Open Sans Bold",
-            "Noto Sans Regular",
-            "HanWangHeiLight Regular",
-            "NanumBarunGothic Regular",
+            fontFamily,
           ],
           "text-size": {
             stops: [
@@ -1529,9 +1440,9 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "text-max-width": 9,
         },
         paint: {
-          "text-color": t === "light" ? "#97a4ae" : "rgba(203, 230, 230, 1)",
-          "text-halo-color": t === "light" ? warmWhite : offBlack,
-          "text-halo-width": 0,
+          "text-color": c.stateLabel,
+          "text-halo-color": c.bg,
+          "text-halo-width": 2,
         },
       },
       {
@@ -1545,11 +1456,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: {
           "text-field": "{name_en}",
           "text-font": [
-            "Montserrat Medium",
-            "Open Sans Bold",
-            "Noto Sans Regular",
-            "HanWangHeiLight Regular",
-            "NanumBarunGothic Regular",
+            fontFamily,
           ],
           "text-transform": "uppercase",
           "text-size": 14,
@@ -1559,9 +1466,9 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "text-keep-upright": false,
         },
         paint: {
-          "text-color": t === "light" ? steelBlue : "rgba(135, 164, 179, 1)",
-          "text-halo-color": t === "light" ? warmWhite : offBlack,
-          "text-halo-width": 1,
+          "text-color": c.continentLabel,
+          "text-halo-color": c.bg,
+          "text-halo-width": 2,
         },
       },
       {
@@ -1580,11 +1487,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             ],
           },
           "text-font": [
-            "Montserrat Medium",
-            "Open Sans Bold",
-            "Noto Sans Regular",
-            "HanWangHeiLight Regular",
-            "NanumBarunGothic Regular",
+            fontFamily,
           ],
           "text-size": {
             stops: [
@@ -1605,11 +1508,11 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "text-transform": "uppercase",
         },
         paint: {
-          "text-color": t === "light" ? steelBlue : "rgba(168, 176, 180, 1)",
-          "icon-color": t === "light" ? steelBlue : midGray,
+          "text-color": c.placeLabelMajor,
+          "icon-color": c.placeLabelMinor,
           "icon-translate-anchor": "map",
-          "text-halo-color": t === "light" ? whiteHalo50 : darkGray,
-          "text-halo-width": 1,
+          "text-halo-color": c.bg,
+          "text-halo-width": 2,
         },
       },
       {
@@ -1633,11 +1536,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             ],
           },
           "text-font": [
-            "Montserrat Medium",
-            "Open Sans Bold",
-            "Noto Sans Regular",
-            "HanWangHeiLight Regular",
-            "NanumBarunGothic Regular",
+            fontFamily,
           ],
           "text-size": {
             stops: [
@@ -1657,11 +1556,11 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "text-transform": "uppercase",
         },
         paint: {
-          "text-color": t === "light" ? steelBlue : "rgba(211, 228, 236, 1)",
-          "icon-color": t === "light" ? steelBlue : midGray,
+          "text-color": c.placeLabelMajor,
+          "icon-color": c.placeLabelMinor,
           "icon-translate-anchor": "map",
-          "text-halo-color": t === "light" ? whiteHalo50 : darkGray,
-          "text-halo-width": 1,
+          "text-halo-color": c.bg,
+          "text-halo-width": 2,
         },
       },
       {
@@ -1675,11 +1574,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: {
           "text-field": "{name_en}",
           "text-font": [
-            "Montserrat Medium",
-            "Open Sans Bold",
-            "Noto Sans Regular",
-            "HanWangHeiLight Regular",
-            "NanumBarunGothic Regular",
+            fontFamily,
           ],
           "text-size": 12,
           "icon-offset": [16, 5],
@@ -1690,11 +1585,11 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "text-offset": [0.2, 0.2],
         },
         paint: {
-          "text-color": t === "light" ? steelBlue : "rgba(174, 191, 207, 1)",
-          "icon-color": t === "light" ? steelBlue : "rgba(94, 105, 106, 1)",
+          "text-color": c.placeLabelMajor,
+          "icon-color": t === "light" ? c.placeLabelMajor : "rgba(94, 105, 106, 1)",
           "icon-translate-anchor": "map",
-          "text-halo-color": t === "light" ? whiteHalo50 : darkGray,
-          "text-halo-width": 1,
+          "text-halo-color": c.bg,
+          "text-halo-width": 2,
         },
       },
       {
@@ -1708,11 +1603,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: {
           "text-field": "{name_en}",
           "text-font": [
-            "Montserrat Medium",
-            "Open Sans Bold",
-            "Noto Sans Regular",
-            "HanWangHeiLight Regular",
-            "NanumBarunGothic Regular",
+            fontFamily,
           ],
           "text-size": 12,
           "icon-offset": [16, 5],
@@ -1723,11 +1614,11 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "text-offset": [0.2, 0.2],
         },
         paint: {
-          "text-color": t === "light" ? steelBlue : "rgba(233, 239, 246, 1)",
-          "icon-color": t === "light" ? steelBlue : midGray,
+          "text-color": c.placeLabelMajor,
+          "icon-color": c.placeLabelMinor,
           "icon-translate-anchor": "map",
-          "text-halo-color": t === "light" ? whiteHalo50 : darkGray,
-          "text-halo-width": 1,
+          "text-halo-color": c.bg,
+          "text-halo-width": 2,
         },
       },
       {
@@ -1741,11 +1632,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: {
           "text-field": "{name_en}",
           "text-font": [
-            "Montserrat Medium",
-            "Open Sans Bold",
-            "Noto Sans Regular",
-            "HanWangHeiLight Regular",
-            "NanumBarunGothic Regular",
+            fontFamily,
           ],
           "text-size": 12,
           "icon-offset": [16, 5],
@@ -1756,11 +1643,11 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "text-offset": [0.2, 0.2],
         },
         paint: {
-          "text-color": t === "light" ? steelBlue : "rgba(175, 194, 217, 1)",
-          "icon-color": t === "light" ? steelBlue : "rgba(131, 164, 189, 1)",
+          "text-color": c.placeLabelMajor,
+          "icon-color": t === "light" ? c.placeLabelMajor : "rgba(131, 164, 189, 1)",
           "icon-translate-anchor": "map",
-          "text-halo-color": t === "light" ? whiteHalo50 : darkGray,
-          "text-halo-width": 1,
+          "text-halo-color": c.bg,
+          "text-halo-width": 2,
         },
       },
       {
@@ -1778,11 +1665,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: {
           "text-field": "{name_en}",
           "text-font": [
-            "Montserrat Medium",
-            "Open Sans Bold",
-            "Noto Sans Regular",
-            "HanWangHeiLight Regular",
-            "NanumBarunGothic Regular",
+            fontFamily,
           ],
           "text-size": 12,
           "icon-offset": [16, 5],
@@ -1793,11 +1676,11 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "text-offset": [0.2, 0.2],
         },
         paint: {
-          "text-color": t === "light" ? steelBlue : "rgba(160, 179, 191, 1)",
-          "icon-color": t === "light" ? steelBlue : "rgba(113, 128, 147, 1)",
+          "text-color": c.placeLabelMajor,
+          "icon-color": t === "light" ? c.placeLabelMajor : "rgba(113, 128, 147, 1)",
           "icon-translate-anchor": "map",
-          "text-halo-color": t === "light" ? whiteHalo50 : darkGray,
-          "text-halo-width": 1,
+          "text-halo-color": c.bg,
+          "text-halo-width": 2,
         },
       },
       {
@@ -1811,11 +1694,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: {
           "text-field": "{name_en}",
           "text-font": [
-            "Montserrat Medium",
-            "Open Sans Bold",
-            "Noto Sans Regular",
-            "HanWangHeiLight Regular",
-            "NanumBarunGothic Regular",
+            fontFamily,
           ],
           "text-size": 12,
           "icon-offset": [16, 5],
@@ -1827,11 +1706,11 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "text-transform": "uppercase",
         },
         paint: {
-          "text-color": t === "light" ? steelBlue : "rgba(177, 201, 214, 1)",
-          "icon-color": t === "light" ? steelBlue : midGray,
+          "text-color": c.placeLabelMajor,
+          "icon-color": c.placeLabelMinor,
           "icon-translate-anchor": "map",
-          "text-halo-color": t === "light" ? whiteHalo50 : darkGray,
-          "text-halo-width": 1,
+          "text-halo-color": c.bg,
+          "text-halo-width": 2,
         },
       },
       {
@@ -1848,11 +1727,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: {
           "text-field": "{name}",
           "text-font": [
-            "Montserrat Medium",
-            "Open Sans Bold",
-            "Noto Sans Regular",
-            "HanWangHeiLight Regular",
-            "NanumBarunGothic Regular",
+            fontFamily,
           ],
           "text-size": {
             stops: [
@@ -1864,9 +1739,9 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "text-transform": "uppercase",
         },
         paint: {
-          "text-color": t === "light" ? parkGreen : poiDarkText,
-          "text-halo-color": t === "light" ? creamWhite : poiDarkHalo,
-          "text-halo-width": 1,
+          "text-color": c.poiLabel,
+          "text-halo-color": c.bg,
+          "text-halo-width": 2,
         },
       },
       {
@@ -1879,11 +1754,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: {
           "symbol-placement": "line",
           "text-font": [
-            "Montserrat Regular",
-            "Open Sans Regular",
-            "Noto Sans Regular",
-            "HanWangHeiLight Regular",
-            "NanumBarunGothic Regular",
+            fontFamily,
           ],
           "text-size": 9,
           "text-field": "{name}",
@@ -1894,9 +1765,9 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "text-justify": "center",
         },
         paint: {
-          "text-color": t === "light" ? roadNameGray : "rgba(181, 180, 180, 1)",
-          "text-halo-color": t === "light" ? white : offBlack,
-          "text-halo-width": 1,
+          "text-color": c.roadLabel,
+          "text-halo-color": c.bg,
+          "text-halo-width": 2,
         },
       },
       {
@@ -1909,11 +1780,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: {
           "symbol-placement": "line",
           "text-font": [
-            "Montserrat Regular",
-            "Open Sans Regular",
-            "Noto Sans Regular",
-            "HanWangHeiLight Regular",
-            "NanumBarunGothic Regular",
+            fontFamily,
           ],
           "text-size": {
             stops: [
@@ -1930,9 +1797,9 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "text-justify": "center",
         },
         paint: {
-          "text-color": t === "light" ? roadNameGray : "rgba(146, 146, 146, 1)",
-          "text-halo-color": t === "light" ? white : "rgba(34, 34, 34, 1)",
-          "text-halo-width": 1,
+          "text-color": c.roadLabel,
+          "text-halo-color": c.bg,
+          "text-halo-width": 2,
         },
       },
       {
@@ -1945,11 +1812,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: {
           "symbol-placement": "line",
           "text-font": [
-            "Montserrat Regular",
-            "Open Sans Regular",
-            "Noto Sans Regular",
-            "HanWangHeiLight Regular",
-            "NanumBarunGothic Regular",
+            fontFamily,
           ],
           "text-size": {
             stops: [
@@ -1978,9 +1841,9 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           },
         },
         paint: {
-          "text-color": t === "light" ? roadNameGray : "rgba(189, 189, 189, 1)",
-          "text-halo-color": t === "light" ? white : offBlack,
-          "text-halo-width": 1,
+          "text-color": c.roadLabel,
+          "text-halo-color": c.bg,
+          "text-halo-width": 2,
         },
       },
       {
@@ -1993,11 +1856,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: {
           "symbol-placement": "line",
           "text-font": [
-            "Montserrat Regular",
-            "Open Sans Regular",
-            "Noto Sans Regular",
-            "HanWangHeiLight Regular",
-            "NanumBarunGothic Regular",
+            fontFamily,
           ],
           "text-size": {
             stops: [
@@ -2026,9 +1885,9 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           },
         },
         paint: {
-          "text-color": t === "light" ? roadNameGray : "#383838",
-          "text-halo-color": t === "light" ? white : offBlack,
-          "text-halo-width": 1,
+          "text-color": c.roadLabelMajor,
+          "text-halo-color": c.bg,
+          "text-halo-width": 2,
         },
       },
     ],
