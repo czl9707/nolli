@@ -2,11 +2,7 @@ import { type Theme } from "./constant"
 import { MAP_COLORS } from "@/lib/map-color"
 
 export function forestPattern(theme: Theme): string {
-  const colors = {
-    light: { bg: MAP_COLORS.light.bg, stroke: MAP_COLORS.light.landcoverStroke },
-    dark: { bg: MAP_COLORS.dark.bg, stroke: MAP_COLORS.dark.landcoverStroke },
-  }
-  const c = colors[theme]
+  const c = { stroke: MAP_COLORS[theme].landcoverStroke }
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
 <defs>
@@ -18,12 +14,11 @@ export function forestPattern(theme: Theme): string {
     <feColorMatrix type="saturate" values="0" x="0%" y="0%" width="100%" height="100%" in="specularLighting" result="colormatrix"/>
   </filter>
   <g id="t">
-    <circle cx="0.9" cy="0.8" r="2.7" fill="none" stroke="${c.stroke}" stroke-width="0.5" stroke-miterlimit="10" opacity="0.3"/>
-    <circle cx="0" cy="0" r="2.7" fill="${c.bg}" stroke="${c.stroke}" stroke-width="0.5" stroke-miterlimit="10" opacity="0.2"/>
+    <circle cx="0.9" cy="0.8" r="2.7" fill="none" stroke="${c.stroke}" stroke-width="0.5" stroke-miterlimit="10" opacity="0.4"/>
+    <circle cx="0" cy="0" r="2.7" fill="none" stroke="${c.stroke}" stroke-width="0.5" stroke-miterlimit="10" opacity="0.2"/>
   </g>
 </defs>
-<rect x="-1" y="-1" width="1026" height="1026" fill="${c.bg}"/>
-<rect width="1024" height="1024" fill="#ff0000" filter="url(#nnnoise-filter)" opacity="0.4"/>
+<rect width="1024" height="1024" fill="#ff0000" filter="url(#nnnoise-filter)" opacity="0.2"/>
 <g>${trees.map(([x, y]) => `<use href="#t" x="${x}" y="${y}"/>`).join("")}</g>
 </svg>`
 }

@@ -30,12 +30,12 @@ export async function GET(
 
   const svg = patterns[pattern](theme)
   const buffer = await sharp(Buffer.from(svg))
-    .webp({ quality: 100 })
+    .png()
     .toBuffer()
 
   return new NextResponse(new Uint8Array(buffer), {
     headers: {
-      "Content-Type": "image/webp",
+      "Content-Type": "image/png",
     },
   })
 }

@@ -278,7 +278,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           },
           "line-color": {
             stops: [
-              [15, c.roadLine],
+              [14, c.roadLine],
               [16, c.roadCase],
             ],
           },
@@ -571,10 +571,9 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             stops: [
               [15, 0.5],
               [16, 1],
-              [18, 3],
             ],
           },
-          "line-opacity": .25,
+          "line-opacity": .35,
           "line-color": c.roadCase,
           "line-dasharray": {
             stops: [
@@ -939,6 +938,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             base: 1,
             stops: [
               [13, 0.1],
+              [16, 0.3],
               [18, 1],
             ],
           },

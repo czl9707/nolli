@@ -1,13 +1,6 @@
 import { type Theme } from "./constant"
-import { MAP_COLORS } from "@/lib/map-color"
 
-export function grassPattern(theme: Theme): string {
-  const colors = {
-    light: { bg: MAP_COLORS.light.bg },
-    dark: { bg: MAP_COLORS.dark.bg },
-  }
-  const c = colors[theme]
-
+export function grassPattern(_theme: Theme): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
   <defs>
     <filter id="nnnoise-filter" x="-20%" y="-20%" width="140%" height="140%" filterUnits="objectBoundingBox" primitiveUnits="userSpaceOnUse" color-interpolation-filters="linearRGB">
@@ -18,7 +11,6 @@ export function grassPattern(theme: Theme): string {
       <feColorMatrix type="saturate" values="0" x="0%" y="0%" width="100%" height="100%" in="specularLighting" result="colormatrix"/>
     </filter>
   </defs>
-  <rect x="-1" y="-1" width="258" height="258" fill="${c.bg}"/>
-  <rect width="256" height="256" fill="#ff0000" filter="url(#nnnoise-filter)" opacity="0.4"/>
+  <rect width="256" height="256" fill="#ff0000" filter="url(#nnnoise-filter)" opacity="0.2"/>
 </svg>`
 }
