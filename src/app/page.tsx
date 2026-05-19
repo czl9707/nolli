@@ -3,55 +3,106 @@
 import { Map, MapControls } from "@/components/ui/map"
 import { getMapStyle } from "@/lib/map-style"
 import type { MapRef } from "@/components/ui/map"
-import { useCallback, useRef } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { Theme } from "@/lib/map-texture/constant"
 
-const WATER_PATTERN_ID = "water-pattern"
-const GRASS_PATTERN_ID = "grass-pattern"
-const FOREST_PATTERN_ID = "forest-pattern"
-const BUILDING_PATTERN_ID = "building-pattern"
-const LANDUSE_PATTERN_ID = "landuse-pattern"
+const PATTERNS = [
+  { pattern: "water", id: "water-pattern" },
+  { pattern: "grass", id: "grass-pattern" },
+  { pattern: "forest", id: "forest-pattern" },
+  { pattern: "building", id: "building-pattern" },
+  { pattern: "landuse", id: "landuse-pattern" },
+]
 
-function patternUrl(pattern: string, dark: boolean) {
-  return `/api/pattern/${dark ? 'dark' : 'light'}/${pattern}`
+type CachedImage = HTMLImageElement | ImageBitmap
+
+function patternUrl(pattern: string, theme: Theme) {
+  return `/api/pattern/${theme}/${pattern}`
+}
+
+function applyImage(map: MapRef, id: string, data: CachedImage) {
+  if (map.hasImage(id)) map.removeImage(id)
+  map.addImage(id, data, { pixelRatio: 2 })
+}
+
+async function fetchAndCache(
+  map: MapRef,
+  theme: Theme,
+  cache: Record<string, CachedImage>,
+  apply: boolean,
+) {
+  await Promise.all(
+    PATTERNS.map(async ({ pattern, id }) => {
+      const key = `${theme}:${pattern}`
+      let data = cache[key]
+      if (!data) {
+        const res = await map.loadImage(patternUrl(pattern, theme))
+        data = res.data
+        cache[key] = data
+      }
+      if (apply) applyImage(map, id, data)
+    }),
+  )
 }
 
 export default function Page() {
-  const mapRefStore = useRef<MapRef | null>(null)
+  const mapRef = useRef<MapRef | null>(null)
+  const cacheRef = useRef<Record<string, CachedImage>>({})
+  const [ready, setReady] = useState(false)
 
-  const loadPattern = useCallback(async (map: MapRef, pattern: string, patternId: string) => {
-    const dark = document.documentElement.classList.contains("dark")
-    const image = await map.loadImage(patternUrl(pattern, dark))
-    if (map.hasImage(patternId)) map.updateImage(patternId, image.data)
-    else map.addImage(patternId, image.data, { pixelRatio: 2 })
+  const mapStyles = useMemo(() => ({
+    light: getMapStyle("light"),
+    dark: getMapStyle("dark"),
+  }), [])
+
+  const applyAllPatterns = useCallback((map: MapRef, theme: Theme) => {
+    for (const { pattern, id } of PATTERNS) {
+      const data = cacheRef.current[`${theme}:${pattern}`]
+      if (data) applyImage(map, id, data)
+    }
   }, [])
 
-  const handleRef = useCallback(
-    (map: MapRef | null) => {
+  const handleRef = useCallback((map: MapRef | null) => {
+    if (!map) return
+    mapRef.current = map
+
+    const current: Theme = document.documentElement.classList.contains("dark") ? "dark" : "light"
+    const other: Theme = current === "dark" ? "light" : "dark"
+
+    map.on("style.load", () => {
+      const theme: Theme = document.documentElement.classList.contains("dark") ? "dark" : "light"
+      applyAllPatterns(map, theme)
+    })
+
+    fetchAndCache(map, current, cacheRef.current, true).then(() => {
+      if (mapRef.current !== map) return
+      setReady(true)
+      fetchAndCache(map, other, cacheRef.current, false)
+    })
+  }, [applyAllPatterns])
+
+  useEffect(() => {
+    let prevDark = document.documentElement.classList.contains("dark")
+    const observer = new MutationObserver(async () => {
+      const map = mapRef.current
       if (!map) return
-      mapRefStore.current = map
-      loadPattern(map, "water", WATER_PATTERN_ID)
-      loadPattern(map, "grass", GRASS_PATTERN_ID)
-      loadPattern(map, "forest", FOREST_PATTERN_ID)
-      loadPattern(map, "building", BUILDING_PATTERN_ID)
-
-      const onStyleLoad = () => {
-        loadPattern(map, "water", WATER_PATTERN_ID)
-        loadPattern(map, "grass", GRASS_PATTERN_ID)
-        loadPattern(map, "forest", FOREST_PATTERN_ID)
-      loadPattern(map, "building", BUILDING_PATTERN_ID)
-      loadPattern(map, "landuse", LANDUSE_PATTERN_ID)
-      }
-
-      map.on("style.load", onStyleLoad)
-    },
-    [loadPattern],
-  )
+      const dark = document.documentElement.classList.contains("dark")
+      if (dark === prevDark) return
+      prevDark = dark
+      const theme: Theme = dark ? "dark" : "light"
+      applyAllPatterns(map, theme)
+      await fetchAndCache(map, theme, cacheRef.current, true)
+    })
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    })
+    return () => observer.disconnect()
+  }, [])
 
   return (
     <div className="w-full h-full">
-      <Map ref={handleRef} 
-        styles={{ light: getMapStyle("light"), dark: getMapStyle("dark") }}
-      >
+      <Map ref={handleRef} styles={mapStyles} loading={!ready}>
         <MapControls className="right-2 bottom-16" showZoom showCompass showLocate />
       </Map>
     </div>

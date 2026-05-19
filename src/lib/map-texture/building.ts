@@ -3,7 +3,7 @@ import { MAP_COLORS } from "@/lib/map-color"
 
 function hatchPattern(bg: string, stroke: string): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="34" height="34" cx="16" cy="16" fill="${bg}"/>
+  <rect x="-1" y="-1" width="34" height="34" fill="${bg}"/>
   <g stroke="${stroke}" stroke-width="0.75">
     <line x1="0" y1="0" x2="32" y2="32"/>
     <line x1="0" y1="8" x2="24" y2="32"/>

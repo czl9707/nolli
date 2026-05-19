@@ -664,7 +664,12 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             ],
           },
           "line-opacity": 1,
-          "line-color": c.roadFill,
+          "line-color": {
+            stops: [
+              [13, c.roadLine],
+              [17, c.roadFill],
+            ],
+          }
         },
       },
       {
@@ -692,7 +697,12 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             ],
           },
           "line-opacity": 1,
-          "line-color": c.roadFillPri,
+          "line-color": {
+            stops: [
+              [10, c.roadLinePri],
+              [16, c.roadFillPri],
+            ],
+          }
         },
       },
       {
@@ -719,7 +729,12 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             ],
           },
           "line-opacity": 1,
-          "line-color": c.roadFillPri,
+          "line-color": {
+            stops: [
+              [12, c.roadLinePri],
+              [15, c.roadFillPri],
+            ],
+          },
         },
       },
       {
@@ -747,7 +762,12 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             ],
           },
           "line-opacity": 1,
-          "line-color": c.roadFillTrunk,
+          "line-color": {
+            stops: [
+              [10, c.roadLineTrunk],
+              [16, c.roadFillTrunk],
+            ],
+          }
         },
       },
       {
@@ -774,7 +794,12 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             ],
           },
           "line-opacity": 1,
-          "line-color": c.roadFillTrunk,
+          "line-color": {
+            stops: [
+              [12, c.roadLineTrunk],
+              [15, c.roadFillTrunk],
+            ],
+          },
         },
       },
       {
@@ -803,7 +828,12 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             ],
           },
           "line-opacity": 1,
-          "line-color": c.roadFillMot,
+          "line-color": {
+            stops: [
+              [10, c.roadLineMot],
+              [16, c.roadFillMot],
+            ],
+          }
         },
       },
       {
@@ -830,7 +860,12 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
             ],
           },
           "line-opacity": 1,
-          "line-color": c.roadFillMot,
+          "line-color": {
+            stops: [
+              [12, c.roadLineMot],
+              [15, c.roadFillMot],
+            ],
+          },
         },
       },
       {

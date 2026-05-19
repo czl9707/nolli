@@ -22,7 +22,7 @@ export function forestPattern(theme: Theme): string {
     <circle cx="0" cy="0" r="2.7" fill="${c.bg}" stroke="${c.stroke}" stroke-width="0.5" stroke-miterlimit="10" opacity="0.2"/>
   </g>
 </defs>
-<rect width="1026" height="1026" cx="512" cy="512" fill="${c.bg}"/>
+<rect x="-1" y="-1" width="1026" height="1026" fill="${c.bg}"/>
 <rect width="1024" height="1024" fill="#ff0000" filter="url(#nnnoise-filter)" opacity="0.4"/>
 <g>${trees.map(([x, y]) => `<use href="#t" x="${x}" y="${y}"/>`).join("")}</g>
 </svg>`

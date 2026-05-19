@@ -15,7 +15,7 @@ export function waterPattern(theme: Theme): string {
   const c = colors[theme]
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
-<rect width="258" height="258" cx="128" cy="128" fill="${c.bg}"/>
+<rect x="-1" y="-1" width="258" height="258" fill="${c.bg}"/>
 <g stroke="${c.stroke}" stroke-width="1" opacity=".8" fill="transparent">${paths}</g>
 </svg>`
 }
