@@ -1,4 +1,4 @@
-import type { StyleSpecification, LayerSpecification, FilterSpecification, DataDrivenPropertyValueSpecification, FormattedSpecification } from "maplibre-gl"
+import type { StyleSpecification, LayerSpecification, FilterSpecification } from "maplibre-gl"
 import { MAP_COLORS } from "./map-color"
 
 const fontFamily = "Architects Daughter"
@@ -514,7 +514,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         "source-layer": "waterway",
         paint: {
           "line-color": c.waterBg,
-          "line-width": { stops: [[8, 0.5], [9, 1], [15, 2], [16, 3]] },
+          "line-width": { stops: [[8, .75], [9, 1.5], [15, 2], [16, 3]] },
         },
       },
       {
@@ -641,8 +641,8 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: { visibility: "visible" },
         paint: {
           "fill-pattern": "building-pattern",
-          "fill-outline-color": c.buildingStroke,
-          "fill-opacity": { base: 1, stops: [[13, 0.1], [16, 0.3], [18, 1]] },
+          // "fill-outline-color": c.buildingStroke,
+          "fill-opacity": { base: 1, stops: [[13, 0.1], [16, 1]] },
         },
       },
       {
