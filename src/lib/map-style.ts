@@ -42,48 +42,13 @@ interface TextLabelDef {
 
 const ROAD_DEFS: RoadClassDef[] = [
   {
-    id: "mot",
-    classFilter: "motorway",
-    colorKeys: { line: "roadLineMot", case: "roadCaseMot", fill: "roadFillMot" },
+    id: "minor",
+    classFilter: "minor",
+    colorKeys: { line: "roadLine", case: "roadCase", fill: "roadFill" },
     stages: {
-      show: { zoom: 6, width: 0.5 },
-      split: { zoom: 11, caseWidth: 3, fillWidth: 1 },
-      stable: { zoom: 18, caseWidth: 22, fillWidth: 20 },
-    },
-    rampStages: {
-      show: { zoom: 12, width: 2 },
-      split: { zoom: 13, caseWidth: 3, fillWidth: 1.5 },
-      stable: { zoom: 17, caseWidth: 10, fillWidth: 8 },
-    },
-  },
-  {
-    id: "trunk",
-    classFilter: "trunk",
-    colorKeys: { line: "roadLineTrunk", case: "roadCaseTrunk", fill: "roadFillTrunk" },
-    stages: {
-      show: { zoom: 6, width: 0.5 },
-      split: { zoom: 11, caseWidth: 3, fillWidth: 1 },
-      stable: { zoom: 18, caseWidth: 18, fillWidth: 16 },
-    },
-    rampStages: {
-      show: { zoom: 12, width: 2 },
-      split: { zoom: 13, caseWidth: 3, fillWidth: 1.5 },
-      stable: { zoom: 17, caseWidth: 10, fillWidth: 8 },
-    },
-  },
-  {
-    id: "pri",
-    classFilter: "primary",
-    colorKeys: { line: "roadLinePri", case: "roadCasePri", fill: "roadFillPri" },
-    stages: {
-      show: { zoom: 6, width: 0.5 },
-      split: { zoom: 11, caseWidth: 3, fillWidth: 0.3 },
-      stable: { zoom: 18, caseWidth: 18, fillWidth: 16 },
-    },
-    rampStages: {
-      show: { zoom: 12, width: 2 },
-      split: { zoom: 13, caseWidth: 3, fillWidth: 1 },
-      stable: { zoom: 17, caseWidth: 8, fillWidth: 8 },
+      show: { zoom: 12, width: 0.5 },
+      split: { zoom: 15, caseWidth: 5, fillWidth: 3 },
+      stable: { zoom: 18, caseWidth: 16, fillWidth: 12 },
     },
   },
   {
@@ -92,18 +57,53 @@ const ROAD_DEFS: RoadClassDef[] = [
     colorKeys: { line: "roadLine", case: "roadCase", fill: "roadFill" },
     stages: {
       show: { zoom: 11, width: { dark: 0.9, light: 0.5 } },
-      split: { zoom: 13, caseWidth: 3, fillWidth: 2 },
-      stable: { zoom: 18, caseWidth: 16, fillWidth: 14 },
+      split: { zoom: 15, caseWidth: 4, fillWidth: 2 },
+      stable: { zoom: 18, caseWidth: 18, fillWidth: 14 },
     },
   },
   {
-    id: "minor",
-    classFilter: "minor",
-    colorKeys: { line: "roadLine", case: "roadCase", fill: "roadFill" },
+    id: "pri",
+    classFilter: "primary",
+    colorKeys: { line: "roadLinePri", case: "roadCasePri", fill: "roadFillPri" },
     stages: {
-      show: { zoom: 11, width: 0.5 },
-      split: { zoom: 15, caseWidth: 3, fillWidth: 3 },
-      stable: { zoom: 18, caseWidth: 14, fillWidth: 12 },
+      show: { zoom: 6, width: 0.5 },
+      split: { zoom: 15, caseWidth: 5, fillWidth: 1 },
+      stable: { zoom: 18, caseWidth: 20, fillWidth: 14 },
+    },
+    rampStages: {
+      show: { zoom: 12, width: 2 },
+      split: { zoom: 15, caseWidth: 3, fillWidth: 1 },
+      stable: { zoom: 18, caseWidth: 12, fillWidth: 8 },
+    },
+  },
+  {
+    id: "trunk",
+    classFilter: "trunk",
+    colorKeys: { line: "roadLineTrunk", case: "roadCaseTrunk", fill: "roadFillTrunk" },
+    stages: {
+      show: { zoom: 6, width: 0.5 },
+      split: { zoom: 15, caseWidth: 5, fillWidth: 1 },
+      stable: { zoom: 18, caseWidth: 24, fillWidth: 18 },
+    },
+    rampStages: {
+      show: { zoom: 12, width: 2 },
+      split: { zoom: 15, caseWidth: 3, fillWidth: 1 },
+      stable: { zoom: 18, caseWidth: 10, fillWidth: 6 },
+    },
+  },
+  {
+    id: "mot",
+    classFilter: "motorway",
+    colorKeys: { line: "roadLineMot", case: "roadCaseMot", fill: "roadFillMot" },
+    stages: {
+      show: { zoom: 6, width: 0.5 },
+      split: { zoom: 15, caseWidth: 5, fillWidth: 1 },
+      stable: { zoom: 18, caseWidth: 24, fillWidth: 18 },
+    },
+    rampStages: {
+      show: { zoom: 12, width: 2 },
+      split: { zoom: 15, caseWidth: 3, fillWidth: 1 },
+      stable: { zoom: 18, caseWidth: 10, fillWidth: 6 },
     },
   },
 ]
@@ -117,7 +117,7 @@ const TEXT_DEFS: TextLabelDef[] = [
     maxzoom: 2,
     textSize: 14,
     textTransform: "uppercase",
-    textColor: "continentLabel",
+    textColor: "priLabel",
   },
   {
     id: "place_country_1",
@@ -127,7 +127,7 @@ const TEXT_DEFS: TextLabelDef[] = [
     maxzoom: 7,
     textSize: [[3, 11], [4, 12], [5, 13], [6, 14]],
     textTransform: "uppercase",
-    textColor: "countryLabel",
+    textColor: "priLabel",
   },
   {
     id: "place_country_2",
@@ -137,7 +137,7 @@ const TEXT_DEFS: TextLabelDef[] = [
     maxzoom: 10,
     textSize: [[3, 10], [5, 11], [6, 12], [7, 13], [8, 14]],
     textTransform: "uppercase",
-    textColor: "countryLabel",
+    textColor: "priLabel",
   },
   {
     id: "place_state",
@@ -147,7 +147,34 @@ const TEXT_DEFS: TextLabelDef[] = [
     maxzoom: 10,
     textSize: [[5, 12], [7, 14]],
     textTransform: "uppercase",
-    textColor: "stateLabel",
+    textColor: "priLabel",
+  },
+  {
+    id: "place_city_dot_r2",
+    sourceLayer: "place",
+    filter: ["all", ["==", "class", "city"], ["<=", "rank", 2]],
+    minzoom: 4,
+    maxzoom: 7,
+    textSize: 12,
+    textColor: "priLabel",
+  },
+  {
+    id: "place_city_dot_r4",
+    sourceLayer: "place",
+    filter: ["all", ["==", "class", "city"], ["<=", "rank", 4]],
+    minzoom: 5,
+    maxzoom: 7,
+    textSize: 12,
+    textColor: "priLabel",
+  },
+  {
+    id: "place_city_dot_r7",
+    sourceLayer: "place",
+    filter: ["all", ["==", "class", "city"], ["<=", "rank", 7]],
+    minzoom: 6,
+    maxzoom: 7,
+    textSize: 12,
+    textColor: "priLabel",
   },
   {
     id: "place_city_r5",
@@ -158,7 +185,7 @@ const TEXT_DEFS: TextLabelDef[] = [
     textField: [[8, "{name_en}"], [13, "{name}"]],
     textSize: [[8, 14], [10, 16], [13, 19], [14, 22]],
     textTransform: "uppercase",
-    textColor: "placeLabelMajor",
+    textColor: "priLabel",
   },
   {
     id: "place_city_r6",
@@ -169,7 +196,26 @@ const TEXT_DEFS: TextLabelDef[] = [
     textField: [[8, "{name_en}"], [13, "{name}"]],
     textSize: [[8, 12], [9, 13], [10, 14], [13, 17], [14, 20]],
     textTransform: "uppercase",
-    textColor: "placeLabelMajor",
+    textColor: "priLabel",
+  },
+  {
+    id: "place_city_dot_z7",
+    sourceLayer: "place",
+    filter: ["all", ["!has", "capital"], ["!in", "class", "country", "state"]],
+    minzoom: 7,
+    maxzoom: 8,
+    textSize: 12,
+    textColor: "priLabel",
+  },
+  {
+    id: "place_capital_dot_z7",
+    sourceLayer: "place",
+    filter: ["all", [">", "capital", 0]],
+    minzoom: 7,
+    maxzoom: 8,
+    textSize: 12,
+    textTransform: "uppercase",
+    textColor: "priLabel",
   },
   {
     id: "place_town",
@@ -179,7 +225,7 @@ const TEXT_DEFS: TextLabelDef[] = [
     maxzoom: 14,
     textField: [[8, "{name_en}"], [13, "{name}"]],
     textSize: [[8, 10], [9, 10], [10, 11], [13, 14], [14, 15]],
-    textColor: "placeLabelMajor",
+    textColor: "priLabel",
   },
   {
     id: "place_villages",
@@ -189,7 +235,7 @@ const TEXT_DEFS: TextLabelDef[] = [
     maxzoom: 16,
     textField: [[8, "{name_en}"], [13, "{name}"]],
     textSize: [[10, 9], [12, 10], [13, 11], [14, 12], [16, 13]],
-    textColor: "placeLabelMinor",
+    textColor: "secLabel",
   },
   {
     id: "place_suburbs",
@@ -200,7 +246,7 @@ const TEXT_DEFS: TextLabelDef[] = [
     textField: [[8, "{name_en}"], [13, "{name}"]],
     textSize: [[12, 9], [13, 10], [14, 11], [15, 12], [16, 13]],
     textTransform: [[8, "none"], [12, "uppercase"]],
-    textColor: "placeLabelMinor",
+    textColor: "secLabel",
   },
   {
     id: "place_hamlet",
@@ -211,7 +257,7 @@ const TEXT_DEFS: TextLabelDef[] = [
     textField: [[8, "{name_en}"], [14, "{name}"]],
     textSize: [[13, 8], [14, 10], [16, 11]],
     textTransform: [[12, "none"], [14, "uppercase"]],
-    textColor: "placeLabelMinor",
+    textColor: "secLabel",
   },
   {
     id: "watername_ocean",
@@ -267,7 +313,7 @@ const TEXT_DEFS: TextLabelDef[] = [
     placement: "line",
     textField: "{name}",
     textSize: 9,
-    textColor: "roadLabel",
+    textColor: "secLabel",
   },
   {
     id: "roadname_sec",
@@ -277,7 +323,7 @@ const TEXT_DEFS: TextLabelDef[] = [
     placement: "line",
     textField: "{name}",
     textSize: [[15, 9], [16, 11], [18, 12]],
-    textColor: "roadLabel",
+    textColor: "secLabel",
   },
   {
     id: "roadname_pri",
@@ -287,7 +333,7 @@ const TEXT_DEFS: TextLabelDef[] = [
     placement: "line",
     textField: "{name}",
     textSize: [[14, 10], [15, 10], [16, 11], [18, 12]],
-    textColor: "roadLabel",
+    textColor: "secLabel",
   },
   {
     id: "roadname_major",
@@ -297,7 +343,16 @@ const TEXT_DEFS: TextLabelDef[] = [
     placement: "line",
     textField: "{name}",
     textSize: [[14, 10], [15, 10], [16, 11], [18, 12]],
-    textColor: "roadLabelMajor",
+    textColor: "minorLabel",
+  },
+  {
+    id: "poi",
+    sourceLayer: "poi",
+    filter: ["all", ["in", "class", "park", "stadium", "cemetery", "attraction"], ["<=", "rank", 3]],
+    minzoom: 15,
+    textSize: [[15, 8], [17, 9], [18, 10]],
+    textTransform: "uppercase",
+    textColor: "minorLabel",
   },
 ]
 
@@ -314,7 +369,7 @@ function generateRoadLayers(
   def: RoadClassDef,
   c: Record<string, string>,
   theme: "light" | "dark",
-): LayerSpecification[] {
+): { cases: LayerSpecification[]; fills: LayerSpecification[] } {
   const cases: LayerSpecification[] = []
   const fills: LayerSpecification[] = []
 
@@ -345,6 +400,7 @@ function generateRoadLayers(
         "line-color": {
           stops: [
             [stages.show.zoom, c[def.colorKeys.line]],
+            [Math.max(stages.split.zoom - 7, stages.show.zoom), c[def.colorKeys.line]],
             [stages.stable.zoom, c[def.colorKeys.case]],
           ],
         },
@@ -381,7 +437,7 @@ function generateRoadLayers(
     generateVariant("ramp", def.rampStages, ["==", "ramp", 1])
   }
 
-  return [...cases, ...fills]
+  return { cases, fills }
 }
 
 const WATER_SOURCES = new Set(["water_name", "waterway"])
@@ -390,7 +446,7 @@ function generateTextLayers(defs: TextLabelDef[], c: Record<string, string>): La
   return defs.map((def) => {
     const isLine = def.placement === "line"
     const isWater = WATER_SOURCES.has(def.sourceLayer)
-    const haloColor = isWater ? c.waterBg : c.bg
+    const haloColor = isWater ? c.waterLabelHalo : c.labelHalo
     const textField = def.textField ?? "{name_en}"
     const textSize = Array.isArray(def.textSize) ? { stops: def.textSize } : def.textSize
     const textFieldVal = Array.isArray(textField) ? { stops: textField } : textField
@@ -435,7 +491,7 @@ function generateTextLayers(defs: TextLabelDef[], c: Record<string, string>): La
       paint: {
         "text-color": c[def.textColor],
         "text-halo-color": haloColor,
-        "text-halo-width": 2,
+        "text-halo-width": 1,
         "text-halo-blur": 0,
       },
     } as LayerSpecification
@@ -446,7 +502,8 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
   const t = theme
   const c = MAP_COLORS[t]
 
-  const roadLayers = ROAD_DEFS.flatMap((def) => generateRoadLayers(def, c, t))
+  const roadParts = ROAD_DEFS.map((def) => generateRoadLayers(def, c, t))
+  const roadLayers = [...roadParts.flatMap((p) => p.cases), ...roadParts.flatMap((p) => p.fills)]
   const textLayers = generateTextLayers(TEXT_DEFS, c)
 
   return {
@@ -471,7 +528,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         source: "carto",
         "source-layer": "landcover",
         filter: ["any", ["==", "class", "wood"], ["==", "class", "grass"], ["==", "subclass", "recreation_ground"]],
-        paint: { "fill-pattern": "grass-pattern", "fill-opacity": 1 },
+        paint: { "fill-pattern": "grass-pattern", "fill-opacity": .3 },
       },
       {
         id: "park",
@@ -505,7 +562,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         source: "carto",
         "source-layer": "landuse",
         filter: ["any", ["==", "class", "cemetery"], ["==", "class", "stadium"]],
-        paint: { "fill-pattern": "grass-pattern" },
+        paint: { "fill-pattern": "grass-pattern", "fill-opacity": 0.4 },
       },
       {
         id: "waterway",
@@ -528,7 +585,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         paint: {
           "line-color": c.boundary,
           "line-width": { stops: [[4, 0.5], [7, 1.5]] },
-          "line-dasharray": { stops: [[6, [1]], [7, [2, 2]]] },
+          "line-dasharray": [2, 2],
         },
       },
       {
@@ -541,7 +598,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         paint: {
           "line-color": c.boundary,
           "line-width": { stops: [[4, 0.5], [7, 1], [8, 1.2], [9, 1.5]] },
-          "line-dasharray": { stops: [[6, [1]], [7, [1, 2, 3]]] },
+          "line-dasharray": [3, 3],
         },
       },
       {
@@ -587,7 +644,6 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "line-width": { stops: [[13, 0.5], [14, 1], [15, 2], [16, 4]] },
         },
       },
-      ...roadLayers,
       {
         id: "path",
         type: "line",
@@ -599,7 +655,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: { "line-cap": "round", "line-join": "round" },
         paint: {
           "line-width": { stops: [[15, 0.5], [16, 1]] },
-          "line-opacity": 0.35,
+          "line-opacity": 0.45,
           "line-color": c.roadCase,
           "line-dasharray": { stops: [[15, [2, 2]], [18, [3, 3]]] },
         },
@@ -614,7 +670,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: { visibility: "visible", "line-join": "round" },
         paint: {
           "line-color": c.roadCase,
-          "line-opacity": 0.2,
+          "line-opacity": 0.1,
           "line-width": { base: 1.3, stops: [[13, 0.5], [14, 1], [15, 1], [16, 3], [21, 7]] },
         },
       },
@@ -633,6 +689,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           "line-dasharray": { stops: [[15, [5, 5]], [16, [6, 6]]] },
         },
       },
+      ...roadLayers,
       {
         id: "building",
         type: "fill",
@@ -641,7 +698,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: { visibility: "visible" },
         paint: {
           "fill-pattern": "building-pattern",
-          // "fill-outline-color": c.buildingStroke,
+          "fill-outline-color": c.bg,
           "fill-opacity": { base: 1, stops: [[13, 0.1], [16, 1]] },
         },
       },
@@ -677,161 +734,6 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         },
       },
       ...textLayers,
-      {
-        id: "place_city_dot_r7",
-        type: "symbol",
-        source: "carto",
-        "source-layer": "place",
-        minzoom: 6,
-        maxzoom: 7,
-        filter: ["all", ["==", "class", "city"], ["<=", "rank", 7]],
-        layout: {
-          "text-field": "{name_en}",
-          "text-font": [fontFamily],
-          "text-size": 12,
-          "icon-offset": [16, 5],
-          "text-anchor": "right",
-          "icon-size": 0.4,
-          "text-max-width": 8,
-          "text-keep-upright": true,
-          "text-offset": [0.2, 0.2],
-        },
-        paint: {
-          "text-color": c.placeLabelMajor,
-          "icon-color": t === "light" ? c.placeLabelMajor : "rgba(94, 105, 106, 1)",
-          "icon-translate-anchor": "map",
-          "text-halo-color": c.bg,
-          "text-halo-width": 2,
-        },
-      },
-      {
-        id: "place_city_dot_r4",
-        type: "symbol",
-        source: "carto",
-        "source-layer": "place",
-        minzoom: 5,
-        maxzoom: 7,
-        filter: ["all", ["==", "class", "city"], ["<=", "rank", 4]],
-        layout: {
-          "text-field": "{name_en}",
-          "text-font": [fontFamily],
-          "text-size": 12,
-          "icon-offset": [16, 5],
-          "text-anchor": "right",
-          "icon-size": 0.4,
-          "text-max-width": 8,
-          "text-keep-upright": true,
-          "text-offset": [0.2, 0.2],
-        },
-        paint: {
-          "text-color": c.placeLabelMajor,
-          "icon-color": c.placeLabelMinor,
-          "icon-translate-anchor": "map",
-          "text-halo-color": c.bg,
-          "text-halo-width": 2,
-        },
-      },
-      {
-        id: "place_city_dot_r2",
-        type: "symbol",
-        source: "carto",
-        "source-layer": "place",
-        minzoom: 4,
-        maxzoom: 7,
-        filter: ["all", ["==", "class", "city"], ["<=", "rank", 2]],
-        layout: {
-          "text-field": "{name_en}",
-          "text-font": [fontFamily],
-          "text-size": 12,
-          "icon-offset": [16, 5],
-          "text-anchor": "right",
-          "icon-size": 0.4,
-          "text-max-width": 8,
-          "text-keep-upright": true,
-          "text-offset": [0.2, 0.2],
-        },
-        paint: {
-          "text-color": c.placeLabelMajor,
-          "icon-color": t === "light" ? c.placeLabelMajor : "rgba(131, 164, 189, 1)",
-          "icon-translate-anchor": "map",
-          "text-halo-color": c.bg,
-          "text-halo-width": 2,
-        },
-      },
-      {
-        id: "place_city_dot_z7",
-        type: "symbol",
-        source: "carto",
-        "source-layer": "place",
-        minzoom: 7,
-        maxzoom: 8,
-        filter: ["all", ["!has", "capital"], ["!in", "class", "country", "state"]],
-        layout: {
-          "text-field": "{name_en}",
-          "text-font": [fontFamily],
-          "text-size": 12,
-          "icon-offset": [16, 5],
-          "text-anchor": "right",
-          "icon-size": 0.4,
-          "text-max-width": 8,
-          "text-keep-upright": true,
-          "text-offset": [0.2, 0.2],
-        },
-        paint: {
-          "text-color": c.placeLabelMajor,
-          "icon-color": t === "light" ? c.placeLabelMajor : "rgba(113, 128, 147, 1)",
-          "icon-translate-anchor": "map",
-          "text-halo-color": c.bg,
-          "text-halo-width": 2,
-        },
-      },
-      {
-        id: "place_capital_dot_z7",
-        type: "symbol",
-        source: "carto",
-        "source-layer": "place",
-        minzoom: 7,
-        maxzoom: 8,
-        filter: ["all", [">", "capital", 0]],
-        layout: {
-          "text-field": "{name_en}",
-          "text-font": [fontFamily],
-          "text-size": 12,
-          "text-transform": "uppercase",
-          "icon-offset": [16, 5],
-          "text-anchor": "right",
-          "icon-size": 0.4,
-          "text-max-width": 8,
-          "text-keep-upright": true,
-          "text-offset": [0.2, 0.2],
-        },
-        paint: {
-          "text-color": c.placeLabelMajor,
-          "icon-color": c.placeLabelMinor,
-          "icon-translate-anchor": "map",
-          "text-halo-color": c.bg,
-          "text-halo-width": 2,
-        },
-      },
-      {
-        id: "poi",
-        type: "symbol",
-        source: "carto",
-        "source-layer": "poi",
-        minzoom: 15,
-        filter: ["all", ["in", "class", "park", "stadium", "cemetery", "attraction"], ["<=", "rank", 3]],
-        layout: {
-          "text-field": "{name}",
-          "text-font": [fontFamily],
-          "text-size": { stops: [[15, 8], [17, 9], [18, 10]] },
-          "text-transform": "uppercase",
-        },
-        paint: {
-          "text-color": c.poiLabel,
-          "text-halo-color": c.bg,
-          "text-halo-width": 2,
-        },
-      },
     ],
     id: "voyager",
     owner: "Carto",

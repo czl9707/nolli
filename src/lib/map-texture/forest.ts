@@ -14,11 +14,11 @@ export function forestPattern(theme: Theme): string {
     <feColorMatrix type="saturate" values="0" x="0%" y="0%" width="100%" height="100%" in="specularLighting" result="colormatrix"/>
   </filter>
   <g id="t">
-    <circle cx="0.9" cy="0.8" r="2.7" fill="none" stroke="${c.stroke}" stroke-width="0.5" stroke-miterlimit="10" opacity="0.4"/>
-    <circle cx="0" cy="0" r="2.7" fill="none" stroke="${c.stroke}" stroke-width="0.5" stroke-miterlimit="10" opacity="0.2"/>
+    <circle cx="0.9" cy="0.8" r="2.7" fill="none" stroke="${c.stroke}" stroke-width="0.5" stroke-miterlimit="10" opacity="0.6"/>
+    <circle cx="0" cy="0" r="2.7" fill="none" stroke="${c.stroke}" stroke-width="0.5" stroke-miterlimit="10" opacity="0.3"/>
   </g>
 </defs>
-<rect width="1024" height="1024" fill="#ff0000" filter="url(#nnnoise-filter)" opacity="0.2"/>
+<rect width="1024" height="1024" fill="#ff0000" filter="url(#nnnoise-filter)" opacity="0.3"/>
 <g>${trees.map(([x, y]) => `<use href="#t" x="${x}" y="${y}"/>`).join("")}</g>
 </svg>`
 }

@@ -11,6 +11,6 @@ export function grassPattern(_theme: Theme): string {
       <feColorMatrix type="saturate" values="0" x="0%" y="0%" width="100%" height="100%" in="specularLighting" result="colormatrix"/>
     </filter>
   </defs>
-  <rect width="256" height="256" fill="#ff0000" filter="url(#nnnoise-filter)" opacity="0.2"/>
+  <rect width="256" height="256" fill="#ff0000" filter="url(#nnnoise-filter)"/>
 </svg>`
 }
