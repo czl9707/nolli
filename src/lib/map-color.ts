@@ -1,68 +1,52 @@
-const DARK_MAP_COLORS = {
-    bg: '#1E1E1E',
-    boundary: '#9F9C91',
-    roadLine: '#333231',
-    roadCase: "#F6F0DE",
-    roadFill: '#484744',
+function lerpColor(from: string, to: string, t: number): string {
+  const r1 = parseInt(from.slice(1, 3), 16)
+  const g1 = parseInt(from.slice(3, 5), 16)
+  const b1 = parseInt(from.slice(5, 7), 16)
+  const r2 = parseInt(to.slice(1, 3), 16)
+  const g2 = parseInt(to.slice(3, 5), 16)
+  const b2 = parseInt(to.slice(5, 7), 16)
+  const r = Math.round(r1 + (r2 - r1) * t)
+  const g = Math.round(g1 + (g2 - g1) * t)
+  const b = Math.round(b1 + (b2 - b1) * t)
+  return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('')
+}
 
-    roadLinePri: '#333231',
-    roadCasePri: '#F6F0DE',
-    roadFillPri: '#89867D',
-    roadLineMot: '#282827',
-    roadCaseMot: '#CBC6B7',
-    roadFillMot: '#74716A',
-    roadLineTrunk: '#282827',
-    roadCaseTrunk: '#CBC6B7',
-    roadFillTrunk: '#74716A',
+function createPalette(bg: string, water: string) {
+  const c = (pct: number) => lerpColor(bg, water, pct / 100)
+  return {
+    bg: c(0),
+    boundary: c(60),
 
-    waterBg: '#F6F0DE',
-    waterStroke: '#1E1E1E',
-    landcoverStroke: '#F6F0DE',
-    buildingBg: '#1E1E1E',
-    buildingStroke: '#F6F0DE',
-    landuseStroke: '#666',
-    
-    waterLabelColor: '#1E1E1E',
-    priLabel: '#F6F0DE',
-    secLabel: '#F6F0DE',
-    minorLabel: '#F6F0DE',
-    waterLabelHalo: '#B5B1A4',
-    labelHalo: "#484744"
-} as const;
+    roadLine: c(10),
+    roadCase: c(100),
+    roadFill: c(20),
+    roadLinePri: c(10),
+    roadCasePri: c(100),
+    roadFillPri: c(50),
+    roadLineMot: c(5),
+    roadCaseMot: c(80),
+    roadFillMot: c(40),
+    roadLineTrunk: c(5),
+    roadCaseTrunk: c(80),
+    roadFillTrunk: c(40),
 
-const LIGHT_MAP_COLORS = {
-    bg: '#F6F0DE',
-    boundary: '#74716A',
-    roadLine: '#E0DACA',
-    roadCase: '#1E1E1E',
-    roadFill: '#CBC6B7',
+    waterBg: c(100),
+    waterStroke: c(0),
+    landcoverStroke: c(100),
+    buildingBg: c(0),
+    buildingStroke: c(100),
+    landuseStroke: c(60),
 
-    roadLinePri: '#E0DACA',
-    roadCasePri: '#1E1E1E',
-    roadFillPri: '#89867D',
-    roadLineMot: '#ECE6D5',
-    roadCaseMot: '#484744',
-    roadFillMot: '#9F9C91',
-    roadLineTrunk: '#ECE6D5',
-    roadCaseTrunk: '#484744',
-    roadFillTrunk: '#9F9C91',
-
-    waterBg: '#1E1E1E',
-    waterStroke: '#F6F0DE',
-    landcoverStroke: '#1E1E1E',
-    buildingBg: '#F6F0DE',
-    buildingStroke: '#1E1E1E',
-    landuseStroke: '#666',
-
-    waterLabelColor: '#F6F0DE',
-    priLabel: '#1E1E1E',
-    secLabel: '#1E1E1E',
-    minorLabel: '#1E1E1E',
-    waterLabelHalo: '#5F5D58',
-    labelHalo: '#CBC6B7',
-} as const;
+    waterLabelColor: c(0),
+    priLabel: c(100),
+    secLabel: c(100),
+    minorLabel: c(100),
+    waterLabelHalo: c(30),
+    labelHalo: c(20),
+  }
+}
 
 export const MAP_COLORS = {
-    light: LIGHT_MAP_COLORS,
-    dark: DARK_MAP_COLORS,
-} as const;
+  light: createPalette('#EBE8DF', '#1E1E1E'),
+  dark: createPalette('#1E1E1E', '#EBE8DF'),
+}
