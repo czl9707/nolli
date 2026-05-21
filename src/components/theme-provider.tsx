@@ -1,31 +1,33 @@
-"use client"
+import { createContext, useContext, useEffect, type ReactNode } from "react"
+import { useTheme, type Theme, type ResolvedTheme } from "@/hooks/use-theme"
 
-import * as React from "react"
-import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes"
+const ThemeContext = createContext<{
+  theme: Theme
+  resolvedTheme: ResolvedTheme
+  setTheme: (t: Theme) => void
+}>({
+  theme: "system",
+  resolvedTheme: "light",
+  setTheme: () => {},
+})
 
-function ThemeProvider({
-  children,
-  ...props
-}: React.ComponentProps<typeof NextThemesProvider>) {
+export function useThemeContext() {
+  return useContext(ThemeContext)
+}
+
+export function ThemeProvider({ children }: { children: ReactNode }) {
+  const { theme, resolvedTheme, setTheme } = useTheme()
+
   return (
-    <NextThemesProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-      {...props}
-    >
-      <ThemeHotkey />
+    <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme }}>
+      <ThemeHotkey resolvedTheme={resolvedTheme} setTheme={setTheme} />
       {children}
-    </NextThemesProvider>
+    </ThemeContext.Provider>
   )
 }
 
 function isTypingTarget(target: EventTarget | null) {
-  if (!(target instanceof HTMLElement)) {
-    return false
-  }
-
+  if (!(target instanceof HTMLElement)) return false
   return (
     target.isContentEditable ||
     target.tagName === "INPUT" ||
@@ -34,38 +36,23 @@ function isTypingTarget(target: EventTarget | null) {
   )
 }
 
-function ThemeHotkey() {
-  const { resolvedTheme, setTheme } = useTheme()
-
-  React.useEffect(() => {
+function ThemeHotkey({
+  resolvedTheme,
+  setTheme,
+}: {
+  resolvedTheme: ResolvedTheme
+  setTheme: (t: Theme) => void
+}) {
+  useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
-      if (event.defaultPrevented || event.repeat) {
-        return
-      }
-
-      if (event.metaKey || event.ctrlKey || event.altKey) {
-        return
-      }
-
-      if (event.key.toLowerCase() !== "d") {
-        return
-      }
-
-      if (isTypingTarget(event.target)) {
-        return
-      }
-
+      if (event.defaultPrevented || event.repeat) return
+      if (event.metaKey || event.ctrlKey || event.altKey) return
+      if (event.key.toLowerCase() !== "d") return
+      if (isTypingTarget(event.target)) return
       setTheme(resolvedTheme === "dark" ? "light" : "dark")
     }
-
     window.addEventListener("keydown", onKeyDown)
-
-    return () => {
-      window.removeEventListener("keydown", onKeyDown)
-    }
+    return () => window.removeEventListener("keydown", onKeyDown)
   }, [resolvedTheme, setTheme])
-
   return null
 }
-
-export { ThemeProvider }

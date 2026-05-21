@@ -1,9 +1,14 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "shadcn/tailwind.css";
 @import "@fontsource/architects-daughter/400.css";
+@import "@fontsource/geist-mono/400.css";
 
 @custom-variant dark (&:is(.dark *));
+
+#root {
+    width: 100%;
+    height: 100%;
+}
 
 @theme inline {
     --font-heading: 'Architects Daughter', cursive;

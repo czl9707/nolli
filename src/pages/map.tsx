@@ -1,5 +1,3 @@
-"use client"
-
 import { Map, MapControls } from "@/components/ui/map"
 import { getMapStyle } from "@/lib/map-style"
 import type { MapRef } from "@/components/ui/map"
@@ -17,7 +15,7 @@ const PATTERNS = [
 type CachedImage = HTMLImageElement | ImageBitmap
 
 function patternUrl(pattern: string, theme: Theme) {
-  return `/api/pattern/${theme}/${pattern}`
+  return `/patterns/${theme}/${pattern}.png`
 }
 
 function applyImage(map: MapRef, id: string, data: CachedImage) {
@@ -45,7 +43,7 @@ async function fetchAndCache(
   )
 }
 
-export default function Page() {
+export function MapPage() {
   const mapRef = useRef<MapRef | null>(null)
   const cacheRef = useRef<Record<string, CachedImage>>({})
   const [ready, setReady] = useState(false)
