@@ -388,7 +388,7 @@ function generateRoadLayers(
       "source-layer": "transportation",
       minzoom: stages.show.zoom,
       filter: buildClassFilter(def.classFilter, rampFilter),
-      layout: { "line-cap": "square", "line-join": "round" },
+      layout: { "line-cap": "round", "line-join": "round" },
       paint: {
         "line-width": {
           stops: [

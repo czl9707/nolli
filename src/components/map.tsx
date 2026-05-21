@@ -3,6 +3,7 @@ import { getMapStyle } from "@/lib/map-style"
 import type { MapRef } from "@/components/ui/map"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Theme } from "@/lib/map-texture/constant"
+import { useLocation, useNavigate } from "react-router"
 
 const PATTERNS = [
   { pattern: "water", id: "water-pattern" },
@@ -43,10 +44,12 @@ async function fetchAndCache(
   )
 }
 
-export function MapPage() {
+function MapWrapper() {
   const mapRef = useRef<MapRef | null>(null)
   const cacheRef = useRef<Record<string, CachedImage>>({})
   const [ready, setReady] = useState(false)
+  const navigate = useNavigate()
+  const location = useLocation();
 
   const mapStyles = useMemo(() => ({
     light: getMapStyle("light"),
@@ -72,12 +75,19 @@ export function MapPage() {
       applyAllPatterns(map, theme)
     })
 
+    map.on("click", () => {
+      const isHome = location.pathname == "/";
+
+      if (isHome) navigate("/arch/sample-building");
+      else navigate("/");
+    })
+
     fetchAndCache(map, current, cacheRef.current, true).then(() => {
       if (mapRef.current !== map) return
       setReady(true)
       fetchAndCache(map, other, cacheRef.current, false)
     })
-  }, [applyAllPatterns])
+  }, [applyAllPatterns, navigate])
 
   useEffect(() => {
     let prevDark = document.documentElement.classList.contains("dark")
@@ -96,13 +106,16 @@ export function MapPage() {
       attributeFilter: ["class"],
     })
     return () => observer.disconnect()
-  }, [])
+  }, [applyAllPatterns])
 
   return (
-    <div className="w-full h-full">
-      <Map ref={handleRef} styles={mapStyles} loading={!ready}>
-        <MapControls className="right-2 bottom-16" showZoom showCompass showLocate />
-      </Map>
-    </div>
+    <Map ref={handleRef} styles={mapStyles} loading={!ready}>
+      <MapControls className="right-2 bottom-12" showZoom showCompass showLocate />
+    </Map>
   )
+}
+
+
+export {
+  MapWrapper as Map,
 }
