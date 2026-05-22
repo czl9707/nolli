@@ -4,6 +4,8 @@ import type { MapRef } from "@/components/ui/map"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Theme } from "@/lib/map-texture/constant"
 import { useLocation, useNavigate } from "react-router"
+import { cn } from "@/lib/utils"
+import { useLayout } from "@/hooks/use-layout"
 
 const PATTERNS = [
   { pattern: "water", id: "water-pattern" },
@@ -44,7 +46,7 @@ async function fetchAndCache(
   )
 }
 
-function MapWrapper() {
+function MapCore() {
   const mapRef = useRef<MapRef | null>(null)
   const cacheRef = useRef<Record<string, CachedImage>>({})
   const [ready, setReady] = useState(false)
@@ -110,11 +112,46 @@ function MapWrapper() {
 
   return (
     <Map ref={handleRef} styles={mapStyles} loading={!ready}>
-      <MapControls className="right-2 bottom-12" showZoom showCompass showLocate />
+      <MapControls className="right-2 bottom-12" showZoom showCompass showLocate showFullscreen />
     </Map>
   )
 }
 
+
+function MapWrapper() {
+  const location = useLayout()
+  const mapComp = useMemo(() => (
+    <div className={cn(
+      "h-full w-full overflow-hidden rounded-sm",
+    )}>
+      <MapCore />
+    </div>
+  ), []);
+
+  // container is same as portfolio item in portfolio mode
+  return (
+    <div className={cn(
+      "h-full w-full transition-[width,height,padding] not-first:border-l border-border duration-500 ease-in-out flex flex-col gap-2",
+      location === "portfolio" && "w-[min(600px,100vw)] p-12 shrink-0",
+    )}>
+      <div className={cn("flex-2 flex flex-row gap-2 transition-height duration-500 ease-in-out")}>
+        <div className={cn(location === "portfolio" && "flex-1", "transition-width duration-500 ease-in-out")}>
+          <h2 className={cn("[writing-mode:vertical-lr] opacity-0 transition-opacity duration-500 ease-in-out delay-500", location === "portfolio" && "opacity-100")}>
+            {"Seagram Building"}
+          </h2>
+        </div>
+        <div className={cn("flex-2 transition-width duration-500 ease-in-out")}>
+          {mapComp}
+        </div>
+      </div>
+
+      <div className={cn("flex flex-row gap-2 transition-height duration-500 ease-in-out", location === "portfolio" && "flex-1")}>
+        <div className={cn("flex-1 transition-width duration-500 ease-in-out")}></div>
+        <div className={cn("flex-2 transition-width duration-500 ease-in-out")}></div>
+      </div>
+    </div>
+  )
+}
 
 export {
   MapWrapper as Map,
