@@ -3,12 +3,18 @@ export type ArchPage = {
   text?: string
 }
 
+export type Coordinates = {
+  latitude: number
+  longitude: number
+}
+
 export type Arch = {
   slug: string
   name: string
   author: string
   year: string
   address: string
+  coordinates: Coordinates
   pages: ArchPage[]
 }
 
@@ -19,6 +25,7 @@ const architectures: Record<string, Arch> = {
     author: "Ludwig Mies van der Rohe",
     year: "1958",
     address: "375 Park Avenue, Manhattan, New York 10152, U.S.",
+    coordinates: { latitude: 40.7586, longitude: -73.9722 },
     pages: [
       {
         image: "/images/seagram-1.jpg",
@@ -36,4 +43,8 @@ const architectures: Record<string, Arch> = {
 
 export function getArchBySlug(slug: string): Arch | null {
   return architectures[slug] ?? null
+}
+
+export function getAllArchitectures(): Arch[] {
+  return Object.values(architectures)
 }

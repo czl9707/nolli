@@ -24,7 +24,6 @@
     
     body[data-mode='portfolio'] & {
         display: inline-flex;
-        padding-top: var(--spacing-component);
-        padding-bottom: var(--spacing-component);
+        padding: var(--spacing-component) 0;
     }
 }

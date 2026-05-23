@@ -1,4 +1,4 @@
-import { Map, MapControls } from "@/components/ui/map"
+import { Map, MapControls, MapMarker, MarkerContent, useMap } from "@/components/ui/map"
 import { getMapStyle } from "@/lib/map-style"
 import type { MapRef } from "@/components/ui/map"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -6,9 +6,11 @@ import { Theme } from "@/lib/map-texture/constant"
 import { useLocation, useNavigate } from "react-router"
 import { useLayout } from "@/hooks/use-layout"
 import { useSelectedArch } from "@/contexts/selected-arch"
+import { getAllArchitectures } from "@/data/architectures"
 import styles from "./map.module.css"
 import { motion } from "framer-motion"
 import { H2, Body1, Body2 } from "./ui/typography"
+import { MapPin } from "lucide-react"
 
 const PATTERNS = [
   { pattern: "water", id: "water-pattern" },
@@ -49,13 +51,63 @@ async function fetchAndCache(
   )
 }
 
+const allArch = getAllArchitectures()
+
+function ArchMarkers() {
+  const navigate = useNavigate();
+  const layout = useLayout();
+
+  const handleClick = useCallback(
+    (slug: string) => {
+      navigate(`/arch/${slug}`)
+    },
+    [navigate],
+  )
+
+  return (
+    <>
+      {allArch.map((arch) => (
+        <MapMarker
+          key={arch.slug}
+          longitude={arch.coordinates.longitude}
+          latitude={arch.coordinates.latitude}
+        >
+          <MarkerContent>
+            <MapPin style={{fill: "white"}}
+              onClick={() => handleClick(arch.slug)}/>
+          </MarkerContent>
+        </MapMarker>
+      ))}
+    </>
+  )
+}
+
+function MapNavigator() {
+  const { arch } = useSelectedArch();
+  const { map } = useMap();
+
+  useEffect(() => {
+    if (!arch || !map) return
+    setTimeout(() => {
+        map.flyTo({
+          center: [arch.coordinates.longitude, arch.coordinates.latitude],
+          zoom: 16,
+          duration: 1000,
+        })
+      }, 550)
+    },
+    [arch]
+  );
+
+  return undefined;
+}
+
 function MapCore() {
   const mapRef = useRef<MapRef | null>(null)
   const cacheRef = useRef<Record<string, CachedImage>>({})
   const [ready, setReady] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
-  const { arch } = useSelectedArch()
 
   const mapStyles = useMemo(() => ({
     light: getMapStyle("light"),
@@ -68,6 +120,9 @@ function MapCore() {
       if (data) applyImage(map, id, data)
     }
   }, [])
+
+  const locationRef = useRef(location)
+  locationRef.current = location
 
   const handleRef = useCallback((map: MapRef | null) => {
     if (!map) return
@@ -82,10 +137,7 @@ function MapCore() {
     })
 
     map.on("click", () => {
-      const isHome = location.pathname === "/"
-
-      if (isHome) navigate("/arch/sample-building")
-      else navigate("/")
+      if (locationRef.current.pathname !== "/") navigate("/")
     })
 
     fetchAndCache(map, current, cacheRef.current, true).then(() => {
@@ -117,6 +169,8 @@ function MapCore() {
   return (
     <Map ref={handleRef} styles={mapStyles} loading={!ready}>
       <MapControls showZoom showLocate showFullscreen />
+      <ArchMarkers />
+      <MapNavigator />
     </Map>
   )
 }
@@ -137,7 +191,7 @@ function MapWrapper() {
       animate={mode}
       variants={{
         home: { width: "100%", maxWidth: "100%", padding: 0, transition: { duration: 0.6, delay: 0.6 } },
-        portfolio: { width: 600, maxWidth: "100vw", padding: "2rem" },
+        portfolio: { width: 840, maxWidth: "100vw", padding: "2rem 8rem" },
       }}
       transition={{ duration: 0.6, ease: "easeInOut" }}
     >
@@ -149,11 +203,13 @@ function MapWrapper() {
           home: {
             gridTemplateColumns: "1fr",
             gridTemplateRows: "1fr 0fr",
+            rowGap: 0,
             transition: { duration: 0.6, delay: 0.6 }
           },
           portfolio: {
             gridTemplateColumns: "1fr",
             gridTemplateRows: "3fr 1fr",
+            rowGap: "2rem",
           },
         }}
         transition={{ duration: 0.6, ease: "easeInOut" }}

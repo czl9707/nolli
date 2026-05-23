@@ -12,6 +12,8 @@ export function useHorizontalScroll() {
 
     function onWheel(e: WheelEvent) {
       if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return
+      const target = e.target as HTMLElement
+      if (target.closest(".maplibregl-map")) return
       e.preventDefault()
       el!.scrollLeft += e.deltaY
     }
