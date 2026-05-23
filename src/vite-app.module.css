@@ -27,3 +27,21 @@
         padding: var(--spacing-component) 0;
     }
 }
+
+/* 
+ * AnimatePresence needs a motion component as its direct child to intercept
+ * unmounting and play exit animations. This wrapper serves as that proxy —
+ * keeping the old route content alive in the DOM while it fades out.
+ * 
+ * Matches the parent appContainer's flex behavior so route content (portfolio
+ * items) lays out correctly as horizontal scroll siblings of the map.
+ */
+.routePresence {
+    display: flex;
+    height: 100%;
+    align-items: stretch;
+
+    body[data-mode='portfolio'] & {
+        display: inline-flex;
+    }
+}

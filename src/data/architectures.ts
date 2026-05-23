@@ -19,8 +19,8 @@ export type Arch = {
 }
 
 const architectures: Record<string, Arch> = {
-  "sample-building": {
-    slug: "sample-building",
+  "seagram-building": {
+    slug: "seagram-building",
     name: "Seagram Building",
     author: "Ludwig Mies van der Rohe",
     year: "1958",

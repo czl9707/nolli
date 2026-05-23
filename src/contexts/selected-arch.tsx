@@ -1,26 +1,29 @@
-import { createContext, useContext, useMemo } from "react"
+import { createContext, useContext, useMemo, useRef } from "react"
 import { useLocation } from "react-router"
 import { getArchBySlug, type Arch } from "@/data/architectures"
 
 type SelectedArchContextValue = {
-  arch: Arch | null
+  lastSelectedArch: Arch | null
 }
 
 const SelectedArchContext = createContext<SelectedArchContextValue>({
-  arch: null,
+  lastSelectedArch: null,
 })
 
 export function SelectedArchProvider({ children }: { children: React.ReactNode }) {
   const location = useLocation()
+  const lastRef = useRef<Arch | null>(null)
 
-  const arch = useMemo(() => {
+  const currentArch = useMemo(() => {
     const match = location.pathname.match(/^\/arch\/([^/]+)/)
     if (!match) return null
     return getArchBySlug(match[1])
   }, [location.pathname])
 
+  if (currentArch) lastRef.current = currentArch
+
   return (
-    <SelectedArchContext.Provider value={{ arch }}>
+    <SelectedArchContext.Provider value={{ lastSelectedArch: lastRef.current }}>
       {children}
     </SelectedArchContext.Provider>
   )

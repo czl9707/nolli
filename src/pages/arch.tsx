@@ -2,19 +2,18 @@ import { PortfolioItem } from "@/components/layout/portfolio-item"
 import { useSelectedArch } from "@/contexts/selected-arch"
 
 export function ArchContent() {
-  const { arch } = useSelectedArch()
+  const { lastSelectedArch } = useSelectedArch()
 
-  if (!arch) return null
+  if (!lastSelectedArch) return null
 
   return (
     <>
-      {arch.pages.map((page, i) => (
+      {lastSelectedArch.pages.map((page, i) => (
         <PortfolioItem
           key={i}
           page={page}
           index={i}
-          total={arch.pages.length}
-          delay={0.6 + i * 0.2}
+          total={lastSelectedArch.pages.length}
         />
       ))}
     </>

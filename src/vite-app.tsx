@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router"
 import { ArchContent } from "@/pages/arch"
 import { useLayout, useHorizontalScroll } from "@/hooks/use-layout"
 import { SelectedArchProvider } from "@/contexts/selected-arch"
-import { AnimatePresence } from "framer-motion"
+import { AnimatePresence, motion } from "framer-motion"
 import styles from "./vite-app.module.css"
 
 
@@ -24,11 +24,20 @@ function AppContainer({ children }: { children: React.ReactNode }) {
 function AnimatedRoutes() {
   const location = useLocation()
   return (
-    <AnimatePresence>
-      <Routes location={location} key={location.pathname}>
-        <Route path="/arch/:slug" element={<ArchContent />} />
-        <Route path="/" element={<></>} />
-      </Routes>
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={location.pathname}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0 }}
+        className={styles.routePresence}
+      >
+        <Routes location={location}>
+          <Route path="/arch/:slug" element={<ArchContent />} />
+          <Route path="/" element={<></>} />
+        </Routes>
+      </motion.div>
     </AnimatePresence>
   )
 }

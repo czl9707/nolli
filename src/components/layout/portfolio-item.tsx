@@ -10,13 +10,13 @@ type PortfolioItemProps = {
   delay?: number
 }
 
-export function PortfolioItem({ page, index, total, delay = 0 }: PortfolioItemProps) {
+export function PortfolioItem({ page, index, total }: PortfolioItemProps) {
   return (
     <motion.div
       className={styles.item}
       initial={{ opacity: 0 }}
-      animate={{ opacity: 1, transition: { duration: 0.6, delay } }}
-      exit={{ opacity: 0, transition: { duration: 0.4 } }}
+      animate={{ opacity: 1, transition: { duration: 0.6, delay: 0.6 + index * 0.1 } }}
+      exit={{ opacity: 0, transition: { duration: 0.6 } }}
     >
       <div className={styles.content}>
           <div className={styles.imageSlot}>

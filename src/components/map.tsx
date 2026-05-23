@@ -83,20 +83,20 @@ function ArchMarkers() {
 }
 
 function MapNavigator() {
-  const { arch } = useSelectedArch();
+  const { lastSelectedArch } = useSelectedArch();
   const { map } = useMap();
 
   useEffect(() => {
-    if (!arch || !map) return
+    if (!lastSelectedArch || !map) return
     setTimeout(() => {
         map.flyTo({
-          center: [arch.coordinates.longitude, arch.coordinates.latitude],
+          center: [lastSelectedArch.coordinates.longitude, lastSelectedArch.coordinates.latitude],
           zoom: 16,
           duration: 1000,
         })
       }, 550)
     },
-    [arch]
+    [lastSelectedArch]
   );
 
   return undefined;
@@ -175,14 +175,10 @@ function MapCore() {
   )
 }
 
-const fadeVariants = {
-  home: { opacity: 0, height: 0, },
-  portfolio: { opacity: 1, height: "unset", transition: { duration: 0.6, delay: 0.6 } },
-}
 
 function MapWrapper() {
   const mode = useLayout()
-  const { arch } = useSelectedArch()
+  const { lastSelectedArch } = useSelectedArch()
 
   return (
     <motion.div
@@ -223,21 +219,24 @@ function MapWrapper() {
           className={`${styles.cell} ${styles.infoSection}`}
           animate={mode}
           initial={mode}
-          variants={fadeVariants}
+          variants={{
+            home: { opacity: 0, transition: { duration: 0.6 } },
+            portfolio: { opacity: 1, transition: { duration: 0.6, delay: 0.6 } },
+          }}
         >
           <div className={styles.infoHead}>
             <Body1 className={styles.author}>
-              {arch?.author ?? ""}
+              {lastSelectedArch?.author ?? ""}
             </Body1>
             <Body2 className={styles.year}>
-              {arch?.year ?? ""}
+              {lastSelectedArch?.year ?? ""}
             </Body2>
           </div>
-          <H2>{arch?.name ?? ""}</H2>
+          <H2>{lastSelectedArch?.name ?? ""}</H2>
           <span style={{flex: "1 1"}}/>
           
           <Body2 className={styles.address}>
-            {arch?.address ?? ""}
+            {lastSelectedArch?.address ?? ""}
           </Body2>
         </motion.div>
       </motion.div>
