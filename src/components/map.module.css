@@ -1,0 +1,28 @@
+.mapContainer {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    border-radius: var(--size-border-radius);
+}
+
+.wrapper {
+    flex-shrink: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+
+    &:not(:first-child) {
+        border-left: var(--border);
+    }
+}
+
+.grid {
+    display: grid;
+    height: 100%;
+    gap: 0.25rem;
+}
+
+.cell {
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+}

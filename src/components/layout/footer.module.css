@@ -1,0 +1,15 @@
+.footer {
+    z-index: 50;
+    display: flex;
+    height: var(--size-footer-height);
+    align-items: center;
+    padding-left: var(--spacing-component);
+    padding-right: var(--spacing-component);
+    pointer-events: none;
+    user-select: none;
+}
+
+.copyright {
+    font-family: var(--font-playful) !important;
+    opacity: 0.5;
+}

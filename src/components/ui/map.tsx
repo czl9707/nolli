@@ -1,10 +1,8 @@
 import MapLibreGL, { type PopupOptions, type MarkerOptions } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import {
-  createContext,
   forwardRef,
   useCallback,
-  useContext,
   useEffect,
   useId,
   useImperativeHandle,
@@ -14,9 +12,13 @@ import {
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
-import { X, Minus, Plus, Locate, Maximize, Loader2 } from "lucide-react";
+import { X, Minus, Plus, Locate, Maximize, Loader2, Compass } from "lucide-react";
+import { MapContext, MarkerContext, useMap, useMarkerContext } from "./map-context";
+import { Button } from "./button";
+import controlStyles from "./map-controls.module.css";
+import mapCss from "./map.module.css";
+import markerStyles from "./map-markers.module.css";
 
-import { cn } from "@/lib/utils";
 
 const defaultStyles = {
   dark: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
@@ -27,8 +29,8 @@ type Theme = "light" | "dark";
 
 // Check document class for theme (works with next-themes, etc.)
 function getDocumentTheme(): Theme | null {
-  if (document.documentElement.classList.contains("dark")) return "dark";
-  if (document.documentElement.classList.contains("light")) return "light";
+  const theme = document.body.dataset.theme;
+  if (theme === "dark" || theme === "light") return theme;
   return null;
 }
 
@@ -51,9 +53,9 @@ function useResolvedTheme(themeProp?: "light" | "dark"): Theme {
         setDetectedTheme(docTheme);
       }
     });
-    observer.observe(document.documentElement, {
+    observer.observe(document.body, {
       attributes: true,
-      attributeFilter: ["class"],
+      attributeFilter: ["data-theme"],
     });
 
     // Also watch for system preference changes
@@ -73,21 +75,6 @@ function useResolvedTheme(themeProp?: "light" | "dark"): Theme {
   }, [themeProp]);
 
   return themeProp ?? detectedTheme;
-}
-
-type MapContextValue = {
-  map: MapLibreGL.Map | null;
-  isLoaded: boolean;
-};
-
-const MapContext = createContext<MapContextValue | null>(null);
-
-function useMap() {
-  const context = useContext(MapContext);
-  if (!context) {
-    throw new Error("useMap must be used within a Map component");
-  }
-  return context;
 }
 
 /** Map viewport state */
@@ -139,11 +126,11 @@ type MapProps = {
 
 function DefaultLoader() {
   return (
-    <div className="bg-background/50 absolute inset-0 z-10 flex items-center justify-center backdrop-blur-xs">
-      <div className="flex gap-1">
-        <span className="bg-muted-foreground/60 size-1.5 animate-pulse rounded-full" />
-        <span className="bg-muted-foreground/60 size-1.5 animate-pulse rounded-full [animation-delay:150ms]" />
-        <span className="bg-muted-foreground/60 size-1.5 animate-pulse rounded-full [animation-delay:300ms]" />
+    <div className={mapCss.loader}>
+      <div className={mapCss.loaderDots}>
+        <span className={mapCss.dot1} />
+        <span className={mapCss.dot2} />
+        <span className={mapCss.dot3} />
       </div>
     </div>
   );
@@ -219,9 +206,7 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
         container: containerRef.current,
         style: initialStyle,
         renderWorldCopies: false,
-        attributionControl: {
-          compact: true,
-        },
+        attributionControl: false,
         ...props,
         ...viewport,
       });
@@ -317,7 +302,7 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
     <MapContext.Provider value={contextValue}>
       <div
         ref={containerRef}
-        className={cn("relative h-full w-full", className)}
+        className={`${mapCss.container} ${className ?? ""}`}
       >
         {(!isLoaded || loading) && <DefaultLoader />}
         {/* SSR-safe: children render only when map is loaded on client */}
@@ -326,21 +311,6 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
     </MapContext.Provider>
   );
 });
-
-type MarkerContextValue = {
-  marker: MapLibreGL.Marker;
-  map: MapLibreGL.Map | null;
-};
-
-const MarkerContext = createContext<MarkerContextValue | null>(null);
-
-function useMarkerContext() {
-  const context = useContext(MarkerContext);
-  if (!context) {
-    throw new Error("Marker components must be used within MapMarker");
-  }
-  return context;
-}
 
 type MapMarkerProps = {
   /** Longitude coordinate for marker position */
@@ -497,7 +467,7 @@ function MarkerContent({ children, className }: MarkerContentProps) {
   const { marker } = useMarkerContext();
 
   return createPortal(
-    <div className={cn("relative cursor-pointer", className)}>
+    <div className={`${markerStyles.markerContent}${className ? ` ${className}` : ""}`}>
       {children || <DefaultMarkerIcon />}
     </div>,
     marker.getElement(),
@@ -506,7 +476,7 @@ function MarkerContent({ children, className }: MarkerContentProps) {
 
 function DefaultMarkerIcon() {
   return (
-    <div className="relative h-4 w-4 rounded-full border-2 border-white bg-blue-500 shadow-lg" />
+    <div className={markerStyles.defaultMarker} />
   );
 }
 
@@ -516,7 +486,7 @@ function PopupCloseButton({ onClick }: { onClick: () => void }) {
       type="button"
       onClick={onClick}
       aria-label="Close popup"
-      className="focus-visible:ring-ring hover:bg-muted text-foreground absolute top-0.5 right-0.5 z-10 inline-flex size-5 cursor-pointer items-center justify-center rounded-sm transition-colors focus:outline-none focus-visible:ring-2"
+      className={markerStyles.popupClose}
     >
       <X className="size-3.5" />
     </button>
@@ -584,11 +554,7 @@ function MarkerPopup({
 
   return createPortal(
     <div
-      className={cn(
-        "bg-popover text-popover-foreground relative max-w-62 rounded-md border p-3 shadow-md",
-        "animate-in fade-in-0 zoom-in-95 duration-200 ease-out",
-        className,
-      )}
+      className={`${markerStyles.popup}${className ? ` ${className}` : ""}`}
     >
       {closeButton && <PopupCloseButton onClick={handleClose} />}
       {children}
@@ -661,11 +627,7 @@ function MarkerTooltip({
 
   return createPortal(
     <div
-      className={cn(
-        "bg-foreground text-background pointer-events-none rounded-md px-2 py-1 text-xs text-balance shadow-md",
-        "animate-in fade-in-0 zoom-in-95 duration-200 ease-out",
-        className,
-      )}
+      className={`${markerStyles.tooltip}${className ? ` ${className}` : ""}`}
     >
       {children}
     </div>,
@@ -687,19 +649,9 @@ function MarkerLabel({
   className,
   position = "top",
 }: MarkerLabelProps) {
-  const positionClasses = {
-    top: "bottom-full mb-1",
-    bottom: "top-full mt-1",
-  };
-
   return (
     <div
-      className={cn(
-        "absolute left-1/2 -translate-x-1/2 whitespace-nowrap",
-        "text-foreground text-[10px] font-medium",
-        positionClasses[position],
-        className,
-      )}
+      className={`${markerStyles.label} ${position === "top" ? markerStyles.labelTop : markerStyles.labelBottom}${className ? ` ${className}` : ""}`}
     >
       {children}
     </div>
@@ -723,50 +675,15 @@ type MapControlsProps = {
   onLocate?: (coords: { longitude: number; latitude: number }) => void;
 };
 
-const positionClasses = {
-  "top-left": "top-2 left-2",
-  "top-right": "top-2 right-2",
-  "bottom-left": "bottom-2 left-2",
-  "bottom-right": "bottom-10 right-2",
-};
-
 function ControlGroup({ children }: { children: React.ReactNode }) {
   return (
-    <div className="border-border bg-background [&>button:not(:last-child)]:border-border flex flex-col overflow-hidden rounded-md border shadow-sm [&>button:not(:last-child)]:border-b">
+    <div className={controlStyles.controlGroup}>
       {children}
     </div>
   );
 }
 
-function ControlButton({
-  onClick,
-  label,
-  children,
-  disabled = false,
-}: {
-  onClick: () => void;
-  label: string;
-  children: React.ReactNode;
-  disabled?: boolean;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      aria-label={label}
-      type="button"
-      className={cn(
-        "flex size-8 items-center justify-center transition-all",
-        "first:rounded-t-md last:rounded-b-md",
-        "hover:bg-accent dark:hover:bg-accent/40",
-        "focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset",
-        "disabled:pointer-events-none disabled:opacity-50",
-      )}
-      disabled={disabled}
-    >
-      {children}
-    </button>
-  );
-}
+
 
 function MapControls({
   position = "bottom-right",
@@ -829,20 +746,17 @@ function MapControls({
 
   return (
     <div
-      className={cn(
-        "absolute z-10 flex flex-col gap-1.5",
-        positionClasses[position],
-        className,
-      )}
+      data-position={position}
+      className={`${controlStyles.controls}${className ? ` ${className}` : ""}`}
     >
       {showZoom && (
         <ControlGroup>
-          <ControlButton onClick={handleZoomIn} label="Zoom in">
-            <Plus className="size-4" />
-          </ControlButton>
-          <ControlButton onClick={handleZoomOut} label="Zoom out">
-            <Minus className="size-4" />
-          </ControlButton>
+          <Button variant="ghost" size="icon" onClick={handleZoomIn} aria-label="Zoom in">
+            <Plus/>
+          </Button>
+          <Button variant="ghost" size="icon" onClick={handleZoomOut} aria-label="Zoom out">
+            <Minus/>
+          </Button>
         </ControlGroup>
       )}
       {showCompass && (
@@ -852,24 +766,26 @@ function MapControls({
       )}
       {showLocate && (
         <ControlGroup>
-          <ControlButton
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={handleLocate}
-            label="Find my location"
+            aria-label="Find my location"
             disabled={waitingForLocation}
           >
             {waitingForLocation ? (
-              <Loader2 className="size-4 animate-spin" />
+              <Loader2 className={controlStyles.spinning} />
             ) : (
-              <Locate className="size-4" />
+              <Locate />
             )}
-          </ControlButton>
+          </Button>
         </ControlGroup>
       )}
       {showFullscreen && (
         <ControlGroup>
-          <ControlButton onClick={handleFullscreen} label="Toggle fullscreen">
-            <Maximize className="size-4" />
-          </ControlButton>
+          <Button variant="ghost" size="icon" onClick={handleFullscreen} aria-label="Toggle fullscreen">
+            <Maximize />
+          </Button>
         </ControlGroup>
       )}
     </div>
@@ -902,19 +818,9 @@ function CompassButton({ onClick }: { onClick: () => void }) {
   }, [map]);
 
   return (
-    <ControlButton onClick={onClick} label="Reset bearing to north">
-      <svg
-        ref={compassRef}
-        viewBox="0 0 24 24"
-        className="size-5 transition-transform duration-200"
-        style={{ transformStyle: "preserve-3d" }}
-      >
-        <path d="M12 2L16 12H12V2Z" className="fill-red-500" />
-        <path d="M12 2L8 12H12V2Z" className="fill-red-300" />
-        <path d="M12 22L16 12H12V22Z" className="fill-muted-foreground/60" />
-        <path d="M12 22L8 12H12V22Z" className="fill-muted-foreground/30" />
-      </svg>
-    </ControlButton>
+    <Button onClick={onClick} variant="ghost" size="icon">
+      <Compass ref={compassRef}/>
+    </Button>
   );
 }
 
@@ -1005,11 +911,7 @@ function MapPopup({
 
   return createPortal(
     <div
-      className={cn(
-        "bg-popover text-popover-foreground relative max-w-62 rounded-md border p-3 shadow-md",
-        "animate-in fade-in-0 zoom-in-95 duration-200 ease-out",
-        className,
-      )}
+      className={`${markerStyles.popup}${className ? ` ${className}` : ""}`}
     >
       {closeButton && <PopupCloseButton onClick={handleClose} />}
       {children}

@@ -1,0 +1,30 @@
+.appContainer {
+    flex: 1;
+
+    overflow-x: scroll;
+    width: 100%;
+    transition: width var(--transition-short) ease-in-out,
+        padding var(--transition-short) ease-in-out;
+    box-sizing: border-box;
+    position: relative;
+    padding-left: var(--spacing-component);
+    padding-right: var(--spacing-component);
+    
+    align-items: stretch;
+    justify-content: stretch;
+    
+    &::-webkit-scrollbar {
+        display: none;
+    }
+    
+    body[data-mode='home'] & {
+        display: flex;
+        transition-delay: var(--transition-short);
+    }
+    
+    body[data-mode='portfolio'] & {
+        display: inline-flex;
+        padding-top: var(--spacing-component);
+        padding-bottom: var(--spacing-component);
+    }
+}

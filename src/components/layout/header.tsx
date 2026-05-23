@@ -1,10 +1,11 @@
 import { ThemeToggle } from "@/components/layout/theme-toggle"
+import styles from "./header.module.css"
 
 export function Header() {
   return (
-    <header className="top-0 z-50 flex h-14 items-center gap-4 px-8 bg-background">
-      <span className="text-lg font-extrabold tracking-tight pointer-events-none select-none">Arch Map</span>
-      <div className="flex-1" />
+    <header className={styles.header}>
+      <span className={styles.title}>Arch Map</span>
+      <div className={styles.spacer} />
       <ThemeToggle />
     </header>
   )

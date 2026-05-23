@@ -1,0 +1,6 @@
+.item {
+    width: min(600px, 100vw);
+    flex-shrink: 0;
+    padding: var(--spacing-group);
+    border-left: var(--border);
+}

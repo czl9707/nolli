@@ -4,8 +4,10 @@ import type { MapRef } from "@/components/ui/map"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Theme } from "@/lib/map-texture/constant"
 import { useLocation, useNavigate } from "react-router"
-import { cn } from "@/lib/utils"
 import { useLayout } from "@/hooks/use-layout"
+import styles from "./map.module.css"
+import portfolioStyles from "./layout/portfolio-item.module.css"
+import { motion } from "framer-motion"
 
 const PATTERNS = [
   { pattern: "water", id: "water-pattern" },
@@ -69,11 +71,11 @@ function MapCore() {
     if (!map) return
     mapRef.current = map
 
-    const current: Theme = document.documentElement.classList.contains("dark") ? "dark" : "light"
+    const current: Theme = document.body.dataset.theme === "dark" ? "dark" : "light"
     const other: Theme = current === "dark" ? "light" : "dark"
 
     map.on("style.load", () => {
-      const theme: Theme = document.documentElement.classList.contains("dark") ? "dark" : "light"
+      const theme: Theme = document.body.dataset.theme === "dark" ? "dark" : "light"
       applyAllPatterns(map, theme)
     })
 
@@ -92,64 +94,94 @@ function MapCore() {
   }, [applyAllPatterns, navigate])
 
   useEffect(() => {
-    let prevDark = document.documentElement.classList.contains("dark")
+    let prevDark = document.body.dataset.theme === "dark"
     const observer = new MutationObserver(async () => {
       const map = mapRef.current
       if (!map) return
-      const dark = document.documentElement.classList.contains("dark")
+      const dark = document.body.dataset.theme === "dark"
       if (dark === prevDark) return
       prevDark = dark
       const theme: Theme = dark ? "dark" : "light"
       applyAllPatterns(map, theme)
       await fetchAndCache(map, theme, cacheRef.current, true)
     })
-    observer.observe(document.documentElement, {
+    observer.observe(document.body, {
       attributes: true,
-      attributeFilter: ["class"],
+      attributeFilter: ["data-theme"],
     })
     return () => observer.disconnect()
   }, [applyAllPatterns])
 
   return (
     <Map ref={handleRef} styles={mapStyles} loading={!ready}>
-      <MapControls className="right-2 bottom-12" showZoom showCompass showLocate showFullscreen />
+      <MapControls position="bottom-right" showZoom showLocate showFullscreen />
     </Map>
   )
 }
 
+const fadeVariants = {
+  home: { opacity: 0, width: 0, height: 0, },
+  portfolio: { opacity: 1, transition: { duration: 0.6, delay: 0.6 } },
+}
 
 function MapWrapper() {
-  const location = useLayout()
-  const mapComp = useMemo(() => (
-    <div className={cn(
-      "h-full w-full overflow-hidden rounded-sm",
-    )}>
-      <MapCore />
-    </div>
-  ), []);
+  const mode = useLayout()
 
-  // container is same as portfolio item in portfolio mode
   return (
-    <div className={cn(
-      "h-full w-full transition-[width,height,padding] not-first:border-l border-border duration-500 ease-in-out flex flex-col gap-2",
-      location === "portfolio" && "w-[min(600px,100vw)] p-12 shrink-0",
-    )}>
-      <div className={cn("flex-2 flex flex-row gap-2 transition-height duration-500 ease-in-out")}>
-        <div className={cn(location === "portfolio" && "flex-1", "transition-width duration-500 ease-in-out")}>
-          <h2 className={cn("[writing-mode:vertical-lr] opacity-0 transition-opacity duration-500 ease-in-out delay-500", location === "portfolio" && "opacity-100")}>
-            {"Seagram Building"}
-          </h2>
+    <motion.div
+      className={styles.wrapper}
+      initial={mode}
+      animate={mode}
+      variants={{
+        home: { width: "100%", maxWidth: "100%", transition: { duration: 0.6, delay: 0.6 } },
+        portfolio: { width: 600, maxWidth: "100vw", padding: "4rem" },
+      }}
+      transition={{ duration: 0.6, ease: "easeInOut" }}
+    >
+      <motion.div
+        className={styles.grid}
+        animate={mode}
+        initial={mode}
+        variants={{
+          home: {
+            gridTemplateColumns: "0fr 1fr",
+            gridTemplateRows: "1fr 0fr",
+            transition: { duration: 0.6, delay: 0.6 }
+          },
+          portfolio: {
+            gridTemplateColumns: "1fr 2fr",
+            gridTemplateRows: "2fr 1fr",
+          },
+        }}
+        transition={{ duration: 0.6, ease: "easeInOut" }}
+      >
+        <motion.div
+          className={styles.cell}
+          animate={mode}
+          initial={mode}
+          variants={fadeVariants}
+        >
+          <h2>{"Seagram Building"}</h2>
+        </motion.div>
+        <div className={styles.cell}>
+          <div className={styles.mapContainer}>
+            <MapCore />
+          </div>
         </div>
-        <div className={cn("flex-2 transition-width duration-500 ease-in-out")}>
-          {mapComp}
-        </div>
-      </div>
-
-      <div className={cn("flex flex-row gap-2 transition-height duration-500 ease-in-out", location === "portfolio" && "flex-1")}>
-        <div className={cn("flex-1 transition-width duration-500 ease-in-out")}></div>
-        <div className={cn("flex-2 transition-width duration-500 ease-in-out")}></div>
-      </div>
-    </div>
+        <motion.div
+          className={styles.cell}
+          animate={mode}
+          initial={mode}
+          variants={fadeVariants}
+        />
+        <motion.div
+          className={styles.cell}
+          animate={mode}
+          initial={mode}
+          variants={fadeVariants}
+        />
+      </motion.div>
+    </motion.div>
   )
 }
 

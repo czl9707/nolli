@@ -1,7 +1,15 @@
-export function PortfolioItem({children}: {children: React.ReactNode}) {
+import { motion } from "framer-motion"
+import styles from "./portfolio-item.module.css"
+
+export function PortfolioItem({children, delay = 0}: {children: React.ReactNode, delay?: number}) {
   return (
-    <div className="w-[min(600px,100vw)] shrink-0 h-full p-12 not-first:border-l border-border duration-500 ease-in-out">
+    <motion.div
+      className={styles.item}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1, transition: { duration: 0.6, delay } }}
+      exit={{ opacity: 0, transition: { duration: 0.4 } }}
+    >
       {children}
-    </div>
+    </motion.div>
    )
 }

@@ -1,0 +1,158 @@
+@import "@fontsource/architects-daughter/400.css";
+@import "@fontsource/geist-mono/400.css";
+
+a {
+    color: inherit;
+    text-decoration: inherit;
+}
+
+menu,
+ol,
+ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+blockquote,
+pre {
+    margin: 0;
+}
+
+code {
+    font-family: unset;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+span {
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-family: var(--font-default);
+}
+
+body {
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    --spacing-block: 12rem;
+    --spacing-group: 4rem;
+    --spacing-component: 2rem;
+    --spacing-paragraph: 1rem;
+
+    --breakpoint-xs: 450px;
+    --breakpoint-sm: 720px;
+    --breakpoint-md: 1080px;
+    --breakpoint-lg: 1440px;
+
+    --font-playful: "Architects Daughter";
+    --font-default: "Geist Mono";
+
+    --typography-body1-fontFamily: var(--font-default);
+    --typography-body1-fontWeight: 400;
+    --typography-body1-fontSize: 1rem;
+    --typography-body1-lineHeight: 1.5;
+
+    --typography-body2-fontFamily: var(--font-default);
+    --typography-body2-fontWeight: 400;
+    --typography-body2-fontSize: 0.875rem;
+    --typography-body2-lineHeight: 1.5;
+
+    --typography-h1-fontFamily: var(--font-default);
+    --typography-h1-fontWeight: 400;
+    --typography-h1-fontSize: 4.5rem;
+    --typography-h1-lineHeight: 1.25;
+
+    --typography-h2-fontFamily: var(--font-default);
+    --typography-h2-fontWeight: 400;
+    --typography-h2-fontSize: 3.5rem;
+    --typography-h2-lineHeight: 1.25;
+
+    --typography-h3-fontFamily: var(--font-default);
+    --typography-h3-fontWeight: 400;
+    --typography-h3-fontSize: 2.75rem;
+    --typography-h3-lineHeight: 1.25;
+
+    --typography-h4-fontFamily: var(--font-default);
+    --typography-h4-fontWeight: 400;
+    --typography-h4-fontSize: 2.25rem;
+    --typography-h4-lineHeight: 1.25;
+
+    --typography-h5-fontFamily: var(--font-default);
+    --typography-h5-fontWeight: 400;
+    --typography-h5-fontSize: 1.75rem;
+    --typography-h5-lineHeight: 1.4;
+
+    --typography-h6-fontFamily: var(--font-default);
+    --typography-h6-fontWeight: 400;
+    --typography-h6-fontSize: 1.25rem;
+    --typography-h6-lineHeight: 1.6;
+
+    --transition-short: .6s;
+    --transition-long: 1.2s;
+
+    --size-border-radius: .25rem;
+    --size-header-height: 3.5rem;
+    --size-footer-height: 2rem;
+}
+
+body {
+    --color-primary-background: 255 255 255;
+    --color-secondary-background: 248 248 248;
+    --color-primary-foreground: 23 23 23;
+    --color-secondary-foreground: 115 115 115;
+    --color-accent-foreground: 37 99 235;
+    --color-accent-background: 248 248 248;
+
+    --color-destructive: 231, 0, 11;
+
+    --border: 1px solid rgb(var(--color-primary-foreground) / 0.25);
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+body[data-theme='dark'] {
+    --color-primary-background: 23 23 23;
+    --color-secondary-background: 38 38 38;
+    --color-primary-foreground: 255 255 255;
+    --color-secondary-foreground: 163 163 163;
+    --color-accent-foreground: 96 165 250;
+    --color-accent-background: 23 23 23;
+
+    --color-destructive: 255, 100, 103;
+
+    --border: 1px solid rgb(var(--color-primary-foreground) / 0.25);
+}
+
+@custom-media --smaller-than-xs (max-width: 450px);
+@custom-media --larger-than-xs (min-width: 450px);
+@custom-media --smaller-than-sm (max-width: 720px);
+@custom-media --larger-than-sm (min-width: 720px);
+@custom-media --smaller-than-md (max-width: 1080px);
+@custom-media --larger-than-md (min-width: 1080px);
+@custom-media --smaller-than-lg (max-width: 1440px);
+@custom-media --larger-than-lg (min-width: 1440px);
+
+#root {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+    align-items: stretch;
+    background-color: rgb(var(--color-primary-background));
+    color: rgb(var(--color-primary-foreground));
+    z-index: 0;
+}

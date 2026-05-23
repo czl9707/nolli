@@ -1,6 +1,5 @@
 import { defineConfig } from "vite"
 import react from "@vitejs/plugin-react"
-import tailwindcss from "@tailwindcss/postcss"
 import { cpSync, mkdirSync } from "fs"
 import { join } from "path"
 import type { Plugin } from "vite"
@@ -30,11 +29,6 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": join(process.cwd(), "./src"),
-    },
-  },
-  css: {
-    postcss: {
-      plugins: [tailwindcss()],
     },
   },
 })

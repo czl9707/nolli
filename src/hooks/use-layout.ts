@@ -4,8 +4,7 @@ export type LayoutMode = "portfolio" | "home"
 
 export function useLayout() {
   const location = useLocation();
-  if (location.pathname.startsWith("/arch/")) {
-    return "portfolio";
-  }
-  return "home";
+  const mode: LayoutMode = location.pathname.startsWith("/arch/") ? "portfolio" : "home"
+  document.body.dataset.mode = mode
+  return mode
 }

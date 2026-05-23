@@ -2,25 +2,34 @@ import { ThemeProvider } from "@/components/layout/theme-provider"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { Map } from "@/components/map"
-import { BrowserRouter, Routes, Route } from "react-router"
+import { BrowserRouter, Routes, Route, useLocation } from "react-router"
 import { ArchContent } from "@/pages/arch"
-import { cn } from "./lib/utils"
-import { useLayout } from "./hooks/use-layout"
+import { useLayout } from "@/hooks/use-layout"
+import { AnimatePresence } from "framer-motion"
+import styles from "./vite-app.module.css"
+
 
 function AppContainer({ children }: { children: React.ReactNode }) {
-  const mode = useLayout()
-
+  useLayout();
   return (
-    <div className={cn(
-      "flex-1 overflow-x-scroll width-full transition-[width,padding] duration-500 ease-in-out",
-      mode === "portfolio" && "inline-flex pl-32",
-      mode === "home" && "flex px-8",
-    )}>
+    <div className={styles.appContainer}>
       {children}
     </div>
   )
 }
 
+
+function AnimatedRoutes() {
+  const location = useLocation()
+  return (
+    <AnimatePresence>
+      <Routes location={location} key={location.pathname}>
+        <Route path="/arch/:slug" element={<ArchContent />} />
+        <Route path="/" element={<></>} />
+      </Routes>
+    </AnimatePresence>
+  )
+}
 
 export function ViteApp() {
   return (
@@ -29,10 +38,7 @@ export function ViteApp() {
         <Header />
           <AppContainer>
             <Map />
-            <Routes>
-              <Route path="/arch/:slug" element={<ArchContent />} />
-              <Route path="/" element={<></>} />
-            </Routes>
+            <AnimatedRoutes />
           </AppContainer>
         <Footer />
       </ThemeProvider>

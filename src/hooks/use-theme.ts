@@ -12,9 +12,7 @@ function getStoredTheme(): Theme {
 }
 
 function applyTheme(resolved: ResolvedTheme) {
-  const root = document.documentElement
-  root.classList.remove("light", "dark")
-  root.classList.add(resolved)
+  document.body.dataset.theme = resolved
 }
 
 function resolveTheme(theme: Theme): ResolvedTheme {

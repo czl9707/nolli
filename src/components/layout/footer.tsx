@@ -1,9 +1,12 @@
+import { Body2 } from "@/components/ui/typography"
+import styles from "./footer.module.css"
+
 export function Footer() {
   return (
-    <footer className="z-50 flex h-8 items-center px-8 pointer-events-none select-none">
-      <p className="text-xs opacity-50">
+    <footer className={styles.footer}>
+      <Body2 className={styles.copyright}>
         © 2026-present Zane Chen. All Rights Reserved.
-      </p>
+      </Body2>
     </footer>
   )
 }

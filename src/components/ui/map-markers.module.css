@@ -1,0 +1,101 @@
+.markerContent {
+    position: relative;
+    cursor: pointer;
+}
+
+.defaultMarker {
+    position: relative;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    border: var(--border);
+    background-color: rgb(var(--color-accent-foreground));
+    box-shadow: var(--shadow-md);
+}
+
+.popupClose {
+    position: absolute;
+    top: 0.125rem;
+    right: 0.125rem;
+    z-index: 10;
+    display: inline-flex;
+    width: 1.25rem;
+    height: 1.25rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--size-border-radius);
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: rgb(var(--color-primary-foreground));
+    transition: background-color var(--transition-short);
+}
+
+.popupClose:hover {
+    background-color: rgb(var(--color-secondary-background));
+}
+
+.popupClose:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px rgb(var(--color-secondary-foreground) / 0.5);
+}
+
+.popupClose svg {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+@keyframes fadeInZoom {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.popup {
+    position: relative;
+    max-width: 15.5rem;
+    border-radius: var(--size-border-radius);
+    border: var(--border);
+    padding: 0.75rem;
+    box-shadow: var(--shadow-md);
+    background-color: rgb(var(--color-primary-background));
+    color: rgb(var(--color-primary-foreground));
+    animation: fadeInZoom 0.2s ease-out;
+}
+
+.tooltip {
+    border-radius: var(--size-border-radius);
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    text-wrap: balance;
+    box-shadow: var(--shadow-md);
+    pointer-events: none;
+    background-color: rgb(var(--color-primary-foreground));
+    color: rgb(var(--color-primary-background));
+    animation: fadeInZoom 0.2s ease-out;
+}
+
+.label {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 10px;
+    font-weight: 500;
+    color: rgb(var(--color-primary-foreground));
+}
+
+.labelTop {
+    bottom: 100%;
+    margin-bottom: 0.25rem;
+}
+
+.labelBottom {
+    top: 100%;
+    margin-top: 0.25rem;
+}

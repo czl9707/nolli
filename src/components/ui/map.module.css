@@ -1,0 +1,37 @@
+.container {
+    position: relative;
+    height: 100%;
+    width: 100%;
+}
+
+.loader {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(var(--color-primary-background) / 0.5);
+    backdrop-filter: blur(4px);
+}
+
+.loaderDots {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.dot {
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 50%;
+    background-color: rgb(var(--color-secondary-foreground) / 0.6);
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.dot1 { animation: pulse 1.5s ease-in-out infinite; }
+.dot2 { animation: pulse 1.5s ease-in-out 0.15s infinite; }
+.dot3 { animation: pulse 1.5s ease-in-out 0.3s infinite; }

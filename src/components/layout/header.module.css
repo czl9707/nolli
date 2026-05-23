@@ -1,0 +1,22 @@
+.header {
+    z-index: 50;
+    display: flex;
+    height: var(--size-header-height);
+    align-items: center;
+    gap: var(--spacing-paragraph);
+    padding-left: var(--spacing-component);
+    padding-right: var(--spacing-component);
+    background-color: rgb(var(--color-primary-background));
+}
+
+.title {
+    font-size: 1.125rem;
+    font-weight: 800;
+    font-family: var(--font-playful);
+    pointer-events: none;
+    user-select: none;
+}
+
+.spacer {
+    flex: 1;
+}

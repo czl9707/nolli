@@ -1,6 +1,7 @@
 import { Moon, Sun } from "lucide-react"
 import { useThemeContext } from "@/components/layout/theme-provider"
 import { Button } from "@/components/ui/button"
+import styles from "./theme-toggle.module.css"
 
 export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useThemeContext()
@@ -11,9 +12,9 @@ export function ThemeToggle() {
       size="icon"
       onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
     >
-      <Sun className="size-4 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
-      <Moon className="absolute size-4 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
-      <span className="sr-only">Toggle theme</span>
+      <Sun className={styles.sun} />
+      <Moon className={styles.moon} />
+      <span className={styles.srOnly}>Toggle theme</span>
     </Button>
   )
 }
