@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo, useRef } from "react"
 import { useLocation } from "react-router"
-import { getArchBySlug, type Arch } from "@/data/architectures"
+import { getArchBySlug, type Arch } from "@/lib/data/architectures"
 
 type SelectedArchContextValue = {
   lastSelectedArch: Arch | null

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion"
-import type { ArchPage } from "@/data/architectures"
+import type { ArchPage } from "@/lib/data/architectures"
 import styles from "./portfolio-item.module.css"
 import { Body1, Body2 } from "@/components/ui/typography"
 

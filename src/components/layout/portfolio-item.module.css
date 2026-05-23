@@ -1,5 +1,5 @@
 .item {
-    width: min(840px, 100vw);
+    width: min(var(--size-portfolio-width), 100vw);
     flex-shrink: 0;
     padding: var(--spacing-component) var(--spacing-block);
     border-left: var(--border);
@@ -15,7 +15,7 @@
     min-height: 0;
     display: grid;
     grid-template-rows: 3fr 1fr;
-    row-gap: 2rem;
+    row-gap: var(--spacing-component);
     column-gap: 0.25rem;
 }
 

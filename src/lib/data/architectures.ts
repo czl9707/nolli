@@ -11,7 +11,7 @@ export type Coordinates = {
 export type Arch = {
   slug: string
   name: string
-  author: string
+  architect: string
   year: string
   address: string
   coordinates: Coordinates
@@ -22,7 +22,7 @@ const architectures: Record<string, Arch> = {
   "seagram-building": {
     slug: "seagram-building",
     name: "Seagram Building",
-    author: "Ludwig Mies van der Rohe",
+    architect: "Ludwig Mies van der Rohe",
     year: "1958",
     address: "375 Park Avenue, Manhattan, New York 10152, U.S.",
     coordinates: { latitude: 40.7586, longitude: -73.9722 },
