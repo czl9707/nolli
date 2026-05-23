@@ -686,7 +686,6 @@ function ControlGroup({ children }: { children: React.ReactNode }) {
 
 
 function MapControls({
-  position = "bottom-right",
   showZoom = true,
   showCompass = false,
   showLocate = false,
@@ -746,7 +745,6 @@ function MapControls({
 
   return (
     <div
-      data-position={position}
       className={`${controlStyles.controls}${className ? ` ${className}` : ""}`}
     >
       {showZoom && (

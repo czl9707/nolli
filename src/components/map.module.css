@@ -18,7 +18,8 @@
 .grid {
     display: grid;
     height: 100%;
-    gap: 0.25rem;
+    row-gap: 2rem;
+    column-gap: 0.25rem;
 }
 
 .cell {
@@ -26,3 +27,27 @@
     min-height: 0;
     overflow: hidden;
 }
+
+.infoSection {
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+}
+
+.infoHead {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding-bottom: .5rem;
+
+    .year {
+        opacity: .75;
+    }
+}
+
+.address {
+    text-align: right;
+    opacity: .75;
+    width: 100%
+}
+

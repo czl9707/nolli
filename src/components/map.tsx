@@ -5,9 +5,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Theme } from "@/lib/map-texture/constant"
 import { useLocation, useNavigate } from "react-router"
 import { useLayout } from "@/hooks/use-layout"
+import { useSelectedArch } from "@/contexts/selected-arch"
 import styles from "./map.module.css"
-import portfolioStyles from "./layout/portfolio-item.module.css"
 import { motion } from "framer-motion"
+import { H2, Body1, Body2 } from "./ui/typography"
 
 const PATTERNS = [
   { pattern: "water", id: "water-pattern" },
@@ -53,7 +54,8 @@ function MapCore() {
   const cacheRef = useRef<Record<string, CachedImage>>({})
   const [ready, setReady] = useState(false)
   const navigate = useNavigate()
-  const location = useLocation();
+  const location = useLocation()
+  const { arch } = useSelectedArch()
 
   const mapStyles = useMemo(() => ({
     light: getMapStyle("light"),
@@ -80,10 +82,10 @@ function MapCore() {
     })
 
     map.on("click", () => {
-      const isHome = location.pathname == "/";
+      const isHome = location.pathname === "/"
 
-      if (isHome) navigate("/arch/sample-building");
-      else navigate("/");
+      if (isHome) navigate("/arch/sample-building")
+      else navigate("/")
     })
 
     fetchAndCache(map, current, cacheRef.current, true).then(() => {
@@ -114,18 +116,19 @@ function MapCore() {
 
   return (
     <Map ref={handleRef} styles={mapStyles} loading={!ready}>
-      <MapControls position="bottom-right" showZoom showLocate showFullscreen />
+      <MapControls showZoom showLocate showFullscreen />
     </Map>
   )
 }
 
 const fadeVariants = {
-  home: { opacity: 0, width: 0, height: 0, },
-  portfolio: { opacity: 1, transition: { duration: 0.6, delay: 0.6 } },
+  home: { opacity: 0, height: 0, },
+  portfolio: { opacity: 1, height: "unset", transition: { duration: 0.6, delay: 0.6 } },
 }
 
 function MapWrapper() {
   const mode = useLayout()
+  const { arch } = useSelectedArch()
 
   return (
     <motion.div
@@ -133,8 +136,8 @@ function MapWrapper() {
       initial={mode}
       animate={mode}
       variants={{
-        home: { width: "100%", maxWidth: "100%", transition: { duration: 0.6, delay: 0.6 } },
-        portfolio: { width: 600, maxWidth: "100vw", padding: "4rem" },
+        home: { width: "100%", maxWidth: "100%", padding: 0, transition: { duration: 0.6, delay: 0.6 } },
+        portfolio: { width: 600, maxWidth: "100vw", padding: "2rem" },
       }}
       transition={{ duration: 0.6, ease: "easeInOut" }}
     >
@@ -144,42 +147,43 @@ function MapWrapper() {
         initial={mode}
         variants={{
           home: {
-            gridTemplateColumns: "0fr 1fr",
+            gridTemplateColumns: "1fr",
             gridTemplateRows: "1fr 0fr",
             transition: { duration: 0.6, delay: 0.6 }
           },
           portfolio: {
-            gridTemplateColumns: "1fr 2fr",
-            gridTemplateRows: "2fr 1fr",
+            gridTemplateColumns: "1fr",
+            gridTemplateRows: "3fr 1fr",
           },
         }}
         transition={{ duration: 0.6, ease: "easeInOut" }}
       >
-        <motion.div
-          className={styles.cell}
-          animate={mode}
-          initial={mode}
-          variants={fadeVariants}
-        >
-          <h2>{"Seagram Building"}</h2>
-        </motion.div>
         <div className={styles.cell}>
           <div className={styles.mapContainer}>
             <MapCore />
           </div>
         </div>
         <motion.div
-          className={styles.cell}
+          className={`${styles.cell} ${styles.infoSection}`}
           animate={mode}
           initial={mode}
           variants={fadeVariants}
-        />
-        <motion.div
-          className={styles.cell}
-          animate={mode}
-          initial={mode}
-          variants={fadeVariants}
-        />
+        >
+          <div className={styles.infoHead}>
+            <Body1 className={styles.author}>
+              {arch?.author ?? ""}
+            </Body1>
+            <Body2 className={styles.year}>
+              {arch?.year ?? ""}
+            </Body2>
+          </div>
+          <H2>{arch?.name ?? ""}</H2>
+          <span style={{flex: "1 1"}}/>
+          
+          <Body2 className={styles.address}>
+            {arch?.address ?? ""}
+          </Body2>
+        </motion.div>
       </motion.div>
     </motion.div>
   )
