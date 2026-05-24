@@ -3,25 +3,5 @@
     position: relative;
     overflow: hidden;
     box-sizing: border-box;
-
-    body[data-mode='home'] & {
-        display: flex;
-    }
-
-    body[data-mode='board'] & {
-        display: flex;
-    }
-}
-
-.routePresence {
     display: flex;
-    height: 100%;
-    width: 100%;
-    align-items: stretch;
-
-    body[data-mode='board'] & {
-        position: absolute;
-        inset: 0;
-        z-index: 10;
-    }
 }
