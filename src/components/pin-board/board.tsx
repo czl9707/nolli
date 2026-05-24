@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router"
 import { motion, useMotionValue, useTransform, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
@@ -86,6 +86,14 @@ export function PinBoard() {
   const [isPanning, setIsPanning] = useState(false)
   const panStart = useMemo(() => ({ x: 0, y: 0 }), [])
   const isBoard = mode === "board"
+
+  useEffect(() => {
+    if (!isBoard) {
+      panX.set(0)
+      panY.set(0)
+      zoom.set(1)
+    }
+  }, [isBoard, panX, panY, zoom])
 
   const items = useMemo(() => {
     if (!lastSelectedArch) return []
