@@ -1,58 +1,27 @@
 .appContainer {
     flex: 1;
-
-    overflow-x: scroll;
-    width: 100%;
-    transition: width var(--transition-short) ease-in-out,
-        padding var(--transition-short) ease-in-out;
-    box-sizing: border-box;
     position: relative;
-    padding-left: var(--spacing-component);
-    padding-right: var(--spacing-component);
-    
-    align-items: stretch;
-    justify-content: stretch;
-    
-    &::-webkit-scrollbar {
-        display: none;
-    }
-    
+    overflow: hidden;
+    box-sizing: border-box;
+
     body[data-mode='home'] & {
         display: flex;
-        transition-delay: var(--transition-short);
     }
-    
-    body[data-mode='portfolio'] & {
-        display: inline-flex;
-        padding: var(--spacing-component) 0;
+
+    body[data-mode='board'] & {
+        display: flex;
     }
 }
 
-/* 
- * AnimatePresence needs a motion component as its direct child to intercept
- * unmounting and play exit animations. This wrapper serves as that proxy —
- * keeping the old route content alive in the DOM while it fades out.
- * 
- * Matches the parent appContainer's flex behavior so route content (portfolio
- * items) lays out correctly as horizontal scroll siblings of the map.
- */
 .routePresence {
     display: flex;
     height: 100%;
+    width: 100%;
     align-items: stretch;
 
-    body[data-mode='portfolio'] & {
-        display: inline-flex;
+    body[data-mode='board'] & {
+        position: absolute;
+        inset: 0;
+        z-index: 10;
     }
-}
-
-.scrollToStart {
-    position: fixed;
-    top: var(--size-header-height);
-    left: var(--spacing-component);
-    z-index: 100;    
-}
-
-.scrollToStartText {
-    font-family: var(--font-playful) !important;
 }

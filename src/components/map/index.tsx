@@ -140,20 +140,21 @@ const INFO_VARIANTS = {
 
 function MapWrapper() {
   const mode = useLayout()
-  const { lastSelectedArch } = useSelectedArch()
+
+  if (mode === "board") return null
 
   return (
     <motion.div
       className={styles.wrapper}
-      initial={mode}
-      animate={mode}
+      initial="home"
+      animate="home"
       variants={WRAPPER_VARIANTS}
       transition={EASE_TRANSITION}
     >
       <motion.div
         className={styles.grid}
-        animate={mode}
-        initial={mode}
+        animate="home"
+        initial="home"
         variants={GRID_VARIANTS}
         transition={EASE_TRANSITION}
       >
@@ -162,27 +163,6 @@ function MapWrapper() {
             <MapCore />
           </div>
         </div>
-        <motion.div
-          className={`${styles.cell} ${styles.infoSection}`}
-          animate={mode}
-          initial={mode}
-          variants={INFO_VARIANTS}
-        >
-          <div className={styles.infoHead}>
-            <Body1 className={styles.architect}>
-              {lastSelectedArch?.architect ?? ""}
-            </Body1>
-            <Body2 className={styles.year}>
-              {lastSelectedArch?.year ?? ""}
-            </Body2>
-          </div>
-          <H2>{lastSelectedArch?.name ?? ""}</H2>
-          <span style={{flex: "1 1"}}/>
-          
-          <Body2 className={styles.address}>
-            {lastSelectedArch?.address ?? ""}
-          </Body2>
-        </motion.div>
       </motion.div>
     </motion.div>
   )
@@ -190,4 +170,5 @@ function MapWrapper() {
 
 export {
   MapWrapper as Map,
+  MapCore,
 }
