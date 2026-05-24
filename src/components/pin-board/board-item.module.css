@@ -1,0 +1,12 @@
+.item {
+  position: absolute;
+  background: rgb(var(--color-primary-background));
+  border: 1px solid rgb(var(--color-primary-foreground) / 0.08);
+  box-shadow:
+    0 1px 3px rgb(0 0 0 / 0.08),
+    0 4px 12px rgb(0 0 0 / 0.06);
+  border-radius: 2px;
+  cursor: default;
+  user-select: none;
+  overflow: hidden;
+}
