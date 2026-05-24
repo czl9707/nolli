@@ -91,6 +91,7 @@ body[data-theme='dark'] .button[data-variant='ghost']:hover {
 
 .button[data-variant='link'] {
     color: rgb(var(--color-primary-foreground));
+    background: transparent;
     text-underline-offset: 4px;
 }
 

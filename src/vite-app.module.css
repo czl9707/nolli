@@ -45,3 +45,14 @@
         display: inline-flex;
     }
 }
+
+.scrollToStart {
+    position: fixed;
+    top: var(--size-header-height);
+    left: var(--spacing-component);
+    z-index: 100;    
+}
+
+.scrollToStartText {
+    font-family: var(--font-playful) !important;
+}

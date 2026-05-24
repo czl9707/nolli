@@ -67,6 +67,39 @@ const architectures: Record<string, Arch> = {
       ],
     },
   },
+  "exeter-academy-library": {
+    slug: "exeter-academy-library",
+    name: "Exeter Academy Library",
+    architect: "Louis Kahn",
+    year: "1965",
+    address: "21 Rear Elm St, Exeter, NH 03833",
+    coordinates: { latitude: 42.9789, longitude: -70.9494 },
+    pages: [
+      {
+        image: "/images/exeter-academy-library-1.jpg",
+        caption: {
+          title: "Lorem Ipsum Dolor",
+          text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+        },
+      },
+      {
+        image: "/images/exeter-academy-library-2.jpg",
+        caption: {
+          text: "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+        },
+      },
+      {
+        image: "/images/exeter-academy-library-3.jpg",
+        caption: {
+          text: "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+        },
+      },
+    ],
+    links: {
+      googleMaps: "https://maps.google.com/?q=42.9789,-70.9494",
+      wikipedia: "https://en.wikipedia.org/wiki/Phillips_Exeter_Academy_Library",
+    },
+  }
 }
 
 export function getArchBySlug(slug: string): Arch | null {
