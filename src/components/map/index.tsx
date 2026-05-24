@@ -3,13 +3,9 @@ import { getMapStyle } from "@/lib/map-style"
 import type { MapRef } from "@/components/ui/map"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import { useLocation, useNavigate } from "react-router"
-import { useLayout } from "@/hooks/use-layout"
 import { useSelectedArch } from "@/contexts/selected-arch"
 import { getAllArchitectures, type Arch } from "@/lib/data/architectures"
 import { useMapPatterns } from "./use-map-patterns"
-import styles from "./map.module.css"
-import { motion } from "framer-motion"
-import { H2, Body1, Body2 } from "@/components/ui/typography"
 import { MapPin } from "lucide-react"
 
 const ALL_ARCHITECTURES = getAllArchitectures()
@@ -65,7 +61,7 @@ function MapNavigator() {
   return null
 }
 
-function MapCore() {
+export function MapCore() {
   const mapRef = useRef<MapRef | null>(null)
   const navigate = useNavigate()
   const location = useLocation()
@@ -94,81 +90,4 @@ function MapCore() {
       <MapNavigator />
     </Map>
   )
-}
-
-const EASE_TRANSITION = { duration: 0.6, ease: "easeInOut" as const }
-const DELAY_TRANSITION = { duration: 0.6, delay: 0.6 }
-
-const WRAPPER_VARIANTS = {
-  home: {
-    width: "100%",
-    maxWidth: "100%",
-    paddingTop: "0",
-    paddingBottom: "0",
-    paddingLeft: "0",
-    paddingRight: "0",
-    transition: DELAY_TRANSITION,
-  },
-  portfolio: {
-    width: "var(--size-portfolio-width)",
-    maxWidth: "100vw",
-    paddingTop: "var(--spacing-component)",
-    paddingBottom: "var(--spacing-component)",
-    paddingLeft: "var(--spacing-block)",
-    paddingRight: "var(--spacing-block)",
-  },
-}
-
-const GRID_VARIANTS = {
-  home: {
-    gridTemplateColumns: "1fr",
-    gridTemplateRows: "1fr 0fr",
-    rowGap: 0,
-    transition: DELAY_TRANSITION,
-  },
-  portfolio: {
-    gridTemplateColumns: "1fr",
-    gridTemplateRows: "3fr 1fr",
-    rowGap: "var(--spacing-component)",
-  },
-}
-
-const INFO_VARIANTS = {
-  home: { opacity: 0, transition: EASE_TRANSITION },
-  portfolio: { opacity: 1, transition: DELAY_TRANSITION },
-}
-
-function MapWrapper() {
-  const mode = useLayout()
-
-  if (mode === "board") return null
-
-  return (
-    <motion.div
-      className={styles.wrapper}
-      initial="home"
-      animate="home"
-      variants={WRAPPER_VARIANTS}
-      transition={EASE_TRANSITION}
-    >
-      <motion.div
-        className={styles.grid}
-        animate="home"
-        initial="home"
-        variants={GRID_VARIANTS}
-        transition={EASE_TRANSITION}
-      >
-        <div className={styles.cell}>
-          <div className={styles.mapContainer}>
-            <MapCore />
-          </div>
-        </div>
-      </motion.div>
-    </motion.div>
-  )
-}
-
-export {
-  MapWrapper as Map,
-  MapCore,
 }
