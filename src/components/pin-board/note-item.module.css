@@ -1,0 +1,10 @@
+.note {
+  padding: 0.75rem 1rem;
+  height: 100%;
+  box-sizing: border-box;
+  background: rgb(var(--color-primary-background));
+  font-family: var(--font-playful);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: rgb(var(--color-primary-foreground) / 0.8);
+}

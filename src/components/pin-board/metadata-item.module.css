@@ -1,0 +1,38 @@
+.card {
+  padding: 1rem 1.25rem;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-image:
+    linear-gradient(rgb(var(--color-secondary-foreground) / 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--color-secondary-foreground) / 0.06) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+.name {
+  font-family: var(--font-playful);
+  font-size: 1.1rem;
+  line-height: 1.3;
+  margin-bottom: 0.25rem;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0.2rem 0;
+  border-bottom: 1px solid rgb(var(--color-primary-foreground) / 0.06);
+}
+
+.label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.5;
+}
+
+.value {
+  font-size: 0.8rem;
+}
