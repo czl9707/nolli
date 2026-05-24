@@ -3,6 +3,11 @@
     width: 100%;
     overflow: hidden;
     border-radius: var(--size-border-radius);
+    transition: border-radius var(--transition-short) ease-in-out;
+
+    body[data-mode='portfolio'] & {
+        border-radius: 0
+    }
 }
 
 .wrapper {
