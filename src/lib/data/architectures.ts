@@ -6,6 +6,15 @@ export type ArchPage = {
   }
 }
 
+export type ArchPhoto = {
+  image: string
+  caption?: string
+}
+
+export type ArchNote = {
+  text: string
+}
+
 export type Coordinates = {
   latitude: number
   longitude: number
@@ -26,6 +35,8 @@ export type Arch = {
   address: string
   coordinates: Coordinates
   pages: ArchPage[]
+  photos: ArchPhoto[]
+  notes: ArchNote[]
   links: ArchLinks
 }
 
@@ -54,6 +65,14 @@ const architectures: Record<string, Arch> = {
       {
         image: "/images/seagram-3.jpg",
       },
+    ],
+    photos: [
+      { image: "/images/seagram-1.jpg", caption: "Lorem Ipsum Dolor" },
+      { image: "/images/seagram-2.jpg", caption: "Ut enim ad minim veniam" },
+      { image: "/images/seagram-3.jpg" },
+    ],
+    notes: [
+      { text: "One of the most influential buildings in modern architecture. The plaza set the standard for corporate public space in NYC." },
     ],
     links: {
       googleMaps: "https://maps.google.com/?q=40.7586,-73.9722",
@@ -94,6 +113,14 @@ const architectures: Record<string, Arch> = {
           text: "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
         },
       },
+    ],
+    photos: [
+      { image: "/images/exeter-academy-library-1.jpg", caption: "Lorem Ipsum Dolor" },
+      { image: "/images/exeter-academy-library-2.jpg", caption: "Ut enim ad minim veniam" },
+      { image: "/images/exeter-academy-library-3.jpg", caption: "Duis aute irure dolor" },
+    ],
+    notes: [
+      { text: "Kahn's masterwork. The brick exterior and inner concrete atrium create one of the most powerful library spaces ever built." },
     ],
     links: {
       googleMaps: "https://maps.google.com/?q=42.9789,-70.9494",
