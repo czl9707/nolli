@@ -7,7 +7,7 @@ export type PlacedItem = {
   rotation: number
 }
 
-type ItemSpec = {
+export type ItemSpec = {
   id: string
   width: number
   height: number
