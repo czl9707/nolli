@@ -53,8 +53,8 @@ export function layoutPinBoard(
     let foundSpot = false
 
     if (isAnchor) {
-      bestX = marginX + 40
-      bestY = marginY + 40
+      bestX = marginX
+      bestY = marginY
       foundSpot = true
     } else {
       for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {

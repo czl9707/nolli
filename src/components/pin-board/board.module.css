@@ -4,20 +4,26 @@
   height: 100%;
   overflow: hidden;
   touch-action: none;
+}
+
+.surface {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+}
+
+.mapSlot {
+  position: absolute;
+  overflow: hidden;
+}
+
+.boardMode {
   cursor: grab;
 
   &:active {
     cursor: grabbing;
   }
-}
-
-.surface {
-  position: absolute;
-  transform-origin: 0 0;
-  background-color: rgb(var(--color-secondary-background));
-  background-image:
-    radial-gradient(circle, rgb(var(--color-primary-foreground) / 0.03) 1px, transparent 1px);
-  background-size: 24px 24px;
 }
 
 .backButton {

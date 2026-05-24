@@ -1,28 +1,65 @@
 import { useCallback, useMemo, useState } from "react"
 import { useNavigate } from "react-router"
-import { motion, useMotionValue, useTransform } from "framer-motion"
-import { AnimatePresence } from "framer-motion"
+import { motion, useMotionValue, useTransform, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Body2 } from "@/components/ui/typography"
 import { MoveLeft } from "lucide-react"
-import type { Arch } from "@/lib/data/architectures"
+import { useLayout } from "@/hooks/use-layout"
+import { useSelectedArch } from "@/contexts/selected-arch"
 import { layoutPinBoard, type PlacedItem, type ItemSpec } from "@/lib/pin-board-layout"
+import { MapCore } from "@/components/map"
 import { PhotoItem } from "./photo-item"
 import { MetadataItem } from "./metadata-item"
 import { NoteItem } from "./note-item"
 import { LinkItem } from "./link-item"
-import { SiteMapItem } from "./site-map-item"
 import styles from "./board.module.css"
 
 const CANVAS_W = 2400
 const CANVAS_H = 1600
 const MIN_ZOOM = 0.5
 const MAX_ZOOM = 2.0
+const MAP_SLOT_W = 400
+const MAP_SLOT_H = 300
+const MAP_SLOT_X = 60
+const MAP_SLOT_Y = 60
 
-function buildItemSpecs(arch: Arch): ItemSpec[] {
+const EASE_TRANSITION = { duration: 0.6, ease: "easeInOut" as const }
+
+const SURFACE_VARIANTS = {
+  home: {
+    width: "100%",
+    height: "100%",
+  },
+  board: {
+    width: CANVAS_W,
+    height: CANVAS_H,
+  },
+}
+
+const MAP_SLOT_VARIANTS = {
+  home: {
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    borderRadius: "0px",
+    boxShadow: "0px 0px 0px rgba(0,0,0,0)",
+  },
+  board: {
+    top: MAP_SLOT_Y,
+    left: MAP_SLOT_X,
+    width: MAP_SLOT_W,
+    height: MAP_SLOT_H,
+    borderRadius: "4px",
+    boxShadow: "0px 1px 3px rgba(0,0,0,0.08), 0px 4px 12px rgba(0,0,0,0.06)",
+  },
+}
+
+function buildBoardItemSpecs(arch: { photos: unknown[]; notes: unknown[] }): ItemSpec[] {
   const specs: ItemSpec[] = []
 
-  specs.push({ id: "site-map", width: 400, height: 300 })
+  // Reserve space for the map slot (collision avoidance only, not rendered as BoardItem)
+  specs.push({ id: "site-map", width: MAP_SLOT_W, height: MAP_SLOT_H })
 
   for (let i = 0; i < arch.photos.length; i++) {
     specs.push({ id: `photo-${i}`, width: 340, height: 260 })
@@ -39,37 +76,38 @@ function buildItemSpecs(arch: Arch): ItemSpec[] {
   return specs
 }
 
-type PinBoardProps = {
-  arch: Arch
-}
-
-export function PinBoard({ arch }: PinBoardProps) {
+export function PinBoard() {
+  const mode = useLayout()
+  const { lastSelectedArch } = useSelectedArch()
   const navigate = useNavigate()
   const panX = useMotionValue(0)
   const panY = useMotionValue(0)
   const zoom = useMotionValue(1)
   const [isPanning, setIsPanning] = useState(false)
   const panStart = useMemo(() => ({ x: 0, y: 0 }), [])
+  const isBoard = mode === "board"
 
   const items = useMemo(() => {
-    const specs = buildItemSpecs(arch)
+    if (!lastSelectedArch) return []
+    const specs = buildBoardItemSpecs(lastSelectedArch)
     return layoutPinBoard(specs, CANVAS_W, CANVAS_H, "site-map")
-  }, [arch])
+  }, [lastSelectedArch])
 
   const transform = useTransform(
     [panX, panY, zoom],
-    ([x, y, s]) => `translate(${x}px, ${y}px) scale(${s})`
+    ([x, y, s]) => `translate(${x}px, ${y}px) scale(${s})`,
   )
 
   const handlePointerDown = useCallback(
     (e: React.PointerEvent) => {
+      if (!isBoard) return
       if ((e.target as HTMLElement).closest("[data-pin-item]")) return
       setIsPanning(true)
       panStart.x = e.clientX - panX.get()
       panStart.y = e.clientY - panY.get()
       ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
     },
-    [panX, panY, panStart],
+    [isBoard, panX, panY, panStart],
   )
 
   const handlePointerMove = useCallback(
@@ -87,20 +125,18 @@ export function PinBoard({ arch }: PinBoardProps) {
 
   const handleWheel = useCallback(
     (e: React.WheelEvent) => {
+      if (!isBoard) return
       const delta = e.deltaY > 0 ? -0.1 : 0.1
       zoom.set(Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom.get() + delta)))
     },
-    [zoom],
+    [isBoard, zoom],
   )
-
-  const findItem = (id: string): PlacedItem =>
-    items.find((i) => i.id === id) ?? items[0]
 
   let delayIndex = 0
 
   return (
     <div
-      className={styles.viewport}
+      className={`${styles.viewport} ${isBoard ? styles.boardMode : ""}`}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
@@ -108,41 +144,91 @@ export function PinBoard({ arch }: PinBoardProps) {
     >
       <motion.div
         className={styles.surface}
-        style={{
-          width: CANVAS_W,
-          height: CANVAS_H,
-          transform,
-        }}
+        animate={mode}
+        variants={SURFACE_VARIANTS}
+        transition={EASE_TRANSITION}
+        style={{ transform }}
       >
+        <motion.div
+          className={styles.mapSlot}
+          animate={mode}
+          variants={MAP_SLOT_VARIANTS}
+          transition={EASE_TRANSITION}
+        >
+          <MapCore />
+        </motion.div>
+
         <AnimatePresence>
-          {items.map((item) => {
-            let content: React.ReactNode = null
+          {isBoard &&
+            lastSelectedArch &&
+            items.map((item) => {
+              if (item.id === "site-map") return null
 
-            if (item.id === "site-map") {
-              content = <SiteMapItem item={item} />
-            } else if (item.id === "metadata") {
-              content = <MetadataItem arch={arch} item={item} delay={delayIndex++} />
-            } else if (item.id === "links") {
-              content = <LinkItem links={arch.links} item={item} delay={delayIndex++} />
-            } else if (item.id.startsWith("photo-")) {
-              const idx = parseInt(item.id.replace("photo-", ""), 10)
-              content = <PhotoItem photo={arch.photos[idx]} item={item} delay={delayIndex++} />
-            } else if (item.id.startsWith("note-")) {
-              const idx = parseInt(item.id.replace("note-", ""), 10)
-              content = <NoteItem note={arch.notes[idx]} item={item} delay={delayIndex++} />
-            }
+              let content: React.ReactNode = null
 
-            return <div key={item.id} data-pin-item>{content}</div>
-          })}
+              if (item.id === "metadata") {
+                content = (
+                  <MetadataItem
+                    arch={lastSelectedArch}
+                    item={item}
+                    delay={delayIndex++}
+                  />
+                )
+              } else if (item.id === "links") {
+                content = (
+                  <LinkItem
+                    links={lastSelectedArch.links}
+                    item={item}
+                    delay={delayIndex++}
+                  />
+                )
+              } else if (item.id.startsWith("photo-")) {
+                const idx = parseInt(item.id.replace("photo-", ""), 10)
+                content = (
+                  <PhotoItem
+                    photo={lastSelectedArch.photos[idx]}
+                    item={item}
+                    delay={delayIndex++}
+                  />
+                )
+              } else if (item.id.startsWith("note-")) {
+                const idx = parseInt(item.id.replace("note-", ""), 10)
+                content = (
+                  <NoteItem
+                    note={lastSelectedArch.notes[idx]}
+                    item={item}
+                    delay={delayIndex++}
+                  />
+                )
+              }
+
+              return (
+                <div key={item.id} data-pin-item>
+                  {content}
+                </div>
+              )
+            })}
         </AnimatePresence>
       </motion.div>
 
-      <div className={styles.backButton}>
-        <Button variant="link" onClick={() => navigate("/")}>
-          <MoveLeft size={20} strokeWidth={1} />
-          <Body2 style={{ fontFamily: "var(--font-playful)" }}>Back to map</Body2>
-        </Button>
-      </div>
+      <AnimatePresence>
+        {isBoard && (
+          <motion.div
+            key="back-button"
+            className={styles.backButton}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1, transition: { delay: 0.6 } }}
+            exit={{ opacity: 0 }}
+          >
+            <Button variant="link" onClick={() => navigate("/")}>
+              <MoveLeft size={20} strokeWidth={1} />
+              <Body2 style={{ fontFamily: "var(--font-playful)" }}>
+                Back to map
+              </Body2>
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
