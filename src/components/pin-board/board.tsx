@@ -152,6 +152,7 @@ export function PinBoard() {
     >
       <motion.div
         className={styles.surface}
+        initial="home"
         animate={mode}
         variants={SURFACE_VARIANTS}
         transition={EASE_TRANSITION}
@@ -159,6 +160,7 @@ export function PinBoard() {
       >
         <motion.div
           className={styles.mapSlot}
+          initial="home"
           animate={mode}
           variants={MAP_SLOT_VARIANTS}
           transition={EASE_TRANSITION}
