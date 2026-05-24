@@ -61,7 +61,7 @@ function MapNavigator() {
   return null
 }
 
-export function MapCore() {
+export function MapCore({ showControls = true }: { showControls?: boolean } = {}) {
   const mapRef = useRef<MapRef | null>(null)
   const navigate = useNavigate()
   const location = useLocation()
@@ -85,7 +85,7 @@ export function MapCore() {
 
   return (
     <Map ref={handleRef} styles={mapStyles} loading={!ready}>
-      <MapControls showZoom showLocate showFullscreen />
+      {showControls && <MapControls showZoom showLocate showFullscreen />}
       <ArchMarkers />
       <MapNavigator />
     </Map>

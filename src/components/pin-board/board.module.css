@@ -18,17 +18,28 @@
   overflow: hidden;
 }
 
-.boardMode {
-  cursor: grab;
-
-  &:active {
-    cursor: grabbing;
-  }
+.mapOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
 }
 
-.backButton {
-  position: fixed;
-  top: calc(var(--size-header-height) + var(--spacing-paragraph));
-  left: var(--spacing-component);
-  z-index: 100;
+.mapOverlay:hover {
+  background: rgb(var(--color-primary-foreground) / 0.05);
+}
+
+.overlayText {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  font-family: var(--font-playful);
+  color: rgb(var(--color-primary-foreground));
+}
+
+.mapOverlay:hover .overlayText {
+  opacity: 0.6;
 }

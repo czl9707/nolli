@@ -1,4 +1,8 @@
 .header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
     z-index: 50;
     display: flex;
     height: var(--size-header-height);
@@ -6,7 +10,7 @@
     gap: var(--spacing-paragraph);
     padding-left: var(--spacing-component);
     padding-right: var(--spacing-component);
-    background-color: rgb(var(--color-primary-background));
+    background: linear-gradient(to bottom, rgb(var(--color-primary-background)), transparent);
 }
 
 .title {
