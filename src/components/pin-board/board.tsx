@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router"
-import { motion, useMotionValue, useTransform, AnimatePresence } from "framer-motion"
+import { motion, useMotionValue, useTransform, AnimatePresence, animate } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Body2 } from "@/components/ui/typography"
 import { MoveLeft } from "lucide-react"
@@ -89,9 +89,9 @@ export function PinBoard() {
 
   useEffect(() => {
     if (!isBoard) {
-      panX.set(0)
-      panY.set(0)
-      zoom.set(1)
+      animate(panX, 0, { duration: 0.6, ease: "easeInOut" })
+      animate(panY, 0, { duration: 0.6, ease: "easeInOut" })
+      animate(zoom, 1, { duration: 0.6, ease: "easeInOut" })
     }
   }, [isBoard, panX, panY, zoom])
 
