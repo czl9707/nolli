@@ -1,24 +1,3 @@
-.item {
-    width: min(var(--size-portfolio-width), 100vw);
-    flex-shrink: 0;
-    padding: var(--spacing-component) var(--spacing-block);
-    border-left: var(--border);
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    position: relative;
-}
-
-.content {
-    flex: 1;
-    min-height: 0;
-    display: grid;
-    grid-template-rows: 3fr 1fr;
-    row-gap: var(--spacing-component);
-    column-gap: 0.25rem;
-}
-
 .imageSlot {
     overflow: hidden;
     min-height: 0;
@@ -28,27 +7,21 @@
     width: 100%;
     height: 100%;
     object-fit: contain;
+    object-position: bottom;
     display: block;
 }
 
-.textSlot {
-    column-count: 2;
-    column-gap: var(--spacing-component);
-    overflow: hidden;
-    min-height: 0;
-}
-
-.text {
-    margin: 0;
-    max-height: 100%;
-}
-
-.pageIndex {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
+.captionSlot {
+    padding-top: var(--spacing-component);
     text-align: center;
-    opacity: 0.5;
-    pointer-events: none;
+}
+
+.captionTitle {
+    margin: 0 0 0.25rem 0;
+}
+
+.captionText {
+    margin: 0;
+    opacity: .75;
+    font-style: italic;
 }

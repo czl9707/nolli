@@ -1,38 +1,26 @@
-import { motion } from "framer-motion"
 import type { ArchPage } from "@/lib/data/architectures"
-import styles from "./portfolio-item.module.css"
+import { PortfolioShell } from "@/components/layout/portfolio-shell"
 import { Body1, Body2 } from "@/components/ui/typography"
+import styles from "./portfolio-item.module.css"
 
 type PortfolioItemProps = {
   page: ArchPage
   index: number
   total: number
-  delay?: number
 }
 
 export function PortfolioItem({ page, index, total }: PortfolioItemProps) {
   return (
-    <motion.div
-      className={styles.item}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1, transition: { duration: 0.6, delay: 0.6 + index * 0.1 } }}
-      exit={{ opacity: 0, transition: { duration: 0.6 } }}
-    >
-      <div className={styles.content}>
-          <div className={styles.imageSlot}>
-            {page.image && (
-              <img src={page.image} alt="" className={styles.image} />
-            )}
-          </div>
-          <div className={styles.textSlot}>
-            {page.text && (
-              <Body2 className={styles.text}>{page.text}</Body2>
-            )}
-          </div>
+    <PortfolioShell index={index} total={total}>
+      <div className={styles.imageSlot}>
+        <img src={page.image} alt="" className={styles.image} />
       </div>
-      <Body2 className={styles.pageIndex}>
-        {index + 1} / {total}
-      </Body2>
-    </motion.div>
+      {page.caption && (
+        <div className={styles.captionSlot}>
+          <Body1 className={styles.captionTitle}>{page.caption.title ?? ""} <br /></Body1>
+          <Body2 className={styles.captionText}>{page.caption.text ?? " "} <br /></Body2>
+        </div>
+      )}
+    </PortfolioShell>
   )
 }

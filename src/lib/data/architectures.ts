@@ -1,11 +1,21 @@
 export type ArchPage = {
-  image?: string
-  text?: string
+  image: string
+  caption?: {
+    title?: string
+    text?: string
+  }
 }
 
 export type Coordinates = {
   latitude: number
   longitude: number
+}
+
+export type ArchLinks = {
+  googleMaps: string
+  wikipedia?: string
+  archdaily?: string
+  custom?: { url: string; label: string }[]
 }
 
 export type Arch = {
@@ -16,6 +26,7 @@ export type Arch = {
   address: string
   coordinates: Coordinates
   pages: ArchPage[]
+  links: ArchLinks
 }
 
 const architectures: Record<string, Arch> = {
@@ -29,15 +40,32 @@ const architectures: Record<string, Arch> = {
     pages: [
       {
         image: "/images/seagram-1.jpg",
-        text: "The Seagram Building is a landmark of modernist architecture, designed by Ludwig Mies van der Rohe in collaboration with Philip Johnson. Completed in 1958, it stands at 375 Park Avenue in Manhattan and is widely regarded as one of the finest examples of the International Style. Its bronze and glass facade set a new standard for corporate skyscrapers and redefined the American cityscape.",
+        caption: {
+          title: "Lorem Ipsum Dolor",
+          text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+        },
       },
       {
         image: "/images/seagram-2.jpg",
+        caption: {
+          text: "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+        },
       },
       {
-        text: "Mies van der Rohe deliberately set the tower back 100 feet from the street edge, creating a generous open plaza that became a model for New York City's 1961 zoning resolution. The building's exterior columns are expressed as non-structural I-beams clad in bronze, articulating the structural rhythm on the facade. The amber-tinted glass and bronze mullions produce a warm, reflective skin that changes character with the light throughout the day.",
+        image: "/images/seagram-3.jpg",
       },
     ],
+    links: {
+      googleMaps: "https://maps.google.com/?q=40.7586,-73.9722",
+      wikipedia: "https://en.wikipedia.org/wiki/Seagram_Building",
+      archdaily: "https://www.archdaily.com/tag/seagram-building",
+      custom: [
+        {
+          url: "https://www.example.com/mies-van-der-rohe",
+          label: "Mies van der Rohe Archive",
+        },
+      ],
+    },
   },
 }
 
