@@ -11,6 +11,7 @@ import { PhotoItem } from "./photo-item"
 import { MetadataItem } from "./metadata-item"
 import { NoteItem } from "./note-item"
 import { LinkItem } from "./link-item"
+import { SiteMapItem } from "./site-map-item"
 import styles from "./board.module.css"
 
 const CANVAS_W = 2400
@@ -118,7 +119,7 @@ export function PinBoard({ arch }: PinBoardProps) {
             let content: React.ReactNode = null
 
             if (item.id === "site-map") {
-              content = null // Placeholder — SiteMapItem added in integration task
+              content = <SiteMapItem item={item} />
             } else if (item.id === "metadata") {
               content = <MetadataItem arch={arch} item={item} delay={delayIndex++} />
             } else if (item.id === "links") {
