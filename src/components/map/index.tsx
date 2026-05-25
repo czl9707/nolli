@@ -17,19 +17,10 @@ import { useLayout } from "@/hooks/use-layout"
 import { H4, Body1, Body2 } from "@/components/ui/typography"
 import { Button } from "@/components/ui/button"
 import { motion, AnimatePresence } from "framer-motion"
+import { TRANSITION_SHORT, DELAY_START } from "@/lib/animation"
 import styles from "./index.module.css"
 
 const ALL_ARCHITECTURES = getAllArchitectures()
-
-const NAV_DELAY_MS = 550
-
-function flyToArch(map: MapRef, arch: Arch): void {
-  map.flyTo({
-    center: [arch.coordinates.longitude, arch.coordinates.latitude],
-    zoom: 16,
-    duration: 1000,
-  })
-}
 
 function MapDrawer({
   arch,
@@ -48,14 +39,14 @@ function MapDrawer({
       initial={{ width: 0, paddingRight: 0 }}
       animate={{ width: 360, paddingRight: "var(--spacing-paragraph)"}}
       exit={{ width: 0, paddingRight: 0}}
-      transition={{ duration: 0.6, ease: "easeInOut" }}
+      transition={{ duration: TRANSITION_SHORT, ease: "easeInOut" }}
       onClick={(e) => e.stopPropagation()}
     >
       <motion.div
         className={styles.drawerContent}
         initial={{ opacity: 0 }}
-        animate={{ opacity: 1, transition: { duration: 0.6, delay: 0.3 }}}
-        exit={{ opacity: 0, transition: { duration: 0.6 }}}
+        animate={{ opacity: 1, transition: { duration: TRANSITION_SHORT, delay: DELAY_START }}}
+        exit={{ opacity: 0, transition: { duration: TRANSITION_SHORT }}}
       >
         <div className={styles.coverWrapper}>
           <Button className={styles.closeButton}
@@ -111,13 +102,18 @@ function ArchMarkers() {
 function MapNavigator() {
   const { lastSelectedArch } = useSelectedArch()
   const { map } = useMap()
-  const mode = useLayout()
 
   useEffect(() => {
-    if (!lastSelectedArch || !map || mode === "home") return
-    const id = setTimeout(() => flyToArch(map, lastSelectedArch), NAV_DELAY_MS)
-    return () => clearTimeout(id)
-  }, [lastSelectedArch, map, mode])
+    if (!lastSelectedArch || !map) return
+    map.flyTo({
+      center: [
+        lastSelectedArch.coordinates.longitude,
+        lastSelectedArch.coordinates.latitude,
+      ],
+      zoom: 16,
+      duration: TRANSITION_SHORT * 1000,
+    })
+  }, [lastSelectedArch, map])
 
   return null
 }
