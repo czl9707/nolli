@@ -1,0 +1,74 @@
+.container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  gap: var(--spacing-paragraph);
+}
+
+.mapWrapper {
+  flex: 1;
+  border-radius: var(--size-border-radius);
+  overflow: hidden;
+}
+
+.drawerWrapper {
+  display: none;
+  max-width: 360px;
+  flex-direction: column;
+  gap: var(--spacing-paragraph);
+
+  &[data-open="true"] {
+    display: flex;
+  }
+}
+
+.cover {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--size-border-radius);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  width: 100%;
+  padding: var(--spacing-paragraph);
+  background-color: rgb(var(--color-secondary-background));
+  border-radius: var(--size-border-radius);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  align-items: flex-end;
+  box-sizing: border-box;
+}
+
+.heading {
+  font-family: var(--font-playful) !important;
+  display: block;
+  width: 100%;
+}
+
+.detail {
+  font-family: var(--font-playful) !important;
+  display: block;
+  width: 100%;
+}
+
+.address {
+  opacity: 0.5;
+  margin-bottom: .5rem;
+}
+
+.viewLink {
+  margin-top: var(--spacing-paragraph);
+  font-family: var(--font-playful) !important;
+  width: fit-content;
+  right: 0;
+
+  .card:hover & {
+    opacity: 0.5;
+    text-decoration: underline;
+  }
+}

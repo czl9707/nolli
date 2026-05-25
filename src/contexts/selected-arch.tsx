@@ -4,10 +4,12 @@ import { getArchBySlug, type Arch } from "@/lib/data/architectures"
 
 type SelectedArchContextValue = {
   lastSelectedArch: Arch | null
+  setLastSelectedArch: (arch: Arch | null) => void
 }
 
 const SelectedArchContext = createContext<SelectedArchContextValue>({
   lastSelectedArch: null,
+  setLastSelectedArch: () => {},
 })
 
 export function SelectedArchProvider({ children }: { children: React.ReactNode }) {
@@ -25,7 +27,7 @@ export function SelectedArchProvider({ children }: { children: React.ReactNode }
   }, [currentArch])
 
   return (
-    <SelectedArchContext.Provider value={{ lastSelectedArch }}>
+    <SelectedArchContext.Provider value={{ lastSelectedArch, setLastSelectedArch }}>
       {children}
     </SelectedArchContext.Provider>
   )

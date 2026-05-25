@@ -163,15 +163,3 @@ body[data-theme='dark'] {
     z-index: 0;
 }
 
-/* MAP related */
-
-.maplibregl-popup-content {
-    padding: 0 !important;
-    box-shadow: none !important;
-    background-color: var(--color-secondary-background) !important;
-    border-radius: 0 !important
-}
-
-.maplibregl-popup-tip {
-    display: none !important
-}

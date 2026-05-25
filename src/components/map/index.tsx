@@ -1,12 +1,23 @@
-import { Map, MapControls, MapMarker, MarkerContent, useMap } from "@/components/ui/map"
+import {
+  Map,
+  MapControls,
+  MapMarker,
+  MarkerContent,
+  useMap,
+} from "@/components/ui/map"
 import { getMapStyle } from "@/lib/map-style"
 import type { MapRef } from "@/components/ui/map"
 import { useCallback, useEffect, useMemo, useRef } from "react"
-import { useLocation, useNavigate } from "react-router"
+import { useNavigate } from "react-router"
 import { useSelectedArch } from "@/contexts/selected-arch"
 import { getAllArchitectures, type Arch } from "@/lib/data/architectures"
 import { useMapPatterns } from "./use-map-patterns"
 import { MapPin } from "lucide-react"
+import { useLayout } from "@/hooks/use-layout"
+import { H4, Body1, Body2 } from "@/components/ui/typography"
+import { Button } from "@/components/ui/button"
+import { ArrowRight } from "lucide-react"
+import styles from "./index.module.css"
 
 const ALL_ARCHITECTURES = getAllArchitectures()
 
@@ -20,15 +31,34 @@ function flyToArch(map: MapRef, arch: Arch): void {
   })
 }
 
-function ArchMarkers() {
-  const navigate = useNavigate()
+function MapDrawer({ arch, onView, open }: { open: boolean, arch?: Arch; onView: () => void }) {
+  const cover = arch?.pages[0]?.image;
 
-  const handleClick = useCallback(
-    (slug: string) => {
-      navigate(`/arch/${slug}`)
-    },
-    [navigate],
+  return (
+    <div
+      className={styles.drawerWrapper}
+      data-open={open}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <img className={styles.cover} src={cover} alt={arch?.name} />
+      <div className={styles.card} onClick={onView}>
+        <H4 className={styles.heading}>{arch?.name}</H4>
+        <Body2 className={`${styles.detail} ${styles.address}`}>
+          {arch?.address}
+        </Body2>
+        <Body1 className={styles.detail}>
+          By {arch?.architect}, {arch?.year}
+        </Body1>
+        <Button variant="link" className={styles.viewLink}>
+          Pin Up ! <ArrowRight size={16} />
+        </Button>
+      </div>
+    </div>
   )
+}
+
+function ArchMarkers() {
+  const { setLastSelectedArch } = useSelectedArch()
 
   return (
     <>
@@ -39,8 +69,14 @@ function ArchMarkers() {
           latitude={arch.coordinates.latitude}
         >
           <MarkerContent>
-            <MapPin style={{fill: "rgb(var(--color-accent-foreground))", stroke: "rgb(var(--color-primary-background) / .5)"}} size={30}
-              onClick={() => handleClick(arch.slug)}/>
+            <MapPin
+              style={{
+                fill: "rgb(var(--color-accent-foreground))",
+                stroke: "rgb(var(--color-primary-background) / .5)",
+              }}
+              size={30}
+              onClick={() => setLastSelectedArch(arch)}
+            />
           </MarkerContent>
         </MapMarker>
       ))}
@@ -51,44 +87,59 @@ function ArchMarkers() {
 function MapNavigator() {
   const { lastSelectedArch } = useSelectedArch()
   const { map } = useMap()
-  const location = useLocation()
+  const mode = useLayout()
 
   useEffect(() => {
-    if (!lastSelectedArch || !map || !location.pathname.startsWith("/arch/")) return
+    if (!lastSelectedArch || !map || mode === "home")
+      return
     const id = setTimeout(() => flyToArch(map, lastSelectedArch), NAV_DELAY_MS)
     return () => clearTimeout(id)
-  }, [lastSelectedArch, map, location.key])
+  }, [lastSelectedArch, map, mode])
 
   return null
 }
 
-export function MapCore({ showControls = true }: { showControls?: boolean } = {}) {
+export function MapCore() {
   const mapRef = useRef<MapRef | null>(null)
   const navigate = useNavigate()
-  const location = useLocation()
-  const locationRef = useRef(location)
-  locationRef.current = location
   const { ready, initialize } = useMapPatterns(mapRef)
+  const mode = useLayout()
+  const { lastSelectedArch } = useSelectedArch()
 
-  const mapStyles = useMemo(() => ({
-    light: getMapStyle("light"),
-    dark: getMapStyle("dark"),
-  }), [])
+  const mapStyles = useMemo(
+    () => ({
+      light: getMapStyle("light"),
+      dark: getMapStyle("dark"),
+    }),
+    []
+  )
 
-  const handleRef = useCallback((map: MapRef | null) => {
-    if (!map) return
-    mapRef.current = map
-    map.on("click", () => {
-      if (locationRef.current.pathname !== "/") navigate("/")
-    })
-    initialize(map)
-  }, [navigate, initialize])
+  const handleRef = useCallback(
+    (map: MapRef | null) => {
+      if (!map) return
+      mapRef.current = map
+      initialize(map)
+    },
+    [navigate]
+  )
+
+  const isHome = mode === "home"
+  const drawerOpen = isHome && lastSelectedArch !== null
 
   return (
-    <Map ref={handleRef} styles={mapStyles} loading={!ready}>
-      {showControls && <MapControls showZoom showLocate showFullscreen />}
-      <ArchMarkers />
-      <MapNavigator />
-    </Map>
+    <div className={styles.container}>
+      <MapDrawer
+        arch={lastSelectedArch}
+        onView={() => lastSelectedArch && navigate(`/arch/${lastSelectedArch.slug}`)}
+        open={drawerOpen}
+      />
+      <div className={styles.mapWrapper}>
+        <Map ref={handleRef} styles={mapStyles} loading={!ready}>
+          {isHome && <MapControls showZoom showLocate showFullscreen />}
+          <ArchMarkers />
+          <MapNavigator />
+        </Map>
+      </div>
+    </div>
   )
 }

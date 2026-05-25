@@ -109,7 +109,7 @@ export function PinBoard() {
           variants={MAP_SLOT_VARIANTS}
           transition={EASE_TRANSITION}
         >
-          <MapCore showControls={!isBoard} />
+          <MapCore/>
           <AnimatePresence>
             {isBoard && (
               <motion.div
