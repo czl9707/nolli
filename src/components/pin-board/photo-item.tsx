@@ -1,8 +1,10 @@
-import { useMemo } from "react"
+import { useState } from "react"
 import type { ArchPhoto } from "@/lib/data/architectures"
 import type { PlacedItem } from "@/lib/pin-board-layout"
-import { BoardItem, paperClipPath } from "./board-item"
+import { BoardItem } from "./board-item"
+import { BoardModal } from "./board-modal"
 import styles from "./photo-item.module.css"
+import boardItemStyles from "./board-item.module.css"
 
 type PhotoItemProps = {
   photo: ArchPhoto
@@ -11,12 +13,21 @@ type PhotoItemProps = {
 }
 
 export function PhotoItem({ photo, item, delay }: PhotoItemProps) {
-  const clipPath = useMemo(() => paperClipPath(item.id), [item])
+  const [open, setOpen] = useState(false)
 
   return (
-    <BoardItem item={item} delay={delay} style={{ clipPath }}>
-      <img src={photo.image} alt="" className={styles.photo} />
-      {photo.caption && <div className={styles.caption}>{photo.caption}</div>}
-    </BoardItem>
+    <>
+      <BoardItem item={item} delay={delay} onClick={() => setOpen(true)}>
+        <img src={photo.image} alt="" className={styles.photo} />
+        {photo.caption && <div className={styles.caption}>{photo.caption}</div>}
+      </BoardItem>
+      <BoardModal open={open} onClose={() => setOpen(false)} tapeId={item.id}>
+        <div className={`${boardItemStyles.item} ${styles.modalPhoto}`}
+          style={{ aspectRatio: `${photo.width}/${photo.height}`, width: "100%" }}>
+          <img src={photo.image} alt="" className={`${styles.photo} `}/>
+          {photo.caption && <div className={styles.caption}>{photo.caption}</div>}
+        </div>
+      </BoardModal>
+    </>
   )
 }

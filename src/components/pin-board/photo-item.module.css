@@ -19,3 +19,8 @@
   font-size: 0.8rem;
   line-height: 1.4;
 }
+
+.modalPhoto {
+  max-width: 60vw;
+  max-height: 60vh;
+}
