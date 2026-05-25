@@ -75,35 +75,37 @@ export function layoutPinBoard(
   canvasHeight: number,
   anchorItem?: string,
   gap: number = 30,
+  anchorX?: number,
+  anchorY?: number,
 ): PlacedItem[] {
   const placed: PlacedItem[] = []
   const margin = 60
   const maxRadius = Math.hypot(canvasWidth, canvasHeight)
 
-  let anchorCenterX = canvasWidth / 2
-  let anchorCenterY = canvasHeight / 2
+  let cx = canvasWidth / 2
+  let cy = canvasHeight / 2
 
   for (const item of items) {
-    const isAnchor = item.id === anchorItem
-
-    if (isAnchor) {
+    if (item.id === anchorItem) {
+      const ax = anchorX ?? (canvasWidth - item.width) / 2
+      const ay = anchorY ?? (canvasHeight - item.height) / 2
+      cx = ax + item.width / 2
+      cy = ay + item.height / 2
       placed.push({
         id: item.id,
-        x: (canvasWidth - item.width) / 2,
-        y: (canvasHeight - item.height) / 2,
+        x: ax,
+        y: ay,
         width: item.width,
         height: item.height,
         rotation: 0,
       })
-      anchorCenterX = (canvasWidth - item.width) / 2 + item.width / 2
-      anchorCenterY = (canvasHeight - item.height) / 2 + item.height / 2
       continue
     }
 
     const spot = tryPlaceNearAnchor(
       item,
-      anchorCenterX,
-      anchorCenterY,
+      cx,
+      cy,
       RADIUS_START,
       RADIUS_STEP,
       maxRadius,

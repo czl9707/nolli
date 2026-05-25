@@ -80,7 +80,7 @@ export function PinBoard() {
   const items = useMemo(() => {
     if (!lastSelectedArch) return []
     const specs = buildBoardItemSpecs(lastSelectedArch)
-    return layoutPinBoard(specs, CANVAS_W, CANVAS_H, "site-map", BOARD_GAP)
+    return layoutPinBoard(specs, CANVAS_W, CANVAS_H, "site-map", BOARD_GAP, MAP_SLOT_X, MAP_SLOT_Y)
   }, [lastSelectedArch])
 
   return (
