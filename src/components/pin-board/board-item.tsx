@@ -44,9 +44,9 @@ export function BoardItem({ item, children, delay = 0, className, onClick }: Boa
         animate={{
           opacity: 1,
           scale: 1,
-          transition: { duration: 0.4, delay: 0.3 + delay * 0.1 },
+          transition: { duration: 0.6, delay: 0.3 + delay * 0.1 },
         }}
-        exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.3 } }}
+        exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.6 } }}
       >
         {children}
       </motion.div>

@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/map"
 import { getMapStyle } from "@/lib/map-style"
 import type { MapRef } from "@/components/ui/map"
-import { useCallback, useEffect, useMemo, useRef } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useNavigate } from "react-router"
 import { useSelectedArch } from "@/contexts/selected-arch"
 import { getAllArchitectures, type Arch } from "@/lib/data/architectures"
@@ -16,6 +16,7 @@ import { ArrowRight, MapPin, X } from "lucide-react"
 import { useLayout } from "@/hooks/use-layout"
 import { H4, Body1, Body2 } from "@/components/ui/typography"
 import { Button } from "@/components/ui/button"
+import { motion, AnimatePresence } from "framer-motion"
 import styles from "./index.module.css"
 
 const ALL_ARCHITECTURES = getAllArchitectures()
@@ -34,41 +35,49 @@ function MapDrawer({
   arch,
   onView,
   onClose,
-  open,
 }: {
-  arch?: Arch
+  arch: Arch
   onView: () => void
   onClose: () => void
-  open: boolean
 }) {
-  const cover = arch?.pages[0]?.image
+  const cover = arch.pages[0]?.image
 
   return (
-    <div
+    <motion.div
       className={styles.drawerWrapper}
-      data-open={open}
+      initial={{ width: 0, paddingRight: 0 }}
+      animate={{ width: 360, paddingRight: "var(--spacing-paragraph)"}}
+      exit={{ width: 0, paddingRight: 0}}
+      transition={{ duration: 0.6, ease: "easeInOut" }}
       onClick={(e) => e.stopPropagation()}
     >
-      <div className={styles.coverWrapper}>
-        <Button className={styles.closeButton}
-          variant="secondary" size="icon" onClick={onClose} aria-label="Close">
-          <X size={18} />
-        </Button>
-        <img className={styles.cover} src={cover} alt={arch?.name} />
-      </div>
-      <div className={styles.card} onClick={onView}>
-        <H4 className={styles.heading}>{arch?.name}</H4>
-        <Body2 className={`${styles.detail} ${styles.address}`}>
-          {arch?.address}
-        </Body2>
-        <Body1 className={styles.detail}>
-          By {arch?.architect}, {arch?.year}
-        </Body1>
-        <Button variant="link" className={styles.viewLink}>
-          Pin Up ! <ArrowRight size={16} />
-        </Button>
-      </div>
-    </div>
+      <motion.div
+        className={styles.drawerContent}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1, transition: { duration: 0.6, delay: 0.3 }}}
+        exit={{ opacity: 0, transition: { duration: 0.6 }}}
+      >
+        <div className={styles.coverWrapper}>
+          <Button className={styles.closeButton}
+            variant="secondary" size="icon" onClick={onClose} aria-label="Close">
+            <X size={18} />
+          </Button>
+          <img className={styles.cover} src={cover} alt={arch.name} />
+        </div>
+        <div className={styles.card} onClick={onView}>
+          <H4 className={styles.heading}>{arch.name}</H4>
+          <Body2 className={`${styles.detail} ${styles.address}`}>
+            {arch.address}
+          </Body2>
+          <Body1 className={styles.detail}>
+            By {arch.architect}, {arch.year}
+          </Body1>
+          <Button variant="link" className={styles.viewLink}>
+            Pin Up ! <ArrowRight size={16} />
+          </Button>
+        </div>
+      </motion.div>
+    </motion.div>
   )
 }
 
@@ -142,14 +151,16 @@ export function MapCore() {
 
   return (
     <div className={styles.container}>
-      <MapDrawer
-        arch={lastSelectedArch!}
-        onView={() =>
-          lastSelectedArch && navigate(`/arch/${lastSelectedArch.slug}`)
-        }
-        onClose={() => setLastSelectedArch(null)}
-        open={drawerOpen}
-      />
+      <AnimatePresence>
+        {drawerOpen && lastSelectedArch && (
+          <MapDrawer
+            key="drawer"
+            arch={lastSelectedArch}
+            onView={() => navigate(`/arch/${lastSelectedArch.slug}`)}
+            onClose={() => setLastSelectedArch(null)}
+          />
+        )}
+      </AnimatePresence>
       <div className={styles.mapWrapper}>
         <Map ref={handleRef} styles={mapStyles} loading={!ready}>
           {isHome && <MapControls showZoom showLocate showFullscreen />}
