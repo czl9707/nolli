@@ -1,5 +1,5 @@
 .card {
-  padding: 1rem 1.25rem;
+  padding: var(--spacing-paragraph);
   height: 100%;
   box-sizing: border-box;
   display: flex;

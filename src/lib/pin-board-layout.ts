@@ -13,8 +13,8 @@ export type ItemSpec = {
   height: number
 }
 
-const MIN_GAP = 30
-const MAX_ATTEMPTS = 50
+const VIEWPORT_ATTEMPTS = 30
+const CANVAS_ATTEMPTS = 30
 const ROTATION_RANGE = 2
 
 function randomInRange(min: number, max: number): number {
@@ -34,59 +34,65 @@ function rectsOverlap(
   )
 }
 
+function tryPlace(
+  item: ItemSpec,
+  maxX: number,
+  maxY: number,
+  margin: number,
+  placed: PlacedItem[],
+  gap: number,
+  attempts: number,
+): { x: number; y: number } | null {
+  for (let i = 0; i < attempts; i++) {
+    const x = randomInRange(margin, maxX - item.width - margin)
+    const y = randomInRange(margin, maxY - item.height - margin)
+    const hasCollision = placed.some((p) =>
+      rectsOverlap({ x, y, width: item.width, height: item.height }, p, gap),
+    )
+    if (!hasCollision) return { x, y }
+  }
+  return null
+}
+
 export function layoutPinBoard(
   items: ItemSpec[],
   canvasWidth: number,
   canvasHeight: number,
   anchorItem?: string,
+  gap: number = 30,
 ): PlacedItem[] {
   const placed: PlacedItem[] = []
-  const viewportW = Math.min(canvasWidth, window.innerWidth)
-  const viewportH = Math.min(canvasHeight, window.innerHeight)
-  const marginX = 60
-  const marginY = 60
+  const margin = 60
+  const vpW = Math.min(canvasWidth, window.innerWidth)
+  const vpH = Math.min(canvasHeight, window.innerHeight)
 
   for (const item of items) {
     const isAnchor = item.id === anchorItem
-    let bestX: number
-    let bestY: number
-    let foundSpot = false
 
     if (isAnchor) {
-      bestX = marginX
-      bestY = marginY
-      foundSpot = true
-    } else {
-      for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-        const candidateX = randomInRange(marginX, viewportW - item.width - marginX)
-        const candidateY = randomInRange(marginY, viewportH - item.height - marginY)
-
-        const candidate = { x: candidateX, y: candidateY, width: item.width, height: item.height }
-        const hasCollision = placed.some((p) =>
-          rectsOverlap(candidate, { x: p.x, y: p.y, width: p.width, height: p.height }, MIN_GAP),
-        )
-
-        if (!hasCollision) {
-          bestX = candidateX
-          bestY = candidateY
-          foundSpot = true
-          break
-        }
-      }
-
-      if (!foundSpot) {
-        bestX = randomInRange(marginX, canvasWidth - item.width - marginX)
-        bestY = randomInRange(marginY, canvasHeight - item.height - marginY)
-      }
+      placed.push({
+        id: item.id,
+        x: margin,
+        y: margin,
+        width: item.width,
+        height: item.height,
+        rotation: 0,
+      })
+      continue
     }
+
+    // Try viewport first, then fall back to full canvas
+    const spot =
+      tryPlace(item, vpW, vpH, margin, placed, gap, VIEWPORT_ATTEMPTS) ??
+      tryPlace(item, canvasWidth, canvasHeight, margin, placed, gap, CANVAS_ATTEMPTS)
 
     placed.push({
       id: item.id,
-      x: bestX!,
-      y: bestY!,
+      x: spot?.x ?? randomInRange(margin, canvasWidth - item.width - margin),
+      y: spot?.y ?? randomInRange(margin, canvasHeight - item.height - margin),
       width: item.width,
       height: item.height,
-      rotation: isAnchor ? 0 : randomInRange(-ROTATION_RANGE, ROTATION_RANGE),
+      rotation: randomInRange(-ROTATION_RANGE, ROTATION_RANGE),
     })
   }
 

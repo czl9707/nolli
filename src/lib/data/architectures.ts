@@ -9,6 +9,8 @@ export type ArchPage = {
 export type ArchPhoto = {
   image: string
   caption?: string
+  width: number
+  height: number
 }
 
 export type ArchNote = {
@@ -67,9 +69,9 @@ const architectures: Record<string, Arch> = {
       },
     ],
     photos: [
-      { image: "/images/seagram-1.jpg", caption: "Lorem Ipsum Dolor" },
-      { image: "/images/seagram-2.jpg", caption: "Ut enim ad minim veniam" },
-      { image: "/images/seagram-3.jpg" },
+      { image: "/images/seagram-1.jpg", caption: "Lorem Ipsum Dolor", width: 340, height: 260 },
+      { image: "/images/seagram-2.jpg", caption: "Ut enim ad minim veniam", width: 280, height: 380 },
+      { image: "/images/seagram-3.jpg", width: 320, height: 300 },
     ],
     notes: [
       { text: "One of the most influential buildings in modern architecture. The plaza set the standard for corporate public space in NYC." },
@@ -115,9 +117,9 @@ const architectures: Record<string, Arch> = {
       },
     ],
     photos: [
-      { image: "/images/exeter-academy-library-1.jpg", caption: "Lorem Ipsum Dolor" },
-      { image: "/images/exeter-academy-library-2.jpg", caption: "Ut enim ad minim veniam" },
-      { image: "/images/exeter-academy-library-3.jpg", caption: "Duis aute irure dolor" },
+      { image: "/images/exeter-academy-library-1.jpg", caption: "Lorem Ipsum Dolor", width: 340, height: 260 },
+      { image: "/images/exeter-academy-library-2.jpg", caption: "Ut enim ad minim veniam", width: 280, height: 380 },
+      { image: "/images/exeter-academy-library-3.jpg", caption: "Duis aute irure dolor", width: 320, height: 300 },
     ],
     notes: [
       { text: "Kahn's masterwork. The brick exterior and inner concrete atrium create one of the most powerful library spaces ever built." },

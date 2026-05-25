@@ -18,7 +18,7 @@ export function BoardItem({ item, children, delay = 0, className }: BoardItemPro
         left: item.x,
         top: item.y,
         width: item.width,
-        height: item.height,
+        minHeight: item.height,
         rotate: item.rotation,
       }}
       layout

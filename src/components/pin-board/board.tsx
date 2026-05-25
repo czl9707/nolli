@@ -1,25 +1,21 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useMemo, useRef } from "react"
 import { useNavigate } from "react-router"
-import { motion, useMotionValue, useTransform, AnimatePresence, animate } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { useLayout } from "@/hooks/use-layout"
 import { useSelectedArch } from "@/contexts/selected-arch"
-import { layoutPinBoard, type PlacedItem, type ItemSpec } from "@/lib/pin-board-layout"
+import { layoutPinBoard, type ItemSpec } from "@/lib/pin-board-layout"
 import { MapCore } from "@/components/map"
-import { PhotoItem } from "./photo-item"
-import { MetadataItem } from "./metadata-item"
-import { NoteItem } from "./note-item"
-import { LinkItem } from "./link-item"
+import { PinBoardItem } from "./pin-board-item"
+import { useBoardPan } from "./use-board-pan"
 import styles from "./board.module.css"
 
-const CANVAS_W = 2400
+const CANVAS_W = 1800
 const CANVAS_H = 1200
-const MIN_ZOOM = 0.5
-const MAX_ZOOM = 2.0
 const MAP_SLOT_W = 400
 const MAP_SLOT_H = 300
 const MAP_SLOT_X = 120
 const MAP_SLOT_Y = 120
-const BOARD_PAD = 200
+const BOARD_GAP = 60
 
 const EASE_TRANSITION = { duration: 0.6, ease: "easeInOut" as const }
 
@@ -53,14 +49,15 @@ const MAP_SLOT_VARIANTS = {
   },
 }
 
-function buildBoardItemSpecs(arch: { photos: unknown[]; notes: unknown[] }): ItemSpec[] {
+function buildBoardItemSpecs(arch: { photos: { width: number; height: number }[]; notes: unknown[] }): ItemSpec[] {
   const specs: ItemSpec[] = []
 
   // Reserve space for the map slot (collision avoidance only, not rendered as BoardItem)
   specs.push({ id: "site-map", width: MAP_SLOT_W, height: MAP_SLOT_H })
 
   for (let i = 0; i < arch.photos.length; i++) {
-    specs.push({ id: `photo-${i}`, width: 340, height: 260 })
+    const photo = arch.photos[i]
+    specs.push({ id: `photo-${i}`, width: photo.width, height: photo.height })
   }
 
   specs.push({ id: "metadata", width: 220, height: 200 })
@@ -76,122 +73,19 @@ function buildBoardItemSpecs(arch: { photos: unknown[]; notes: unknown[] }): Ite
 
 export function PinBoard() {
   const mode = useLayout()
+  const isBoard = mode === "board"
   const { lastSelectedArch } = useSelectedArch()
   const navigate = useNavigate()
-  const panX = useMotionValue(0)
-  const panY = useMotionValue(0)
-  const zoom = useMotionValue(1)
-  const [isPanning, setIsPanning] = useState(false)
-  const panStart = useMemo(() => ({ x: 0, y: 0 }), [])
-  const isBoard = mode === "board"
   const viewportRef = useRef<HTMLDivElement>(null)
-  const viewportSize = useRef({ w: 0, h: 0 })
-  const pointerDownPos = useRef({ x: 0, y: 0 })
-  const suppressClick = useRef(false)
 
-  useEffect(() => {
-    if (!isBoard) {
-      animate(panX, 0, { duration: 0.6, ease: "easeInOut" })
-      animate(panY, 0, { duration: 0.6, ease: "easeInOut" })
-      animate(zoom, 1, { duration: 0.6, ease: "easeInOut" })
-    } else {
-      animate(panX, 0, { duration: 0.6, ease: "easeInOut" })
-      animate(panY, 0, { duration: 0.6, ease: "easeInOut" })
-    }
-  }, [isBoard, panX, panY, zoom])
-
-  useEffect(() => {
-    const el = viewportRef.current
-    if (!el) return
-    const observer = new ResizeObserver((entries) => {
-      const { width, height } = entries[0].contentRect
-      viewportSize.current = { w: width, h: height }
-    })
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [])
-
-  useEffect(() => {
-    const el = viewportRef.current
-    if (!el) return
-    const handler = (e: MouseEvent) => {
-      if (suppressClick.current) {
-        e.stopPropagation()
-        e.preventDefault()
-        suppressClick.current = false
-      }
-    }
-    el.addEventListener("click", handler, true)
-    return () => el.removeEventListener("click", handler, true)
-  }, [])
+  const { transform, handlePointerDown, handlePointerMove, handlePointerUp, handleWheel } =
+    useBoardPan(CANVAS_W, CANVAS_H, isBoard, viewportRef)
 
   const items = useMemo(() => {
     if (!lastSelectedArch) return []
     const specs = buildBoardItemSpecs(lastSelectedArch)
-    return layoutPinBoard(specs, CANVAS_W, CANVAS_H, "site-map")
+    return layoutPinBoard(specs, CANVAS_W, CANVAS_H, "site-map", BOARD_GAP)
   }, [lastSelectedArch])
-
-  const transform = useTransform(
-    [panX, panY, zoom],
-    ([x, y, s]) => `translate(${x}px, ${y}px) scale(${s})`,
-  )
-
-  const handlePointerDown = useCallback(
-    (e: React.PointerEvent) => {
-      if (!isBoard) return
-      e.preventDefault()
-      suppressClick.current = false
-      pointerDownPos.current = { x: e.clientX, y: e.clientY }
-      setIsPanning(true)
-      panStart.x = e.clientX - panX.get()
-      panStart.y = e.clientY - panY.get()
-      ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
-    },
-    [isBoard, panX, panY, panStart],
-  )
-
-  const handlePointerMove = useCallback(
-    (e: React.PointerEvent) => {
-      if (!isPanning) return
-      if (!suppressClick.current) {
-        const dx = Math.abs(e.clientX - pointerDownPos.current.x)
-        const dy = Math.abs(e.clientY - pointerDownPos.current.y)
-        if (dx > 3 || dy > 3) suppressClick.current = true
-      }
-      const { w, h } = viewportSize.current
-      const z = zoom.get()
-      const rawX = e.clientX - panStart.x
-      const rawY = e.clientY - panStart.y
-      const boardW = CANVAS_W * z
-      const boardH = CANVAS_H * z
-      panX.set(boardW <= w ? (w - boardW) / 2 : Math.min(BOARD_PAD, Math.max(w - boardW - BOARD_PAD, rawX)))
-      panY.set(boardH <= h ? (h - boardH) / 2 : Math.min(BOARD_PAD, Math.max(h - boardH - BOARD_PAD, rawY)))
-    },
-    [isPanning, panX, panY, panStart, zoom],
-  )
-
-  const handlePointerUp = useCallback(() => {
-    setIsPanning(false)
-  }, [])
-
-  const handleWheel = useCallback(
-    (e: React.WheelEvent) => {
-      if (!isBoard) return
-      const delta = e.deltaY > 0 ? -0.1 : 0.1
-      const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom.get() + delta))
-      const { w, h } = viewportSize.current
-      const boardW = CANVAS_W * newZoom
-      const boardH = CANVAS_H * newZoom
-      const rawX = panX.get()
-      const rawY = panY.get()
-      panX.set(boardW <= w ? (w - boardW) / 2 : Math.min(BOARD_PAD, Math.max(w - boardW - BOARD_PAD, rawX)))
-      panY.set(boardH <= h ? (h - boardH) / 2 : Math.min(BOARD_PAD, Math.max(h - boardH - BOARD_PAD, rawY)))
-      zoom.set(newZoom)
-    },
-    [isBoard, zoom, panX, panY],
-  )
-
-  let delayIndex = 0
 
   return (
     <div
@@ -238,53 +132,16 @@ export function PinBoard() {
         <AnimatePresence>
           {isBoard &&
             lastSelectedArch &&
-            items.map((item) => {
-              if (item.id === "site-map") return null
-
-              let content: React.ReactNode = null
-
-              if (item.id === "metadata") {
-                content = (
-                  <MetadataItem
-                    arch={lastSelectedArch}
-                    item={item}
-                    delay={delayIndex++}
-                  />
-                )
-              } else if (item.id === "links") {
-                content = (
-                  <LinkItem
-                    links={lastSelectedArch.links}
-                    item={item}
-                    delay={delayIndex++}
-                  />
-                )
-              } else if (item.id.startsWith("photo-")) {
-                const idx = parseInt(item.id.replace("photo-", ""), 10)
-                content = (
-                  <PhotoItem
-                    photo={lastSelectedArch.photos[idx]}
-                    item={item}
-                    delay={delayIndex++}
-                  />
-                )
-              } else if (item.id.startsWith("note-")) {
-                const idx = parseInt(item.id.replace("note-", ""), 10)
-                content = (
-                  <NoteItem
-                    note={lastSelectedArch.notes[idx]}
-                    item={item}
-                    delay={delayIndex++}
-                  />
-                )
-              }
-
-              return (
-                <div key={item.id} data-pin-item>
-                  {content}
-                </div>
-              )
-            })}
+            items
+              .filter((item) => item.id !== "site-map")
+              .map((item, i) => (
+                <PinBoardItem
+                  key={item.id}
+                  item={item}
+                  arch={lastSelectedArch}
+                  delay={i}
+                />
+              ))}
         </AnimatePresence>
       </motion.div>
     </div>
