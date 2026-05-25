@@ -17,10 +17,15 @@
   max-width: 360px;
   flex-direction: column;
   gap: var(--spacing-paragraph);
+  align-items: flex-end;
 
   &[data-open="true"] {
     display: flex;
   }
+}
+
+.coverWrapper {
+  position: relative;
 }
 
 .cover {
@@ -28,6 +33,14 @@
   aspect-ratio: 1 / 1;
   object-fit: cover;
   border-radius: var(--size-border-radius);
+}
+
+.closeButton {
+  position: absolute;
+  top: var(--spacing-paragraph);
+  right: var(--spacing-paragraph);
+  opacity: 0.75;
+  z-index: 10;
 }
 
 .card {

@@ -12,11 +12,10 @@ import { useNavigate } from "react-router"
 import { useSelectedArch } from "@/contexts/selected-arch"
 import { getAllArchitectures, type Arch } from "@/lib/data/architectures"
 import { useMapPatterns } from "./use-map-patterns"
-import { MapPin } from "lucide-react"
+import { ArrowRight, MapPin, X } from "lucide-react"
 import { useLayout } from "@/hooks/use-layout"
 import { H4, Body1, Body2 } from "@/components/ui/typography"
 import { Button } from "@/components/ui/button"
-import { ArrowRight } from "lucide-react"
 import styles from "./index.module.css"
 
 const ALL_ARCHITECTURES = getAllArchitectures()
@@ -31,8 +30,18 @@ function flyToArch(map: MapRef, arch: Arch): void {
   })
 }
 
-function MapDrawer({ arch, onView, open }: { open: boolean, arch?: Arch; onView: () => void }) {
-  const cover = arch?.pages[0]?.image;
+function MapDrawer({
+  arch,
+  onView,
+  onClose,
+  open,
+}: {
+  arch?: Arch
+  onView: () => void
+  onClose: () => void
+  open: boolean
+}) {
+  const cover = arch?.pages[0]?.image
 
   return (
     <div
@@ -40,7 +49,13 @@ function MapDrawer({ arch, onView, open }: { open: boolean, arch?: Arch; onView:
       data-open={open}
       onClick={(e) => e.stopPropagation()}
     >
-      <img className={styles.cover} src={cover} alt={arch?.name} />
+      <div className={styles.coverWrapper}>
+        <Button className={styles.closeButton}
+          variant="secondary" size="icon" onClick={onClose} aria-label="Close">
+          <X size={18} />
+        </Button>
+        <img className={styles.cover} src={cover} alt={arch?.name} />
+      </div>
       <div className={styles.card} onClick={onView}>
         <H4 className={styles.heading}>{arch?.name}</H4>
         <Body2 className={`${styles.detail} ${styles.address}`}>
@@ -90,8 +105,7 @@ function MapNavigator() {
   const mode = useLayout()
 
   useEffect(() => {
-    if (!lastSelectedArch || !map || mode === "home")
-      return
+    if (!lastSelectedArch || !map || mode === "home") return
     const id = setTimeout(() => flyToArch(map, lastSelectedArch), NAV_DELAY_MS)
     return () => clearTimeout(id)
   }, [lastSelectedArch, map, mode])
@@ -104,7 +118,7 @@ export function MapCore() {
   const navigate = useNavigate()
   const { ready, initialize } = useMapPatterns(mapRef)
   const mode = useLayout()
-  const { lastSelectedArch } = useSelectedArch()
+  const { lastSelectedArch, setLastSelectedArch } = useSelectedArch()
 
   const mapStyles = useMemo(
     () => ({
@@ -120,7 +134,7 @@ export function MapCore() {
       mapRef.current = map
       initialize(map)
     },
-    [navigate]
+    [navigate, initialize]
   )
 
   const isHome = mode === "home"
@@ -129,8 +143,11 @@ export function MapCore() {
   return (
     <div className={styles.container}>
       <MapDrawer
-        arch={lastSelectedArch}
-        onView={() => lastSelectedArch && navigate(`/arch/${lastSelectedArch.slug}`)}
+        arch={lastSelectedArch!}
+        onView={() =>
+          lastSelectedArch && navigate(`/arch/${lastSelectedArch.slug}`)
+        }
+        onClose={() => setLastSelectedArch(null)}
         open={drawerOpen}
       />
       <div className={styles.mapWrapper}>
