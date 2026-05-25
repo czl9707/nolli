@@ -1,7 +1,7 @@
 import { useMemo } from "react"
 import type { ArchLinks } from "@/lib/data/architectures"
 import type { PlacedItem } from "@/lib/pin-board-layout"
-import { BoardItem, paperClipPath } from "./board-item"
+import { BoardItem } from "./board-item"
 import { ExternalLink } from "lucide-react"
 import styles from "./link-item.module.css"
 import { Body1 } from "../ui/typography"
@@ -28,10 +28,9 @@ function collectLinks(links: ArchLinks): LinkEntry[] {
 
 export function LinkItem({ links, item, delay }: LinkItemProps) {
   const entries = collectLinks(links)
-  const clipPath = useMemo(() => paperClipPath(item.id), [item])
 
   return (
-    <BoardItem item={item} delay={delay} className={styles.linkWrapper} style={{ clipPath }}>
+    <BoardItem item={item} delay={delay} className={styles.linkWrapper}>
       {entries.map((entry) => (
         <a
           key={entry.url}

@@ -13,6 +13,10 @@
   filter: drop-shadow(var(--shadow-md));
 }
 
+.clickable {
+  cursor: pointer;
+}
+
 .tape {
   position: absolute;
   top: -20px;
@@ -31,8 +35,4 @@
   background-size: 128px 128px;
   opacity: 0.3;
   pointer-events: none;
-}
-
-:global(body[data-theme="dark"]) .item::before {
-  background-image: url("/patterns/dark/grass.png");
 }

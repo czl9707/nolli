@@ -1,7 +1,7 @@
 import { useMemo } from "react"
 import type { Arch } from "@/lib/data/architectures"
 import type { PlacedItem } from "@/lib/pin-board-layout"
-import { BoardItem, paperClipPath } from "./board-item"
+import { BoardItem } from "./board-item"
 import styles from "./metadata-item.module.css"
 import { Body1, H3, H6 } from "@/components/ui/typography"
 
@@ -12,10 +12,8 @@ type MetadataItemProps = {
 }
 
 export function MetadataItem({ arch, item, delay }: MetadataItemProps) {
-  const clipPath = useMemo(() => paperClipPath(item.id), [item])
-
   return (
-    <BoardItem item={item} delay={delay} className={styles.metaWrapper} style={{ clipPath }}>
+    <BoardItem item={item} delay={delay} className={styles.metaWrapper}>
       <H3 className={styles.name}>{arch.name}</H3>
       <div className={styles.meta}>
         <H6 className={styles.architect}>
