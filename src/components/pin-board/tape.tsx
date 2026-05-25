@@ -1,6 +1,6 @@
 import { motion } from "framer-motion"
 import type { CSSProperties } from "react"
-import { hashId, jitter } from "./board-item"
+import { hashId, jitter } from "@/lib/paper-clip"
 
 type TapeProps = {
   id: string

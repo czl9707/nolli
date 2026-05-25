@@ -200,7 +200,7 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
       resolvedTheme === "dark" ? mapStyles.dark : mapStyles.light;
     currentStyleRef.current = initialStyle;
 
-    document.fonts.load("24px 'Caveat'").then(() => {
+    document.fonts.load("24px 'Architects Daughter'").then(() => {
       if (!containerRef.current) return;
       const map = new MapLibreGL.Map({
         container: containerRef.current,

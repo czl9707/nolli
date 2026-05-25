@@ -10,7 +10,7 @@
   align-items: center;
   gap: var(--spacing-paragraph);
   padding-bottom: 0.25rem;
-  border-bottom: 1px solid rgb(var(--color-primary-foreground) / 0.3);
+  border-bottom: 1px solid rgb(var(--color-secondary-foreground) / 0.3);
   text-decoration: none;
     
   &:hover {

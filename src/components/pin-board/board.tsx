@@ -4,19 +4,12 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useLayout } from "@/hooks/use-layout"
 import { useSelectedArch } from "@/contexts/selected-arch"
 import { layoutPinBoard, type ItemSpec } from "@/lib/pin-board-layout"
+import { CANVAS_W, CANVAS_H, MAP_SLOT_W, MAP_SLOT_H, MAP_SLOT_X, MAP_SLOT_Y, BOARD_GAP } from "@/lib/pin-board-config"
 import { MapCore } from "@/components/map"
 import { PinBoardItem } from "./pin-board-item"
 import { Tape } from "./tape"
 import { useBoardPan } from "./use-board-pan"
 import styles from "./board.module.css"
-
-const CANVAS_W = 2100
-const CANVAS_H = 1200
-const MAP_SLOT_W = 400
-const MAP_SLOT_H = 300
-const MAP_SLOT_X = 120
-const MAP_SLOT_Y = 120
-const BOARD_GAP = 60
 
 const EASE_TRANSITION = { duration: 0.6, ease: "easeInOut" as const }
 
