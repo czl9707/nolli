@@ -3,6 +3,7 @@ import type { PlacedItem } from "@/lib/pin-board-layout"
 import { BoardItem } from "./board-item"
 import { ExternalLink } from "lucide-react"
 import styles from "./link-item.module.css"
+import { Body1 } from "../ui/typography"
 
 type LinkItemProps = {
   links: ArchLinks
@@ -27,21 +28,21 @@ function collectLinks(links: ArchLinks): LinkEntry[] {
 export function LinkItem({ links, item, delay }: LinkItemProps) {
   const entries = collectLinks(links)
   return (
-    <BoardItem item={item} delay={delay}>
-      <div className={styles.card}>
-        {entries.map((entry) => (
-          <a
-            key={entry.url}
-            href={entry.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.link}
-          >
-            <ExternalLink size={12} className={styles.icon} />
+    <BoardItem item={item} delay={delay} className={styles.linkWrapper}>
+      {entries.map((entry) => (
+        <a
+          key={entry.url}
+          href={entry.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.link}
+        >
+          <ExternalLink size={12} className={styles.icon} />
+          <Body1 className={styles.label}>
             {entry.label}
-          </a>
-        ))}
-      </div>
+          </Body1>
+        </a>
+      ))}
     </BoardItem>
   )
 }

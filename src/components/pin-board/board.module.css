@@ -6,6 +6,21 @@
   touch-action: none;
 }
 
+.dotGrid {
+  position: absolute;
+  top: -5000px;
+  left: -5000px;
+  width: 10000px;
+  height: 10000px;
+  background-image: radial-gradient(
+    circle,
+    rgb(var(--color-primary-foreground) / 0.12) 1px,
+    transparent 1px
+  );
+  background-size: 24px 24px;
+  pointer-events: none;
+}
+
 .surface {
   position: absolute;
   top: 0;
@@ -16,6 +31,8 @@
 .mapSlot {
   position: absolute;
   overflow: hidden;
+  box-sizing: border-box;
+  border-style: solid;
 }
 
 .mapOverlay {

@@ -107,6 +107,9 @@ body {
     --size-header-height: 3.5rem;
     --size-footer-height: 2rem;
     --size-portfolio-width: 840px;
+    
+    --shadow-sm: 0 1px 2px 0 rgb(var(--color-primary-foreground) / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(var(--color-primary-foreground) / 0.05), 0 2px 4px -2px rgb(var(--color-primary-foreground) / 0.05);
 }
 
 body {
@@ -120,8 +123,6 @@ body {
     --color-destructive: 231, 0, 11;
 
     --border: 1px solid rgb(var(--color-primary-foreground) / 0.25);
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 
 body[data-theme='dark'] {

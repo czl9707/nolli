@@ -37,7 +37,7 @@
 
 .popupClose:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px rgb(var(--color-secondary-foreground) / 0.5);
+    box-shadow: var(--shadow-sm);
 }
 
 .popupClose svg {

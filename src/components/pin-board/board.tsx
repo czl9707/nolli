@@ -37,7 +37,9 @@ const MAP_SLOT_VARIANTS = {
     width: `calc(100% - var(--spacing-component) * 2)`,
     height: `calc(100% - var(--size-header-height) - var(--size-footer-height))`,
     borderRadius: "var(--size-border-radius)",
-    boxShadow: "var(--shadow-sm)",
+    boxShadow: "none",
+    borderWidth: 0,
+    borderColor: "transparent",
   },
   board: {
     top: MAP_SLOT_Y,
@@ -45,7 +47,9 @@ const MAP_SLOT_VARIANTS = {
     width: MAP_SLOT_W,
     height: MAP_SLOT_H,
     borderRadius: 0,
-    boxShadow: "0px 1px 3px rgba(0,0,0,0.08), 0px 4px 12px rgba(0,0,0,0.06)",
+    boxShadow: "var(--shadow-sm)",
+    borderWidth: 10,
+    borderColor: "white",
   },
 }
 
@@ -54,19 +58,19 @@ function buildBoardItemSpecs(arch: { photos: { width: number; height: number }[]
 
   // Reserve space for the map slot (collision avoidance only, not rendered as BoardItem)
   specs.push({ id: "site-map", width: MAP_SLOT_W, height: MAP_SLOT_H })
+  specs.push({ id: "metadata", width: 420, height: 200 })
+  specs.push({ id: "links", width: 240, height: 360 })
+
+  for (let i = 0; i < arch.notes.length; i++) {
+    specs.push({ id: `note-${i}`, width: 240, height: 180 })
+  }
 
   for (let i = 0; i < arch.photos.length; i++) {
     const photo = arch.photos[i]
     specs.push({ id: `photo-${i}`, width: photo.width, height: photo.height })
   }
 
-  specs.push({ id: "metadata", width: 220, height: 200 })
 
-  for (let i = 0; i < arch.notes.length; i++) {
-    specs.push({ id: `note-${i}`, width: 200, height: 120 })
-  }
-
-  specs.push({ id: "links", width: 160, height: 160 })
 
   return specs
 }
@@ -105,6 +109,7 @@ export function PinBoard() {
         transition={EASE_TRANSITION}
         style={{ transform }}
       >
+        {isBoard && <div className={styles.dotGrid} />}
         <motion.div
           className={styles.mapSlot}
           initial={mode}

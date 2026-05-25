@@ -81,7 +81,7 @@ export function layoutPinBoard(
       continue
     }
 
-    // Try viewport first, then fall back to full canvas
+    // Try viewport first with minimal padding, then fall back to full canvas
     const spot =
       tryPlace(item, vpW, vpH, margin, placed, gap, VIEWPORT_ATTEMPTS) ??
       tryPlace(item, canvasWidth, canvasHeight, margin, placed, gap, CANVAS_ATTEMPTS)
