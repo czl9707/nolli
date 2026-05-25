@@ -6,10 +6,11 @@ import { useSelectedArch } from "@/contexts/selected-arch"
 import { layoutPinBoard, type ItemSpec } from "@/lib/pin-board-layout"
 import { MapCore } from "@/components/map"
 import { PinBoardItem } from "./pin-board-item"
+import { Tape } from "./tape"
 import { useBoardPan } from "./use-board-pan"
 import styles from "./board.module.css"
 
-const CANVAS_W = 1800
+const CANVAS_W = 2100
 const CANVAS_H = 1200
 const MAP_SLOT_W = 400
 const MAP_SLOT_H = 300
@@ -131,6 +132,24 @@ export function PinBoard() {
             )}
           </AnimatePresence>
         </motion.div>
+
+        <AnimatePresence>
+          {isBoard && (
+            <Tape
+              key="map-tape"
+              id="site-map"
+              delay={3}
+              style={{
+                position: "absolute",
+                top: MAP_SLOT_Y - 20,
+                left: MAP_SLOT_X + MAP_SLOT_W / 2,
+                width: 80,
+                pointerEvents: "none",
+                zIndex: 20,
+              }}
+            />
+          )}
+        </AnimatePresence>
 
         <AnimatePresence>
           {isBoard &&

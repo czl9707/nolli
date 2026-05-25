@@ -1,6 +1,7 @@
 .item {
   position: absolute;
   background: rgb(var(--color-secondary-background));
+  color: rgb(var(--color-secondary-foreground));
   box-sizing: border-box;
   cursor: default;
   user-select: none;
@@ -10,4 +11,28 @@
 .shadowWrapper {
   position: absolute;
   filter: drop-shadow(var(--shadow-md));
+}
+
+.tape {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  width: 80px;
+  pointer-events: none;
+  z-index: 1;
+  filter: drop-shadow(var(--shadow-sm));
+}
+
+.item::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("/patterns/light/grass.png");
+  background-size: 128px 128px;
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+:global(body[data-theme="dark"]) .item::before {
+  background-image: url("/patterns/dark/grass.png");
 }

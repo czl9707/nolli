@@ -81,7 +81,7 @@ body {
     --typography-h2-lineHeight: 1.25;
 
     --typography-h3-fontFamily: var(--font-default);
-    --typography-h3-fontWeight: 600;
+    --typography-h3-fontWeight: 500;
     --typography-h3-fontSize: 1.875rem;
     --typography-h3-lineHeight: 1.25;
 
@@ -108,7 +108,7 @@ body {
     --size-footer-height: 2rem;
     --size-portfolio-width: 840px;
     
-    --shadow-sm: 0 1px 2px 0 rgb(23 23 23 / 0.05);
+    --shadow-sm: 2px 2px 2px rgb(23 23 23 / 0.1);
     --shadow-md: 4px 4px 6px rgb(23 23 23 / 0.2);
 }
 
@@ -116,9 +116,9 @@ body {
     --color-primary-background: 248 248 248;
     --color-secondary-background: 242 240 235;
     --color-primary-foreground: 23 23 23;
-    --color-secondary-foreground: 115 115 115;
-    --color-accent-foreground: 37 99 235;
+    --color-secondary-foreground: 45 45 45;
     --color-accent-background: 248 248 248;
+    --color-accent-foreground: 194 129 52;
 
     --color-destructive: 231, 0, 11;
 
@@ -127,11 +127,11 @@ body {
 
 body[data-theme='dark'] {
     --color-primary-background: 23 23 23;
-    --color-secondary-background: 38 38 38;
+    /* --color-secondary-background: 38 38 38; */
     --color-primary-foreground: 255 255 255;
-    --color-secondary-foreground: 163 163 163;
-    --color-accent-foreground: 238 163 73;
+    /* --color-secondary-foreground: 163 163 163; */
     --color-accent-background: 23 23 23;
+    --color-accent-foreground: 238 163 73;
 
     --color-destructive: 255, 100, 103;
 

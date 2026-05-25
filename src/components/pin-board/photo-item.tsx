@@ -14,7 +14,7 @@ export function PhotoItem({ photo, item, delay }: PhotoItemProps) {
   const clipPath = useMemo(() => paperClipPath(item.id), [item])
 
   return (
-    <BoardItem item={item} delay={delay} className={styles.photoWrapper} style={{ clipPath }}>
+    <BoardItem item={item} delay={delay} style={{ clipPath }}>
       <img src={photo.image} alt="" className={styles.photo} />
       {photo.caption && <div className={styles.caption}>{photo.caption}</div>}
     </BoardItem>

@@ -14,7 +14,7 @@
   height: 10000px;
   background-image: radial-gradient(
     circle,
-    rgb(var(--color-primary-foreground) / 0.12) 1px,
+    rgb(var(--color-primary-foreground) / 0.25) 1px,
     transparent 1px
   );
   background-size: 24px 24px;
