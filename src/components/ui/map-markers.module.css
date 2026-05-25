@@ -58,25 +58,23 @@
 
 .popup {
     position: relative;
-    max-width: 15.5rem;
+    max-width: 18rem;
     border-radius: var(--size-border-radius);
-    border: var(--border);
-    padding: 0.75rem;
+    overflow: hidden;
     box-shadow: var(--shadow-md);
-    background-color: rgb(var(--color-primary-background));
-    color: rgb(var(--color-primary-foreground));
+    background-color: rgb(var(--color-secondary-background));
+    color: rgb(var(--color-secondary-foreground));
     animation: fadeInZoom 0.2s ease-out;
 }
 
 .tooltip {
     border-radius: var(--size-border-radius);
     padding: 0.25rem 0.5rem;
-    font-size: 0.75rem;
     text-wrap: balance;
     box-shadow: var(--shadow-md);
     pointer-events: none;
-    background-color: rgb(var(--color-primary-foreground));
-    color: rgb(var(--color-primary-background));
+    background-color: rgb(var(--color-secondary-foreground));
+    color: rgb(var(--color-secondary-background));
     animation: fadeInZoom 0.2s ease-out;
 }
 

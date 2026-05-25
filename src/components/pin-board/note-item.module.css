@@ -1,6 +1,6 @@
 .note {
   padding: var(--spacing-component);
-  background: rgb(var(--color-secondary-background));
+  background: rgb(var(--color-paper-background));
   font-family: var(--font-playful);
   font-size: 0.85rem;
   line-height: 1.5;

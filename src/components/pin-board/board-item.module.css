@@ -1,7 +1,7 @@
 .item {
   position: absolute;
-  background: rgb(var(--color-secondary-background));
-  color: rgb(var(--color-secondary-foreground));
+  background: rgb(var(--color-paper-background));
+  color: rgb(var(--color-paper-foreground));
   box-sizing: border-box;
   cursor: default;
   user-select: none;

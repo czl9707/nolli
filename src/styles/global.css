@@ -110,9 +110,13 @@ body {
     
     --shadow-sm: 2px 2px 2px rgb(23 23 23 / 0.1);
     --shadow-md: 4px 4px 6px rgb(23 23 23 / 0.2);
+
+    --color-paper-background: 242 240 235;
+    --color-paper-foreground: 45 45 45;
 }
 
 body {
+
     --color-primary-background: 248 248 248;
     --color-secondary-background: 242 240 235;
     --color-primary-foreground: 23 23 23;
@@ -127,9 +131,9 @@ body {
 
 body[data-theme='dark'] {
     --color-primary-background: 23 23 23;
-    /* --color-secondary-background: 38 38 38; */
+    --color-secondary-background: 38 38 38;
     --color-primary-foreground: 255 255 255;
-    /* --color-secondary-foreground: 163 163 163; */
+    --color-secondary-foreground: 225 225 225;
     --color-accent-background: 23 23 23;
     --color-accent-foreground: 238 163 73;
 
@@ -157,4 +161,17 @@ body[data-theme='dark'] {
     background-color: rgb(var(--color-primary-background));
     color: rgb(var(--color-primary-foreground));
     z-index: 0;
+}
+
+/* MAP related */
+
+.maplibregl-popup-content {
+    padding: 0 !important;
+    box-shadow: none !important;
+    background-color: var(--color-secondary-background) !important;
+    border-radius: 0 !important
+}
+
+.maplibregl-popup-tip {
+    display: none !important
 }

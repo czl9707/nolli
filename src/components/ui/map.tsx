@@ -554,7 +554,7 @@ function MarkerPopup({
 
   return createPortal(
     <div
-      className={`${markerStyles.popup}${className ? ` ${className}` : ""}`}
+      className={`${markerStyles.popup} ${className ? ` ${className}` : ""}`}
     >
       {closeButton && <PopupCloseButton onClick={handleClose} />}
       {children}
