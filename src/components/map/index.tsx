@@ -7,8 +7,8 @@ import {
 } from "@/components/ui/map"
 import { getMapStyle } from "@/lib/map-style"
 import type { MapRef } from "@/components/ui/map"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useNavigate } from "react-router"
+import { useCallback, useEffect, useMemo, useRef } from "react"
+import { useLocation, useNavigate } from "react-router"
 import { useSelectedArch } from "@/contexts/selected-arch"
 import { getAllArchitectures, type Arch } from "@/lib/data/architectures"
 import { useMapPatterns } from "./use-map-patterns"
@@ -17,7 +17,7 @@ import { useLayout } from "@/hooks/use-layout"
 import { H4, Body1, Body2 } from "@/components/ui/typography"
 import { Button } from "@/components/ui/button"
 import { motion, AnimatePresence } from "framer-motion"
-import { TRANSITION_SHORT, DELAY_START } from "@/lib/animation"
+import { TRANSITION_SHORT, TRANSITION_LONG, DELAY_START } from "@/lib/animation"
 import styles from "./index.module.css"
 
 const ALL_ARCHITECTURES = getAllArchitectures()
@@ -100,20 +100,33 @@ function ArchMarkers() {
 }
 
 function MapNavigator() {
-  const { lastSelectedArch } = useSelectedArch()
+  const { lastSelectedArch, flyToTrigger } = useSelectedArch()
   const { map } = useMap()
+  const location = useLocation();
+  const prevSlugRef = useRef<string | null>(null)
+  const prevLocationRef = useRef<string | null>(null)
 
   useEffect(() => {
     if (!lastSelectedArch || !map) return
-    map.flyTo({
-      center: [
-        lastSelectedArch.coordinates.longitude,
-        lastSelectedArch.coordinates.latitude,
-      ],
-      zoom: 16,
-      duration: TRANSITION_SHORT * 1000,
-    })
-  }, [lastSelectedArch, map])
+
+    const isSameLocation = 
+      prevSlugRef.current === lastSelectedArch.slug && prevLocationRef.current === location.pathname;
+
+    prevSlugRef.current = lastSelectedArch.slug;
+    prevLocationRef.current = location.pathname;
+
+
+    setTimeout(() => map.flyTo({
+        center: [
+          lastSelectedArch.coordinates.longitude,
+          lastSelectedArch.coordinates.latitude,
+        ],
+        zoom: 14,
+        duration: TRANSITION_LONG * 1000,
+      }),
+      isSameLocation ? 0 : TRANSITION_SHORT * 1000
+    )
+  }, [lastSelectedArch, map, flyToTrigger])
 
   return null
 }

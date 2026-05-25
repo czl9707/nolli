@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useMotionValue, useTransform, animate } from "framer-motion"
+import { TRANSITION_SHORT } from "@/lib/animation"
 
 const MIN_ZOOM = 0.5
 const MAX_ZOOM = 2.0
@@ -31,12 +32,12 @@ export function useBoardPan(
   // Smoothly animate pan/zoom to default positions when toggling between modes
   useEffect(() => {
     if (!isActive) {
-      animate(panX, 0, { duration: 0.6, ease: "easeInOut" })
-      animate(panY, 0, { duration: 0.6, ease: "easeInOut" })
-      animate(zoom, 1, { duration: 0.6, ease: "easeInOut" })
+      animate(panX, 0, { duration: TRANSITION_SHORT, ease: "easeInOut" })
+      animate(panY, 0, { duration: TRANSITION_SHORT, ease: "easeInOut" })
+      animate(zoom, 1, { duration: TRANSITION_SHORT, ease: "easeInOut" })
     } else {
-      animate(panX, 0, { duration: 0.6, ease: "easeInOut" })
-      animate(panY, 0, { duration: 0.6, ease: "easeInOut" })
+      animate(panX, 0, { duration: TRANSITION_SHORT, ease: "easeInOut" })
+      animate(panY, 0, { duration: TRANSITION_SHORT, ease: "easeInOut" })
     }
   }, [isActive, panX, panY, zoom])
 

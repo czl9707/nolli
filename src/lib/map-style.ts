@@ -222,7 +222,7 @@ const TEXT_DEFS: TextLabelDef[] = [
     sourceLayer: "place",
     filter: ["all", ["==", "class", "town"]],
     minzoom: 8,
-    maxzoom: 14,
+    maxzoom: 15,
     textField: [[8, "{name_en}"], [13, "{name}"]],
     textSize: [[8, 10], [9, 10], [10, 11], [13, 14], [14, 15]],
     textColor: "priLabel",

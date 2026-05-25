@@ -1,7 +1,7 @@
 import { ThemeProvider } from "@/components/layout/theme-provider"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
-import { BrowserRouter, Routes, Route } from "react-router"
+import { BrowserRouter } from "react-router"
 import { SelectedArchProvider } from "@/contexts/selected-arch"
 import { PinBoard } from "@/components/pin-board"
 import { useLayout } from "@/hooks/use-layout"
@@ -26,10 +26,6 @@ export function ViteApp() {
         <AppContainer>
           <SelectedArchProvider>
             <PinBoard />
-            <Routes>
-              <Route path="/arch/:slug" element={null} />
-              <Route path="/" element={null} />
-            </Routes>
           </SelectedArchProvider>
         </AppContainer>
         <Footer />

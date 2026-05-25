@@ -5,13 +5,14 @@ import { useLayout } from "@/hooks/use-layout"
 import { useSelectedArch } from "@/contexts/selected-arch"
 import { layoutPinBoard, type ItemSpec } from "@/lib/pin-board-layout"
 import { CANVAS_W, CANVAS_H, MAP_SLOT_W, MAP_SLOT_H, MAP_SLOT_X, MAP_SLOT_Y, BOARD_GAP } from "@/lib/pin-board-config"
+import { TRANSITION_SHORT, DELAY_START } from "@/lib/animation"
 import { MapCore } from "@/components/map"
 import { PinBoardItem } from "./pin-board-item"
 import { Tape } from "./tape"
 import { useBoardPan } from "./use-board-pan"
 import styles from "./board.module.css"
 
-const EASE_TRANSITION = { duration: 0.6, ease: "easeInOut" as const }
+const EASE_TRANSITION = { duration: TRANSITION_SHORT, ease: "easeInOut" as const }
 
 const SURFACE_VARIANTS = {
   home: {
@@ -116,7 +117,7 @@ export function PinBoard() {
                 key="map-overlay"
                 className={styles.mapOverlay}
                 initial={{ opacity: 0 }}
-                animate={{ opacity: 1, transition: { delay: 0.6 } }}
+                animate={{ opacity: 1, transition: { delay: DELAY_START + TRANSITION_SHORT } }}
                 exit={{ opacity: 0 }}
                 onClick={() => navigate("/")}
               >

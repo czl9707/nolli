@@ -50,25 +50,28 @@ The transition is animated with framer-motion variants (`SURFACE_VARIANTS` in `v
 ```
 PinBoard
 ├── MapCore (inside mapSlot, anchored)
-├── MetadataItem (title, architect, year, address)
-├── LinkItem (Google Maps, Wikipedia, etc.)
-├── NoteItem (free-form text)
-└── PhotoItem (images with captions)
-    └── Tape (decorative tape strip)
+├── PinBoardItem (routes to item type by ID)
+│   ├── MetadataItem (title, architect, year, address)
+│   ├── LinkItem (Google Maps, Wikipedia, etc.)
+│   ├── NoteItem (free-form text, expandable via BoardModal)
+│   └── PhotoItem (images with captions, expandable via BoardModal)
+└── Tape (decorative tape strip, placed per-item)
 ```
 
-- **Layout algorithm** (`src/lib/pin-board-layout.ts`): collision-free placement — tries viewport positions first, falls back to full canvas. Items get random rotation via hashId
+- **BoardModal** (`board-modal.tsx`): Portal-based overlay for expanding photo/note items to full view
+- **Layout algorithm** (`src/lib/pin-board-layout.ts`): radial collision-free placement — places items in rings with increasing radius, starting from 200px. Items get random rotation via hashId
 - **Panning**: `useBoardPan` hook implements zoom-anchored-to-cursor panning via framer-motion motion values
 - **Paper clipping**: `paperClipPath` procedurally generates irregular paper edges using hashId + jitter
-- **Item entry animations**: staggered fade+scale via framer-motion with delay per item (0.3s + index × 0.1s)
+- **Animation constants** (`src/lib/animation.ts`): centralized timing values (`TRANSITION_SHORT`, `DELAY_START`, `ITEM_STAGGER`) shared across board items, map transitions, and modals. Keep in sync with `--transition-short` CSS variable in `global.css`
 
 ## Key directories
 
+- `src/lib/animation.ts` — shared animation timing constants (transition durations, delays, stagger)
 - `src/lib/map-texture/` — SVG pattern generators (water, grass, forest, building, landuse)
 - `src/lib/map-style.ts` — MapLibre style spec builder (~740 lines)
 - `src/lib/map-color.ts` — palette derivation from two base colors per theme
-- `src/lib/pin-board-layout.ts` — collision-free placement algorithm
-- `src/components/pin-board/` — board item components and board container
+- `src/lib/pin-board-layout.ts` — radial collision-free placement algorithm
+- `src/components/pin-board/` — board container, item components, modal, tape, pan hook
 - `src/components/map/` — MapLibre wrapper and pattern loading
 - `src/components/ui/` — shared primitives (button with Radix Slot, typography, map controls)
 - `scripts/generate-patterns.ts` — reads map-texture modules, outputs PNGs via Sharp

@@ -1,6 +1,7 @@
 import { motion } from "framer-motion"
 import type { CSSProperties } from "react"
 import { hashId, jitter } from "@/lib/paper-clip"
+import { TRANSITION_SHORT, DELAY_START, ITEM_STAGGER } from "@/lib/animation"
 
 type TapeProps = {
   id: string
@@ -23,7 +24,7 @@ export function Tape({ id, delay = 0, className, style }: TapeProps) {
         ...style,
       }}
       initial={{ opacity: 0 }}
-      animate={{ opacity: 1, transition: { duration: 0.4, delay: 0.3 + delay * 0.1 } }}
+      animate={{ opacity: 1, transition: { duration: TRANSITION_SHORT, delay: DELAY_START + delay * ITEM_STAGGER } }}
       exit={{ opacity: 0 }}
     />
   )

@@ -4,6 +4,7 @@ import type { PlacedItem } from "@/lib/pin-board-layout"
 import { Tape } from "./tape"
 import styles from "./board-item.module.css"
 import { paperClipPath } from "@/lib/paper-clip"
+import { TRANSITION_SHORT, DELAY_START, ITEM_STAGGER } from "@/lib/animation"
 
 type BoardItemProps = {
   item: PlacedItem
@@ -44,9 +45,9 @@ export function BoardItem({ item, children, delay = 0, className, onClick }: Boa
         animate={{
           opacity: 1,
           scale: 1,
-          transition: { duration: 0.6, delay: 0.3 + delay * 0.1 },
+          transition: { duration: TRANSITION_SHORT, delay: DELAY_START + delay * ITEM_STAGGER },
         }}
-        exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.6 } }}
+        exit={{ opacity: 0, scale: 0.9, transition: { duration: TRANSITION_SHORT } }}
       >
         {children}
       </motion.div>

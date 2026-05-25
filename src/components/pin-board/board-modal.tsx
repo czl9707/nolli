@@ -1,6 +1,7 @@
 import { createPortal } from "react-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import type { ReactNode } from "react"
+import { TRANSITION_SHORT } from "@/lib/animation"
 import styles from "./board-modal.module.css"
 
 export function BoardModal({
@@ -22,7 +23,7 @@ export function BoardModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: TRANSITION_SHORT }}
           onPointerDown={(e) => e.stopPropagation()}
           onWheel={(e) => {
             e.stopPropagation()
