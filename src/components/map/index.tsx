@@ -51,12 +51,13 @@ function ArchMarkers() {
 function MapNavigator() {
   const { lastSelectedArch } = useSelectedArch()
   const { map } = useMap()
+  const location = useLocation()
 
   useEffect(() => {
-    if (!lastSelectedArch || !map) return
+    if (!lastSelectedArch || !map || !location.pathname.startsWith("/arch/")) return
     const id = setTimeout(() => flyToArch(map, lastSelectedArch), NAV_DELAY_MS)
     return () => clearTimeout(id)
-  }, [lastSelectedArch, map])
+  }, [lastSelectedArch, map, location.key])
 
   return null
 }
