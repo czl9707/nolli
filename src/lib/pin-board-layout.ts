@@ -13,8 +13,9 @@ export type ItemSpec = {
   height: number
 }
 
-const VIEWPORT_ATTEMPTS = 30
-const CANVAS_ATTEMPTS = 30
+const RADIUS_START = 200
+const RADIUS_STEP = 150
+const ATTEMPTS_PER_RING = 30
 const ROTATION_RANGE = 2
 
 function randomInRange(min: number, max: number): number {
@@ -34,22 +35,36 @@ function rectsOverlap(
   )
 }
 
-function tryPlace(
+function tryPlaceNearAnchor(
   item: ItemSpec,
-  maxX: number,
-  maxY: number,
+  anchorCenterX: number,
+  anchorCenterY: number,
+  startRadius: number,
+  step: number,
+  maxRadius: number,
+  canvasWidth: number,
+  canvasHeight: number,
   margin: number,
   placed: PlacedItem[],
   gap: number,
-  attempts: number,
+  attemptsPerRing: number,
 ): { x: number; y: number } | null {
-  for (let i = 0; i < attempts; i++) {
-    const x = randomInRange(margin, maxX - item.width - margin)
-    const y = randomInRange(margin, maxY - item.height - margin)
-    const hasCollision = placed.some((p) =>
-      rectsOverlap({ x, y, width: item.width, height: item.height }, p, gap),
-    )
-    if (!hasCollision) return { x, y }
+  for (let radius = startRadius; radius <= maxRadius; radius += step) {
+    for (let i = 0; i < attemptsPerRing; i++) {
+      const angle = Math.random() * Math.PI * 2
+      const r = startRadius + Math.random() * (radius - startRadius + step)
+      const x = anchorCenterX + Math.cos(angle) * r - item.width / 2
+      const y = anchorCenterY + Math.sin(angle) * r - item.height / 2
+
+      if (x < margin || y < margin) continue
+      if (x + item.width > canvasWidth - margin) continue
+      if (y + item.height > canvasHeight - margin) continue
+
+      const hasCollision = placed.some((p) =>
+        rectsOverlap({ x, y, width: item.width, height: item.height }, p, gap),
+      )
+      if (!hasCollision) return { x, y }
+    }
   }
   return null
 }
@@ -63,8 +78,10 @@ export function layoutPinBoard(
 ): PlacedItem[] {
   const placed: PlacedItem[] = []
   const margin = 60
-  const vpW = Math.min(canvasWidth, window.innerWidth)
-  const vpH = Math.min(canvasHeight, window.innerHeight)
+  const maxRadius = Math.hypot(canvasWidth, canvasHeight)
+
+  let anchorCenterX = canvasWidth / 2
+  let anchorCenterY = canvasHeight / 2
 
   for (const item of items) {
     const isAnchor = item.id === anchorItem
@@ -72,19 +89,31 @@ export function layoutPinBoard(
     if (isAnchor) {
       placed.push({
         id: item.id,
-        x: margin,
-        y: margin,
+        x: (canvasWidth - item.width) / 2,
+        y: (canvasHeight - item.height) / 2,
         width: item.width,
         height: item.height,
         rotation: 0,
       })
+      anchorCenterX = (canvasWidth - item.width) / 2 + item.width / 2
+      anchorCenterY = (canvasHeight - item.height) / 2 + item.height / 2
       continue
     }
 
-    // Try viewport first with minimal padding, then fall back to full canvas
-    const spot =
-      tryPlace(item, vpW, vpH, margin, placed, gap, VIEWPORT_ATTEMPTS) ??
-      tryPlace(item, canvasWidth, canvasHeight, margin, placed, gap, CANVAS_ATTEMPTS)
+    const spot = tryPlaceNearAnchor(
+      item,
+      anchorCenterX,
+      anchorCenterY,
+      RADIUS_START,
+      RADIUS_STEP,
+      maxRadius,
+      canvasWidth,
+      canvasHeight,
+      margin,
+      placed,
+      gap,
+      ATTEMPTS_PER_RING,
+    )
 
     placed.push({
       id: item.id,
