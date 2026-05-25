@@ -1,8 +1,7 @@
 .metaWrapper {
   display: flex;
   flex-direction: column;
-  padding: var(--spacing-paragraph);
-  border: var(--border;)
+  padding: var(--spacing-component);
 }
 
 .name {

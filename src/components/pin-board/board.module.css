@@ -33,6 +33,7 @@
   overflow: hidden;
   box-sizing: border-box;
   border-style: solid;
+  border-color: rgb(var(--color-secondary-background));
 }
 
 .mapOverlay {

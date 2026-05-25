@@ -47,6 +47,6 @@ function createPalette(bg: string, water: string) {
 }
 
 export const MAP_COLORS = {
-  light: createPalette('#EBE8DF', '#1E1E1E'),
-  dark: createPalette('#1E1E1E', '#EBE8DF'),
+  light: createPalette('#F2F0EB', '#1E1E1E'),
+  dark: createPalette('#1E1E1E', '#F2F0EB'),
 }

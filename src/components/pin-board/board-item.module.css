@@ -1,11 +1,13 @@
 .item {
   position: absolute;
-  background: rgb(var(--color-primary-background));
-  border: 1px solid rgb(var(--color-primary-foreground) / 0.08);
+  background: rgb(var(--color-secondary-background));
   box-sizing: border-box;
-  box-shadow: var(--shadow-md);
   cursor: default;
   user-select: none;
   overflow: hidden;
 }
 
+.shadowWrapper {
+  position: absolute;
+  filter: drop-shadow(var(--shadow-md));
+}

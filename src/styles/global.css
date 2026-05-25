@@ -108,13 +108,13 @@ body {
     --size-footer-height: 2rem;
     --size-portfolio-width: 840px;
     
-    --shadow-sm: 0 1px 2px 0 rgb(var(--color-primary-foreground) / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(var(--color-primary-foreground) / 0.05), 0 2px 4px -2px rgb(var(--color-primary-foreground) / 0.05);
+    --shadow-sm: 0 1px 2px 0 rgb(23 23 23 / 0.05);
+    --shadow-md: 4px 4px 6px rgb(23 23 23 / 0.2);
 }
 
 body {
-    --color-primary-background: 255 255 255;
-    --color-secondary-background: 248 248 248;
+    --color-primary-background: 248 248 248;
+    --color-secondary-background: 242 240 235;
     --color-primary-foreground: 23 23 23;
     --color-secondary-foreground: 115 115 115;
     --color-accent-foreground: 37 99 235;

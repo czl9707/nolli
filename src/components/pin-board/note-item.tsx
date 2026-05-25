@@ -11,7 +11,7 @@ type NoteItemProps = {
 }
 
 export function NoteItem({ note, item, delay }: NoteItemProps) {
-  const clipPath = useMemo(() => paperClipPath(item.rotation), [item])
+  const clipPath = useMemo(() => paperClipPath(item.id), [item])
 
   return (
     <BoardItem item={item} delay={delay} className={styles.note} style={{ clipPath }}>

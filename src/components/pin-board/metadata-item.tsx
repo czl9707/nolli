@@ -12,7 +12,7 @@ type MetadataItemProps = {
 }
 
 export function MetadataItem({ arch, item, delay }: MetadataItemProps) {
-  const clipPath = useMemo(() => paperClipPath(item.rotation), [item])
+  const clipPath = useMemo(() => paperClipPath(item.id), [item])
 
   return (
     <BoardItem item={item} delay={delay} className={styles.metaWrapper} style={{ clipPath }}>

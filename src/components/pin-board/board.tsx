@@ -39,7 +39,6 @@ const MAP_SLOT_VARIANTS = {
     borderRadius: "var(--size-border-radius)",
     boxShadow: "none",
     borderWidth: 0,
-    borderColor: "transparent",
   },
   board: {
     top: MAP_SLOT_Y,
@@ -47,9 +46,8 @@ const MAP_SLOT_VARIANTS = {
     width: MAP_SLOT_W,
     height: MAP_SLOT_H,
     borderRadius: 0,
-    boxShadow: "var(--shadow-sm)",
+    boxShadow: "var(--shadow-md)",
     borderWidth: 10,
-    borderColor: "white",
   },
 }
 
