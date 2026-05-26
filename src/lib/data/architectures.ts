@@ -117,7 +117,7 @@ const architectures: Record<string, Arch> = {
       },
     ],
     photos: [
-      { image: "/images/exeter-academy-library-1.jpg", caption: "A Cathedral of Learning", width: 340, height: 260 },
+      { image: "/images/exeter-academy-library-1.jpg", caption: "A Cathedral of Learning", width: 340, height: 380 },
       { image: "/images/exeter-academy-library-2.jpg", caption: "Windowed reading carrels", width: 280, height: 380 },
       { image: "/images/exeter-academy-library-3.jpg", caption: "Central atrium", width: 320, height: 300 },
     ],

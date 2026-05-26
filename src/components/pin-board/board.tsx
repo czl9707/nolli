@@ -75,7 +75,7 @@ export function PinBoard() {
   const navigate = useNavigate()
   const viewportRef = useRef<HTMLDivElement>(null)
 
-  const { transform, handlePointerDown, handlePointerMove, handlePointerUp, handleWheel } =
+  const { panX, panY, zoom, handlePointerDown, handlePointerMove, handlePointerUp, handleWheel } =
     useBoardPan(CANVAS_W, CANVAS_H, isBoard, viewportRef)
 
   const items = useMemo(() => {
@@ -100,7 +100,7 @@ export function PinBoard() {
         animate={mode}
         variants={SURFACE_VARIANTS}
         transition={EASE_TRANSITION}
-        style={{ transform }}
+        style={{ x: panX, y: panY, scale: zoom }}
       >
         {isBoard && <div className={styles.dotGrid} />}
         <motion.div

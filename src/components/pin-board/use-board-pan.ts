@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useMotionValue, useTransform, animate } from "framer-motion"
+import { useMotionValue, animate } from "framer-motion"
 import { TRANSITION_SHORT } from "@/lib/animation"
 
 const MIN_ZOOM = 0.5
@@ -70,10 +70,10 @@ export function useBoardPan(
     return () => el.removeEventListener("click", handler, true)
   }, [viewportRef])
 
-  const transform = useTransform(
-    [panX, panY, zoom],
-    ([x, y, s]) => `translate(${x}px, ${y}px) scale(${s})`,
-  )
+  // Return individual motion values so framer-motion can coordinate them
+  // with variant animations on the same element. A combined transform
+  // string (MotionValue<string>) is opaque to framer-motion and can
+  // fall a frame behind the variant-driven width/height animation.
 
   // preventDefault stops the browser's native drag (which would download images)
   const handlePointerDown = useCallback(
@@ -136,7 +136,9 @@ export function useBoardPan(
   )
 
   return {
-    transform,
+    panX,
+    panY,
+    zoom,
     handlePointerDown,
     handlePointerMove,
     handlePointerUp,

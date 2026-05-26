@@ -22,5 +22,8 @@
 
 .modalPhoto {
   max-width: 60vw;
-  max-height: 60vh;
+  max-height: 75vh;
+  width: fit-content;
+  height: 100%;
+  object-fit: cover;
 }

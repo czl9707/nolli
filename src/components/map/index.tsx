@@ -12,12 +12,12 @@ import { useLocation, useNavigate } from "react-router"
 import { useSelectedArch } from "@/contexts/selected-arch"
 import { getAllArchitectures, type Arch } from "@/lib/data/architectures"
 import { useMapPatterns } from "./use-map-patterns"
-import { ArrowRight, MapPin, X } from "lucide-react"
+import { ArrowRight, X, Pin } from "lucide-react"
 import { useLayout } from "@/hooks/use-layout"
 import { H4, Body1, Body2 } from "@/components/ui/typography"
 import { Button } from "@/components/ui/button"
 import { motion, AnimatePresence } from "framer-motion"
-import { TRANSITION_SHORT, TRANSITION_LONG, DELAY_START } from "@/lib/animation"
+import { TRANSITION_SHORT, TRANSITION_LONG } from "@/lib/animation"
 import styles from "./index.module.css"
 
 const ALL_ARCHITECTURES = getAllArchitectures()
@@ -45,7 +45,8 @@ function MapDrawer({
       <motion.div
         className={styles.drawerContent}
         initial={{ opacity: 0 }}
-        animate={{ opacity: 1, transition: { duration: TRANSITION_SHORT, delay: DELAY_START }}}
+        // TRANSITION_SHORT delay works better, because this is countering map zooming.
+        animate={{ opacity: 1, transition: { duration: TRANSITION_SHORT, delay: TRANSITION_SHORT }}} 
         exit={{ opacity: 0, transition: { duration: TRANSITION_SHORT }}}
       >
         <div className={styles.coverWrapper}>
@@ -84,11 +85,11 @@ function ArchMarkers() {
           latitude={arch.coordinates.latitude}
         >
           <MarkerContent>
-            <MapPin
-              style={{
-                fill: "rgb(var(--color-accent-foreground))",
-                stroke: "rgb(var(--color-primary-background) / .5)",
-              }}
+            <Pin
+              stroke-width={2}
+              stroke={"rgb(var(--color-accent-foreground))"}
+              fill={"rgb(var(--color-accent-foreground) / .75)"}
+              // transform="rotate(-30)"
               size={30}
               onClick={() => setLastSelectedArch(arch)}
             />
@@ -115,18 +116,17 @@ function MapNavigator() {
     prevSlugRef.current = lastSelectedArch.slug;
     prevLocationRef.current = location.pathname;
 
-
     setTimeout(() => map.flyTo({
         center: [
           lastSelectedArch.coordinates.longitude,
           lastSelectedArch.coordinates.latitude,
         ],
-        zoom: 14,
+        zoom: 16,
         duration: TRANSITION_LONG * 1000,
       }),
       isSameLocation ? 0 : TRANSITION_SHORT * 1000
     )
-  }, [lastSelectedArch, map, flyToTrigger])
+  }, [lastSelectedArch, map, flyToTrigger, location.pathname])
 
   return null
 }
