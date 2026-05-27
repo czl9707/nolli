@@ -49,16 +49,19 @@ function tryPlaceNearAnchor(
   gap: number,
   attemptsPerRing: number,
 ): { x: number; y: number } | null {
+  const minCenterX = margin + item.width / 2
+  const maxCenterX = canvasWidth - margin - item.width / 2
+  const minCenterY = margin + item.height / 2
+  const maxCenterY = canvasHeight - margin - item.height / 2
+
   for (let radius = startRadius; radius <= maxRadius; radius += step) {
     for (let i = 0; i < attemptsPerRing; i++) {
       const angle = Math.random() * Math.PI * 2
       const r = startRadius + Math.random() * (radius - startRadius + step)
-      const x = anchorCenterX + Math.cos(angle) * r - item.width / 2
-      const y = anchorCenterY + Math.sin(angle) * r - item.height / 2
-
-      if (x < margin || y < margin) continue
-      if (x + item.width > canvasWidth - margin) continue
-      if (y + item.height > canvasHeight - margin) continue
+      const cx = Math.max(minCenterX, Math.min(maxCenterX, anchorCenterX + Math.cos(angle) * r))
+      const cy = Math.max(minCenterY, Math.min(maxCenterY, anchorCenterY + Math.sin(angle) * r))
+      const x = cx - item.width / 2
+      const y = cy - item.height / 2
 
       const hasCollision = placed.some((p) =>
         rectsOverlap({ x, y, width: item.width, height: item.height }, p, gap),
