@@ -15,5 +15,5 @@ app.get("/{*splat}", (_req, res) => {
 })
 
 app.listen(PORT, () => {
-  console.log(`arch-map serving on http://localhost:${PORT}`)
+  console.log(`nolli serving on http://localhost:${PORT}`)
 })

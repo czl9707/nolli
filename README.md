@@ -1,4 +1,4 @@
-# Arch Map
+# Nolli
 
 Interactive map for viewing architecture on a map. Built with Vite + React 19 + TypeScript + MapLibre GL.
 
