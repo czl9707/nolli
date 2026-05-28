@@ -38,11 +38,11 @@ function createPalette(bg: string, water: string) {
     landuseStroke: c(60),
 
     waterLabelColor: c(0),
+    waterLabelHalo: c(80),
     priLabel: c(100),
     secLabel: c(100),
     minorLabel: c(100),
-    waterLabelHalo: c(30),
-    labelHalo: c(20),
+    labelHalo: c(40),
   }
 }
 

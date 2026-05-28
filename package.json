@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "vite",
     "build": "npm run generate:patterns && vite build",
-    "start": "npm run build && tsx server.ts",
     "generate:patterns": "tsx scripts/generate-patterns.ts",
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
@@ -15,7 +14,6 @@
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",
     "@fontsource/architects-daughter": "^5.2.7",
-    "express": "^5.2.1",
     "framer-motion": "^12.40.0",
     "lucide-react": "^1.16.0",
     "maplibre-gl": "^5.24.0",
@@ -28,7 +26,6 @@
   "devDependencies": {
     "@csstools/postcss-global-data": "^4.0.0",
     "@eslint/eslintrc": "^3",
-    "@types/express": "^5.0.6",
     "@types/geojson": "^7946.0.16",
     "@types/node": "^25.5.0",
     "@types/react": "^19.2.14",

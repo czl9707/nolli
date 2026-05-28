@@ -12,7 +12,6 @@ Interactive map for viewing architecture on a map. Vite + React 19 + TypeScript 
 
 - `npm run dev` — Vite dev server
 - `npm run build` — generates map patterns, then builds (`generate:patterns` → `vite build`)
-- `npm run start` — builds then serves via Express (`server.ts`, default port 3000)
 - `npm run generate:patterns` — Sharp SVG→PNG texture generation into `public/patterns/` (gitignored)
 - `npm run lint` — ESLint
 - `npm run typecheck` — `tsc --noEmit`
@@ -33,7 +32,6 @@ npm run lint && npm run typecheck
 - **Map**: MapLibre GL with CARTO vector tiles, custom programmatic style (`src/lib/map-style.ts`)
 - **Theming**: light/dark via `data-theme` attribute on `<html>`; map textures generated per theme. ThemeProvider persists to localStorage; Ctrl/Cmd+D toggles theme
 - **Data**: `src/lib/data/architectures.ts` — static architecture entries with coordinates, pages, photos, notes, links
-- **Production**: Express static server (`server.ts`) with SPA fallback
 
 ## Layout modes
 
