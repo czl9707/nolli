@@ -1,45 +1,54 @@
-export type Coordinates = {
-  lng: number
-  lat: number
-}
+import { z } from "zod"
 
-export type BBox = {
-  west: number
-  south: number
-  east: number
-  north: number
-}
+export const coordinatesSchema = z.object({
+  lng: z.number(),
+  lat: z.number(),
+})
+export type Coordinates = z.infer<typeof coordinatesSchema>
 
-export type ArchPhoto = {
-  image: string
-  caption?: string
-  width: number
-  height: number
-}
+export const bBoxSchema = z.object({
+  west: z.number(),
+  south: z.number(),
+  east: z.number(),
+  north: z.number(),
+})
+export type BBox = z.infer<typeof bBoxSchema>
 
-export type ArchNote = {
-  text: string
-}
+export const archPhotoSchema = z.object({
+  image: z.string(),
+  caption: z.string().optional(),
+  width: z.number(),
+  height: z.number(),
+})
+export type ArchPhoto = z.infer<typeof archPhotoSchema>
 
-export type ArchLinks = {
-  googleMaps: string
-  wikipedia?: string
-  archdaily?: string
-  custom?: { url: string; label: string }[]
-}
+export const archNoteSchema = z.object({
+  text: z.string(),
+})
+export type ArchNote = z.infer<typeof archNoteSchema>
 
-export type ArchSummary = {
-  slug: string
-  name: string
-  architect: string
-  year: number
-  coordinates: Coordinates
-  coverImage: string | null
-}
+export const archLinksSchema = z.object({
+  googleMaps: z.string(),
+  wikipedia: z.string().optional(),
+  archdaily: z.string().optional(),
+  custom: z.array(z.object({ url: z.string(), label: z.string() })).optional(),
+})
+export type ArchLinks = z.infer<typeof archLinksSchema>
 
-export type Arch = ArchSummary & {
-  address: string
-  photos: ArchPhoto[]
-  notes: ArchNote[]
-  links: ArchLinks
-}
+export const archSummarySchema = z.object({
+  slug: z.string(),
+  name: z.string(),
+  architect: z.string(),
+  year: z.number(),
+  coordinates: coordinatesSchema,
+  coverImage: z.string().nullable(),
+})
+export type ArchSummary = z.infer<typeof archSummarySchema>
+
+export const archSchema = archSummarySchema.extend({
+  address: z.string(),
+  photos: z.array(archPhotoSchema),
+  notes: z.array(archNoteSchema),
+  links: archLinksSchema,
+})
+export type Arch = z.infer<typeof archSchema>

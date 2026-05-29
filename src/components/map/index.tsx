@@ -10,7 +10,7 @@ import type { MapRef } from "@/components/ui/map"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useLocation, useNavigate } from "react-router"
 import { useSelectedArch } from "@/contexts/selected-arch"
-import { getAllArchitectures, type ArchSummary } from "@/lib/data/architectures"
+import { getAllArchitectures, getArchBySlug, type ArchSummary, type Arch } from "@/lib/data/architectures"
 import { useMapPatterns } from "./use-map-patterns"
 import { ArrowRight, X, Pin } from "lucide-react"
 import { useLayout } from "@/hooks/use-layout"
@@ -25,7 +25,7 @@ function MapDrawer({
   onView,
   onClose,
 }: {
-  arch: ArchSummary
+  arch: Arch
   onView: () => void
   onClose: () => void
 }) {
@@ -91,7 +91,7 @@ function ArchMarkers() {
               fill={"rgb(var(--color-accent-foreground) / .75)"}
               // transform="rotate(-30)"
               size={30}
-              onClick={() => setLastSelectedArch(arch)}
+              onClick={() => getArchBySlug(arch.slug).then(setLastSelectedArch)}
             />
           </MarkerContent>
         </MapMarker>

@@ -1,5 +1,10 @@
-import { mapToArchSummary, mapToArch } from "./data-mappers"
-import type { ArchSummary, Arch, BBox } from "./types"
+import {
+  archSummarySchema,
+  archSchema,
+  type ArchSummary,
+  type Arch,
+  type BBox,
+} from "./types"
 
 export type { Arch, ArchSummary, ArchPhoto, ArchNote, ArchLinks, Coordinates, BBox } from "./types"
 
@@ -12,6 +17,54 @@ export const supabase = createClient(
 
 const summaryCache = new Map<string, ArchSummary>()
 const detailCache = new Map<string, Arch>()
+
+function parseSummaryRow(row: Record<string, unknown>): ArchSummary {
+  return archSummarySchema.parse({
+    slug: row.slug,
+    name: row.name,
+    architect: (row.architect as { name: string }[])?.[0]?.name ?? "",
+    year: row.year,
+    coordinates: { lng: row.longitude, lat: row.latitude },
+    coverImage: (row.cover as { image: string }[])?.[0]?.image ?? null,
+  })
+}
+
+function parseDetailRow(row: Record<string, unknown>): Arch {
+  type PhotoRow = { image: string; caption: string | null; width: number; height: number; is_cover: boolean }
+  type LinkRow = { type: string; url: string; label: string }
+  type NoteRow = { text: string }
+
+  const photos = (row.photos as PhotoRow[]) ?? []
+  const coverPhoto = photos.find((p) => p.is_cover)
+
+  const links: Record<string, unknown> = {
+    googleMaps: row.google_maps_url,
+    custom: [],
+  }
+  for (const link of (row.links as LinkRow[]) ?? []) {
+    if (link.type === "wikipedia" || link.type === "archdaily") {
+      links[link.type] = link.url
+    } else if (link.type === "custom") {
+      ;(links.custom as { url: string; label: string }[]).push({ url: link.url, label: link.label })
+    }
+  }
+  if ((links.custom as unknown[]).length === 0) delete links.custom
+
+  return archSchema.parse({
+    slug: row.slug,
+    name: row.name,
+    architect: (row.architect as { name: string }[])?.[0]?.name ?? "",
+    year: row.year,
+    coordinates: { lng: row.longitude, lat: row.latitude },
+    coverImage: coverPhoto?.image ?? null,
+    address: row.address,
+    photos: photos
+      .filter((p) => !p.is_cover)
+      .map((p) => ({ image: p.image, caption: p.caption ?? undefined, width: p.width, height: p.height })),
+    notes: ((row.notes as NoteRow[]) ?? []).map((n) => ({ text: n.text })),
+    links,
+  })
+}
 
 export async function getAllArchitectures(bbox?: BBox): Promise<ArchSummary[]> {
   if (summaryCache.size > 0) {
@@ -50,7 +103,7 @@ export async function getAllArchitectures(bbox?: BBox): Promise<ArchSummary[]> {
   if (error) throw error
   if (!data) return []
 
-  const results = data.map(mapToArchSummary)
+  const results = data.map(parseSummaryRow)
   for (const arch of results) {
     summaryCache.set(arch.slug, arch)
   }
@@ -76,7 +129,7 @@ export async function getArchBySlug(slug: string): Promise<Arch | null> {
 
   if (error || !data) return null
 
-  const arch = mapToArch(data)
+  const arch = parseDetailRow(data)
   detailCache.set(slug, arch)
   return arch
 }

@@ -71,7 +71,7 @@ function buildBoardItemSpecs(arch: { photos: { width: number; height: number }[]
 export function PinBoard() {
   const mode = useLayout()
   const isBoard = mode === "board"
-  const { currentArch } = useSelectedArch()
+  const { lastSelectedArch } = useSelectedArch()
   const navigate = useNavigate()
   const viewportRef = useRef<HTMLDivElement>(null)
 
@@ -79,10 +79,10 @@ export function PinBoard() {
     useBoardPan(CANVAS_W, CANVAS_H, isBoard, viewportRef)
 
   const items = useMemo(() => {
-    if (!currentArch) return []
-    const specs = buildBoardItemSpecs(currentArch)
+    if (!lastSelectedArch) return []
+    const specs = buildBoardItemSpecs(lastSelectedArch)
     return layoutPinBoard(specs, CANVAS_W, CANVAS_H, "site-map", BOARD_GAP, MAP_SLOT_X, MAP_SLOT_Y)
-  }, [currentArch])
+  }, [lastSelectedArch])
 
   return (
     <div
@@ -147,14 +147,14 @@ export function PinBoard() {
 
         <AnimatePresence>
           {isBoard &&
-            currentArch &&
+            lastSelectedArch &&
             items
               .filter((item) => item.id !== "site-map")
               .map((item, i) => (
                 <PinBoardItem
                   key={item.id}
                   item={item}
-                  arch={currentArch}
+                  arch={lastSelectedArch}
                   delay={i}
                 />
               ))}
