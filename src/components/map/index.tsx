@@ -12,7 +12,7 @@ import { useLocation, useNavigate } from "react-router"
 import { useSelectedArch } from "@/contexts/selected-arch"
 import { getAllArchitectures, getArchBySlug, type ArchSummary, type Arch } from "@/lib/data/architectures"
 import { useMapPatterns } from "./use-map-patterns"
-import { ArrowRight, X, Pin } from "lucide-react"
+import { ArrowRight, X, Box } from "lucide-react"
 import { useLayout } from "@/hooks/use-layout"
 import { H4, Body1 } from "@/components/ui/typography"
 import { Button } from "@/components/ui/button"
@@ -72,7 +72,7 @@ function MapDrawer({
 }
 
 function ArchMarkers() {
-  const { setLastSelectedArch } = useSelectedArch()
+  const { setLastSelectedArch, lastSelectedArch } = useSelectedArch()
   const [architectures, setArchitectures] = useState<ArchSummary[]>([])
 
   useEffect(() => {
@@ -88,12 +88,9 @@ function ArchMarkers() {
           latitude={arch.coordinates.lat}
         >
           <MarkerContent>
-            <Pin
-              strokeWidth={2}
-              stroke={"rgb(var(--color-accent-foreground))"}
-              fill={"rgb(var(--color-accent-foreground) / .75)"}
-              // transform="rotate(-30)"
-              size={30}
+            <Box
+              data-selected={lastSelectedArch?.slug === arch.slug}
+              className={styles.markerBox}
               onClick={() => getArchBySlug(arch.slug).then(setLastSelectedArch)}
             />
           </MarkerContent>

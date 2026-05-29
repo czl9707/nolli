@@ -17,16 +17,6 @@
   cursor: pointer;
 }
 
-.tape {
-  position: absolute;
-  top: -20px;
-  left: 50%;
-  width: 80px;
-  pointer-events: none;
-  z-index: 1;
-  filter: drop-shadow(var(--shadow-sm));
-}
-
 .item::before {
   content: "";
   position: absolute;

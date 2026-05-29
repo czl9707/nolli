@@ -86,3 +86,23 @@
     text-decoration: underline;
   }
 }
+
+.markerBox {
+  stroke-width: 1;
+  stroke: rgb(var(--color-primary-foreground));
+  fill: rgb(var(--color-accent-foreground));
+  width: 24px;
+  height: 24px;
+
+  &[data-selected="true"] {
+    stroke-width: 1.5;
+    width: 30px;
+    height: 30px;
+  }
+
+  &:hover {
+    stroke-width: 1.5;
+    width: 30px;
+    height: 30px;
+  }
+}

@@ -8,7 +8,7 @@ import { CANVAS_W, CANVAS_H, MAP_SLOT_W, MAP_SLOT_H, MAP_SLOT_X, MAP_SLOT_Y, BOA
 import { TRANSITION_SHORT, DELAY_START } from "@/lib/animation"
 import { MapCore } from "@/components/map"
 import { PinBoardItem } from "./pin-board-item"
-import { Tape } from "./tape"
+import { Pin } from "@/components/ui/pin"
 import { useBoardPan } from "./use-board-pan"
 import styles from "./board.module.css"
 
@@ -141,17 +141,13 @@ export function PinBoard() {
 
         <AnimatePresence>
           {isBoard && (
-            <Tape
-              key="map-tape"
+            <Pin
+              key="map-pin"
               id="site-map"
               delay={3}
               style={{
-                position: "absolute",
-                top: MAP_SLOT_Y - 20,
+                top: MAP_SLOT_Y - 50,
                 left: MAP_SLOT_X + MAP_SLOT_W / 2,
-                width: 80,
-                pointerEvents: "none",
-                zIndex: 20,
               }}
             />
           )}
