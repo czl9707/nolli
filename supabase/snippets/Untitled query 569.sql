@@ -1,0 +1,1 @@
+ALTER TABLE public.spatial_ref_sys ENABLE ROW LEVEL SECURITY;
