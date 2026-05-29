@@ -7,20 +7,18 @@ import {
 } from "@/components/ui/map"
 import { getMapStyle } from "@/lib/map-style"
 import type { MapRef } from "@/components/ui/map"
-import { useCallback, useEffect, useMemo, useRef } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useLocation, useNavigate } from "react-router"
 import { useSelectedArch } from "@/contexts/selected-arch"
-import { getAllArchitectures, type Arch } from "@/lib/data/architectures"
+import { getAllArchitectures, getArchBySlug, type ArchSummary, type Arch } from "@/lib/data/architectures"
 import { useMapPatterns } from "./use-map-patterns"
 import { ArrowRight, X, Pin } from "lucide-react"
 import { useLayout } from "@/hooks/use-layout"
-import { H4, Body1, Body2 } from "@/components/ui/typography"
+import { H4, Body1 } from "@/components/ui/typography"
 import { Button } from "@/components/ui/button"
 import { motion, AnimatePresence } from "framer-motion"
 import { TRANSITION_SHORT, TRANSITION_LONG } from "@/lib/animation"
 import styles from "./index.module.css"
-
-const ALL_ARCHITECTURES = getAllArchitectures()
 
 function MapDrawer({
   arch,
@@ -31,7 +29,7 @@ function MapDrawer({
   onView: () => void
   onClose: () => void
 }) {
-  const cover = arch.pages[0]?.image
+  const cover = arch.coverImage
 
   return (
     <motion.div
@@ -54,13 +52,10 @@ function MapDrawer({
             variant="secondary" size="icon" onClick={onClose} aria-label="Close">
             <X size={18} />
           </Button>
-          <img className={styles.cover} src={cover} alt={arch.name} />
+          <img className={styles.cover} src={cover ?? ""} alt={arch.name} />
         </div>
         <div className={styles.card} onClick={onView}>
           <H4 className={styles.heading}>{arch.name}</H4>
-          <Body2 className={`${styles.detail} ${styles.address}`}>
-            {arch.address}
-          </Body2>
           <Body1 className={styles.detail}>
             By {arch.architect}, {arch.year}
           </Body1>
@@ -75,14 +70,19 @@ function MapDrawer({
 
 function ArchMarkers() {
   const { setLastSelectedArch } = useSelectedArch()
+  const [architectures, setArchitectures] = useState<ArchSummary[]>([])
+
+  useEffect(() => {
+    getAllArchitectures().then(setArchitectures)
+  }, [])
 
   return (
     <>
-      {ALL_ARCHITECTURES.map((arch) => (
+      {architectures.map((arch) => (
         <MapMarker
           key={arch.slug}
-          longitude={arch.coordinates.longitude}
-          latitude={arch.coordinates.latitude}
+          longitude={arch.coordinates.lng}
+          latitude={arch.coordinates.lat}
         >
           <MarkerContent>
             <Pin
@@ -91,7 +91,7 @@ function ArchMarkers() {
               fill={"rgb(var(--color-accent-foreground) / .75)"}
               // transform="rotate(-30)"
               size={30}
-              onClick={() => setLastSelectedArch(arch)}
+              onClick={() => getArchBySlug(arch.slug).then(setLastSelectedArch)}
             />
           </MarkerContent>
         </MapMarker>
@@ -118,8 +118,8 @@ function MapNavigator() {
 
     setTimeout(() => map.flyTo({
         center: [
-          lastSelectedArch.coordinates.longitude,
-          lastSelectedArch.coordinates.latitude,
+          lastSelectedArch.coordinates.lng,
+          lastSelectedArch.coordinates.lat,
         ],
         zoom: 16,
         duration: TRANSITION_LONG * 1000,
