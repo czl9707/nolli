@@ -5,15 +5,9 @@ import {
   type Arch,
   type BBox,
 } from "./types"
+import { supabase } from "@/lib/data/supabase-client"
 
 export type { Arch, ArchSummary, ArchPhoto, ArchNote, ArchLinks, Coordinates, BBox } from "./types"
-
-import { createClient } from "@supabase/supabase-js"
-
-export const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-)
 
 const summaryCache = new Map<string, ArchSummary>()
 const detailCache = new Map<string, Arch>()
@@ -22,7 +16,7 @@ function parseSummaryRow(row: Record<string, unknown>): ArchSummary {
   return archSummarySchema.parse({
     slug: row.slug,
     name: row.name,
-    architect: (row.architect as { name: string }[])?.[0]?.name ?? "",
+    architect: (Array.isArray(row.architect) ? (row.architect as { name: string }[])[0]?.name : (row.architect as { name: string })?.name) ?? "",
     year: row.year,
     coordinates: { lng: row.longitude, lat: row.latitude },
     coverImage: (row.cover as { image: string }[])?.[0]?.image ?? null,
@@ -53,13 +47,12 @@ function parseDetailRow(row: Record<string, unknown>): Arch {
   return archSchema.parse({
     slug: row.slug,
     name: row.name,
-    architect: (row.architect as { name: string }[])?.[0]?.name ?? "",
+    architect: (Array.isArray(row.architect) ? (row.architect as { name: string }[])[0]?.name : (row.architect as { name: string })?.name) ?? "",
     year: row.year,
     coordinates: { lng: row.longitude, lat: row.latitude },
     coverImage: coverPhoto?.image ?? null,
     address: row.address,
     photos: photos
-      .filter((p) => !p.is_cover)
       .map((p) => ({ image: p.image, caption: p.caption ?? undefined, width: p.width, height: p.height })),
     notes: ((row.notes as NoteRow[]) ?? []).map((n) => ({ text: n.text })),
     links,

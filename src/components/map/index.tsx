@@ -57,7 +57,10 @@ function MapDrawer({
         <div className={styles.card} onClick={onView}>
           <H4 className={styles.heading}>{arch.name}</H4>
           <Body1 className={styles.detail}>
-            By {arch.architect}, {arch.year}
+            <span style={{opacity: .5}}>By </span>
+            {arch.architect}
+            <span style={{opacity: .5}}> in </span>
+            {arch.year}
           </Body1>
           <Button variant="link" className={styles.viewLink}>
             Pin Up ! <ArrowRight size={16} />
@@ -86,7 +89,7 @@ function ArchMarkers() {
         >
           <MarkerContent>
             <Pin
-              stroke-width={2}
+              strokeWidth={2}
               stroke={"rgb(var(--color-accent-foreground))"}
               fill={"rgb(var(--color-accent-foreground) / .75)"}
               // transform="rotate(-30)"

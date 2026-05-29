@@ -20,10 +20,10 @@
   line-height: 1.4;
 }
 
-.modalPhoto {
-  max-width: 60vw;
-  max-height: 75vh;
-  width: fit-content;
-  height: 100%;
-  object-fit: cover;
+.modalPhoto_width {
+  width: 60vw;
+}
+
+.modalPhoto_height {
+  height: 75vh;
 }
