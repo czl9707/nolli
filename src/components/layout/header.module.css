@@ -7,19 +7,50 @@
     display: flex;
     height: var(--size-header-height);
     align-items: center;
-    gap: var(--spacing-paragraph);
     padding-left: var(--spacing-component);
     padding-right: var(--spacing-component);
     background: linear-gradient(to bottom, rgb(var(--color-primary-background)), transparent);
 }
 
 .title {
+    height: 1.125rem;
     font-size: 1.125rem;
     font-weight: 800;
     font-family: var(--font-playful);
-    pointer-events: none;
     user-select: none;
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: stretch;
 }
+
+.icon {
+    height: 100%;
+    margin-right: .5rem;
+
+    filter: contrast(1) brightness(0.1);
+    body[data-theme='dark'] & {
+        filter: none;   
+    }
+}
+
+.left {
+    flex: 1;    
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-paragraph);
+    justify-content: flex-start;
+}
+
+.right {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-paragraph);
+    justify-content: flex-end;
+}
+
 
 .spacer {
     flex: 1;

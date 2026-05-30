@@ -1,4 +1,4 @@
-insert into public.countries (code, name) values
+insert into public.countries (name, code) values
     ('Afghanistan', 'AF'),
     ('Åland Islands', 'AX'),
     ('Albania', 'AL'),

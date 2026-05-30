@@ -8,7 +8,7 @@ import { CANVAS_W, CANVAS_H, MAP_SLOT_W, MAP_SLOT_H, MAP_SLOT_X, MAP_SLOT_Y, BOA
 import { TRANSITION_SHORT, DELAY_START } from "@/lib/animation"
 import { MapCore } from "@/components/map"
 import { PinBoardItem } from "./pin-board-item"
-import { Tape } from "./tape"
+import { Pin } from "@/components/ui/pin"
 import { useBoardPan } from "./use-board-pan"
 import styles from "./board.module.css"
 
@@ -46,10 +46,24 @@ const MAP_SLOT_VARIANTS = {
   },
 }
 
+function clampDimensions(width: number, height: number, max = 500, min = 300) {
+  if (Math.max(width, height) > max) {
+    const s = max / Math.max(width, height)
+    width *= s
+    height *= s
+  } else if (Math.min(width, height) < min) {
+    const s = min / Math.min(width, height)
+    if (Math.max(width, height) * s <= max) {
+      width *= s
+      height *= s
+    }
+  }
+  return { width, height }
+}
+
 function buildBoardItemSpecs(arch: { photos: { width: number; height: number }[]; notes: unknown[] }): ItemSpec[] {
   const specs: ItemSpec[] = []
 
-  // Reserve space for the map slot (collision avoidance only, not rendered as BoardItem)
   specs.push({ id: "site-map", width: MAP_SLOT_W, height: MAP_SLOT_H })
   specs.push({ id: "metadata", width: 420, height: 200 })
   specs.push({ id: "links", width: 240, height: 360 })
@@ -60,11 +74,9 @@ function buildBoardItemSpecs(arch: { photos: { width: number; height: number }[]
 
   for (let i = 0; i < arch.photos.length; i++) {
     const photo = arch.photos[i]
-    specs.push({ id: `photo-${i}`, width: photo.width, height: photo.height })
+    const { width, height } = clampDimensions(photo.width, photo.height)
+    specs.push({ id: `photo-${i}`, width, height })
   }
-
-
-
   return specs
 }
 
@@ -129,17 +141,13 @@ export function PinBoard() {
 
         <AnimatePresence>
           {isBoard && (
-            <Tape
-              key="map-tape"
+            <Pin
+              key="map-pin"
               id="site-map"
               delay={3}
               style={{
-                position: "absolute",
-                top: MAP_SLOT_Y - 20,
+                top: MAP_SLOT_Y - 50,
                 left: MAP_SLOT_X + MAP_SLOT_W / 2,
-                width: 80,
-                pointerEvents: "none",
-                zIndex: 20,
               }}
             />
           )}

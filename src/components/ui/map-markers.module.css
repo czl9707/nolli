@@ -73,8 +73,8 @@
     text-wrap: balance;
     box-shadow: var(--shadow-md);
     pointer-events: none;
-    background-color: rgb(var(--color-secondary-foreground));
-    color: rgb(var(--color-secondary-background));
+    background-color: rgb(var(--color-secondary-background));
+    color: rgb(var(--color-secondary-foreground));
     animation: fadeInZoom 0.2s ease-out;
 }
 

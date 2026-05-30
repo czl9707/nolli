@@ -1,7 +1,7 @@
 import { motion, type MotionStyle } from "framer-motion"
 import { useMemo, type ReactNode } from "react"
 import type { PlacedItem } from "@/lib/pin-board-layout"
-import { Tape } from "./tape"
+import { Pin } from "@/components/ui/pin"
 import styles from "./board-item.module.css"
 import { paperClipPath } from "@/lib/paper-clip"
 import { TRANSITION_SHORT, DELAY_START, ITEM_STAGGER } from "@/lib/animation"
@@ -50,7 +50,7 @@ export function BoardItem({ item, children, delay = 0, className, onClick }: Boa
       >
         {children}
       </motion.div>
-      <Tape id={item.id} delay={delay} className={styles.tape} />
+      <Pin id={item.id} delay={delay} style={{ top: "-45px", left: "50%" }} />
     </div>
   )
 }

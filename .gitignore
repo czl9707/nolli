@@ -38,3 +38,6 @@ docs/superpowers
 
 # worktrees
 .worktrees/
+
+# seed data
+/scripts/data/

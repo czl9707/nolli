@@ -3,24 +3,24 @@ import {
   MapControls,
   MapMarker,
   MarkerContent,
+  MarkerTooltip,
   useMap,
 } from "@/components/ui/map"
 import { getMapStyle } from "@/lib/map-style"
 import type { MapRef } from "@/components/ui/map"
-import { useCallback, useEffect, useMemo, useRef } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useLocation, useNavigate } from "react-router"
 import { useSelectedArch } from "@/contexts/selected-arch"
-import { getAllArchitectures, type Arch } from "@/lib/data/architectures"
+import { getAllArchitectures, getArchBySlug, type ArchSummary, type Arch } from "@/lib/data/architectures"
 import { useMapPatterns } from "./use-map-patterns"
-import { ArrowRight, X, Pin } from "lucide-react"
+import { useMapClustering, type ClusterPoint } from "@/lib/use-map-clustering"
+import { ArrowRight, X, Box, Boxes } from "lucide-react"
 import { useLayout } from "@/hooks/use-layout"
-import { H4, Body1, Body2 } from "@/components/ui/typography"
+import { H4, Body1 } from "@/components/ui/typography"
 import { Button } from "@/components/ui/button"
 import { motion, AnimatePresence } from "framer-motion"
 import { TRANSITION_SHORT, TRANSITION_LONG } from "@/lib/animation"
 import styles from "./index.module.css"
-
-const ALL_ARCHITECTURES = getAllArchitectures()
 
 function MapDrawer({
   arch,
@@ -31,7 +31,7 @@ function MapDrawer({
   onView: () => void
   onClose: () => void
 }) {
-  const cover = arch.pages[0]?.image
+  const cover = arch.coverImage
 
   return (
     <motion.div
@@ -54,15 +54,15 @@ function MapDrawer({
             variant="secondary" size="icon" onClick={onClose} aria-label="Close">
             <X size={18} />
           </Button>
-          <img className={styles.cover} src={cover} alt={arch.name} />
+          <img className={styles.cover} src={cover ?? ""} alt={arch.name} />
         </div>
         <div className={styles.card} onClick={onView}>
           <H4 className={styles.heading}>{arch.name}</H4>
-          <Body2 className={`${styles.detail} ${styles.address}`}>
-            {arch.address}
-          </Body2>
           <Body1 className={styles.detail}>
-            By {arch.architect}, {arch.year}
+            <span style={{opacity: .5}}>By </span>
+            {arch.architect}
+            <span style={{opacity: .5}}> in </span>
+            {arch.year}
           </Body1>
           <Button variant="link" className={styles.viewLink}>
             Pin Up ! <ArrowRight size={16} />
@@ -73,29 +73,72 @@ function MapDrawer({
   )
 }
 
+function IndividualMarker({
+  point,
+}: {
+  point: Extract<ClusterPoint, { type: "point" }>
+}) {
+  const { setLastSelectedArch, lastSelectedArch } = useSelectedArch()
+
+  return (
+    <MapMarker longitude={point.coordinates[0]} latitude={point.coordinates[1]}>
+      <MarkerContent>
+        <Box
+          data-selected={lastSelectedArch?.slug === point.slug}
+          className={styles.individualMarker}
+          onClick={() => getArchBySlug(point.slug).then(setLastSelectedArch)}
+        />
+      </MarkerContent>
+      <MarkerTooltip>{point.name}</MarkerTooltip>
+    </MapMarker>
+  )
+}
+
+function ClusterMarkerComp({
+  point,
+  onExpand,
+}: {
+  point: Extract<ClusterPoint, { type: "cluster" }>
+  onExpand: () => void
+}) {
+  return (
+    <MapMarker longitude={point.coordinates[0]} latitude={point.coordinates[1]}>
+      <MarkerContent>
+        <Boxes className={styles.clusterMarker} onClick={onExpand} />
+      </MarkerContent>
+      <MarkerTooltip>
+        {point.count} architecture
+      </MarkerTooltip>
+    </MapMarker>
+  )
+}
+
 function ArchMarkers() {
-  const { setLastSelectedArch } = useSelectedArch()
+  const { map } = useMap()
+  const [architectures, setArchitectures] = useState<ArchSummary[]>([])
+  const { clusters, getExpansionZoom } = useMapClustering(architectures)
+
+  useEffect(() => {
+    getAllArchitectures().then(setArchitectures)
+  }, [])
 
   return (
     <>
-      {ALL_ARCHITECTURES.map((arch) => (
-        <MapMarker
-          key={arch.slug}
-          longitude={arch.coordinates.longitude}
-          latitude={arch.coordinates.latitude}
-        >
-          <MarkerContent>
-            <Pin
-              stroke-width={2}
-              stroke={"rgb(var(--color-accent-foreground))"}
-              fill={"rgb(var(--color-accent-foreground) / .75)"}
-              // transform="rotate(-30)"
-              size={30}
-              onClick={() => setLastSelectedArch(arch)}
-            />
-          </MarkerContent>
-        </MapMarker>
-      ))}
+      {clusters.map((point) =>
+        point.type === "point" ? (
+          <IndividualMarker key={point.slug} point={point} />
+        ) : (
+          <ClusterMarkerComp
+            key={`cluster-${point.id}`}
+            point={point}
+            onExpand={() => {
+              if (!map) return
+              const zoom = getExpansionZoom(point.id, point.coordinates)
+              map.flyTo({ center: point.coordinates, zoom })
+            }}
+          />
+        ),
+      )}
     </>
   )
 }
@@ -118,8 +161,8 @@ function MapNavigator() {
 
     setTimeout(() => map.flyTo({
         center: [
-          lastSelectedArch.coordinates.longitude,
-          lastSelectedArch.coordinates.latitude,
+          lastSelectedArch.coordinates.lng,
+          lastSelectedArch.coordinates.lat,
         ],
         zoom: 16,
         duration: TRANSITION_LONG * 1000,
