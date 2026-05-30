@@ -8,7 +8,7 @@ type TypographyProps<E extends React.ElementType> = React.ComponentProps<E> & {
 
 function createTypography<E extends React.ElementType>(
   tag: E,
-  variant: string,
+  variant: string
 ) {
   return function TypographyComponent({
     className,

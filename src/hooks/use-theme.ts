@@ -4,7 +4,9 @@ type Theme = "light" | "dark" | "system"
 type ResolvedTheme = "light" | "dark"
 
 function getSystemPreference(): ResolvedTheme {
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light"
 }
 
 function getStoredTheme(): Theme {

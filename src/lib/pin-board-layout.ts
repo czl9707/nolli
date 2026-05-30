@@ -25,7 +25,7 @@ function randomInRange(min: number, max: number): number {
 function rectsOverlap(
   a: { x: number; y: number; width: number; height: number },
   b: { x: number; y: number; width: number; height: number },
-  gap: number,
+  gap: number
 ): boolean {
   return (
     a.x - gap < b.x + b.width &&
@@ -47,7 +47,7 @@ function tryPlaceNearAnchor(
   margin: number,
   placed: PlacedItem[],
   gap: number,
-  attemptsPerRing: number,
+  attemptsPerRing: number
 ): { x: number; y: number } | null {
   const minCenterX = margin + item.width / 2
   const maxCenterX = canvasWidth - margin - item.width / 2
@@ -58,13 +58,19 @@ function tryPlaceNearAnchor(
     for (let i = 0; i < attemptsPerRing; i++) {
       const angle = Math.random() * Math.PI * 2
       const r = startRadius + Math.random() * (radius - startRadius + step)
-      const cx = Math.max(minCenterX, Math.min(maxCenterX, anchorCenterX + Math.cos(angle) * r))
-      const cy = Math.max(minCenterY, Math.min(maxCenterY, anchorCenterY + Math.sin(angle) * r))
+      const cx = Math.max(
+        minCenterX,
+        Math.min(maxCenterX, anchorCenterX + Math.cos(angle) * r)
+      )
+      const cy = Math.max(
+        minCenterY,
+        Math.min(maxCenterY, anchorCenterY + Math.sin(angle) * r)
+      )
       const x = cx - item.width / 2
       const y = cy - item.height / 2
 
       const hasCollision = placed.some((p) =>
-        rectsOverlap({ x, y, width: item.width, height: item.height }, p, gap),
+        rectsOverlap({ x, y, width: item.width, height: item.height }, p, gap)
       )
       if (!hasCollision) return { x, y }
     }
@@ -79,7 +85,7 @@ export function layoutPinBoard(
   anchorItem?: string,
   gap: number = 30,
   anchorX?: number,
-  anchorY?: number,
+  anchorY?: number
 ): PlacedItem[] {
   const placed: PlacedItem[] = []
   const margin = 60
@@ -117,7 +123,7 @@ export function layoutPinBoard(
       margin,
       placed,
       gap,
-      ATTEMPTS_PER_RING,
+      ATTEMPTS_PER_RING
     )
 
     placed.push({

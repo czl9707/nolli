@@ -8,7 +8,7 @@ function lerpColor(from: string, to: string, t: number): string {
   const r = Math.round(r1 + (r2 - r1) * t)
   const g = Math.round(g1 + (g2 - g1) * t)
   const b = Math.round(b1 + (b2 - b1) * t)
-  return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('')
+  return "#" + [r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("")
 }
 
 function createPalette(bg: string, water: string) {
@@ -47,6 +47,6 @@ function createPalette(bg: string, water: string) {
 }
 
 export const MAP_COLORS = {
-  light: createPalette('#EDEAE1', '#1E1E1E'),
-  dark: createPalette('#1E1E1E', '#EDEAE1'),
+  light: createPalette("#EDEAE1", "#1E1E1E"),
+  dark: createPalette("#1E1E1E", "#EDEAE1"),
 }

@@ -17,11 +17,18 @@ export function NoteItem({ note, item, delay }: NoteItemProps) {
 
   return (
     <>
-      <BoardItem item={item} delay={delay} className={styles.note} onClick={() => setOpen(true)}>
+      <BoardItem
+        item={item}
+        delay={delay}
+        className={styles.note}
+        onClick={() => setOpen(true)}
+      >
         {note.text}
       </BoardItem>
       <BoardModal open={open} onClose={() => setOpen(false)}>
-        <div className={`${styles.note} ${boardItemStyles.item} ${styles.modalNote}`}>
+        <div
+          className={`${styles.note} ${boardItemStyles.item} ${styles.modalNote}`}
+        >
           {note.text}
         </div>
       </BoardModal>

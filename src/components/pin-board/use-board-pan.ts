@@ -8,7 +8,11 @@ const BOARD_PAD = 200
 
 // If the board is smaller than the viewport, center it. Otherwise clamp the pan
 // so the user can reveal at most BOARD_PAD of empty space beyond each edge.
-function clampPan(raw: number, boardSize: number, viewportSize: number): number {
+function clampPan(
+  raw: number,
+  boardSize: number,
+  viewportSize: number
+): number {
   return boardSize <= viewportSize
     ? (viewportSize - boardSize) / 2
     : Math.min(BOARD_PAD, Math.max(viewportSize - boardSize - BOARD_PAD, raw))
@@ -18,7 +22,7 @@ export function useBoardPan(
   canvasW: number,
   canvasH: number,
   isActive: boolean,
-  viewportRef: React.RefObject<HTMLDivElement | null>,
+  viewportRef: React.RefObject<HTMLDivElement | null>
 ) {
   const panX = useMotionValue(0)
   const panY = useMotionValue(0)
@@ -87,7 +91,7 @@ export function useBoardPan(
       panStart.y = e.clientY - panY.get()
       ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
     },
-    [isActive, panX, panY, panStart],
+    [isActive, panX, panY, panStart]
   )
 
   const handlePointerMove = useCallback(
@@ -106,7 +110,7 @@ export function useBoardPan(
       panX.set(clampPan(rawX, canvasW * z, w))
       panY.set(clampPan(rawY, canvasH * z, h))
     },
-    [isPanning, panX, panY, panStart, zoom, canvasW, canvasH],
+    [isPanning, panX, panY, panStart, zoom, canvasW, canvasH]
   )
 
   const handlePointerUp = useCallback(() => {
@@ -132,7 +136,7 @@ export function useBoardPan(
       panY.set(clampPan(cy - (cy - panY.get()) * scale, canvasH * newZoom, h))
       zoom.set(newZoom)
     },
-    [isActive, zoom, panX, panY, canvasW, canvasH, viewportRef],
+    [isActive, zoom, panX, panY, canvasW, canvasH, viewportRef]
   )
 
   return {

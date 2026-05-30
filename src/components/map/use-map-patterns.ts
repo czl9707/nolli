@@ -26,7 +26,7 @@ function useMapPatterns(mapRef: React.RefObject<MapLibreGL.Map | null>) {
         fetchAndCache(map, other, cacheRef.current, false)
       })
     },
-    [mapRef, resolvedTheme],
+    [mapRef, resolvedTheme]
   )
 
   useEffect(() => {

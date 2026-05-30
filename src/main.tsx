@@ -6,5 +6,5 @@ import { ViteApp } from "./vite-app"
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ViteApp />
-  </StrictMode>,
+  </StrictMode>
 )

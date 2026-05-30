@@ -22,10 +22,14 @@ export function PhotoItem({ photo, item, delay }: PhotoItemProps) {
         {photo.caption && <div className={styles.caption}>{photo.caption}</div>}
       </BoardItem>
       <BoardModal open={open} onClose={() => setOpen(false)} tapeId={item.id}>
-        <div className={`${boardItemStyles.item} ${photo.width > photo.height ? styles.modalPhoto_width : styles.modalPhoto_height}`}
-          style={{ aspectRatio: `${photo.width}/${photo.height}` }}>
-          <img src={photo.image} alt="" className={`${styles.photo} `}/>
-          {photo.caption && <div className={styles.caption}>{photo.caption}</div>}
+        <div
+          className={`${boardItemStyles.item} ${photo.width > photo.height ? styles.modalPhoto_width : styles.modalPhoto_height}`}
+          style={{ aspectRatio: `${photo.width}/${photo.height}` }}
+        >
+          <img src={photo.image} alt="" className={`${styles.photo} `} />
+          {photo.caption && (
+            <div className={styles.caption}>{photo.caption}</div>
+          )}
         </div>
       </BoardModal>
     </>

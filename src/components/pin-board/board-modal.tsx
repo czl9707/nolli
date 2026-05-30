@@ -31,13 +31,13 @@ export function BoardModal({
           }}
           onClick={(e) => {
             onClose()
-            e.stopPropagation();
+            e.stopPropagation()
           }}
         >
           {children}
         </motion.div>
       )}
     </AnimatePresence>,
-    document.body,
+    document.body
   )
 }

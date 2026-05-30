@@ -18,7 +18,7 @@ const DRY_RUN = process.argv.includes("--dry-run")
 
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL!,
-  process.env.SUPABASE_SECRET_KEY!,
+  process.env.SUPABASE_SECRET_KEY!
 )
 
 const s3 = new S3Client({
@@ -95,13 +95,17 @@ async function getOrCreateCountry(code: string, name: string): Promise<number> {
     .select("id")
     .single()
 
-  if (error) throw new Error(`Failed to create country ${code}: ${error.message}`)
+  if (error)
+    throw new Error(`Failed to create country ${code}: ${error.message}`)
   stats.countries.created++
   log(`Created country: ${code} (${name})`)
   return inserted.id
 }
 
-async function getOrCreateCity(name: string, countryId: number): Promise<number> {
+async function getOrCreateCity(
+  name: string,
+  countryId: number
+): Promise<number> {
   const { data } = await supabase
     .from("cities")
     .select("id")
@@ -132,7 +136,10 @@ async function getOrCreateCity(name: string, countryId: number): Promise<number>
   return inserted.id
 }
 
-async function getOrCreateArchitect(name: string, countryId: number): Promise<number> {
+async function getOrCreateArchitect(
+  name: string,
+  countryId: number
+): Promise<number> {
   const { data } = await supabase
     .from("architects")
     .select("id")
@@ -156,7 +163,8 @@ async function getOrCreateArchitect(name: string, countryId: number): Promise<nu
     .select("id")
     .single()
 
-  if (error) throw new Error(`Failed to create architect ${name}: ${error.message}`)
+  if (error)
+    throw new Error(`Failed to create architect ${name}: ${error.message}`)
   stats.architects.created++
   log(`Created architect: ${name}`)
   return inserted.id
@@ -173,7 +181,12 @@ async function prepareImage(filePath: string): Promise<Buffer> {
   if (w > MAX_DIMENSION || h > MAX_DIMENSION) {
     log(`  Resizing ${filePath.split("/").pop()} (${w}x${h})`)
     return sharp(filePath)
-      .resize({ width: MAX_DIMENSION, height: MAX_DIMENSION, fit: "inside", withoutEnlargement: true })
+      .resize({
+        width: MAX_DIMENSION,
+        height: MAX_DIMENSION,
+        fit: "inside",
+        withoutEnlargement: true,
+      })
       .toBuffer()
   }
 
@@ -183,7 +196,7 @@ async function prepareImage(filePath: string): Promise<Buffer> {
 async function uploadImage(
   slug: string,
   filePath: string,
-  fileName: string,
+  fileName: string
 ): Promise<{ url: string; width: number; height: number }> {
   const sharp = (await import("sharp")).default
   const ext = extname(fileName)
@@ -210,7 +223,7 @@ async function uploadImage(
           Key: key,
           Body: body,
           ContentType: `image/${ext.replace(".", "")}`,
-        }),
+        })
       )
       stats.photos.uploaded++
       log(`  Uploaded: ${key} (${width}x${height})`)
@@ -244,9 +257,15 @@ async function processSlug(slugDir: string) {
 
   let architectCountryId = countryId
   if (meta.architectCountry && meta.architectCountry !== meta.country) {
-    architectCountryId = await getOrCreateCountry(meta.architectCountry, meta.architectCountry)
+    architectCountryId = await getOrCreateCountry(
+      meta.architectCountry,
+      meta.architectCountry
+    )
   }
-  const architectId = await getOrCreateArchitect(meta.architect, architectCountryId)
+  const architectId = await getOrCreateArchitect(
+    meta.architect,
+    architectCountryId
+  )
 
   const { data: existing } = await supabase
     .from("architectures")
@@ -277,7 +296,10 @@ async function processSlug(slugDir: string) {
         .select("id")
         .single()
 
-      if (error) throw new Error(`Failed to update architecture ${slug}: ${error.message}`)
+      if (error)
+        throw new Error(
+          `Failed to update architecture ${slug}: ${error.message}`
+        )
       archId = updated.id
     }
     stats.architectures.updated++
@@ -302,7 +324,10 @@ async function processSlug(slugDir: string) {
         .select("id")
         .single()
 
-      if (error) throw new Error(`Failed to insert architecture ${slug}: ${error.message}`)
+      if (error)
+        throw new Error(
+          `Failed to insert architecture ${slug}: ${error.message}`
+        )
       archId = inserted.id
     }
     stats.architectures.created++
@@ -310,17 +335,25 @@ async function processSlug(slugDir: string) {
 
   const files = await readdir(slugDir)
   const imageFiles = files.filter(
-    (f) => f !== "meta.json" && /\.(jpg|jpeg|png|webp|gif|avif)$/i.test(f),
+    (f) => f !== "meta.json" && /\.(jpg|jpeg|png|webp|gif|avif)$/i.test(f)
   )
 
-  const imageEntries: { file: string; url: string; width: number; height: number }[] = []
+  const imageEntries: {
+    file: string
+    url: string
+    width: number
+    height: number
+  }[] = []
   for (const file of imageFiles) {
     const result = await uploadImage(slug, join(slugDir, file), file)
     imageEntries.push({ file, ...result })
   }
 
   if (!DRY_RUN) {
-    await supabase.from("architecture_photos").delete().eq("architecture_id", archId)
+    await supabase
+      .from("architecture_photos")
+      .delete()
+      .eq("architecture_id", archId)
     log(`  Cleared old photos for ${slug}`)
   }
 
@@ -330,7 +363,9 @@ async function processSlug(slugDir: string) {
       continue
     }
 
-    const isCover = meta.coverImage ? entry.file === meta.coverImage : imageEntries[0]?.file === entry.file
+    const isCover = meta.coverImage
+      ? entry.file === meta.coverImage
+      : imageEntries[0]?.file === entry.file
 
     const { error } = await supabase.from("architecture_photos").insert({
       architecture_id: archId,
@@ -341,12 +376,16 @@ async function processSlug(slugDir: string) {
       height: entry.height,
     })
 
-    if (error) throw new Error(`Failed to insert photo ${entry.file}: ${error.message}`)
+    if (error)
+      throw new Error(`Failed to insert photo ${entry.file}: ${error.message}`)
   }
 
   if (meta.notes?.length) {
     if (!DRY_RUN) {
-      await supabase.from("architecture_notes").delete().eq("architecture_id", archId)
+      await supabase
+        .from("architecture_notes")
+        .delete()
+        .eq("architecture_id", archId)
     }
 
     for (const text of meta.notes) {
@@ -365,7 +404,10 @@ async function processSlug(slugDir: string) {
 
   if (meta.links?.length) {
     if (!DRY_RUN) {
-      await supabase.from("architecture_links").delete().eq("architecture_id", archId)
+      await supabase
+        .from("architecture_links")
+        .delete()
+        .eq("architecture_id", archId)
     }
 
     for (let i = 0; i < meta.links.length; i++) {
@@ -380,7 +422,10 @@ async function processSlug(slugDir: string) {
           label: link.label,
           sort_order: i,
         })
-        if (error) throw new Error(`Failed to insert link ${link.type}: ${error.message}`)
+        if (error)
+          throw new Error(
+            `Failed to insert link ${link.type}: ${error.message}`
+          )
       }
       stats.links.inserted++
     }
@@ -421,11 +466,21 @@ async function main() {
   }
 
   console.log("\n--- Summary ---")
-  console.log(`Countries:  ${stats.countries.created} created, ${stats.countries.skipped} existing`)
-  console.log(`Cities:     ${stats.cities.created} created, ${stats.cities.skipped} existing`)
-  console.log(`Architects: ${stats.architects.created} created, ${stats.architects.skipped} existing`)
-  console.log(`Architectures: ${stats.architectures.created} created, ${stats.architectures.updated} updated`)
-  console.log(`Photos:     ${stats.photos.uploaded} uploaded, ${stats.photos.skipped} unchanged`)
+  console.log(
+    `Countries:  ${stats.countries.created} created, ${stats.countries.skipped} existing`
+  )
+  console.log(
+    `Cities:     ${stats.cities.created} created, ${stats.cities.skipped} existing`
+  )
+  console.log(
+    `Architects: ${stats.architects.created} created, ${stats.architects.skipped} existing`
+  )
+  console.log(
+    `Architectures: ${stats.architectures.created} created, ${stats.architectures.updated} updated`
+  )
+  console.log(
+    `Photos:     ${stats.photos.uploaded} uploaded, ${stats.photos.skipped} unchanged`
+  )
   console.log(`Notes:      ${stats.notes.inserted} inserted`)
   console.log(`Links:      ${stats.links.inserted} inserted`)
   log("Done")

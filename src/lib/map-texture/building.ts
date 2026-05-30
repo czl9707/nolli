@@ -1,7 +1,11 @@
 import { type Theme } from "./constant"
 import { MAP_COLORS } from "@/lib/map-color"
 
-function hatchPattern(bg: string | null, stroke: string, strokeWidth: number): string {
+function hatchPattern(
+  bg: string | null,
+  stroke: string,
+  strokeWidth: number
+): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   ${bg ? `<rect x="-1" y="-1" width="34" height="34" fill="${bg}"/>` : ""}
   <g stroke="${stroke}" stroke-width="${strokeWidth}">

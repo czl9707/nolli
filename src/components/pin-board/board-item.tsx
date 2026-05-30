@@ -16,7 +16,13 @@ type BoardItemProps = {
 
 export { paperClipPath } from "@/lib/paper-clip"
 
-export function BoardItem({ item, children, delay = 0, className, onClick }: BoardItemProps) {
+export function BoardItem({
+  item,
+  children,
+  delay = 0,
+  className,
+  onClick,
+}: BoardItemProps) {
   const clipPath = useMemo(() => paperClipPath(item.id), [item])
   const motionStyle: MotionStyle = {
     clipPath,
@@ -44,9 +50,16 @@ export function BoardItem({ item, children, delay = 0, className, onClick }: Boa
         animate={{
           opacity: 1,
           scale: 1,
-          transition: { duration: TRANSITION_SHORT, delay: DELAY_START + delay * ITEM_STAGGER },
+          transition: {
+            duration: TRANSITION_SHORT,
+            delay: DELAY_START + delay * ITEM_STAGGER,
+          },
         }}
-        exit={{ opacity: 0, scale: 0.9, transition: { duration: TRANSITION_SHORT } }}
+        exit={{
+          opacity: 0,
+          scale: 0.9,
+          transition: { duration: TRANSITION_SHORT },
+        }}
       >
         {children}
       </motion.div>

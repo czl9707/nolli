@@ -1,0 +1,12 @@
+.heading {
+  font-family: var(--font-playful) !important;
+  display: block;
+  width: 100%;
+}
+
+.body {
+  opacity: 0.5;
+  font-family: var(--font-playful) !important;
+  display: block;
+  width: 100%;
+}

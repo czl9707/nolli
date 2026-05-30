@@ -24,7 +24,7 @@ async function fetchAndCache(
   map: MapLibreGL.Map,
   theme: Theme,
   cache: Record<string, CachedImage>,
-  apply: boolean,
+  apply: boolean
 ): Promise<void> {
   await Promise.all(
     MAP_PATTERNS.map(async ({ pattern, id }) => {
@@ -36,14 +36,14 @@ async function fetchAndCache(
         cache[key] = data
       }
       if (apply) applyImage(map, id, data)
-    }),
+    })
   )
 }
 
 function applyAllPatterns(
   map: MapLibreGL.Map,
   theme: Theme,
-  cache: Record<string, CachedImage>,
+  cache: Record<string, CachedImage>
 ): void {
   for (const { pattern, id } of MAP_PATTERNS) {
     const data = cache[`${theme}:${pattern}`]

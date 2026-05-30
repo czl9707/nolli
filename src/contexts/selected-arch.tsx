@@ -14,9 +14,15 @@ const SelectedArchContext = createContext<SelectedArchContextValue>({
   flyToTrigger: 0,
 })
 
-export function SelectedArchProvider({ children }: { children: React.ReactNode }) {
+export function SelectedArchProvider({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   const location = useLocation()
-  const [lastSelectedArch, setLastSelectedArchState] = useState<Arch | null>(null)
+  const [lastSelectedArch, setLastSelectedArchState] = useState<Arch | null>(
+    null
+  )
   const [flyToTrigger, setFlyToTrigger] = useState(0)
   const prevSlugRef = useRef<string | null>(null)
 
@@ -38,7 +44,9 @@ export function SelectedArchProvider({ children }: { children: React.ReactNode }
   }
 
   return (
-    <SelectedArchContext.Provider value={{ lastSelectedArch, setLastSelectedArch, flyToTrigger }}>
+    <SelectedArchContext.Provider
+      value={{ lastSelectedArch, setLastSelectedArch, flyToTrigger }}
+    >
       {children}
     </SelectedArchContext.Provider>
   )

@@ -24,18 +24,16 @@ export type ClusterPoint =
       coordinates: [number, number]
     }
 
-export function useMapClustering(
-  architectures: ArchSummary[],
-): {
+export function useMapClustering(architectures: ArchSummary[]): {
   clusters: ClusterPoint[]
-  getExpansionZoom: (
-    clusterId: number,
-    coordinates: [number, number],
-  ) => number
+  getExpansionZoom: (clusterId: number, coordinates: [number, number]) => number
 } {
   const { map } = useMap()
   const [clusters, setClusters] = useState<ClusterPoint[]>([])
-  const indexRef = useRef<Supercluster<ArchProperties, ClusterProperties> | null>(null)
+  const indexRef = useRef<Supercluster<
+    ArchProperties,
+    ClusterProperties
+  > | null>(null)
 
   useEffect(() => {
     indexRef.current = new Supercluster<ArchProperties, ClusterProperties>({

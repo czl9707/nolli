@@ -20,8 +20,10 @@ type LinkEntry = {
 function collectLinks(links: ArchLinks): LinkEntry[] {
   const entries: LinkEntry[] = []
   entries.push({ url: links.googleMaps, label: "Google Maps" })
-  if (links.wikipedia) entries.push({ url: links.wikipedia, label: "Wikipedia" })
-  if (links.archdaily) entries.push({ url: links.archdaily, label: "ArchDaily" })
+  if (links.wikipedia)
+    entries.push({ url: links.wikipedia, label: "Wikipedia" })
+  if (links.archdaily)
+    entries.push({ url: links.archdaily, label: "ArchDaily" })
   if (links.custom) entries.push(...links.custom)
   return entries
 }
@@ -40,9 +42,7 @@ export function LinkItem({ links, item, delay }: LinkItemProps) {
           className={styles.link}
         >
           <ExternalLink size={12} className={styles.icon} />
-          <Body1 className={styles.label}>
-            {entry.label}
-          </Body1>
+          <Body1 className={styles.label}>{entry.label}</Body1>
         </a>
       ))}
     </BoardItem>

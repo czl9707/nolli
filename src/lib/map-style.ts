@@ -1,4 +1,8 @@
-import type { StyleSpecification, LayerSpecification, FilterSpecification } from "maplibre-gl"
+import type {
+  StyleSpecification,
+  LayerSpecification,
+  FilterSpecification,
+} from "maplibre-gl"
 import { MAP_COLORS } from "./map-color"
 
 const fontFamily = "Architects Daughter"
@@ -64,7 +68,11 @@ const ROAD_DEFS: RoadClassDef[] = [
   {
     id: "pri",
     classFilter: "primary",
-    colorKeys: { line: "roadLinePri", case: "roadCasePri", fill: "roadFillPri" },
+    colorKeys: {
+      line: "roadLinePri",
+      case: "roadCasePri",
+      fill: "roadFillPri",
+    },
     stages: {
       show: { zoom: 6, width: 0.5 },
       split: { zoom: 15, caseWidth: 5, fillWidth: 1 },
@@ -79,7 +87,11 @@ const ROAD_DEFS: RoadClassDef[] = [
   {
     id: "trunk",
     classFilter: "trunk",
-    colorKeys: { line: "roadLineTrunk", case: "roadCaseTrunk", fill: "roadFillTrunk" },
+    colorKeys: {
+      line: "roadLineTrunk",
+      case: "roadCaseTrunk",
+      fill: "roadFillTrunk",
+    },
     stages: {
       show: { zoom: 6, width: 0.5 },
       split: { zoom: 15, caseWidth: 5, fillWidth: 1 },
@@ -94,7 +106,11 @@ const ROAD_DEFS: RoadClassDef[] = [
   {
     id: "mot",
     classFilter: "motorway",
-    colorKeys: { line: "roadLineMot", case: "roadCaseMot", fill: "roadFillMot" },
+    colorKeys: {
+      line: "roadLineMot",
+      case: "roadCaseMot",
+      fill: "roadFillMot",
+    },
     stages: {
       show: { zoom: 6, width: 0.5 },
       split: { zoom: 15, caseWidth: 5, fillWidth: 1 },
@@ -125,17 +141,33 @@ const TEXT_DEFS: TextLabelDef[] = [
     filter: ["all", ["==", "class", "country"], ["<=", "rank", 2]],
     minzoom: 2,
     maxzoom: 7,
-    textSize: [[3, 11], [4, 12], [5, 13], [6, 14]],
+    textSize: [
+      [3, 11],
+      [4, 12],
+      [5, 13],
+      [6, 14],
+    ],
     textTransform: "uppercase",
     textColor: "priLabel",
   },
   {
     id: "place_country_2",
     sourceLayer: "place",
-    filter: ["all", ["==", "class", "country"], [">=", "rank", 3], ["has", "iso_a2"]],
+    filter: [
+      "all",
+      ["==", "class", "country"],
+      [">=", "rank", 3],
+      ["has", "iso_a2"],
+    ],
     minzoom: 3,
     maxzoom: 10,
-    textSize: [[3, 10], [5, 11], [6, 12], [7, 13], [8, 14]],
+    textSize: [
+      [3, 10],
+      [5, 11],
+      [6, 12],
+      [7, 13],
+      [8, 14],
+    ],
     textTransform: "uppercase",
     textColor: "priLabel",
   },
@@ -145,7 +177,10 @@ const TEXT_DEFS: TextLabelDef[] = [
     filter: ["all", ["==", "class", "state"], ["<=", "rank", 4]],
     minzoom: 5,
     maxzoom: 10,
-    textSize: [[5, 12], [7, 14]],
+    textSize: [
+      [5, 12],
+      [7, 14],
+    ],
     textTransform: "uppercase",
     textColor: "priLabel",
   },
@@ -179,11 +214,24 @@ const TEXT_DEFS: TextLabelDef[] = [
   {
     id: "place_city_r5",
     sourceLayer: "place",
-    filter: ["all", ["==", "class", "city"], [">=", "rank", 0], ["<=", "rank", 5]],
+    filter: [
+      "all",
+      ["==", "class", "city"],
+      [">=", "rank", 0],
+      ["<=", "rank", 5],
+    ],
     minzoom: 8,
     maxzoom: 15,
-    textField: [[8, "{name_en}"], [13, "{name}"]],
-    textSize: [[8, 14], [10, 16], [13, 19], [14, 22]],
+    textField: [
+      [8, "{name_en}"],
+      [13, "{name}"],
+    ],
+    textSize: [
+      [8, 14],
+      [10, 16],
+      [13, 19],
+      [14, 22],
+    ],
     textTransform: "uppercase",
     textColor: "priLabel",
   },
@@ -193,8 +241,17 @@ const TEXT_DEFS: TextLabelDef[] = [
     filter: ["all", ["==", "class", "city"], [">=", "rank", 6]],
     minzoom: 8,
     maxzoom: 15,
-    textField: [[8, "{name_en}"], [13, "{name}"]],
-    textSize: [[8, 12], [9, 13], [10, 14], [13, 17], [14, 20]],
+    textField: [
+      [8, "{name_en}"],
+      [13, "{name}"],
+    ],
+    textSize: [
+      [8, 12],
+      [9, 13],
+      [10, 14],
+      [13, 17],
+      [14, 20],
+    ],
     textTransform: "uppercase",
     textColor: "priLabel",
   },
@@ -223,8 +280,17 @@ const TEXT_DEFS: TextLabelDef[] = [
     filter: ["all", ["==", "class", "town"]],
     minzoom: 8,
     maxzoom: 15,
-    textField: [[8, "{name_en}"], [13, "{name}"]],
-    textSize: [[8, 10], [9, 10], [10, 11], [13, 14], [14, 15]],
+    textField: [
+      [8, "{name_en}"],
+      [13, "{name}"],
+    ],
+    textSize: [
+      [8, 10],
+      [9, 10],
+      [10, 11],
+      [13, 14],
+      [14, 15],
+    ],
     textColor: "priLabel",
   },
   {
@@ -233,8 +299,17 @@ const TEXT_DEFS: TextLabelDef[] = [
     filter: ["all", ["==", "class", "village"]],
     minzoom: 10,
     maxzoom: 16,
-    textField: [[8, "{name_en}"], [13, "{name}"]],
-    textSize: [[10, 9], [12, 10], [13, 11], [14, 12], [16, 13]],
+    textField: [
+      [8, "{name_en}"],
+      [13, "{name}"],
+    ],
+    textSize: [
+      [10, 9],
+      [12, 10],
+      [13, 11],
+      [14, 12],
+      [16, 13],
+    ],
     textColor: "secLabel",
   },
   {
@@ -243,36 +318,76 @@ const TEXT_DEFS: TextLabelDef[] = [
     filter: ["all", ["==", "class", "suburb"]],
     minzoom: 12,
     maxzoom: 16,
-    textField: [[8, "{name_en}"], [13, "{name}"]],
-    textSize: [[12, 9], [13, 10], [14, 11], [15, 12], [16, 13]],
-    textTransform: [[8, "none"], [12, "uppercase"]],
+    textField: [
+      [8, "{name_en}"],
+      [13, "{name}"],
+    ],
+    textSize: [
+      [12, 9],
+      [13, 10],
+      [14, 11],
+      [15, 12],
+      [16, 13],
+    ],
+    textTransform: [
+      [8, "none"],
+      [12, "uppercase"],
+    ],
     textColor: "secLabel",
   },
   {
     id: "place_hamlet",
     sourceLayer: "place",
-    filter: ["any", ["==", "class", "neighbourhood"], ["==", "class", "hamlet"]],
+    filter: [
+      "any",
+      ["==", "class", "neighbourhood"],
+      ["==", "class", "hamlet"],
+    ],
     minzoom: 12,
     maxzoom: 16,
-    textField: [[8, "{name_en}"], [14, "{name}"]],
-    textSize: [[13, 8], [14, 10], [16, 11]],
-    textTransform: [[12, "none"], [14, "uppercase"]],
+    textField: [
+      [8, "{name_en}"],
+      [14, "{name}"],
+    ],
+    textSize: [
+      [13, 8],
+      [14, 10],
+      [16, 11],
+    ],
+    textTransform: [
+      [12, "none"],
+      [14, "uppercase"],
+    ],
     textColor: "secLabel",
   },
   {
     id: "watername_ocean",
     sourceLayer: "water_name",
-    filter: ["all", ["has", "name"], ["==", "$type", "Point"], ["==", "class", "ocean"]],
+    filter: [
+      "all",
+      ["has", "name"],
+      ["==", "$type", "Point"],
+      ["==", "class", "ocean"],
+    ],
     minzoom: 0,
     maxzoom: 5,
     textField: "{name}",
-    textSize: [[0, 13], [2, 14], [4, 18]],
+    textSize: [
+      [0, 13],
+      [2, 14],
+      [4, 18],
+    ],
     textColor: "waterLabelColor",
   },
   {
     id: "watername_sea",
     sourceLayer: "water_name",
-    filter: ["all", ["has", "name"], ["==", "$type", "Point"], ["==", "class", "sea"]],
+    filter: [
+      "all",
+      ["has", "name"],
+      ["==", "$type", "Point"],
+      ["==", "class", "sea"],
+    ],
     minzoom: 5,
     textField: "{name}",
     textSize: 12,
@@ -281,10 +396,24 @@ const TEXT_DEFS: TextLabelDef[] = [
   {
     id: "watername_lake",
     sourceLayer: "water_name",
-    filter: ["all", ["has", "name"], ["==", "$type", "Point"], ["==", "class", "lake"]],
+    filter: [
+      "all",
+      ["has", "name"],
+      ["==", "$type", "Point"],
+      ["==", "class", "lake"],
+    ],
     minzoom: 4,
-    textField: [[8, "{name_en}"], [13, "{name}"]],
-    textSize: [[13, 9], [14, 10], [15, 11], [16, 12], [17, 13]],
+    textField: [
+      [8, "{name_en}"],
+      [13, "{name}"],
+    ],
+    textSize: [
+      [13, 9],
+      [14, 10],
+      [15, 11],
+      [16, 12],
+      [17, 13],
+    ],
     textColor: "waterLabelColor",
   },
   {
@@ -292,8 +421,17 @@ const TEXT_DEFS: TextLabelDef[] = [
     sourceLayer: "water_name",
     filter: ["all", ["has", "name"], ["==", "$type", "LineString"]],
     placement: "line",
-    textField: [[8, "{name_en}"], [13, "{name}"]],
-    textSize: [[13, 9], [14, 10], [15, 11], [16, 12], [17, 13]],
+    textField: [
+      [8, "{name_en}"],
+      [13, "{name}"],
+    ],
+    textSize: [
+      [13, 9],
+      [14, 10],
+      [15, 11],
+      [16, 12],
+      [17, 13],
+    ],
     textColor: "waterLabelColor",
   },
   {
@@ -302,7 +440,10 @@ const TEXT_DEFS: TextLabelDef[] = [
     filter: ["all", ["has", "name"], ["==", "class", "river"]],
     placement: "line",
     textField: "{name_en}",
-    textSize: [[9, 8], [10, 9]],
+    textSize: [
+      [9, 8],
+      [10, 9],
+    ],
     textColor: "waterLabelColor",
   },
   {
@@ -322,7 +463,11 @@ const TEXT_DEFS: TextLabelDef[] = [
     minzoom: 15,
     placement: "line",
     textField: "{name}",
-    textSize: [[15, 9], [16, 11], [18, 12]],
+    textSize: [
+      [15, 9],
+      [16, 11],
+      [18, 12],
+    ],
     textColor: "secLabel",
   },
   {
@@ -332,7 +477,12 @@ const TEXT_DEFS: TextLabelDef[] = [
     minzoom: 14,
     placement: "line",
     textField: "{name}",
-    textSize: [[14, 10], [15, 10], [16, 11], [18, 12]],
+    textSize: [
+      [14, 10],
+      [15, 10],
+      [16, 11],
+      [18, 12],
+    ],
     textColor: "secLabel",
   },
   {
@@ -342,21 +492,37 @@ const TEXT_DEFS: TextLabelDef[] = [
     minzoom: 13,
     placement: "line",
     textField: "{name}",
-    textSize: [[14, 10], [15, 10], [16, 11], [18, 12]],
+    textSize: [
+      [14, 10],
+      [15, 10],
+      [16, 11],
+      [18, 12],
+    ],
     textColor: "minorLabel",
   },
   {
     id: "poi",
     sourceLayer: "poi",
-    filter: ["all", ["in", "class", "park", "stadium", "cemetery", "attraction"], ["<=", "rank", 3]],
+    filter: [
+      "all",
+      ["in", "class", "park", "stadium", "cemetery", "attraction"],
+      ["<=", "rank", 3],
+    ],
     minzoom: 15,
-    textSize: [[15, 8], [17, 9], [18, 10]],
+    textSize: [
+      [15, 8],
+      [17, 9],
+      [18, 10],
+    ],
     textTransform: "uppercase",
     textColor: "minorLabel",
   },
 ]
 
-function buildClassFilter(classFilter: string | string[], rampFilter?: unknown[]): unknown[] {
+function buildClassFilter(
+  classFilter: string | string[],
+  rampFilter?: unknown[]
+): unknown[] {
   const classCondition = Array.isArray(classFilter)
     ? ["in", "class", ...classFilter]
     : ["==", "class", classFilter]
@@ -368,12 +534,16 @@ function buildClassFilter(classFilter: string | string[], rampFilter?: unknown[]
 function generateRoadLayers(
   def: RoadClassDef,
   c: Record<string, string>,
-  theme: "light" | "dark",
+  theme: "light" | "dark"
 ): { cases: LayerSpecification[]; fills: LayerSpecification[] } {
   const cases: LayerSpecification[] = []
   const fills: LayerSpecification[] = []
 
-  function generateVariant(suffix: string, stages: RoadStages, rampFilter: unknown[] | undefined) {
+  function generateVariant(
+    suffix: string,
+    stages: RoadStages,
+    rampFilter: unknown[] | undefined
+  ) {
     const showW = resolveThemed(stages.show.width, theme)
     const splitCW = resolveThemed(stages.split.caseWidth, theme)
     const splitFW = resolveThemed(stages.split.fillWidth, theme)
@@ -400,7 +570,10 @@ function generateRoadLayers(
         "line-color": {
           stops: [
             [stages.show.zoom, c[def.colorKeys.line]],
-            [Math.max(stages.split.zoom - 7, stages.show.zoom), c[def.colorKeys.line]],
+            [
+              Math.max(stages.split.zoom - 7, stages.show.zoom),
+              c[def.colorKeys.line],
+            ],
             [stages.stable.zoom, c[def.colorKeys.case]],
           ],
         },
@@ -442,14 +615,21 @@ function generateRoadLayers(
 
 const WATER_SOURCES = new Set(["water_name", "waterway"])
 
-function generateTextLayers(defs: TextLabelDef[], c: Record<string, string>): LayerSpecification[] {
+function generateTextLayers(
+  defs: TextLabelDef[],
+  c: Record<string, string>
+): LayerSpecification[] {
   return defs.map((def) => {
     const isLine = def.placement === "line"
     const isWater = WATER_SOURCES.has(def.sourceLayer)
     const haloColor = isWater ? c.waterLabelHalo : c.labelHalo
     const textField = def.textField ?? "{name_en}"
-    const textSize = Array.isArray(def.textSize) ? { stops: def.textSize } : def.textSize
-    const textFieldVal = Array.isArray(textField) ? { stops: textField } : textField
+    const textSize = Array.isArray(def.textSize)
+      ? { stops: def.textSize }
+      : def.textSize
+    const textFieldVal = Array.isArray(textField)
+      ? { stops: textField }
+      : textField
 
     const layout: Record<string, any> = {
       "text-font": [fontFamily],
@@ -458,7 +638,9 @@ function generateTextLayers(defs: TextLabelDef[], c: Record<string, string>): La
     }
 
     if (def.textTransform) {
-      layout["text-transform"] = Array.isArray(def.textTransform) ? { stops: def.textTransform } : def.textTransform
+      layout["text-transform"] = Array.isArray(def.textTransform)
+        ? { stops: def.textTransform }
+        : def.textTransform
     }
 
     if (isLine) {
@@ -503,7 +685,10 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
   const c = MAP_COLORS[t]
 
   const roadParts = ROAD_DEFS.map((def) => generateRoadLayers(def, c, t))
-  const roadLayers = [...roadParts.flatMap((p) => p.cases), ...roadParts.flatMap((p) => p.fills)]
+  const roadLayers = [
+    ...roadParts.flatMap((p) => p.cases),
+    ...roadParts.flatMap((p) => p.fills),
+  ]
   const textLayers = generateTextLayers(TEXT_DEFS, c)
 
   return {
@@ -527,8 +712,13 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         type: "fill",
         source: "carto",
         "source-layer": "landcover",
-        filter: ["any", ["==", "class", "wood"], ["==", "class", "grass"], ["==", "subclass", "recreation_ground"]],
-        paint: { "fill-pattern": "grass-pattern", "fill-opacity": .3 },
+        filter: [
+          "any",
+          ["==", "class", "wood"],
+          ["==", "class", "grass"],
+          ["==", "subclass", "recreation_ground"],
+        ],
+        paint: { "fill-pattern": "grass-pattern", "fill-opacity": 0.3 },
       },
       {
         id: "park",
@@ -536,11 +726,20 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         source: "carto",
         "source-layer": "park",
         minzoom: 0,
-        filter: ["any", ["==", "class", "national_park"], ["==", "class", "nature_reserve"]],
+        filter: [
+          "any",
+          ["==", "class", "national_park"],
+          ["==", "class", "nature_reserve"],
+        ],
         layout: { visibility: "visible" },
         paint: {
           "fill-pattern": "forest-pattern",
-          "fill-opacity": { stops: [[6, 0.7], [9, 0.9]] },
+          "fill-opacity": {
+            stops: [
+              [6, 0.7],
+              [9, 0.9],
+            ],
+          },
         },
       },
       {
@@ -553,7 +752,12 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["any", ["==", "class", "residential"]],
         paint: {
           "fill-pattern": "landuse-pattern",
-          "fill-opacity": { stops: [[6, 0.3], [9, 0.5]] },
+          "fill-opacity": {
+            stops: [
+              [6, 0.3],
+              [9, 0.5],
+            ],
+          },
         },
       },
       {
@@ -561,7 +765,11 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         type: "fill",
         source: "carto",
         "source-layer": "landuse",
-        filter: ["any", ["==", "class", "cemetery"], ["==", "class", "stadium"]],
+        filter: [
+          "any",
+          ["==", "class", "cemetery"],
+          ["==", "class", "stadium"],
+        ],
         paint: { "fill-pattern": "grass-pattern", "fill-opacity": 0.4 },
       },
       {
@@ -571,7 +779,14 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         "source-layer": "waterway",
         paint: {
           "line-color": c.waterBg,
-          "line-width": { stops: [[8, .75], [9, 1.5], [15, 2], [16, 3]] },
+          "line-width": {
+            stops: [
+              [8, 0.75],
+              [9, 1.5],
+              [15, 2],
+              [16, 3],
+            ],
+          },
         },
       },
       {
@@ -584,7 +799,12 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["==", "admin_level", 6], ["==", "maritime", 0]],
         paint: {
           "line-color": c.boundary,
-          "line-width": { stops: [[4, 0.5], [7, 1.5]] },
+          "line-width": {
+            stops: [
+              [4, 0.5],
+              [7, 1.5],
+            ],
+          },
           "line-dasharray": [2, 2],
         },
       },
@@ -597,7 +817,14 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["==", "admin_level", 4], ["==", "maritime", 0]],
         paint: {
           "line-color": c.boundary,
-          "line-width": { stops: [[4, 0.5], [7, 1], [8, 1.2], [9, 1.5]] },
+          "line-width": {
+            stops: [
+              [4, 0.5],
+              [7, 1],
+              [8, 1.2],
+              [9, 1.5],
+            ],
+          },
           "line-dasharray": [3, 3],
         },
       },
@@ -626,7 +853,15 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["==", "class", "runway"]],
         layout: { "line-cap": "square" },
         paint: {
-          "line-width": { stops: [[11, 1], [13, 4], [14, 6], [15, 8], [16, 10]] },
+          "line-width": {
+            stops: [
+              [11, 1],
+              [13, 4],
+              [14, 6],
+              [15, 8],
+              [16, 10],
+            ],
+          },
           "line-color": c.roadCase,
           "line-opacity": 0.1,
         },
@@ -641,7 +876,14 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         paint: {
           "line-color": c.roadCase,
           "line-opacity": 0.1,
-          "line-width": { stops: [[13, 0.5], [14, 1], [15, 2], [16, 4]] },
+          "line-width": {
+            stops: [
+              [13, 0.5],
+              [14, 1],
+              [15, 2],
+              [16, 4],
+            ],
+          },
         },
       },
       {
@@ -654,10 +896,20 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["in", "class", "path", "track"]],
         layout: { "line-cap": "round", "line-join": "round" },
         paint: {
-          "line-width": { stops: [[15, 0.5], [16, 1]] },
+          "line-width": {
+            stops: [
+              [15, 0.5],
+              [16, 1],
+            ],
+          },
           "line-opacity": 0.45,
           "line-color": c.roadCase,
-          "line-dasharray": { stops: [[15, [2, 2]], [18, [3, 3]]] },
+          "line-dasharray": {
+            stops: [
+              [15, [2, 2]],
+              [18, [3, 3]],
+            ],
+          },
         },
       },
       {
@@ -671,7 +923,16 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         paint: {
           "line-color": c.roadCase,
           "line-opacity": 0.1,
-          "line-width": { base: 1.3, stops: [[13, 0.5], [14, 1], [15, 1], [16, 3], [21, 7]] },
+          "line-width": {
+            base: 1.3,
+            stops: [
+              [13, 0.5],
+              [14, 1],
+              [15, 1],
+              [16, 3],
+              [21, 7],
+            ],
+          },
         },
       },
       {
@@ -685,8 +946,20 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         paint: {
           "line-color": c.roadCase,
           "line-opacity": 0.2,
-          "line-width": { base: 1.3, stops: [[15, 0.5], [16, 1], [20, 5]] },
-          "line-dasharray": { stops: [[15, [5, 5]], [16, [6, 6]]] },
+          "line-width": {
+            base: 1.3,
+            stops: [
+              [15, 0.5],
+              [16, 1],
+              [20, 5],
+            ],
+          },
+          "line-dasharray": {
+            stops: [
+              [15, [5, 5]],
+              [16, [6, 6]],
+            ],
+          },
         },
       },
       ...roadLayers,
@@ -699,7 +972,13 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         paint: {
           "fill-pattern": "building-pattern",
           "fill-outline-color": c.bg,
-          "fill-opacity": { base: 1, stops: [[13, 0.1], [16, 1]] },
+          "fill-opacity": {
+            base: 1,
+            stops: [
+              [13, 0.1],
+              [16, 1],
+            ],
+          },
         },
       },
       {
@@ -728,8 +1007,18 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         layout: { "line-cap": "round", "line-join": "round" },
         paint: {
           "line-color": c.boundary,
-          "line-opacity": { stops: [[3, 0.3], [6, 1]] },
-          "line-width": { stops: [[3, 1.5], [6, 3]] },
+          "line-opacity": {
+            stops: [
+              [3, 0.3],
+              [6, 1],
+            ],
+          },
+          "line-width": {
+            stops: [
+              [3, 1.5],
+              [6, 3],
+            ],
+          },
           "line-offset": 0,
         },
       },

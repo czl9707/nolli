@@ -4,7 +4,15 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useLayout } from "@/hooks/use-layout"
 import { useSelectedArch } from "@/contexts/selected-arch"
 import { layoutPinBoard, type ItemSpec } from "@/lib/pin-board-layout"
-import { CANVAS_W, CANVAS_H, MAP_SLOT_W, MAP_SLOT_H, MAP_SLOT_X, MAP_SLOT_Y, BOARD_GAP } from "@/lib/pin-board-config"
+import {
+  CANVAS_W,
+  CANVAS_H,
+  MAP_SLOT_W,
+  MAP_SLOT_H,
+  MAP_SLOT_X,
+  MAP_SLOT_Y,
+  BOARD_GAP,
+} from "@/lib/pin-board-config"
 import { TRANSITION_SHORT, DELAY_START } from "@/lib/animation"
 import { MapCore } from "@/components/map"
 import { PinBoardItem } from "./pin-board-item"
@@ -12,7 +20,10 @@ import { Pin } from "@/components/ui/pin"
 import { useBoardPan } from "./use-board-pan"
 import styles from "./board.module.css"
 
-const EASE_TRANSITION = { duration: TRANSITION_SHORT, ease: "easeInOut" as const }
+const EASE_TRANSITION = {
+  duration: TRANSITION_SHORT,
+  ease: "easeInOut" as const,
+}
 
 const SURFACE_VARIANTS = {
   home: {
@@ -61,7 +72,10 @@ function clampDimensions(width: number, height: number, max = 500, min = 300) {
   return { width, height }
 }
 
-function buildBoardItemSpecs(arch: { photos: { width: number; height: number }[]; notes: unknown[] }): ItemSpec[] {
+function buildBoardItemSpecs(arch: {
+  photos: { width: number; height: number }[]
+  notes: unknown[]
+}): ItemSpec[] {
   const specs: ItemSpec[] = []
 
   specs.push({ id: "site-map", width: MAP_SLOT_W, height: MAP_SLOT_H })
@@ -87,13 +101,28 @@ export function PinBoard() {
   const navigate = useNavigate()
   const viewportRef = useRef<HTMLDivElement>(null)
 
-  const { panX, panY, zoom, handlePointerDown, handlePointerMove, handlePointerUp, handleWheel } =
-    useBoardPan(CANVAS_W, CANVAS_H, isBoard, viewportRef)
+  const {
+    panX,
+    panY,
+    zoom,
+    handlePointerDown,
+    handlePointerMove,
+    handlePointerUp,
+    handleWheel,
+  } = useBoardPan(CANVAS_W, CANVAS_H, isBoard, viewportRef)
 
   const items = useMemo(() => {
     if (!lastSelectedArch) return []
     const specs = buildBoardItemSpecs(lastSelectedArch)
-    return layoutPinBoard(specs, CANVAS_W, CANVAS_H, "site-map", BOARD_GAP, MAP_SLOT_X, MAP_SLOT_Y)
+    return layoutPinBoard(
+      specs,
+      CANVAS_W,
+      CANVAS_H,
+      "site-map",
+      BOARD_GAP,
+      MAP_SLOT_X,
+      MAP_SLOT_Y
+    )
   }, [lastSelectedArch])
 
   return (
@@ -122,18 +151,23 @@ export function PinBoard() {
           variants={MAP_SLOT_VARIANTS}
           transition={EASE_TRANSITION}
         >
-          <MapCore/>
+          <MapCore />
           <AnimatePresence>
             {isBoard && (
               <motion.div
                 key="map-overlay"
                 className={styles.mapOverlay}
                 initial={{ opacity: 0 }}
-                animate={{ opacity: 1, transition: { delay: DELAY_START + TRANSITION_SHORT } }}
+                animate={{
+                  opacity: 1,
+                  transition: { delay: DELAY_START + TRANSITION_SHORT },
+                }}
                 exit={{ opacity: 0 }}
                 onClick={() => navigate("/")}
               >
-                <span className={styles.overlayText}>Click to go back to map view</span>
+                <span className={styles.overlayText}>
+                  Click to go back to map view
+                </span>
               </motion.div>
             )}
           </AnimatePresence>

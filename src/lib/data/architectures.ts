@@ -7,7 +7,15 @@ import {
 } from "./types"
 import { supabase } from "@/lib/data/supabase-client"
 
-export type { Arch, ArchSummary, ArchPhoto, ArchNote, ArchLinks, Coordinates, BBox } from "./types"
+export type {
+  Arch,
+  ArchSummary,
+  ArchPhoto,
+  ArchNote,
+  ArchLinks,
+  Coordinates,
+  BBox,
+} from "./types"
 
 const summaryCache = new Map<string, ArchSummary>()
 const detailCache = new Map<string, Arch>()
@@ -16,7 +24,10 @@ function parseSummaryRow(row: Record<string, unknown>): ArchSummary {
   return archSummarySchema.parse({
     slug: row.slug,
     name: row.name,
-    architect: (Array.isArray(row.architect) ? (row.architect as { name: string }[])[0]?.name : (row.architect as { name: string })?.name) ?? "",
+    architect:
+      (Array.isArray(row.architect)
+        ? (row.architect as { name: string }[])[0]?.name
+        : (row.architect as { name: string })?.name) ?? "",
     year: row.year,
     coordinates: { lng: row.longitude, lat: row.latitude },
     coverImage: (row.cover as { image: string }[])?.[0]?.image ?? null,
@@ -24,7 +35,13 @@ function parseSummaryRow(row: Record<string, unknown>): ArchSummary {
 }
 
 function parseDetailRow(row: Record<string, unknown>): Arch {
-  type PhotoRow = { image: string; caption: string | null; width: number; height: number; is_cover: boolean }
+  type PhotoRow = {
+    image: string
+    caption: string | null
+    width: number
+    height: number
+    is_cover: boolean
+  }
   type LinkRow = { type: string; url: string; label: string }
   type NoteRow = { text: string }
 
@@ -39,7 +56,10 @@ function parseDetailRow(row: Record<string, unknown>): Arch {
     if (link.type === "wikipedia" || link.type === "archdaily") {
       links[link.type] = link.url
     } else if (link.type === "custom") {
-      ;(links.custom as { url: string; label: string }[]).push({ url: link.url, label: link.label })
+      ;(links.custom as { url: string; label: string }[]).push({
+        url: link.url,
+        label: link.label,
+      })
     }
   }
   if ((links.custom as unknown[]).length === 0) delete links.custom
@@ -47,13 +67,20 @@ function parseDetailRow(row: Record<string, unknown>): Arch {
   return archSchema.parse({
     slug: row.slug,
     name: row.name,
-    architect: (Array.isArray(row.architect) ? (row.architect as { name: string }[])[0]?.name : (row.architect as { name: string })?.name) ?? "",
+    architect:
+      (Array.isArray(row.architect)
+        ? (row.architect as { name: string }[])[0]?.name
+        : (row.architect as { name: string })?.name) ?? "",
     year: row.year,
     coordinates: { lng: row.longitude, lat: row.latitude },
     coverImage: coverPhoto?.image ?? null,
     address: row.address,
-    photos: photos
-      .map((p) => ({ image: p.image, caption: p.caption ?? undefined, width: p.width, height: p.height })),
+    photos: photos.map((p) => ({
+      image: p.image,
+      caption: p.caption ?? undefined,
+      width: p.width,
+      height: p.height,
+    })),
     notes: ((row.notes as NoteRow[]) ?? []).map((n) => ({ text: n.text })),
     links,
   })
@@ -76,11 +103,13 @@ export async function getAllArchitectures(bbox?: BBox): Promise<ArchSummary[]> {
 
   let query = supabase
     .from("architectures")
-    .select(`
+    .select(
+      `
       slug, name, year, latitude, longitude,
       architect:architects(name),
       cover:architecture_photos!inner(image)
-    `)
+    `
+    )
     .eq("architecture_photos.is_cover", true)
     .order("name")
 
@@ -109,14 +138,16 @@ export async function getArchBySlug(slug: string): Promise<Arch | null> {
 
   const { data, error } = await supabase
     .from("architectures")
-    .select(`
+    .select(
+      `
       slug, name, year, address, latitude, longitude,
       google_maps_url,
       architect:architects(name),
       photos:architecture_photos(id, image, caption, width, height, is_cover),
       notes:architecture_notes(id, text),
       links:architecture_links(id, type, url, label, sort_order)
-    `)
+    `
+    )
     .eq("slug", slug)
     .single()
 

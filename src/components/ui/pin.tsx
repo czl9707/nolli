@@ -26,7 +26,13 @@ export function Pin({ id, delay = 0, className, style, onClick }: PinProps) {
         ...style,
       }}
       initial={{ opacity: 0 }}
-      animate={{ opacity: 1, transition: { duration: TRANSITION_SHORT, delay: DELAY_START + delay * ITEM_STAGGER } }}
+      animate={{
+        opacity: 1,
+        transition: {
+          duration: TRANSITION_SHORT,
+          delay: DELAY_START + delay * ITEM_STAGGER,
+        },
+      }}
       exit={{ opacity: 0 }}
       onClick={onClick}
     />

@@ -1,0 +1,33 @@
+.coverWrapper {
+  position: relative;
+}
+
+.cover {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--size-border-radius);
+}
+
+.closeButton {
+  position: absolute;
+  top: var(--spacing-paragraph);
+  right: var(--spacing-paragraph);
+  z-index: 10;
+}
+
+.heading {
+  font-family: var(--font-playful) !important;
+  display: block;
+  width: 100%;
+}
+
+.detail {
+  font-family: var(--font-playful) !important;
+  display: block;
+  width: 100%;
+}
+
+.muted {
+  opacity: 0.5;
+}

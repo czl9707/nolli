@@ -4,13 +4,13 @@ import { MAP_COLORS } from "@/lib/map-color"
 export function waterPattern(theme: Theme): string {
   const colors = {
     light: {
-		bg: MAP_COLORS.light.waterBg,
-		stroke: MAP_COLORS.light.waterStroke,
+      bg: MAP_COLORS.light.waterBg,
+      stroke: MAP_COLORS.light.waterStroke,
     },
-    dark: { 
-		bg: MAP_COLORS.dark.waterBg, 
-		stroke: MAP_COLORS.dark.waterStroke 
-	},
+    dark: {
+      bg: MAP_COLORS.dark.waterBg,
+      stroke: MAP_COLORS.dark.waterStroke,
+    },
   }
   const c = colors[theme]
 

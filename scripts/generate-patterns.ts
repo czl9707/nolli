@@ -6,7 +6,10 @@ import { THEMES, type Theme } from "../src/lib/map-texture/constant"
 import { waterPattern } from "../src/lib/map-texture/water"
 import { grassPattern } from "../src/lib/map-texture/grass"
 import { forestPattern } from "../src/lib/map-texture/forest"
-import { buildingPattern, landusePattern } from "../src/lib/map-texture/building"
+import {
+  buildingPattern,
+  landusePattern,
+} from "../src/lib/map-texture/building"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
