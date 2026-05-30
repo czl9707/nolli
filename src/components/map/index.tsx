@@ -85,7 +85,7 @@ function IndividualMarker({
       <MarkerContent>
         <Box
           data-selected={lastSelectedArch?.slug === point.slug}
-          className={styles.markerBox}
+          className={styles.individualMarker}
           onClick={() => getArchBySlug(point.slug).then(setLastSelectedArch)}
         />
       </MarkerContent>
@@ -104,13 +104,10 @@ function ClusterMarkerComp({
   return (
     <MapMarker longitude={point.coordinates[0]} latitude={point.coordinates[1]}>
       <MarkerContent>
-        <div className={styles.clusterMarker} onClick={onExpand}>
-          <Boxes className={styles.clusterIcon} />
-          <span className={styles.clusterCount}>{point.count}</span>
-        </div>
+        <Boxes className={styles.clusterMarker} onClick={onExpand} />
       </MarkerContent>
       <MarkerTooltip>
-        {point.count} architecture{point.count !== 1 ? "s" : ""}
+        {point.count} architecture
       </MarkerTooltip>
     </MapMarker>
   )

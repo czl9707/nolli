@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import Supercluster from "supercluster"
-import type { GeoJSON } from "geojson"
 import type { ArchSummary } from "@/lib/data/architectures"
 import { useMap } from "@/components/ui/map-context"
 
@@ -106,7 +105,7 @@ export function useMapClustering(
       map.off("moveend", update)
       map.off("zoomend", update)
     }
-  }, [map])
+  }, [map, architectures])
 
   const getExpansionZoom = useMemo(() => {
     return (clusterId: number, _coordinates: [number, number]) => {
