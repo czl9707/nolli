@@ -1,3 +1,47 @@
+import type {
+  Arch,
+  ArchPhoto,
+  ArchNote,
+  ArchLinks,
+} from "@/lib/data/architectures"
+
+export const CANVAS_W = 2400
+export const CANVAS_H = 1500
+export const MAP_SLOT_W = 400
+export const MAP_SLOT_H = 300
+export const MAP_SLOT_X = CANVAS_W / 2 - MAP_SLOT_W - 100
+export const MAP_SLOT_Y = CANVAS_H / 2 - MAP_SLOT_H - 100
+export const BOARD_GAP = 60
+
+export type Position = {
+  x: number
+  y: number
+  width: number
+  height: number
+  rotation: number
+}
+
+export type PlacedArchItem =
+  | ({
+      kind: "metadata"
+      name: string
+      architect: string
+      year: number
+      address: string
+    } & { position: Position })
+  | ({
+      kind: "links"
+      links: ArchLinks
+    } & { position: Position })
+  | ({
+      kind: "photo"
+      photo: ArchPhoto
+    } & { position: Position })
+  | ({
+      kind: "note"
+      note: ArchNote
+    } & { position: Position })
+
 export type PlacedItem = {
   id: string
   x: number
@@ -78,7 +122,7 @@ function tryPlaceNearAnchor(
   return null
 }
 
-export function layoutPinBoard(
+function layoutPinBoard(
   items: ItemSpec[],
   canvasWidth: number,
   canvasHeight: number,
@@ -137,4 +181,97 @@ export function layoutPinBoard(
   }
 
   return placed
+}
+
+function clampDimensions(
+  width: number,
+  height: number,
+  max = 500,
+  min = 300
+): { width: number; height: number } {
+  if (Math.max(width, height) > max) {
+    const s = max / Math.max(width, height)
+    width *= s
+    height *= s
+  } else if (Math.min(width, height) < min) {
+    const s = min / Math.min(width, height)
+    if (Math.max(width, height) * s <= max) {
+      width *= s
+      height *= s
+    }
+  }
+  return { width, height }
+}
+
+export function layoutArchBoard(arch: Arch): PlacedArchItem[] {
+  const specs: ItemSpec[] = []
+
+  specs.push({ id: "site-map", width: MAP_SLOT_W, height: MAP_SLOT_H })
+  specs.push({ id: "metadata", width: 420, height: 200 })
+  specs.push({ id: "links", width: 240, height: 360 })
+
+  for (let i = 0; i < arch.notes.length; i++) {
+    specs.push({ id: `note-${i}`, width: 240, height: 180 })
+  }
+
+  for (let i = 0; i < arch.photos.length; i++) {
+    const photo = arch.photos[i]
+    const { width, height } = clampDimensions(photo.width, photo.height)
+    specs.push({ id: `photo-${i}`, width, height })
+  }
+
+  const placed = layoutPinBoard(
+    specs,
+    CANVAS_W,
+    CANVAS_H,
+    "site-map",
+    BOARD_GAP,
+    MAP_SLOT_X,
+    MAP_SLOT_Y
+  )
+
+  const items: PlacedArchItem[] = []
+
+  for (const p of placed) {
+    const pos: Position = {
+      x: p.x,
+      y: p.y,
+      width: p.width,
+      height: p.height,
+      rotation: p.rotation,
+    }
+
+    if (p.id === "metadata") {
+      items.push({
+        kind: "metadata",
+        name: arch.name,
+        architect: arch.architect,
+        year: arch.year,
+        address: arch.address,
+        position: pos,
+      })
+    } else if (p.id === "links") {
+      items.push({
+        kind: "links",
+        links: arch.links,
+        position: pos,
+      })
+    } else if (p.id.startsWith("photo-")) {
+      const idx = parseInt(p.id.slice("photo-".length), 10)
+      items.push({
+        kind: "photo",
+        photo: arch.photos[idx],
+        position: pos,
+      })
+    } else if (p.id.startsWith("note-")) {
+      const idx = parseInt(p.id.slice("note-".length), 10)
+      items.push({
+        kind: "note",
+        note: arch.notes[idx],
+        position: pos,
+      })
+    }
+  }
+
+  return items
 }

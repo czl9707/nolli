@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import type { ReactNode } from "react"
 import { TRANSITION_SHORT } from "@/lib/animation"
 import styles from "./board-modal.module.css"
+import boardItemStyles from "./board-item.module.css"
 
 export function BoardModal({
   open,
@@ -34,7 +35,9 @@ export function BoardModal({
             e.stopPropagation()
           }}
         >
-          {children}
+          <div className={boardItemStyles.item}>
+            {children}
+          </div>
         </motion.div>
       )}
     </AnimatePresence>,

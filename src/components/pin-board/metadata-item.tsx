@@ -1,30 +1,38 @@
-import { useMemo } from "react"
-import type { Arch } from "@/lib/data/architectures"
-import type { PlacedItem } from "@/lib/pin-board-layout"
+import type { PlacedArchItem } from "@/lib/pin-board-layout"
 import { BoardItem } from "./board-item"
 import styles from "./metadata-item.module.css"
 import { Body1, H3, H6 } from "@/components/ui/typography"
 
-type MetadataItemProps = {
-  arch: Arch
-  item: PlacedItem
+type MetadataItemProps = Extract<PlacedArchItem, { kind: "metadata" }> & {
   delay: number
 }
 
-export function MetadataItem({ arch, item, delay }: MetadataItemProps) {
+export function MetadataItem({
+  name,
+  architect,
+  year,
+  address,
+  position,
+  delay,
+}: MetadataItemProps) {
   return (
-    <BoardItem item={item} delay={delay} className={styles.metaWrapper}>
-      <H3 className={styles.name}>{arch.name}</H3>
+    <BoardItem
+      id="metadata"
+      position={position}
+      delay={delay}
+      className={styles.metaWrapper}
+    >
+      <H3 className={styles.name}>{name}</H3>
       <div className={styles.meta}>
         <H6 className={styles.architect}>
           <span style={{ opacity: 0.5 }}>By </span>
-          {arch.architect}
+          {architect}
           <span style={{ opacity: 0.5 }}>, In </span>
-          {arch.year}
+          {year}
         </H6>
       </div>
       <span style={{ flex: "1 1" }}></span>
-      <Body1 className={styles.address}>{arch.address}</Body1>
+      <Body1 className={styles.address}>{address}</Body1>
     </BoardItem>
   )
 }

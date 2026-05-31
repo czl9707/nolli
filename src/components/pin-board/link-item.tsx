@@ -1,23 +1,19 @@
-import { useMemo } from "react"
-import type { ArchLinks } from "@/lib/data/architectures"
-import type { PlacedItem } from "@/lib/pin-board-layout"
+import type { PlacedArchItem } from "@/lib/pin-board-layout"
 import { BoardItem } from "./board-item"
 import { ExternalLink } from "lucide-react"
 import styles from "./link-item.module.css"
 import { Body1 } from "../ui/typography"
-
-type LinkItemProps = {
-  links: ArchLinks
-  item: PlacedItem
-  delay: number
-}
 
 type LinkEntry = {
   url: string
   label: string
 }
 
-function collectLinks(links: ArchLinks): LinkEntry[] {
+type LinkItemProps = Extract<PlacedArchItem, { kind: "links" }> & {
+  delay: number
+}
+
+function collectLinks(links: LinkItemProps["links"]): LinkEntry[] {
   const entries: LinkEntry[] = []
   entries.push({ url: links.googleMaps, label: "Google Maps" })
   if (links.wikipedia)
@@ -28,11 +24,16 @@ function collectLinks(links: ArchLinks): LinkEntry[] {
   return entries
 }
 
-export function LinkItem({ links, item, delay }: LinkItemProps) {
+export function LinkItem({ links, position, delay }: LinkItemProps) {
   const entries = collectLinks(links)
 
   return (
-    <BoardItem item={item} delay={delay} className={styles.linkWrapper}>
+    <BoardItem
+      id="links"
+      position={position}
+      delay={delay}
+      className={styles.linkWrapper}
+    >
       {entries.map((entry) => (
         <a
           key={entry.url}

@@ -12,6 +12,7 @@ import {
   type ReactNode,
 } from "react"
 import { createPortal } from "react-dom"
+import { useThemeStore } from "@/stores/theme"
 import {
   X,
   Minus,
@@ -37,58 +38,6 @@ const defaultStyles = {
   light: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
 }
 
-type Theme = "light" | "dark"
-
-// Check document class for theme (works with next-themes, etc.)
-function getDocumentTheme(): Theme | null {
-  const theme = document.body.dataset.theme
-  if (theme === "dark" || theme === "light") return theme
-  return null
-}
-
-// Get system preference
-function getSystemTheme(): Theme {
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light"
-}
-
-function useResolvedTheme(themeProp?: "light" | "dark"): Theme {
-  const [detectedTheme, setDetectedTheme] = useState<Theme>(
-    () => getDocumentTheme() ?? getSystemTheme()
-  )
-
-  useEffect(() => {
-    const observer = new MutationObserver(() => {
-      const docTheme = getDocumentTheme()
-      if (docTheme) {
-        setDetectedTheme(docTheme)
-      }
-    })
-    observer.observe(document.body, {
-      attributes: true,
-      attributeFilter: ["data-theme"],
-    })
-
-    // Also watch for system preference changes
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
-    const handleSystemChange = (e: MediaQueryListEvent) => {
-      // Only use system preference if no document class is set
-      if (!getDocumentTheme()) {
-        setDetectedTheme(e.matches ? "dark" : "light")
-      }
-    }
-    mediaQuery.addEventListener("change", handleSystemChange)
-
-    return () => {
-      observer.disconnect()
-      mediaQuery.removeEventListener("change", handleSystemChange)
-    }
-  }, [themeProp])
-
-  return themeProp ?? detectedTheme
-}
-
 /** Map viewport state */
 type MapViewport = {
   /** Center coordinates [longitude, latitude] */
@@ -109,11 +58,6 @@ type MapProps = {
   children?: ReactNode
   /** Additional CSS classes for the map container */
   className?: string
-  /**
-   * Theme for the map. If not provided, automatically detects system preference.
-   * Pass your theme value here.
-   */
-  theme?: Theme
   /** Custom map styles for light and dark themes. Overrides the default Carto styles. */
   styles?: {
     light?: MapStyleOption
@@ -162,7 +106,6 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
   {
     children,
     className,
-    theme: themeProp,
     styles,
     projection,
     viewport,
@@ -179,7 +122,7 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
   const currentStyleRef = useRef<MapStyleOption | null>(null)
   const styleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const internalUpdateRef = useRef(false)
-  const resolvedTheme = useResolvedTheme(themeProp)
+  const resolvedTheme = useThemeStore((s) => s.resolvedTheme)
 
   const isControlled = viewport !== undefined && onViewportChange !== undefined
 

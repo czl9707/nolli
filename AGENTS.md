@@ -87,3 +87,17 @@ PinBoard
 - `public/patterns/` is gitignored; `npm run build` regenerates it. Dev server may fail without generated patterns if you haven't built.
 - Map pattern loading (`use-map-patterns.ts`) fetches both light and dark themes simultaneously for instant theme switching.
 - The README references Next.js/shadcn from an earlier version — this is a Vite + React project.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues (`czl9707/nolli`). Uses the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default vocabulary: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context layout — `CONTEXT.md` and `docs/adr/` at repo root. See `docs/agents/domain.md`.

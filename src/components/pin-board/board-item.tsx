@@ -1,45 +1,48 @@
 import { motion, type MotionStyle } from "framer-motion"
 import { useMemo, type ReactNode } from "react"
-import type { PlacedItem } from "@/lib/pin-board-layout"
+import type { Position } from "@/lib/pin-board-layout"
 import { Pin } from "@/components/ui/pin"
 import styles from "./board-item.module.css"
 import { paperClipPath } from "@/lib/paper-clip"
 import { TRANSITION_SHORT, DELAY_START, ITEM_STAGGER } from "@/lib/animation"
 
 type BoardItemProps = {
-  item: PlacedItem
+  id?: string
+  position: Position
   children: ReactNode
   delay?: number
   className?: string
   onClick?: () => void
 }
 
-export { paperClipPath } from "@/lib/paper-clip"
-
 export function BoardItem({
-  item,
+  id,
+  position,
   children,
   delay = 0,
   className,
   onClick,
 }: BoardItemProps) {
-  const clipPath = useMemo(() => paperClipPath(item.id), [item])
+  const clipPath = useMemo(
+    () => paperClipPath(id ?? ""),
+    [id]
+  )
   const motionStyle: MotionStyle = {
     clipPath,
     left: 0,
     top: 0,
-    width: item.width,
-    minHeight: item.height,
+    width: position.width,
+    minHeight: position.height,
   }
 
   return (
     <div
       className={`${styles.shadowWrapper} ${onClick ? styles.clickable : ""}`}
       style={{
-        left: item.x,
-        top: item.y,
-        width: item.width,
-        transform: `rotate(${item.rotation}deg)`,
+        left: position.x,
+        top: position.y,
+        width: position.width,
+        transform: `rotate(${position.rotation}deg)`,
       }}
       onClick={onClick}
     >
@@ -63,7 +66,7 @@ export function BoardItem({
       >
         {children}
       </motion.div>
-      <Pin id={item.id} delay={delay} style={{ top: "-45px", left: "50%" }} />
+      <Pin id={id ?? ""} delay={delay} style={{ top: "-45px", left: "50%" }} />
     </div>
   )
 }

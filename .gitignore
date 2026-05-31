@@ -35,6 +35,7 @@ pnpm-debug.log*
 /public/patterns/
 docs/plans
 docs/superpowers
+docs/agents
 
 # worktrees
 .worktrees/

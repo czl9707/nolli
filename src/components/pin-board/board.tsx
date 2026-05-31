@@ -3,7 +3,6 @@ import { useNavigate } from "react-router"
 import { motion, AnimatePresence } from "framer-motion"
 import { useLayoutStore } from "@/stores/layout"
 import { useArchStore } from "@/stores/arch"
-import { layoutPinBoard, type ItemSpec } from "@/lib/pin-board-layout"
 import {
   CANVAS_W,
   CANVAS_H,
@@ -11,8 +10,8 @@ import {
   MAP_SLOT_H,
   MAP_SLOT_X,
   MAP_SLOT_Y,
-  BOARD_GAP,
-} from "@/lib/pin-board-config"
+  layoutArchBoard,
+} from "@/lib/pin-board-layout"
 import { TRANSITION_SHORT, DELAY_START } from "@/lib/animation"
 import { MapCore } from "@/components/map"
 import { PinBoardItem } from "./pin-board-item"
@@ -70,43 +69,6 @@ const MAP_SLOT_VARIANTS = {
   },
 }
 
-function clampDimensions(width: number, height: number, max = 500, min = 300) {
-  if (Math.max(width, height) > max) {
-    const s = max / Math.max(width, height)
-    width *= s
-    height *= s
-  } else if (Math.min(width, height) < min) {
-    const s = min / Math.min(width, height)
-    if (Math.max(width, height) * s <= max) {
-      width *= s
-      height *= s
-    }
-  }
-  return { width, height }
-}
-
-function buildBoardItemSpecs(arch: {
-  photos: { width: number; height: number }[]
-  notes: unknown[]
-}): ItemSpec[] {
-  const specs: ItemSpec[] = []
-
-  specs.push({ id: "site-map", width: MAP_SLOT_W, height: MAP_SLOT_H })
-  specs.push({ id: "metadata", width: 420, height: 200 })
-  specs.push({ id: "links", width: 240, height: 360 })
-
-  for (let i = 0; i < arch.notes.length; i++) {
-    specs.push({ id: `note-${i}`, width: 240, height: 180 })
-  }
-
-  for (let i = 0; i < arch.photos.length; i++) {
-    const photo = arch.photos[i]
-    const { width, height } = clampDimensions(photo.width, photo.height)
-    specs.push({ id: `photo-${i}`, width, height })
-  }
-  return specs
-}
-
 export function PinBoard() {
   const sideBarOpen = useSidebarStore((s) => s.sidebarOpen)
   const lastSelectedArch = useArchStore((s) => s.lastSelectedArch)
@@ -129,16 +91,7 @@ export function PinBoard() {
 
   const items = useMemo(() => {
     if (!lastSelectedArch) return []
-    const specs = buildBoardItemSpecs(lastSelectedArch)
-    return layoutPinBoard(
-      specs,
-      CANVAS_W,
-      CANVAS_H,
-      "site-map",
-      BOARD_GAP,
-      MAP_SLOT_X,
-      MAP_SLOT_Y
-    )
+    return layoutArchBoard(lastSelectedArch)
   }, [lastSelectedArch])
 
   return (
@@ -206,16 +159,9 @@ export function PinBoard() {
         <AnimatePresence>
           {isBoard &&
             lastSelectedArch &&
-            items
-              .filter((item) => item.id !== "site-map")
-              .map((item, i) => (
-                <PinBoardItem
-                  key={item.id}
-                  item={item}
-                  arch={lastSelectedArch}
-                  delay={i}
-                />
-              ))}
+            items.map((item, i) => (
+              <PinBoardItem key={`${item.kind}-${i}`} item={item} delay={i} />
+            ))}
         </AnimatePresence>
       </motion.div>
     </div>

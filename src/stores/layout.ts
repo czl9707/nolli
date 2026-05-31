@@ -9,8 +9,5 @@ type LayoutState = {
 
 export const useLayoutStore = create<LayoutState>((set) => ({
   mode: "home",
-  setMode: (mode) => {
-    document.body.dataset.mode = mode
-    set({ mode })
-  },
+  setMode: (mode) => set({ mode }),
 }))

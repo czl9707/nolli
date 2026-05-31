@@ -17,10 +17,6 @@ function resolveTheme(theme: Theme): ResolvedTheme {
   return theme === "system" ? getSystemPreference() : theme
 }
 
-function applyTheme(resolved: ResolvedTheme) {
-  document.body.dataset.theme = resolved
-}
-
 type ThemeState = {
   theme: Theme
   resolvedTheme: ResolvedTheme
@@ -33,7 +29,6 @@ export const useThemeStore = create<ThemeState>((set) => ({
   setTheme: (theme) => {
     localStorage.setItem("theme", theme)
     const resolved = resolveTheme(theme)
-    applyTheme(resolved)
     set({ theme, resolvedTheme: resolved })
   },
 }))

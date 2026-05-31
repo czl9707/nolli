@@ -1,25 +1,22 @@
 import { useState } from "react"
-import type { ArchNote } from "@/lib/data/architectures"
-import type { PlacedItem } from "@/lib/pin-board-layout"
+import type { PlacedArchItem } from "@/lib/pin-board-layout"
 import { Body2 } from "@/components/ui/typography"
 import { BoardItem } from "./board-item"
 import { BoardModal } from "./board-modal"
 import styles from "./note-item.module.css"
-import boardItemStyles from "./board-item.module.css"
 
-type NoteItemProps = {
-  note: ArchNote
-  item: PlacedItem
+type NoteItemProps = Extract<PlacedArchItem, { kind: "note" }> & {
   delay: number
 }
 
-export function NoteItem({ note, item, delay }: NoteItemProps) {
+export function NoteItem({ note, position, delay }: NoteItemProps) {
   const [open, setOpen] = useState(false)
 
   return (
     <>
       <BoardItem
-        item={item}
+        id={`note-${note.text.slice(0, 8)}`}
+        position={position}
         delay={delay}
         className={styles.note}
         onClick={() => setOpen(true)}
@@ -27,9 +24,7 @@ export function NoteItem({ note, item, delay }: NoteItemProps) {
         <Body2>{note.text}</Body2>
       </BoardItem>
       <BoardModal open={open} onClose={() => setOpen(false)}>
-        <div
-          className={`${styles.note} ${boardItemStyles.item} ${styles.modalNote}`}
-        >
+        <div className={`${styles.note} ${styles.modalNote}`}>
           <Body2>{note.text}</Body2>
         </div>
       </BoardModal>

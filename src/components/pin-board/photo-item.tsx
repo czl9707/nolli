@@ -1,35 +1,46 @@
 import { useState } from "react"
-import type { ArchPhoto } from "@/lib/data/architectures"
-import type { PlacedItem } from "@/lib/pin-board-layout"
+import type { PlacedArchItem } from "@/lib/pin-board-layout"
 import { Body2 } from "@/components/ui/typography"
 import { BoardItem } from "./board-item"
 import { BoardModal } from "./board-modal"
 import styles from "./photo-item.module.css"
-import boardItemStyles from "./board-item.module.css"
 
-type PhotoItemProps = {
-  photo: ArchPhoto
-  item: PlacedItem
+type PhotoItemProps = Extract<PlacedArchItem, { kind: "photo" }> & {
   delay: number
 }
 
-export function PhotoItem({ photo, item, delay }: PhotoItemProps) {
+export function PhotoItem({ photo, position, delay }: PhotoItemProps) {
   const [open, setOpen] = useState(false)
 
   return (
     <>
-      <BoardItem item={item} delay={delay} onClick={() => setOpen(true)}>
+      <BoardItem
+        id={`photo-${photo.image.slice(-8)}`}
+        position={position}
+        delay={delay}
+        onClick={() => setOpen(true)}
+      >
         <img src={photo.image} alt="" className={styles.photo} />
-        {photo.caption && <div className={styles.caption}><Body2>{photo.caption}</Body2></div>}
+        {photo.caption && (
+          <div className={styles.caption}>
+            <Body2>{photo.caption}</Body2>
+          </div>
+        )}
       </BoardItem>
-      <BoardModal open={open} onClose={() => setOpen(false)} tapeId={item.id}>
+      <BoardModal open={open} onClose={() => setOpen(false)}>
         <div
-          className={`${boardItemStyles.item} ${photo.width > photo.height ? styles.modalPhoto_width : styles.modalPhoto_height}`}
+          className={`${
+            photo.width > photo.height
+              ? styles.modalPhoto_width
+              : styles.modalPhoto_height
+          }`}
           style={{ aspectRatio: `${photo.width}/${photo.height}` }}
         >
-          <img src={photo.image} alt="" className={`${styles.photo} `} />
+          <img src={photo.image} alt="" className={styles.photo} />
           {photo.caption && (
-            <div className={styles.caption}><Body2>{photo.caption}</Body2></div>
+            <div className={styles.caption}>
+              <Body2>{photo.caption}</Body2>
+            </div>
           )}
         </div>
       </BoardModal>
