@@ -15,11 +15,10 @@ import { useSidebarStore } from "@/stores/sidebar"
 import { useLayoutStore } from "@/stores/layout"
 import {
   getAllArchitectures,
-  getArchBySlug,
   type ArchSummary,
 } from "@/lib/data/architectures"
 import { useMapPatterns } from "./use-map-patterns"
-import { useMapClustering, type ClusterPoint } from "@/lib/use-map-clustering"
+import { useMapClustering, type ClusterPoint } from "./use-map-clustering"
 import { Box, Boxes } from "lucide-react"
 import { TRANSITION_SHORT, TRANSITION_LONG } from "@/lib/animation"
 import styles from "./index.module.css"
@@ -31,7 +30,8 @@ function IndividualMarker({
   point: Extract<ClusterPoint, { type: "point" }>
 }) {
   const lastSelectedArch = useArchStore((s) => s.lastSelectedArch)
-  const setArch = useArchStore((s) => s.setArch)
+  const selectArch = useArchStore((s) => s.selectArch)
+  const deselectArch = useArchStore((s) => s.deselectArch)
   const setOpen = useSidebarStore((s) => s.setOpen)
 
   return (
@@ -42,11 +42,10 @@ function IndividualMarker({
           className={styles.individualMarker}
           onClick={() => {
             if (lastSelectedArch?.slug === point.slug) {
-              setArch(null)
+              deselectArch()
             } else {
-              getArchBySlug(point.slug).then((arch) => {
-                setArch(arch)
-                setOpen(true)
+              selectArch(point.slug).then((arch) => {
+                if (arch) setOpen(true)
               })
             }
           }}
@@ -81,7 +80,7 @@ function ClusterMarkerComp({
 function ArchMarkers() {
   const { map } = useMap()
   const [architectures, setArchitectures] = useState<ArchSummary[]>([])
-  const { clusters, getExpansionZoom } = useMapClustering(architectures)
+  const { clusters, getExpansionZoom } = useMapClustering(map, architectures)
 
   useEffect(() => {
     getAllArchitectures().then(setArchitectures)

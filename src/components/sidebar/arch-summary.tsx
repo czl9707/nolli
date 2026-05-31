@@ -8,7 +8,7 @@ import styles from "./arch-summary.module.css"
 
 export function ArchSummary() {
   const arch = useArchStore((s) => s.lastSelectedArch)
-  const setArch = useArchStore((s) => s.setArch)
+  const deselectArch = useArchStore((s) => s.deselectArch)
   const navigate = useNavigate()
 
   if (!arch) return null
@@ -22,7 +22,7 @@ export function ArchSummary() {
           className={styles.closeButton}
           variant="secondary"
           size="icon"
-          onClick={() => setArch(null)}
+          onClick={() => deselectArch()}
           aria-label="Close"
         >
           <X size={18} />

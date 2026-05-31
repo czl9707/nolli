@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import Supercluster from "supercluster"
+import type MapLibreGL from "maplibre-gl"
 import type { ArchSummary } from "@/lib/data/architectures"
-import { useMap } from "@/components/ui/map-context"
 
 type ArchProperties = {
   slug: string
@@ -24,11 +24,21 @@ export type ClusterPoint =
       coordinates: [number, number]
     }
 
-export function useMapClustering(architectures: ArchSummary[]): {
+export function getExpansionZoom(
+  index: Supercluster<ArchProperties, ClusterProperties> | null,
+  clusterId: number,
+): number {
+  if (!index) return 14
+  return index.getClusterExpansionZoom(clusterId)
+}
+
+export function useMapClustering(
+  map: MapLibreGL.Map | null,
+  architectures: ArchSummary[],
+): {
   clusters: ClusterPoint[]
-  getExpansionZoom: (clusterId: number, coordinates: [number, number]) => number
+  getExpansionZoom: (clusterId: number, coordinates?: [number, number]) => number
 } {
-  const { map } = useMap()
   const [clusters, setClusters] = useState<ClusterPoint[]>([])
   const indexRef = useRef<Supercluster<
     ArchProperties,
@@ -105,12 +115,11 @@ export function useMapClustering(architectures: ArchSummary[]): {
     }
   }, [map, architectures])
 
-  const getExpansionZoom = useMemo(() => {
-    return (clusterId: number, _coordinates: [number, number]) => {
-      if (!indexRef.current) return 14
-      return indexRef.current.getClusterExpansionZoom(clusterId)
-    }
-  }, [])
+  const expandZoom = useCallback(
+    (clusterId: number, _coordinates?: [number, number]) =>
+      getExpansionZoom(indexRef.current, clusterId),
+    [],
+  )
 
-  return { clusters, getExpansionZoom }
+  return { clusters, getExpansionZoom: expandZoom }
 }

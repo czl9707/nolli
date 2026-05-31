@@ -5,6 +5,14 @@ import type {
 } from "maplibre-gl"
 import { MAP_COLORS } from "./map-color"
 
+const PATTERN = {
+  WATER: "water-pattern",
+  GRASS: "grass-pattern",
+  FOREST: "forest-pattern",
+  BUILDING: "building-pattern",
+  LANDUSE: "landuse-pattern",
+} as const
+
 const fontFamily = "Architects Daughter"
 
 type Stop = [number, number]
@@ -718,7 +726,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           ["==", "class", "grass"],
           ["==", "subclass", "recreation_ground"],
         ],
-        paint: { "fill-pattern": "grass-pattern", "fill-opacity": 0.3 },
+        paint: { "fill-pattern": PATTERN.GRASS, "fill-opacity": 0.3 },
       },
       {
         id: "park",
@@ -733,7 +741,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         ],
         layout: { visibility: "visible" },
         paint: {
-          "fill-pattern": "forest-pattern",
+          "fill-pattern": PATTERN.FOREST,
           "fill-opacity": {
             stops: [
               [6, 0.7],
@@ -751,7 +759,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         maxzoom: 13,
         filter: ["any", ["==", "class", "residential"]],
         paint: {
-          "fill-pattern": "landuse-pattern",
+          "fill-pattern": PATTERN.LANDUSE,
           "fill-opacity": {
             stops: [
               [6, 0.3],
@@ -770,7 +778,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
           ["==", "class", "cemetery"],
           ["==", "class", "stadium"],
         ],
-        paint: { "fill-pattern": "grass-pattern", "fill-opacity": 0.4 },
+        paint: { "fill-pattern": PATTERN.GRASS, "fill-opacity": 0.4 },
       },
       {
         id: "waterway",
@@ -838,7 +846,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         filter: ["all", ["==", "$type", "Polygon"]],
         layout: { visibility: "visible" },
         paint: {
-          "fill-pattern": "water-pattern",
+          "fill-pattern": PATTERN.WATER,
           "fill-antialias": true,
           "fill-translate-anchor": "map",
           "fill-opacity": 1,
@@ -970,7 +978,7 @@ export function getMapStyle(theme: "light" | "dark"): StyleSpecification {
         "source-layer": "building",
         layout: { visibility: "visible" },
         paint: {
-          "fill-pattern": "building-pattern",
+          "fill-pattern": PATTERN.BUILDING,
           "fill-outline-color": c.bg,
           "fill-opacity": {
             base: 1,

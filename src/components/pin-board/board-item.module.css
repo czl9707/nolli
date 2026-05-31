@@ -1,11 +1,6 @@
 .item {
   position: absolute;
-  background: rgb(var(--color-paper-background));
-  color: rgb(var(--color-paper-foreground));
-  box-sizing: border-box;
   cursor: default;
-  user-select: none;
-  overflow: hidden;
 }
 
 .shadowWrapper {
@@ -15,14 +10,4 @@
 
 .clickable {
   cursor: pointer;
-}
-
-.item::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: url("/patterns/light/grass.png");
-  background-size: 128px 128px;
-  opacity: 0.3;
-  pointer-events: none;
 }

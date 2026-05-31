@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import type { ReactNode } from "react"
 import { TRANSITION_SHORT } from "@/lib/animation"
 import styles from "./board-modal.module.css"
-import boardItemStyles from "./board-item.module.css"
+import paperStyles from "./paper-texture.module.css"
 
 export function BoardModal({
   open,
@@ -13,8 +13,6 @@ export function BoardModal({
   open: boolean
   onClose: () => void
   children: ReactNode
-  clipPath?: string
-  tapeId?: string
 }) {
   return createPortal(
     <AnimatePresence>
@@ -35,7 +33,7 @@ export function BoardModal({
             e.stopPropagation()
           }}
         >
-          <div className={boardItemStyles.item}>
+          <div className={paperStyles.surface}>
             {children}
           </div>
         </motion.div>
