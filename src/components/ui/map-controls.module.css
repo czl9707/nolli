@@ -21,7 +21,6 @@
     flex-direction: column;
     overflow: hidden;
     border-radius: var(--size-border-radius);
-    box-shadow: var(--shadow-sm);
 }
 
 .controlGroup button:not(:last-child) {

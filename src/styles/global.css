@@ -35,10 +35,6 @@ span {
     padding: 0;
 }
 
-html {
-    font-family: var(--font-default);
-}
-
 body {
     width: 100vw;
     height: 100vh;
@@ -60,56 +56,63 @@ body {
     --font-playful: "Architects Daughter";
     --font-default: 'Inter Variable', sans-serif;;
 
-    --typography-body1-fontFamily: var(--font-default);
+    --typography-body1-fontFamily: var(--font-playful);
     --typography-body1-fontWeight: 400;
     --typography-body1-fontSize: 1rem;
     --typography-body1-lineHeight: 1.5;
 
-    --typography-body2-fontFamily: var(--font-default);
+    --typography-body2-fontFamily: var(--font-playful);
     --typography-body2-fontWeight: 300;
     --typography-body2-fontSize: 0.875rem;
     --typography-body2-lineHeight: 1.5;
 
-    --typography-h1-fontFamily: var(--font-default);
+    --typography-h1-fontFamily: var(--font-playful);
     --typography-h1-fontWeight: 600;
     --typography-h1-fontSize: 3rem;
     --typography-h1-lineHeight: 1.25;
 
-    --typography-h2-fontFamily: var(--font-default);
+    --typography-h2-fontFamily: var(--font-playful);
     --typography-h2-fontWeight: 600;
     --typography-h2-fontSize: 2.25rem;
     --typography-h2-lineHeight: 1.25;
 
-    --typography-h3-fontFamily: var(--font-default);
+    --typography-h3-fontFamily: var(--font-playful);
     --typography-h3-fontWeight: 500;
     --typography-h3-fontSize: 1.875rem;
     --typography-h3-lineHeight: 1.25;
 
-    --typography-h4-fontFamily: var(--font-default);
+    --typography-h4-fontFamily: var(--font-playful);
     --typography-h4-fontWeight: 500;
     --typography-h4-fontSize: 1.5rem;
     --typography-h4-lineHeight: 1.25;
 
-    --typography-h5-fontFamily: var(--font-default);
+    --typography-h5-fontFamily: var(--font-playful);
     --typography-h5-fontWeight: 500;
     --typography-h5-fontSize: 1.25rem;
     --typography-h5-lineHeight: 1.4;
 
-    --typography-h6-fontFamily: var(--font-default);
+    --typography-h6-fontFamily: var(--font-playful);
     --typography-h6-fontWeight: 400;
     --typography-h6-fontSize: 1.25rem;
     --typography-h6-lineHeight: 1.6;
 
+    --typography-caption-fontFamily: var(--font-playful);
+    --typography-caption-fontWeight: 500;
+    --typography-caption-fontSize: 0.75rem;
+    --typography-caption-lineHeight: 1.5;
+
+    --transition-instant: 0.15s;
     --transition-short: .6s;
     --transition-long: 1.2s;
 
     --size-border-radius: .5rem;
     --size-header-height: 3.5rem;
     --size-footer-height: 2rem;
-    --size-portfolio-width: 840px;
+    --size-sidebar-width: 24rem;
     
-    --shadow-sm: 2px 2px 2px rgb(23 23 23 / 0.1);
-    --shadow-md: 4px 4px 6px rgb(23 23 23 / 0.2);
+    --shadow-ring: 0 0 2px rgb(var(--color-primary-foreground) / 0.1);
+    --shadow-sm: 2px 2px 2px rgb(var(--color-primary-foreground) / 0.1);
+    --shadow-md: 4px 4px 6px rgb(var(--color-primary-foreground) / 0.2);
 
     --color-paper-background: 242 240 235;
     --color-paper-foreground: 45 45 45;
@@ -161,6 +164,7 @@ body[data-theme='dark'] {
     background-color: rgb(var(--color-primary-background));
     color: rgb(var(--color-primary-foreground));
     z-index: 0;
+    font-family: var(--font-playful);
 }
 
 /* Map related */

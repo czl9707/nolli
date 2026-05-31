@@ -4,4 +4,6 @@
     overflow: hidden;
     box-sizing: border-box;
     display: flex;
+    padding-left: var(--spacing-component);
+    padding-right: var(--spacing-component);
 }

@@ -3,10 +3,10 @@ import type MapLibreGL from "maplibre-gl"
 import type { Theme } from "@/lib/map-texture/constant"
 import { fetchAndCache, applyAllPatterns } from "@/lib/map-texture/map-patterns"
 import type { CachedImage } from "@/lib/map-texture/map-patterns"
-import { useThemeContext } from "@/components/layout/theme-provider"
+import { useThemeStore } from "@/stores/theme"
 
 function useMapPatterns(mapRef: React.RefObject<MapLibreGL.Map | null>) {
-  const { resolvedTheme } = useThemeContext()
+  const resolvedTheme = useThemeStore((s) => s.resolvedTheme)
   const prevThemeRef = useRef(resolvedTheme)
   const cacheRef = useRef<Record<string, CachedImage>>({})
   const [ready, setReady] = useState(false)

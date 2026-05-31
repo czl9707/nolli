@@ -5,13 +5,6 @@
   flex-direction: row;
 }
 
-.mapWrapper {
-  flex: 1;
-  min-width: 0;
-  border-radius: var(--size-border-radius);
-  overflow: hidden;
-}
-
 .individualMarker {
   stroke-width: 1;
   stroke: rgb(var(--color-primary-foreground));

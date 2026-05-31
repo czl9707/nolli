@@ -5,16 +5,13 @@
 }
 
 .name {
-  font-family: var(--font-playful) !important;
 }
 
 .architect {
   margin-top: 0.5rem;
-  font-family: var(--font-playful) !important;
 }
 
 .address {
-  font-family: var(--font-playful) !important;
   text-align: right;
 
   opacity: 0.75

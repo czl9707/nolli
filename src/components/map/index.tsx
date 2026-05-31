@@ -10,9 +10,9 @@ import { getMapStyle } from "@/lib/map-style"
 import type { MapRef } from "@/components/ui/map"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useLocation, useNavigate } from "react-router"
-import { useSelectedArch } from "@/contexts/selected-arch"
-import { useSidebar } from "@/contexts/sidebar"
-import { Sidebar } from "@/components/sidebar/sidebar"
+import { useArchStore } from "@/stores/arch"
+import { useSidebarStore } from "@/stores/sidebar"
+import { useLayoutStore } from "@/stores/layout"
 import {
   getAllArchitectures,
   getArchBySlug,
@@ -21,17 +21,18 @@ import {
 import { useMapPatterns } from "./use-map-patterns"
 import { useMapClustering, type ClusterPoint } from "@/lib/use-map-clustering"
 import { Box, Boxes } from "lucide-react"
-import { useLayout } from "@/hooks/use-layout"
 import { TRANSITION_SHORT, TRANSITION_LONG } from "@/lib/animation"
 import styles from "./index.module.css"
+import { Body2 } from "../ui/typography"
 
 function IndividualMarker({
   point,
 }: {
   point: Extract<ClusterPoint, { type: "point" }>
 }) {
-  const { setLastSelectedArch, lastSelectedArch } = useSelectedArch()
-  const { setSidebarOpen } = useSidebar()
+  const lastSelectedArch = useArchStore((s) => s.lastSelectedArch)
+  const setArch = useArchStore((s) => s.setArch)
+  const setOpen = useSidebarStore((s) => s.setOpen)
 
   return (
     <MapMarker longitude={point.coordinates[0]} latitude={point.coordinates[1]}>
@@ -41,17 +42,19 @@ function IndividualMarker({
           className={styles.individualMarker}
           onClick={() => {
             if (lastSelectedArch?.slug === point.slug) {
-              setLastSelectedArch(null)
+              setArch(null)
             } else {
               getArchBySlug(point.slug).then((arch) => {
-                setLastSelectedArch(arch)
-                setSidebarOpen(true)
+                setArch(arch)
+                setOpen(true)
               })
             }
           }}
         />
       </MarkerContent>
-      <MarkerTooltip>{point.name}</MarkerTooltip>
+      <MarkerTooltip>
+        <Body2>{point.name}</Body2>
+      </MarkerTooltip>
     </MapMarker>
   )
 }
@@ -68,7 +71,9 @@ function ClusterMarkerComp({
       <MarkerContent>
         <Boxes className={styles.clusterMarker} onClick={onExpand} />
       </MarkerContent>
-      <MarkerTooltip>{point.count} architecture</MarkerTooltip>
+      <MarkerTooltip>
+        <Body2>{point.count} Architecture</Body2>
+      </MarkerTooltip>
     </MapMarker>
   )
 }
@@ -104,7 +109,8 @@ function ArchMarkers() {
 }
 
 function MapNavigator() {
-  const { lastSelectedArch, flyToTrigger } = useSelectedArch()
+  const lastSelectedArch = useArchStore((s) => s.lastSelectedArch)
+  const flyToTrigger = useArchStore((s) => s.flyToTrigger)
   const { map } = useMap()
   const location = useLocation()
   const prevSlugRef = useRef<string | null>(null)
@@ -141,7 +147,7 @@ export function MapCore() {
   const mapRef = useRef<MapRef | null>(null)
   const navigate = useNavigate()
   const { ready, initialize } = useMapPatterns(mapRef)
-  const mode = useLayout()
+  const mode = useLayoutStore((s) => s.mode)
 
   const mapStyles = useMemo(
     () => ({
@@ -164,14 +170,11 @@ export function MapCore() {
 
   return (
     <div className={styles.container}>
-      {isHome && <Sidebar />}
-      <div className={styles.mapWrapper}>
-        <Map ref={handleRef} styles={mapStyles} loading={!ready}>
-          {isHome && <MapControls showZoom showLocate showFullscreen />}
-          <ArchMarkers />
-          <MapNavigator />
-        </Map>
-      </div>
+      <Map ref={handleRef} styles={mapStyles} loading={!ready}>
+        {isHome && <MapControls showZoom showLocate showFullscreen />}
+        <ArchMarkers />
+        <MapNavigator />
+      </Map>
     </div>
   )
 }

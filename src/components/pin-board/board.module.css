@@ -1,7 +1,6 @@
 .viewport {
-  position: relative;
-  width: 100%;
-  height: 100%;
+  position: fixed;
+  inset: 0;
   overflow: hidden;
   touch-action: none;
 }
@@ -54,7 +53,6 @@
 .overlayText {
   opacity: 0;
   transition: opacity 0.2s ease;
-  font-family: var(--font-playful);
   color: rgb(var(--color-primary-foreground));
 }
 

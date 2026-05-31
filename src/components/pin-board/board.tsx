@@ -1,8 +1,8 @@
 import { useMemo, useRef } from "react"
 import { useNavigate } from "react-router"
 import { motion, AnimatePresence } from "framer-motion"
-import { useLayout } from "@/hooks/use-layout"
-import { useSelectedArch } from "@/contexts/selected-arch"
+import { useLayoutStore } from "@/stores/layout"
+import { useArchStore } from "@/stores/arch"
 import { layoutPinBoard, type ItemSpec } from "@/lib/pin-board-layout"
 import {
   CANVAS_W,
@@ -19,6 +19,7 @@ import { PinBoardItem } from "./pin-board-item"
 import { Pin } from "@/components/ui/pin"
 import { useBoardPan } from "./use-board-pan"
 import styles from "./board.module.css"
+import { useSidebarStore } from "@/stores/sidebar"
 
 const EASE_TRANSITION = {
   duration: TRANSITION_SHORT,
@@ -36,11 +37,23 @@ const SURFACE_VARIANTS = {
   },
 }
 
+const MAP_SLOT_VARS = {
+  "--size-container-width": `calc(100% - var(--spacing-component) * 2)`,
+}
 const MAP_SLOT_VARIANTS = {
   home: {
     top: "var(--size-header-height)",
     left: "var(--spacing-component)",
-    width: `calc(100% - var(--spacing-component) * 2)`,
+    width: `var(--size-container-width)`,
+    height: `calc(100% - var(--size-header-height) - var(--size-footer-height))`,
+    borderRadius: "var(--size-border-radius)",
+    boxShadow: "none",
+    borderWidth: 0,
+  },
+  homeSidebarOpen: {
+    top: "var(--size-header-height)",
+    left: "calc(var(--spacing-component) + var(--size-sidebar-width))",
+    width: `calc(var(--size-container-width) - var(--size-sidebar-width))`,
     height: `calc(100% - var(--size-header-height) - var(--size-footer-height))`,
     borderRadius: "var(--size-border-radius)",
     boxShadow: "none",
@@ -52,7 +65,7 @@ const MAP_SLOT_VARIANTS = {
     width: MAP_SLOT_W,
     height: MAP_SLOT_H,
     borderRadius: 0,
-    boxShadow: "var(--shadow-md)",
+    boxShadow: "var(--shadow-sm)",
     borderWidth: 10,
   },
 }
@@ -95,11 +108,14 @@ function buildBoardItemSpecs(arch: {
 }
 
 export function PinBoard() {
-  const mode = useLayout()
-  const isBoard = mode === "board"
-  const { lastSelectedArch } = useSelectedArch()
+  const sideBarOpen = useSidebarStore((s) => s.sidebarOpen)
+  const lastSelectedArch = useArchStore((s) => s.lastSelectedArch)
   const navigate = useNavigate()
   const viewportRef = useRef<HTMLDivElement>(null)
+  
+  const mode = useLayoutStore((s) => s.mode)
+  const isBoard = mode === "board"
+  const mapSlotVariant = sideBarOpen && !isBoard ? "homeSidebarOpen" : mode;
 
   const {
     panX,
@@ -128,7 +144,7 @@ export function PinBoard() {
   return (
     <div
       ref={viewportRef}
-      className={`${styles.viewport} ${isBoard ? styles.boardMode : ""}`}
+      className={styles.viewport}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
@@ -140,14 +156,14 @@ export function PinBoard() {
         initial={mode}
         animate={mode}
         variants={SURFACE_VARIANTS}
-        transition={EASE_TRANSITION}
         style={{ x: panX, y: panY, scale: zoom }}
       >
         {isBoard && <div className={styles.dotGrid} />}
         <motion.div
           className={styles.mapSlot}
-          initial={mode}
-          animate={mode}
+          style={MAP_SLOT_VARS as React.CSSProperties}
+          initial={mapSlotVariant}
+          animate={mapSlotVariant}
           variants={MAP_SLOT_VARIANTS}
           transition={EASE_TRANSITION}
         >

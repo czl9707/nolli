@@ -13,10 +13,6 @@ export function OperationPanel() {
         <H5 className={styles.heading}>Collections</H5>
         <Body1 className={styles.body}>Coming soon</Body1>
       </SidebarCard>
-      <SidebarCard>
-        <H5 className={styles.heading}>Quick Links</H5>
-        <Body1 className={styles.body}>Coming soon</Body1>
-      </SidebarCard>
     </>
   )
 }

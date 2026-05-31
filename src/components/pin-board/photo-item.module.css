@@ -14,10 +14,7 @@
   right: 15px;
   padding: 1.5rem 1rem 0.75rem;
   background: linear-gradient(transparent, rgb(0 0 0 / 0.5));
-  font-family: var(--font-playful);
   color: white;
-  font-size: 0.8rem;
-  line-height: 1.4;
 }
 
 .modalPhoto_width {

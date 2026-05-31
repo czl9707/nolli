@@ -1,12 +1,9 @@
 .footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
     z-index: 50;
     display: flex;
     height: var(--size-footer-height);
     align-items: center;
+    justify-content: flex-end;
     padding-left: var(--spacing-component);
     padding-right: var(--spacing-component);
     pointer-events: none;
@@ -14,6 +11,5 @@
 }
 
 .copyright {
-    font-family: var(--font-playful) !important;
     opacity: 0.5;
 }

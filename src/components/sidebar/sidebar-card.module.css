@@ -10,31 +10,3 @@
   overflow: hidden;
   box-sizing: border-box;
 }
-
-.archCard {
-  cursor: pointer;
-  box-shadow: var(--shadow-md);
-  align-items: flex-end;
-}
-
-.viewLink {
-  margin-top: var(--spacing-paragraph);
-  font-family: var(--font-playful) !important;
-  width: fit-content;
-  right: 0;
-
-  .archCard:hover & {
-    opacity: 0.5;
-    text-decoration: underline;
-  }
-}
-
-.heading {
-  font-family: var(--font-playful) !important;
-  display: block;
-  width: 100%;
-}
-
-.muted {
-  opacity: 0.5;
-}

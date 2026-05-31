@@ -1,12 +1,16 @@
 .coverWrapper {
   position: relative;
+  padding: 0 !important;
+  line-height: 0;
+  background: rgb(var(--color-secondary-background));
+  overflow: hidden;
+  border-radius: var(--size-border-radius);
 }
 
 .cover {
   width: 100%;
   aspect-ratio: 1 / 1;
   object-fit: cover;
-  border-radius: var(--size-border-radius);
 }
 
 .closeButton {
@@ -17,17 +21,31 @@
 }
 
 .heading {
-  font-family: var(--font-playful) !important;
   display: block;
   width: 100%;
 }
 
 .detail {
-  font-family: var(--font-playful) !important;
   display: block;
   width: 100%;
 }
 
 .muted {
   opacity: 0.5;
+}
+
+.archCard {
+  cursor: pointer;
+  align-items: flex-end;
+}
+
+.viewLink {
+  margin-top: var(--spacing-paragraph);
+  width: fit-content;
+  right: 0;
+
+  .archCard:hover & {
+    opacity: 0.5;
+    text-decoration: underline;
+  }
 }

@@ -8,7 +8,7 @@ type TypographyProps<E extends React.ElementType> = React.ComponentProps<E> & {
 
 function createTypography<E extends React.ElementType>(
   tag: E,
-  variant: string
+  variant: keyof typeof styles
 ) {
   return function TypographyComponent({
     className,
@@ -19,9 +19,7 @@ function createTypography<E extends React.ElementType>(
 
     return (
       <Comp
-        data-slot="typography"
-        data-variant={variant}
-        className={`${styles.root} ${className ?? ""}`}
+        className={`${styles[variant]} ${className ?? ""}`}
         {...props}
       />
     )
@@ -36,5 +34,6 @@ const H5 = createTypography("h5", "h5")
 const H6 = createTypography("h6", "h6")
 const Body1 = createTypography("p", "body1")
 const Body2 = createTypography("p", "body2")
+const Caption = createTypography("span", "caption")
 
-export { H1, H2, H3, H4, H5, H6, Body1, Body2 }
+export { H1, H2, H3, H4, H5, H6, Body1, Body2, Caption }

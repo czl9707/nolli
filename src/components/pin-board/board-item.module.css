@@ -10,7 +10,7 @@
 
 .shadowWrapper {
   position: absolute;
-  filter: drop-shadow(var(--shadow-md));
+  filter: drop-shadow(var(--shadow-sm));
 }
 
 .clickable {

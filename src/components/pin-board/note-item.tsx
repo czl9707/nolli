@@ -1,6 +1,7 @@
 import { useState } from "react"
 import type { ArchNote } from "@/lib/data/architectures"
 import type { PlacedItem } from "@/lib/pin-board-layout"
+import { Body2 } from "@/components/ui/typography"
 import { BoardItem } from "./board-item"
 import { BoardModal } from "./board-modal"
 import styles from "./note-item.module.css"
@@ -23,13 +24,13 @@ export function NoteItem({ note, item, delay }: NoteItemProps) {
         className={styles.note}
         onClick={() => setOpen(true)}
       >
-        {note.text}
+        <Body2>{note.text}</Body2>
       </BoardItem>
       <BoardModal open={open} onClose={() => setOpen(false)}>
         <div
           className={`${styles.note} ${boardItemStyles.item} ${styles.modalNote}`}
         >
-          {note.text}
+          <Body2>{note.text}</Body2>
         </div>
       </BoardModal>
     </>

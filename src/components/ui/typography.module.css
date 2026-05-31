@@ -1,55 +1,62 @@
-.root[data-variant="h1"] {
+.h1 {
     font-family: var(--typography-h1-fontFamily);
     font-weight: var(--typography-h1-fontWeight);
     font-size: var(--typography-h1-fontSize);
     line-height: var(--typography-h1-lineHeight);
 }
 
-.root[data-variant="h2"] {
+.h2 {
     font-family: var(--typography-h2-fontFamily);
     font-weight: var(--typography-h2-fontWeight);
     font-size: var(--typography-h2-fontSize);
     line-height: var(--typography-h2-lineHeight);
 }
 
-.root[data-variant="h3"] {
+.h3 {
     font-family: var(--typography-h3-fontFamily);
     font-weight: var(--typography-h3-fontWeight);
     font-size: var(--typography-h3-fontSize);
     line-height: var(--typography-h3-lineHeight);
 }
 
-.root[data-variant="h4"] {
+.h4 {
     font-family: var(--typography-h4-fontFamily);
     font-weight: var(--typography-h4-fontWeight);
     font-size: var(--typography-h4-fontSize);
     line-height: var(--typography-h4-lineHeight);
 }
 
-.root[data-variant="h5"] {
+.h5 {
     font-family: var(--typography-h5-fontFamily);
     font-weight: var(--typography-h5-fontWeight);
     font-size: var(--typography-h5-fontSize);
     line-height: var(--typography-h5-lineHeight);
 }
 
-.root[data-variant="h6"] {
+.h6 {
     font-family: var(--typography-h6-fontFamily);
     font-weight: var(--typography-h6-fontWeight);
     font-size: var(--typography-h6-fontSize);
     line-height: var(--typography-h6-lineHeight);
 }
 
-.root[data-variant="body1"] {
+.body1 {
     font-family: var(--typography-body1-fontFamily);
     font-weight: var(--typography-body1-fontWeight);
     font-size: var(--typography-body1-fontSize);
     line-height: var(--typography-body1-lineHeight);
 }
 
-.root[data-variant="body2"] {
+.body2 {
     font-family: var(--typography-body2-fontFamily);
     font-weight: var(--typography-body2-fontWeight);
     font-size: var(--typography-body2-fontSize);
     line-height: var(--typography-body2-lineHeight);
+}
+
+.caption {
+    font-family: var(--typography-caption-fontFamily);
+    font-weight: var(--typography-caption-fontWeight);
+    font-size: var(--typography-caption-fontSize);
+    line-height: var(--typography-caption-lineHeight);
 }

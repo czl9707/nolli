@@ -1,32 +1,33 @@
-import { ThemeProvider } from "@/components/layout/theme-provider"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { BrowserRouter } from "react-router"
-import { SelectedArchProvider } from "@/contexts/selected-arch"
-import { SidebarProvider } from "@/contexts/sidebar"
+import { LayoutSync } from "@/components/layout/layout-sync"
+import { ArchSync } from "@/components/layout/arch-sync"
+import { ThemeSync } from "@/components/layout/theme-sync"
 import { PinBoard } from "@/components/pin-board"
-import { useLayout } from "@/hooks/use-layout"
+import { Sidebar } from "@/components/sidebar/sidebar"
 import styles from "./vite-app.module.css"
 
-function AppContainer({ children }: { children: React.ReactNode }) {
-  useLayout()
-  return <div className={styles.appContainer}>{children}</div>
+function RouterSync() {
+  return (
+    <>
+      <LayoutSync />
+      <ArchSync />
+    </>
+  )
 }
 
 export function ViteApp() {
   return (
     <BrowserRouter>
-      <ThemeProvider>
-        <SelectedArchProvider>
-          <SidebarProvider>
-            <Header />
-            <AppContainer>
-              <PinBoard />
-            </AppContainer>
-            <Footer />
-          </SidebarProvider>
-        </SelectedArchProvider>
-      </ThemeProvider>
+      <ThemeSync />
+      <RouterSync />
+      <Header />
+      <div className={styles.appContainer}>
+        <Sidebar />
+        <PinBoard />
+      </div>
+      <Footer />
     </BrowserRouter>
   )
 }

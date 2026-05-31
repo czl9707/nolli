@@ -13,11 +13,12 @@
     outline: none;
     user-select: none;
     cursor: pointer;
+    font-family: var(--font-playful);
 }
 
 .button:focus-visible {
     border-color: rgb(var(--color-primary-foreground) / 0.25);
-    box-shadow: 0 0 0 3px rbg(var(--color-primary-foreground) / 0.25);
+    box-shadow: var(--shadow-ring);
 }
 
 .button:active:not(:has([aria-haspopup])) {
@@ -31,7 +32,7 @@
 
 .button:is(:invalid) {
     border-color: rgb(var(--color-destructive));
-    box-shadow: 0 0 0 3px rgb(var(--color-destructive) / 0.2);
+    box-shadow: var(--shadow-ring);
 }
 
 .button svg {
