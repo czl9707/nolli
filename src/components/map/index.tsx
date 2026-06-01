@@ -13,7 +13,7 @@ import { useLocation, useNavigate } from "react-router"
 import { useArchStore } from "@/stores/arch"
 import { useSidebarStore } from "@/stores/sidebar"
 import { useLayoutStore } from "@/stores/layout"
-import { useDbContext } from "@/lib/data/db-context"
+import { useDbStore } from "@/stores/db"
 import type { ArchSummary } from "@/lib/data/architectures.type"
 import { useMapPatterns } from "./use-map-patterns"
 import { useMapClustering, type ClusterPoint } from "./use-map-clustering"
@@ -31,7 +31,7 @@ function IndividualMarker({
   const selectArch = useArchStore((s) => s.selectArch)
   const deselectArch = useArchStore((s) => s.deselectArch)
   const setOpen = useSidebarStore((s) => s.setOpen)
-  const { dataSource } = useDbContext()
+  const dataSource = useDbStore((s) => s.dataSource)
 
   return (
     <MapMarker longitude={point.coordinates[0]} latitude={point.coordinates[1]}>
@@ -78,7 +78,7 @@ function ClusterMarkerComp({
 
 function ArchMarkers() {
   const { map } = useMap()
-  const { dataSource } = useDbContext()
+  const dataSource = useDbStore((s) => s.dataSource)
   const [architectures, setArchitectures] = useState<ArchSummary[]>([])
   const { clusters, getExpansionZoom } = useMapClustering(map, architectures)
 
@@ -147,7 +147,7 @@ export function MapCore() {
   const navigate = useNavigate()
   const { ready, initialize } = useMapPatterns(mapRef)
   const mode = useLayoutStore((s) => s.mode)
-  const { status } = useDbContext()
+  const status = useDbStore((s) => s.status)
 
   const mapStyles = useMemo(
     () => ({

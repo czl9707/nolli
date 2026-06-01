@@ -6,7 +6,6 @@ import { ArchSync } from "@/components/layout/arch-sync"
 import { ThemeSync } from "@/components/layout/theme-sync"
 import { PinBoard } from "@/components/pin-board"
 import { Sidebar } from "@/components/sidebar/sidebar"
-import { DbProvider } from "@/lib/data/db-context"
 import styles from "./vite-app.module.css"
 
 function RouterSync() {
@@ -21,16 +20,14 @@ function RouterSync() {
 export function ViteApp() {
   return (
     <BrowserRouter>
-      <DbProvider>
-        <ThemeSync />
-        <RouterSync />
-        <Header />
-        <div className={styles.appContainer}>
-          <Sidebar />
-          <PinBoard />
-        </div>
-        <Footer />
-      </DbProvider>
+      <ThemeSync />
+      <RouterSync />
+      <Header />
+      <div className={styles.appContainer}>
+        <Sidebar />
+        <PinBoard />
+      </div>
+      <Footer />
     </BrowserRouter>
   )
 }
