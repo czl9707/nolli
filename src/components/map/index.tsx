@@ -13,10 +13,8 @@ import { useLocation, useNavigate } from "react-router"
 import { useArchStore } from "@/stores/arch"
 import { useSidebarStore } from "@/stores/sidebar"
 import { useLayoutStore } from "@/stores/layout"
-import {
-  getAllArchitectures,
-  type ArchSummary,
-} from "@/lib/data/architectures"
+import { useDbContext } from "@/lib/data/db-context"
+import type { ArchSummary } from "@/lib/data/architectures"
 import { useMapPatterns } from "./use-map-patterns"
 import { useMapClustering, type ClusterPoint } from "./use-map-clustering"
 import { Box, Boxes } from "lucide-react"
@@ -79,12 +77,13 @@ function ClusterMarkerComp({
 
 function ArchMarkers() {
   const { map } = useMap()
+  const { dataSource } = useDbContext()
   const [architectures, setArchitectures] = useState<ArchSummary[]>([])
   const { clusters, getExpansionZoom } = useMapClustering(map, architectures)
 
   useEffect(() => {
-    getAllArchitectures().then(setArchitectures)
-  }, [])
+    dataSource?.getAllArchitectures().then(setArchitectures)
+  }, [dataSource])
 
   return (
     <>
