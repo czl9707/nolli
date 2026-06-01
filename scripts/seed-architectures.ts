@@ -22,14 +22,16 @@ const supabase = createClient(
 )
 
 const s3 = new S3Client({
-  region: process.env.AWS_REGION!,
+  region: "auto",
+  endpoint: process.env.R2_ENDPOINT!,
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+    accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
   },
 })
 
-const S3_BUCKET = process.env.S3_BUCKET!
+const R2_BUCKET = process.env.R2_BUCKET!
+const R2_PUBLIC_URL = process.env.R2_PUBLIC_URL!
 
 interface Meta {
   name: string
@@ -209,9 +211,9 @@ async function uploadImage(
   const height = meta.height ?? 0
 
   try {
-    await s3.send(new HeadObjectCommand({ Bucket: S3_BUCKET, Key: key }))
+    await s3.send(new HeadObjectCommand({ Bucket: R2_BUCKET, Key: key }))
     stats.photos.skipped++
-    log(`  S3 exists, skipped: ${key}`)
+    log(`  R2 exists, skipped: ${key}`)
   } catch {
     if (DRY_RUN) {
       log(`  Would upload: ${key} (${width}x${height})`)
@@ -219,7 +221,7 @@ async function uploadImage(
     } else {
       await s3.send(
         new PutObjectCommand({
-          Bucket: S3_BUCKET,
+          Bucket: R2_BUCKET,
           Key: key,
           Body: body,
           ContentType: `image/${ext.replace(".", "")}`,
@@ -231,7 +233,7 @@ async function uploadImage(
   }
 
   return {
-    url: `https://${S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`,
+    url: `${R2_PUBLIC_URL}/${key}`,
     width,
     height,
   }
