@@ -322,7 +322,8 @@ function queryFilterOptions(): FilterOptions {
   return { architects, cities, countries }
 }
 
-self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
+self.onmessage = async (e: MessageEvent<WorkerMessage & { msgId?: number }>) => {
+  const msgId = e.data.msgId
   try {
     const msg = e.data
     switch (msg.type) {
@@ -332,32 +333,37 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
       case "getAllArchitectures":
         self.postMessage({
           type: "result",
+          msgId,
           data: queryAllArchitectures(msg.filter),
-        } as WorkerResponse)
+        } as WorkerResponse & { msgId?: number })
         break
       case "getArchBySlug":
         self.postMessage({
           type: "result",
+          msgId,
           data: queryArchBySlug(msg.slug),
-        } as WorkerResponse)
+        } as WorkerResponse & { msgId?: number })
         break
       case "searchArchitectures":
         self.postMessage({
           type: "result",
+          msgId,
           data: querySearchArchitectures(msg.query),
-        } as WorkerResponse)
+        } as WorkerResponse & { msgId?: number })
         break
       case "getFilterOptions":
         self.postMessage({
           type: "result",
+          msgId,
           data: queryFilterOptions(),
-        } as WorkerResponse)
+        } as WorkerResponse & { msgId?: number })
         break
     }
   } catch (err) {
     self.postMessage({
       type: "error",
+      msgId,
       error: String(err),
-    } as WorkerResponse)
+    } as WorkerResponse & { msgId?: number })
   }
 }
