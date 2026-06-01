@@ -1,5 +1,5 @@
-import type { DataSource, ArchFilter, FilterOptions } from "./data-source"
-import type { ArchSummary, Arch } from "./types"
+import type { DataSource, ArchFilter, FilterOptions } from "./data-source.type"
+import type { ArchSummary, Arch } from "./architectures.type"
 
 type WorkerRequest =
   | { type: "init" }

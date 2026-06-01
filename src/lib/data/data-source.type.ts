@@ -1,4 +1,4 @@
-import type { ArchSummary, Arch, BBox } from "./types"
+import type { ArchSummary, Arch, BBox } from "./architectures.type"
 
 export type ArchFilter = {
   bbox?: BBox

@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useRef, useCallback } from "react"
-import type { DataSource } from "./data-source"
+import type { DataSource } from "./data-source.type"
 import { SqliteDataSource } from "./sqlite-source"
 
 export type DbState = {

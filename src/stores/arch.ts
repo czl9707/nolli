@@ -1,6 +1,6 @@
 import { create } from "zustand"
-import type { Arch } from "@/lib/data/types"
-import type { DataSource } from "@/lib/data/data-source"
+import type { Arch } from "@/lib/data/architectures.type"
+import type { DataSource } from "@/lib/data/data-source.type"
 
 type ArchState = {
   lastSelectedArch: Arch | null

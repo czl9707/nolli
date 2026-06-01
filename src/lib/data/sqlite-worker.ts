@@ -5,8 +5,8 @@ import type {
   SqlValue,
   Sqlite3Static,
 } from "@sqlite.org/sqlite-wasm"
-import type { ArchFilter, FilterOptions } from "./data-source"
-import type { Arch, ArchLinks, ArchSummary } from "./types"
+import type { ArchFilter, FilterOptions } from "./data-source.type"
+import type { Arch, ArchLinks, ArchSummary } from "./architectures.type"
 import {
   SQL_GET_ALL_ARCHITECTURES,
   SQL_GET_ARCHITECTS,
@@ -38,7 +38,7 @@ let sqlite3: Sqlite3Static
 let poolUtil: SAHPoolUtil
 let db: Database
 
-const DB_NAME = "/nolli.db"
+const DB_NAME = "nolli.db"
 const MANIFEST_KEY = "nolli-db-sha256"
 
 let currentManifestHash: string | null = null
