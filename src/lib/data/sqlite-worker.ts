@@ -66,10 +66,9 @@ async function handleInit() {
   sqlite3 = await sqlite3InitModule()
   poolUtil = await sqlite3.installOpfsSAHPoolVfs({})
 
-  const manifestUrl = import.meta.env.VITE_R2_DB_MANIFEST_URL
-  const dbUrl = import.meta.env.VITE_R2_DB_URL
+  const baseUrl = import.meta.env.VITE_VITE_R2_PUBLIC_DB_URL
 
-  if (manifestUrl && dbUrl) {
+  if (baseUrl) {
     const needsDownload = await checkManifest()
     if (needsDownload) {
       await downloadDb()
@@ -83,7 +82,8 @@ async function handleInit() {
 }
 
 async function checkManifest(): Promise<boolean> {
-  const manifestUrl = import.meta.env.VITE_R2_DB_MANIFEST_URL as string
+  const baseUrl = import.meta.env.VITE_VITE_R2_PUBLIC_DB_URL as string
+  const manifestUrl = `${baseUrl}/manifest.json`
   try {
     const response = await fetch(manifestUrl)
     const manifest = (await response.json()) as { sha256: string }
@@ -101,8 +101,10 @@ async function checkManifest(): Promise<boolean> {
 }
 
 async function downloadDb(): Promise<void> {
-  const dbUrl = import.meta.env.VITE_R2_DB_URL as string
-  if (!dbUrl) throw new Error("VITE_R2_DB_URL is not set")
+  const baseUrl = import.meta.env.VITE_VITE_R2_PUBLIC_DB_URL as string
+  if (!baseUrl) throw new Error("VITE_VITE_R2_PUBLIC_DB_URL is not set")
+
+  const dbUrl = `${baseUrl}/latest.db`
 
   const response = await fetch(dbUrl)
   if (!response.ok) {

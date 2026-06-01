@@ -33,7 +33,7 @@ const s3 = new S3Client({
 })
 
 const R2_BUCKET = process.env.R2_BUCKET_IMAGES!
-const R2_PUBLIC_URL = process.env.R2_PUBLIC_URL!
+const VITE_R2_PUBLIC_MAP_URL = process.env.VITE_R2_PUBLIC_MAP_URL!
 
 interface Meta {
   name: string
@@ -235,7 +235,7 @@ async function uploadImage(
   }
 
   return {
-    url: `${R2_PUBLIC_URL}/${key}`,
+    url: `${VITE_R2_PUBLIC_MAP_URL}/${key}`,
     width,
     height,
   }
