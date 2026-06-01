@@ -36,11 +36,28 @@ function log(msg: string) {
   console.log(`[${DRY_RUN ? "DRY-RUN" : "BAKE"}] ${msg}`)
 }
 
-interface RowCounts {
-  [table: string]: number
-}
+type TableName =
+  | "countries"
+  | "cities"
+  | "architects"
+  | "architectures"
+  | "architecture_photos"
+  | "architecture_notes"
+  | "architecture_links"
 
-const rowCounts: RowCounts = {}
+const TABLE_ORDER: TableName[] = [
+  "countries",
+  "cities",
+  "architects",
+  "architectures",
+  "architecture_photos",
+  "architecture_notes",
+  "architecture_links",
+]
+
+type RowCounts = Record<TableName, number>
+
+const rowCounts = {} as RowCounts
 
 function createSchema(db: Database.Database) {
   db.exec(`
@@ -111,11 +128,11 @@ function createSchema(db: Database.Database) {
   `)
 }
 
-async function fetchAllRows<T extends Record<string, unknown>>(
-  table: string,
-  select: string = "*"
-): Promise<T[]> {
-  const allRows: T[] = []
+async function fetchAllRows(
+  table: TableName,
+  select = "*"
+): Promise<Record<string, unknown>[]> {
+  const allRows: Record<string, unknown>[] = []
   let offset = 0
 
   while (true) {
@@ -128,7 +145,7 @@ async function fetchAllRows<T extends Record<string, unknown>>(
     if (error) throw new Error(`Failed to fetch ${table}: ${error.message}`)
     if (!data || data.length === 0) break
 
-    allRows.push(...(data as T[]))
+    allRows.push(...data)
     offset += PAGE_SIZE
 
     if (data.length < PAGE_SIZE) break
@@ -137,7 +154,7 @@ async function fetchAllRows<T extends Record<string, unknown>>(
   return allRows
 }
 
-const TABLE_COLUMNS: Record<string, string[]> = {
+const TABLE_COLUMNS: Record<TableName, readonly string[]> = {
   countries: ["id", "code", "name"],
   cities: ["id", "name", "country_id"],
   architects: ["id", "name", "country_id"],
@@ -173,7 +190,7 @@ const TABLE_COLUMNS: Record<string, string[]> = {
   ],
 }
 
-const TABLE_TRANSFORMS: Record<string, (row: Record<string, unknown>) => unknown[]> = {
+const TABLE_TRANSFORMS: Partial<Record<TableName, (row: Record<string, unknown>) => unknown[]>> = {
   architecture_photos: (row) => [
     row.id,
     row.architecture_id,
@@ -187,8 +204,8 @@ const TABLE_TRANSFORMS: Record<string, (row: Record<string, unknown>) => unknown
 
 async function populateTable(
   db: Database.Database,
-  table: string,
-  columns: string[]
+  table: TableName,
+  columns: readonly string[]
 ) {
   const rows = await fetchAllRows(table)
   const cols = columns.join(", ")
@@ -199,7 +216,10 @@ async function populateTable(
   const transform = TABLE_TRANSFORMS[table]
   db.transaction(() => {
     for (const r of rows) {
-      insert.run(...(transform ? transform(r) : columns.map((c) => r[c])))
+      const values = transform
+        ? transform(r)
+        : columns.map((c) => r[c])
+      insert.run(...values)
     }
   })()
   rowCounts[table] = rows.length
@@ -262,17 +282,7 @@ async function main() {
 
   log("Schema created")
 
-  const tableOrder = [
-    "countries",
-    "cities",
-    "architects",
-    "architectures",
-    "architecture_photos",
-    "architecture_notes",
-    "architecture_links",
-  ]
-
-  for (const table of tableOrder) {
+  for (const table of TABLE_ORDER) {
     await populateTable(db, table, TABLE_COLUMNS[table])
   }
 
