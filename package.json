@@ -11,7 +11,9 @@
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "seed": "tsx scripts/seed-architectures.ts",
     "seed:dry": "tsx scripts/seed-architectures.ts --dry-run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "deploy": "npm run build && wrangler deploy",
+    "preview": "npm run build && wrangler dev"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1056.0",
@@ -31,6 +33,7 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.39.0",
     "@csstools/postcss-global-data": "^4.0.0",
     "@eslint/eslintrc": "^3",
     "@types/geojson": "^7946.0.16",
@@ -46,6 +49,7 @@
     "prettier": "^3.8.1",
     "tsx": "^4.22.3",
     "typescript": "^5.9.3",
-    "vite": "^8.0.13"
+    "vite": "^8.0.13",
+    "wrangler": "^4.95.0"
   }
 }

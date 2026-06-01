@@ -4,6 +4,8 @@ import { cpSync, mkdirSync } from "fs"
 import { join } from "path"
 import type { Plugin } from "vite"
 
+import { cloudflare } from "@cloudflare/vite-plugin";
+
 function copyFontFiles(): Plugin {
   return {
     name: "copy-font-files",
@@ -25,7 +27,7 @@ function copyFontFiles(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [react(), copyFontFiles()],
+  plugins: [react(), copyFontFiles(), cloudflare()],
   resolve: {
     alias: {
       "@": join(process.cwd(), "./src"),

@@ -42,3 +42,9 @@ docs/agents
 
 # seed data
 /scripts/data/
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example
