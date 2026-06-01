@@ -147,6 +147,7 @@ export function MapCore() {
   const navigate = useNavigate()
   const { ready, initialize } = useMapPatterns(mapRef)
   const mode = useLayoutStore((s) => s.mode)
+  const { status } = useDbContext()
 
   const mapStyles = useMemo(
     () => ({
@@ -165,11 +166,18 @@ export function MapCore() {
     [navigate, initialize]
   )
 
+  useEffect(() => {
+    if (status === "error") {
+      navigate("/error")
+    }
+  }, [status, navigate])
+
   const isHome = mode === "home"
+  const isLoading = !ready || status === "loading"
 
   return (
     <div className={styles.container}>
-      <Map ref={handleRef} styles={mapStyles} loading={!ready}>
+      <Map ref={handleRef} styles={mapStyles} loading={isLoading}>
         {isHome && <MapControls showZoom showLocate showFullscreen />}
         <ArchMarkers />
         <MapNavigator />
