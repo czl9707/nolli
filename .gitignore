@@ -43,6 +43,9 @@ docs/agents
 # seed data
 /scripts/data/
 
+# bake output
+nolli-map.db
+
 # wrangler files
 .wrangler
 .dev.vars*
