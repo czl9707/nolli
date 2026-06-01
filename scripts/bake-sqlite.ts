@@ -1,3 +1,5 @@
+import dotenv from "dotenv"
+dotenv.config({ path: [".env.local", ".env"] })
 import { createClient } from "@supabase/supabase-js"
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3"
 import Database from "better-sqlite3"
@@ -21,14 +23,14 @@ const supabase = createClient(
 
 const s3 = new S3Client({
   region: "auto",
-  endpoint: process.env.R2_MAP_DB_ENDPOINT!,
+  endpoint: process.env.R2_ENDPOINT!,
   credentials: {
-    accessKeyId: process.env.R2_MAP_DB_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.R2_MAP_DB_SECRET_ACCESS_KEY!,
+    accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
   },
 })
 
-const R2_BUCKET = "nolli-map-db"
+const R2_BUCKET = process.env.R2_BUCKET_DB!;
 
 function log(msg: string) {
   console.log(`[${DRY_RUN ? "DRY-RUN" : "BAKE"}] ${msg}`)
@@ -135,167 +137,73 @@ async function fetchAllRows<T extends Record<string, unknown>>(
   return allRows
 }
 
-type CountryRow = { id: number; code: string; name: string }
-type CityRow = { id: number; name: string; country_id: number }
-type ArchitectRow = { id: number; name: string; country_id: number }
+const TABLE_COLUMNS: Record<string, string[]> = {
+  countries: ["id", "code", "name"],
+  cities: ["id", "name", "country_id"],
+  architects: ["id", "name", "country_id"],
+  architectures: [
+    "id",
+    "slug",
+    "name",
+    "architect_id",
+    "year",
+    "address",
+    "city_id",
+    "latitude",
+    "longitude",
+    "google_maps_url",
+  ],
+  architecture_photos: [
+    "id",
+    "architecture_id",
+    "image",
+    "caption",
+    "width",
+    "height",
+    "is_cover",
+  ],
+  architecture_notes: ["id", "architecture_id", "text"],
+  architecture_links: [
+    "id",
+    "architecture_id",
+    "type",
+    "url",
+    "label",
+    "sort_order",
+  ],
+}
 
-async function bakeCountries(db: Database.Database) {
-  const rows = await fetchAllRows<CountryRow>("countries")
+const TABLE_TRANSFORMS: Record<string, (row: Record<string, unknown>) => unknown[]> = {
+  architecture_photos: (row) => [
+    row.id,
+    row.architecture_id,
+    row.image,
+    row.caption,
+    row.width,
+    row.height,
+    row.is_cover ? 1 : 0,
+  ],
+}
+
+async function populateTable(
+  db: Database.Database,
+  table: string,
+  columns: string[]
+) {
+  const rows = await fetchAllRows(table)
+  const cols = columns.join(", ")
+  const placeholders = columns.map(() => "?").join(", ")
   const insert = db.prepare(
-    "INSERT OR REPLACE INTO countries (id, code, name) VALUES (?, ?, ?)"
+    `INSERT OR REPLACE INTO ${table} (${cols}) VALUES (${placeholders})`
   )
+  const transform = TABLE_TRANSFORMS[table]
   db.transaction(() => {
-    for (const r of rows) insert.run(r.id, r.code, r.name)
+    for (const r of rows) {
+      insert.run(...(transform ? transform(r) : columns.map((c) => r[c])))
+    }
   })()
-  rowCounts.countries = rows.length
-  log(`Countries: ${rows.length}`)
-}
-
-async function bakeCities(db: Database.Database) {
-  const rows = await fetchAllRows<CityRow>("cities")
-  const insert = db.prepare(
-    "INSERT OR REPLACE INTO cities (id, name, country_id) VALUES (?, ?, ?)"
-  )
-  db.transaction(() => {
-    for (const r of rows) insert.run(r.id, r.name, r.country_id)
-  })()
-  rowCounts.cities = rows.length
-  log(`Cities: ${rows.length}`)
-}
-
-async function bakeArchitects(db: Database.Database) {
-  const rows = await fetchAllRows<ArchitectRow>("architects")
-  const insert = db.prepare(
-    "INSERT OR REPLACE INTO architects (id, name, country_id) VALUES (?, ?, ?)"
-  )
-  db.transaction(() => {
-    for (const r of rows) insert.run(r.id, r.name, r.country_id)
-  })()
-  rowCounts.architects = rows.length
-  log(`Architects: ${rows.length}`)
-}
-
-type ArchRow = {
-  id: number
-  slug: string
-  name: string
-  architect_id: number
-  year: number | null
-  address: string | null
-  city_id: number | null
-  latitude: number
-  longitude: number
-  google_maps_url: string | null
-}
-
-async function bakeArchitectures(db: Database.Database) {
-  const rows = await fetchAllRows<ArchRow>("architectures")
-  const insert = db.prepare(
-    `INSERT OR REPLACE INTO architectures
-      (id, slug, name, architect_id, year, address, city_id, latitude, longitude, google_maps_url)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-  )
-  db.transaction(() => {
-    for (const r of rows)
-      insert.run(
-        r.id,
-        r.slug,
-        r.name,
-        r.architect_id,
-        r.year,
-        r.address,
-        r.city_id,
-        r.latitude,
-        r.longitude,
-        r.google_maps_url
-      )
-  })()
-  rowCounts.architectures = rows.length
-  log(`Architectures: ${rows.length}`)
-}
-
-type PhotoRow = {
-  id: number
-  architecture_id: number
-  image: string
-  caption: string | null
-  width: number | null
-  height: number | null
-  is_cover: boolean
-}
-
-async function bakePhotos(db: Database.Database) {
-  const rows = await fetchAllRows<PhotoRow>("architecture_photos")
-  const insert = db.prepare(
-    `INSERT OR REPLACE INTO architecture_photos
-      (id, architecture_id, image, caption, width, height, is_cover)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`
-  )
-  db.transaction(() => {
-    for (const r of rows)
-      insert.run(
-        r.id,
-        r.architecture_id,
-        r.image,
-        r.caption,
-        r.width,
-        r.height,
-        r.is_cover ? 1 : 0
-      )
-  })()
-  rowCounts.architecture_photos = rows.length
-  log(`Photos: ${rows.length}`)
-}
-
-type NoteRow = {
-  id: number
-  architecture_id: number
-  text: string
-}
-
-async function bakeNotes(db: Database.Database) {
-  const rows = await fetchAllRows<NoteRow>("architecture_notes")
-  const insert = db.prepare(
-    `INSERT OR REPLACE INTO architecture_notes
-      (id, architecture_id, text)
-     VALUES (?, ?, ?)`
-  )
-  db.transaction(() => {
-    for (const r of rows) insert.run(r.id, r.architecture_id, r.text)
-  })()
-  rowCounts.architecture_notes = rows.length
-  log(`Notes: ${rows.length}`)
-}
-
-type LinkRow = {
-  id: number
-  architecture_id: number
-  type: string
-  url: string
-  label: string
-  sort_order: number
-}
-
-async function bakeLinks(db: Database.Database) {
-  const rows = await fetchAllRows<LinkRow>("architecture_links")
-  const insert = db.prepare(
-    `INSERT OR REPLACE INTO architecture_links
-      (id, architecture_id, type, url, label, sort_order)
-     VALUES (?, ?, ?, ?, ?, ?)`
-  )
-  db.transaction(() => {
-    for (const r of rows)
-      insert.run(
-        r.id,
-        r.architecture_id,
-        r.type,
-        r.url,
-        r.label,
-        r.sort_order
-      )
-  })()
-  rowCounts.architecture_links = rows.length
-  log(`Links: ${rows.length}`)
+  rowCounts[table] = rows.length
+  log(`${table}: ${rows.length}`)
 }
 
 async function uploadToR2() {
@@ -354,13 +262,19 @@ async function main() {
 
   log("Schema created")
 
-  await bakeCountries(db)
-  await bakeCities(db)
-  await bakeArchitects(db)
-  await bakeArchitectures(db)
-  await bakePhotos(db)
-  await bakeNotes(db)
-  await bakeLinks(db)
+  const tableOrder = [
+    "countries",
+    "cities",
+    "architects",
+    "architectures",
+    "architecture_photos",
+    "architecture_notes",
+    "architecture_links",
+  ]
+
+  for (const table of tableOrder) {
+    await populateTable(db, table, TABLE_COLUMNS[table])
+  }
 
   db.close()
   log("SQLite closed")
