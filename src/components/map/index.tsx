@@ -31,6 +31,7 @@ function IndividualMarker({
   const selectArch = useArchStore((s) => s.selectArch)
   const deselectArch = useArchStore((s) => s.deselectArch)
   const setOpen = useSidebarStore((s) => s.setOpen)
+  const { dataSource } = useDbContext()
 
   return (
     <MapMarker longitude={point.coordinates[0]} latitude={point.coordinates[1]}>
@@ -41,8 +42,8 @@ function IndividualMarker({
           onClick={() => {
             if (lastSelectedArch?.slug === point.slug) {
               deselectArch()
-            } else {
-              selectArch(point.slug).then((arch) => {
+            } else if (dataSource) {
+              selectArch(point.slug, dataSource).then((arch) => {
                 if (arch) setOpen(true)
               })
             }
