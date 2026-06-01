@@ -43,13 +43,11 @@ function initSource() {
     })
 }
 
-export const useDbStore = create<DbState>(() => {
-  initSource()
+export const useDbStore = create<DbState>(() => ({
+  status: "loading",
+  dataSource: null,
+  error: null,
+  retry: initSource,
+}))
 
-  return {
-    status: "loading",
-    dataSource: null,
-    error: null,
-    retry: initSource,
-  }
-})
+initSource()
