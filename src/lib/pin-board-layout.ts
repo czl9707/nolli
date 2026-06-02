@@ -3,7 +3,7 @@ import type {
   ArchPhoto,
   ArchNote,
   ArchLinks,
-} from "@/lib/data/architectures"
+} from "@/lib/data/architectures.type"
 
 export const CANVAS_W = 2400
 export const CANVAS_H = 1500

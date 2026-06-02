@@ -1,3 +1,5 @@
+import dotenv from "dotenv"
+dotenv.config({ path: [".env.local", ".env"] })
 import { createClient } from "@supabase/supabase-js"
 import {
   S3Client,
@@ -30,8 +32,8 @@ const s3 = new S3Client({
   },
 })
 
-const R2_BUCKET = process.env.R2_BUCKET!
-const R2_PUBLIC_URL = process.env.R2_PUBLIC_URL!
+const R2_BUCKET = process.env.R2_BUCKET_IMAGES!
+const VITE_R2_PUBLIC_IMAGES_URL = process.env.VITE_R2_PUBLIC_IMAGES_URL!
 
 interface Meta {
   name: string
@@ -233,7 +235,7 @@ async function uploadImage(
   }
 
   return {
-    url: `${R2_PUBLIC_URL}/${key}`,
+    url: `${VITE_R2_PUBLIC_IMAGES_URL}/${key}`,
     width,
     height,
   }

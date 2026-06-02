@@ -12,7 +12,7 @@ import {
   MAP_SLOT_Y,
   layoutArchBoard,
 } from "@/lib/pin-board-layout"
-import { TRANSITION_SHORT, DELAY_START } from "@/lib/animation"
+import { TRANSITION_SHORT, DELAY_START } from "@/lib/constants"
 import { MapCore } from "@/components/map"
 import { PinBoardItem } from "./pin-board-item"
 import { Pin } from "@/components/ui/pin"
