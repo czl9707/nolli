@@ -1,6 +1,6 @@
 import sqlite3InitModule from "@sqlite.org/sqlite-wasm"
-import type { Database, SAHPoolUtil, Sqlite3Static, BindingSpec } from "@sqlite.org/sqlite-wasm"
-import type { WorkerResponse } from "./worker-protocol.type"
+import type { Database, SAHPoolUtil, Sqlite3Static, BindingSpec, BindableValue } from "@sqlite.org/sqlite-wasm"
+import type { WorkerResponse, WorkerRequest } from "./worker-protocol.type"
 import type { ArchFilter, FilterOptions } from "./data-source.type"
 import type { Arch, ArchLinks, ArchPhoto, ArchSummary } from "./architectures.type"
 import {
@@ -17,19 +17,16 @@ import {
 } from "./sqlite-queries"
 
 type Row = Record<string, unknown>
-type WorkerInbound = { type: "init"; msgId?: number } | { type: string; msgId: number; [key: string]: unknown }
 
 let db: Database
 const DB_NAME = "nolli.db"
 const MANIFEST_KEY = "nolli-db-sha256"
-const BASE_URL = import.meta.env.VITE_R2_PUBLIC_DB_URL as string | undefined
+const BASE_URL = import.meta.env.VITE_R2_PUBLIC_DB_URL as string
 
-let manifestHash: string | null = null
-
-function query(sql: string, bind?: unknown[]): Row[] {
+function query(sql: string, bind?: BindingSpec): Row[] {
   return db.exec({
     sql,
-    bind: bind as BindingSpec | undefined,
+    bind: bind,
     rowMode: "object",
     returnValue: "resultRows",
   }) as unknown as Row[]
@@ -49,10 +46,6 @@ function setStoredHash(hash: string): void {
   } catch {}
 }
 
-function post(msg: WorkerResponse): void {
-  self.postMessage(msg)
-}
-
 function mapSummaryRow(row: Row): ArchSummary {
   return {
     slug: row.slug as string,
@@ -69,43 +62,55 @@ function mapSummaryRow(row: Row): ArchSummary {
 
 async function handleInit(msgId: number): Promise<void> {
   if (db) {
-    post({ type: "ready", msgId })
+    self.postMessage({ type: "ready", msgId })
     return
   }
 
   const sqlite3: Sqlite3Static = await sqlite3InitModule()
   const poolUtil: SAHPoolUtil = await sqlite3.installOpfsSAHPoolVfs({})
 
-  if (BASE_URL) {
-    if (await checkManifest()) {
-      await downloadDb(poolUtil)
-    }
+  await downloadDbIfNecessary(poolUtil)
+
+  const dbExists = (poolUtil.getFileNames() as string[]).includes(DB_NAME)
+  if (!dbExists) {
+    throw new Error(`Database file "${DB_NAME}" not found in OPFS. Exhausted all way of fetching it.`)
   }
 
   db = new poolUtil.OpfsSAHPoolDb(DB_NAME)
   db.exec("PRAGMA journal_mode=WAL")
 
-  post({ type: "ready", msgId })
+  self.postMessage({ type: "ready", msgId })
 }
 
-async function checkManifest(): Promise<boolean> {
-  if (!BASE_URL) return true
+async function getRemoteHash(): Promise<string> {
+  const res = await fetch(`${BASE_URL}/manifest.json`)
+  if (!res.ok) throw new Error(`Failed to fetch manifest: ${res.status}`)
 
+  const manifest = (await res.json()) as { sha256: string }
+  return manifest.sha256
+}
+
+async function downloadDbIfNecessary(poolUtil: SAHPoolUtil): Promise<void> {
+  const storedHash = getStoredHash()
+  let manifestHash: string | null = null;
   try {
-    const res = await fetch(`${BASE_URL}/manifest.json`)
-    const manifest = (await res.json()) as { sha256: string }
-    manifestHash = manifest.sha256
-    return getStoredHash() !== manifest.sha256
-  } catch {
-    return true
+    manifestHash = await getRemoteHash()
   }
-}
+  catch (err) {
+    console.warn("Failed to get manifest, proceeding without cache check:", err)
+    return;
+  }
 
-async function downloadDb(poolUtil: SAHPoolUtil): Promise<void> {
-  if (!BASE_URL) throw new Error("VITE_R2_PUBLIC_DB_URL is not set")
+  if (storedHash === manifestHash){
+    console.log("DB is up to date, no download needed")
+    return;
+  };
 
   const res = await fetch(`${BASE_URL}/latest.db`)
-  if (!res.ok) throw new Error(`Failed to download DB: ${res.status}`)
+  if (!res.ok) {
+    console.warn(`Failed to download DB (status ${res.status}), proceeding without updating:`, await res.text())
+    return
+  }
 
   const buffer = await res.arrayBuffer()
   await poolUtil.importDb(DB_NAME, buffer)
@@ -116,7 +121,7 @@ async function downloadDb(poolUtil: SAHPoolUtil): Promise<void> {
 function handleGetAllArchitectures(filter: ArchFilter | undefined): ArchSummary[] {
   let sql = SQL_GET_ALL_ARCHITECTURES
   const conditions: string[] = []
-  const params: unknown[] = []
+  const params: BindableValue[] = []
 
   if (filter?.bbox) {
     conditions.push("a.latitude BETWEEN ? AND ?", "a.longitude BETWEEN ? AND ?")
@@ -226,28 +231,31 @@ function handleGetFilterOptions(): FilterOptions {
   return { architects, cities, countries }
 }
 
-self.onmessage = async (e: MessageEvent<WorkerInbound>) => {
+self.onmessage = async (e: MessageEvent<WorkerRequest & { msgId: number }>) => {
   const { type } = e.data
-  const msgId = e.data.msgId ?? 0
+  const msgId = e.data.msgId
+
+  if (type === "init") {
+    // If init fails, the worker will be in a broken state, so we don't want to handle any more messages
+    await handleInit(msgId)
+  }
+
   try {
     switch (type) {
-      case "init":
-        await handleInit(msgId as number)
-        break
       case "getAllArchitectures":
-        post({ type: "getAllArchitectures", msgId, data: handleGetAllArchitectures(e.data.filter as ArchFilter | undefined) })
+        self.postMessage({ type: "getAllArchitectures", msgId, data: handleGetAllArchitectures(e.data.filter as ArchFilter | undefined) })
         break
       case "getArchBySlug":
-        post({ type: "getArchBySlug", msgId, data: handleGetArchBySlug(e.data.slug as string) })
+        self.postMessage({ type: "getArchBySlug", msgId, data: handleGetArchBySlug(e.data.slug as string) })
         break
       case "searchArchitectures":
-        post({ type: "searchArchitectures", msgId, data: handleSearchArchitectures(e.data.query as string) })
+        self.postMessage({ type: "searchArchitectures", msgId, data: handleSearchArchitectures(e.data.query as string) })
         break
       case "getFilterOptions":
-        post({ type: "getFilterOptions", msgId, data: handleGetFilterOptions() })
+        self.postMessage({ type: "getFilterOptions", msgId, data: handleGetFilterOptions() })
         break
     }
   } catch (err) {
-    post({ type: "error", msgId, error: String(err) })
+    self.postMessage({ type: "error", msgId, error: String(err) })
   }
 }
