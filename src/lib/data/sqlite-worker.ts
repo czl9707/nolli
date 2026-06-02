@@ -86,8 +86,8 @@ async function getRemoteHash(): Promise<string> {
   const res = await fetch(`${BASE_URL}/manifest.json`)
   if (!res.ok) throw new Error(`Failed to fetch manifest: ${res.status}`)
 
-  const manifest = (await res.json()) as { sha256: string }
-  return manifest.sha256
+  const manifest = (await res.json()) as { version: string }
+  return manifest.version
 }
 
 async function downloadDbIfNecessary(poolUtil: SAHPoolUtil): Promise<void> {

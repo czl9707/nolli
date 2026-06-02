@@ -28,32 +28,26 @@ export class SqliteDataSource implements DataSource {
     )
 
     this.worker.onmessage = (e: MessageEvent<WorkerResponse>) => {
-      this.handleMessage(e.data)
+      const msg = e.data
+      const pending = this.pending.get(msg.msgId)
+      if (!pending) return
+      this.pending.delete(msg.msgId)
+
+      if (msg.type === "error") {
+        pending.reject(new Error(msg.error))
+      } else {
+        pending.resolve(msg)
+      }
     }
 
     this.worker.onerror = (e: ErrorEvent) => {
       this.initReject(new Error(e.message || "Worker error"))
     }
 
-    this.worker.postMessage({ type: "init" })
+    this.send({ type: "init" }).then(this.initResolve).catch(this.initReject)
   }
 
-  private handleMessage(msg: WorkerResponse) {
-    switch (msg.type) {
-      case "ready":
-        this.initResolve()
-        break
-      case "error":
-        this.pending.get(msg.msgId)?.reject(new Error(msg.error))
-        this.pending.delete(msg.msgId)
-        break
-      default:
-        this.pending.get(msg.msgId)?.resolve(msg)
-        this.pending.delete(msg.msgId)
-    }
-  }
-
-  private send<T extends WorkerRequest>(msg: T): Promise<WorkerResponse> {
+  private send(msg: WorkerRequest): Promise<WorkerResponse> {
     return new Promise((resolve, reject) => {
       const id = this.msgId++
       this.pending.set(id, { resolve, reject })
