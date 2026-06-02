@@ -147,7 +147,8 @@ export function MapCore() {
   const navigate = useNavigate()
   const { ready, initialize } = useMapPatterns(mapRef)
   const mode = useLayoutStore((s) => s.mode)
-  const {loading, error} = useDbStore((s) => ({ loading: s.loading, error: s.error }))
+  const loading = useDbStore((s) => s.loading)
+  const error = useDbStore((s) => s.error)
 
   const mapStyles = useMemo(
     () => ({
