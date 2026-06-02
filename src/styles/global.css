@@ -54,7 +54,7 @@ body {
     --breakpoint-lg: 1440px;
 
     --font-playful: "Architects Daughter";
-    --font-default: 'Inter Variable', sans-serif;;
+    --font-default: 'Inter Variable', sans-serif;
 
     --typography-body1-fontFamily: var(--font-playful);
     --typography-body1-fontWeight: 400;
@@ -127,7 +127,7 @@ body {
     --color-accent-background: 248 248 248;
     --color-accent-foreground: 194 129 52;
 
-    --color-destructive: 231, 0, 11;
+    --color-destructive: 231 0 11;
 
     --border: 1px solid rgb(var(--color-primary-foreground) / 0.25);
 }
@@ -140,7 +140,7 @@ body[data-theme='dark'] {
     --color-accent-background: 23 23 23;
     --color-accent-foreground: 238 163 73;
 
-    --color-destructive: 255, 100, 103;
+    --color-destructive: 255 100 103;
 
     --border: 1px solid rgb(var(--color-primary-foreground) / 0.25);
 }

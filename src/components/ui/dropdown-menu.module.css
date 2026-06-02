@@ -1,8 +1,7 @@
-.content {
+.content,
+.subContent {
   z-index: 50;
-  width: var(--radix-dropdown-menu-trigger-width);
   min-width: 8rem;
-  max-height: var(--radix-dropdown-menu-content-available-height);
   overflow-x: hidden;
   overflow-y: auto;
   border-radius: var(--size-border-radius);
@@ -11,170 +10,124 @@
   padding: 0.25rem;
   box-shadow: var(--shadow-md), var(--shadow-ring);
   transform-origin: var(--radix-dropdown-menu-content-transform-origin);
-  animation: fadeIn var(--transition-instant) ease-out;
-
-  &[data-side="bottom"]:not([data-state="closed"]) {
-    animation: slideUp var(--transition-instant) ease-out;
-  }
-
-  &[data-side="top"]:not([data-state="closed"]) {
-    animation: slideDown var(--transition-instant) ease-out;
-  }
-
-  &[data-side="left"]:not([data-state="closed"]) {
-    animation: slideRight var(--transition-instant) ease-out;
-  }
-
-  &[data-side="right"]:not([data-state="closed"]) {
-    animation: slideLeft var(--transition-instant) ease-out;
-  }
-
-  &[data-state="closed"] {
-    overflow: hidden;
-    animation: fadeOut var(--transition-instant) ease-in forwards;
-  }
-
-  &[data-state="closed"][data-side="bottom"] {
-    animation: slideDownOut var(--transition-instant) ease-in forwards;
-  }
-
-  &[data-state="closed"][data-side="top"] {
-    animation: slideUpOut var(--transition-instant) ease-in forwards;
-  }
-
-  &[data-state="closed"][data-side="left"] {
-    animation: slideLeftOut var(--transition-instant) ease-in forwards;
-  }
-
-  &[data-state="closed"][data-side="right"] {
-    animation: slideRightOut var(--transition-instant) ease-in forwards;
-  }
 }
 
-.item {
-  position: relative;
-  display: flex;
-  cursor: default;
-  align-items: center;
-  gap: 0.375rem;
-  border-radius: var(--size-border-radius);
-  padding: 0.375rem 0.5rem;
-  outline: none;
-  user-select: none;
-  color: rgb(var(--color-primary-foreground));
-
-  &:focus {
-    background-color: rgb(var(--color-secondary-background));
-    color: rgb(var(--color-primary-foreground));
-  }
-
-  &[data-inset] {
-    padding-left: 1.75rem;
-  }
-
-  &[data-variant="destructive"] {
-    color: rgb(var(--color-destructive));
-  }
-
-  &[data-variant="destructive"]:focus {
-    background-color: rgb(var(--color-destructive) / 0.1);
-    color: rgb(var(--color-destructive));
-  }
-
-  body[data-theme="dark"] &[data-variant="destructive"]:focus {
-    background-color: rgb(var(--color-destructive) / 0.2);
-  }
-
-  &[data-variant="destructive"] svg {
-    color: rgb(var(--color-destructive));
-  }
-
-  &[data-disabled] {
-    pointer-events: none;
-    opacity: 0.5;
-  }
-
-  & svg {
-    pointer-events: none;
-    flex-shrink: 0;
-  }
-
-  & svg:not([class*="size-"]) {
-    width: 1rem;
-    height: 1rem;
-  }
+.content {
+  width: var(--radix-dropdown-menu-trigger-width);
+  max-height: var(--radix-dropdown-menu-content-available-height);
 }
 
-.checkboxItem {
-  position: relative;
-  display: flex;
-  cursor: default;
-  align-items: center;
-  gap: 0.375rem;
-  border-radius: var(--size-border-radius);
-  padding: 0.375rem 2rem 0.375rem 0.5rem;
-  outline: none;
-  user-select: none;
-
-  &:focus {
-    background-color: rgb(var(--color-secondary-background));
-    color: rgb(var(--color-primary-foreground));
-  }
-
-  &[data-inset] {
-    padding-left: 1.75rem;
-  }
-
-  &[data-disabled] {
-    pointer-events: none;
-    opacity: 0.5;
-  }
-
-  & svg {
-    pointer-events: none;
-    flex-shrink: 0;
-  }
-
-  & svg:not([class*="size-"]) {
-    width: 1rem;
-    height: 1rem;
-  }
+.subContent {
+  min-width: 6rem;
+  overflow: hidden;
 }
 
-.radioItem {
+:is(.content, .subContent)[data-side="bottom"]:not([data-state="closed"]) {
+  animation: slideUp var(--transition-instant) ease-out;
+}
+
+:is(.content, .subContent)[data-side="top"]:not([data-state="closed"]) {
+  animation: slideDown var(--transition-instant) ease-out;
+}
+
+:is(.content, .subContent)[data-side="left"]:not([data-state="closed"]) {
+  animation: slideRight var(--transition-instant) ease-out;
+}
+
+:is(.content, .subContent)[data-side="right"]:not([data-state="closed"]) {
+  animation: slideLeft var(--transition-instant) ease-out;
+}
+
+:is(.content, .subContent)[data-state="closed"] {
+  overflow: hidden;
+  animation: fadeOut var(--transition-instant) ease-in forwards;
+}
+
+:is(.content, .subContent)[data-state="closed"][data-side="bottom"] {
+  animation: slideDownOut var(--transition-instant) ease-in forwards;
+}
+
+:is(.content, .subContent)[data-state="closed"][data-side="top"] {
+  animation: slideUpOut var(--transition-instant) ease-in forwards;
+}
+
+:is(.content, .subContent)[data-state="closed"][data-side="left"] {
+  animation: slideLeftOut var(--transition-instant) ease-in forwards;
+}
+
+:is(.content, .subContent)[data-state="closed"][data-side="right"] {
+  animation: slideRightOut var(--transition-instant) ease-in forwards;
+}
+
+.item,
+.checkboxItem,
+.radioItem,
+.subTrigger {
   position: relative;
   display: flex;
   cursor: default;
   align-items: center;
   gap: 0.375rem;
   border-radius: calc(var(--size-border-radius) * 0.75);
-  padding: 0.375rem 2rem 0.375rem 0.5rem;
+  padding: 0.375rem 0.5rem;
   outline: none;
   user-select: none;
+}
 
-  &:focus {
-    background-color: rgb(var(--color-secondary-background));
-    color: rgb(var(--color-primary-foreground));
-  }
+:is(.item, .checkboxItem, .radioItem, .subTrigger):focus {
+  background-color: rgb(var(--color-secondary-background));
+  color: rgb(var(--color-primary-foreground));
+}
 
-  &[data-inset] {
-    padding-left: 1.75rem;
-  }
+:is(.item, .checkboxItem, .radioItem, .subTrigger)[data-inset] {
+  padding-left: 1.75rem;
+}
 
-  &[data-disabled] {
-    pointer-events: none;
-    opacity: 0.5;
-  }
+:is(.item, .checkboxItem, .radioItem, .subTrigger)[data-disabled] {
+  pointer-events: none;
+  opacity: 0.5;
+}
 
-  & svg {
-    pointer-events: none;
-    flex-shrink: 0;
-  }
+:is(.item, .checkboxItem, .radioItem, .subTrigger) svg {
+  pointer-events: none;
+  flex-shrink: 0;
+}
 
-  & svg:not([class*="size-"]) {
-    width: 1rem;
-    height: 1rem;
-  }
+:is(.item, .checkboxItem, .radioItem, .subTrigger) svg:not([class*="size-"]) {
+  width: 1rem;
+  height: 1rem;
+}
+
+.item {
+  border-radius: var(--size-border-radius);
+  color: rgb(var(--color-primary-foreground));
+}
+
+.item[data-variant="destructive"] {
+  color: rgb(var(--color-destructive));
+}
+
+.item[data-variant="destructive"]:focus {
+  background-color: rgb(var(--color-destructive) / 0.1);
+  color: rgb(var(--color-destructive));
+}
+
+body[data-theme="dark"] .item[data-variant="destructive"]:focus {
+  background-color: rgb(var(--color-destructive) / 0.2);
+}
+
+.item[data-variant="destructive"] svg {
+  color: rgb(var(--color-destructive));
+}
+
+.checkboxItem,
+.radioItem {
+  padding: 0.375rem 2rem 0.375rem 0.5rem;
+}
+
+.subTrigger[data-state="open"] {
+  background-color: rgb(var(--color-secondary-background));
+  color: rgb(var(--color-primary-foreground));
 }
 
 .checkIndicator {
@@ -211,92 +164,8 @@
   color: rgb(var(--color-primary-foreground));
 }
 
-.subTrigger {
-  display: flex;
-  cursor: default;
-  align-items: center;
-  gap: 0.375rem;
-  border-radius: calc(var(--size-border-radius) * 0.75);
-  padding: 0.375rem 0.5rem;
-  outline: none;
-  user-select: none;
-
-  &:focus {
-    background-color: rgb(var(--color-secondary-background));
-    color: rgb(var(--color-primary-foreground));
-  }
-
-  &[data-inset] {
-    padding-left: 1.75rem;
-  }
-
-  &[data-state="open"] {
-    background-color: rgb(var(--color-secondary-background));
-    color: rgb(var(--color-primary-foreground));
-  }
-
-  & svg {
-    pointer-events: none;
-    flex-shrink: 0;
-  }
-
-  & svg:not([class*="size-"]) {
-    width: 1rem;
-    height: 1rem;
-  }
-}
-
 .subTriggerChevron {
   margin-left: auto;
-}
-
-.subContent {
-  z-index: 50;
-  min-width: 6rem;
-  overflow: hidden;
-  border-radius: var(--size-border-radius);
-  background-color: rgb(var(--color-primary-background));
-  color: rgb(var(--color-primary-foreground));
-  padding: 0.25rem;
-  box-shadow: var(--shadow-md), var(--shadow-ring);
-  transform-origin: var(--radix-dropdown-menu-content-transform-origin);
-  animation: fadeIn var(--transition-instant) ease-out;
-
-  &[data-side="bottom"]:not([data-state="closed"]) {
-    animation: slideUp var(--transition-instant) ease-out;
-  }
-
-  &[data-side="top"]:not([data-state="closed"]) {
-    animation: slideDown var(--transition-instant) ease-out;
-  }
-
-  &[data-side="left"]:not([data-state="closed"]) {
-    animation: slideRight var(--transition-instant) ease-out;
-  }
-
-  &[data-side="right"]:not([data-state="closed"]) {
-    animation: slideLeft var(--transition-instant) ease-out;
-  }
-
-  &[data-state="closed"] {
-    animation: fadeOut var(--transition-instant) ease-in forwards;
-  }
-
-  &[data-state="closed"][data-side="bottom"] {
-    animation: slideDownOut var(--transition-instant) ease-in forwards;
-  }
-
-  &[data-state="closed"][data-side="top"] {
-    animation: slideUpOut var(--transition-instant) ease-in forwards;
-  }
-
-  &[data-state="closed"][data-side="left"] {
-    animation: slideLeftOut var(--transition-instant) ease-in forwards;
-  }
-
-  &[data-state="closed"][data-side="right"] {
-    animation: slideRightOut var(--transition-instant) ease-in forwards;
-  }
 }
 
 @keyframes fadeIn {

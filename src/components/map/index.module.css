@@ -5,29 +5,7 @@
   flex-direction: row;
 }
 
-.individualMarker {
-  stroke-width: 1;
-  stroke: rgb(var(--color-primary-foreground));
-  fill: rgb(var(--color-accent-foreground));
-  width: 24px;
-  height: 24px;
-  transition: all var(--transition-short) ease;
-
-  &[data-selected="true"] {
-    stroke-width: 1.5;
-    width: 30px;
-    height: 30px;
-    transform: translateY(-.25rem);
-  }
-
-  &:hover {
-    stroke-width: 1.5;
-    width: 30px;
-    height: 30px;
-    transform: translateY(-.25rem);
-  }
-}
-
+.individualMarker,
 .clusterMarker {
   stroke-width: 1;
   stroke: rgb(var(--color-primary-foreground));
@@ -35,11 +13,12 @@
   width: 24px;
   height: 24px;
   transition: all var(--transition-short) ease;
-  
-  &:hover {
-    stroke-width: 1.5;
-    width: 30px;
-    height: 30px;
-    transform: translateY(-.25rem);
-  }
+}
+
+.individualMarker[data-selected="true"],
+:is(.individualMarker, .clusterMarker):hover {
+  stroke-width: 1.5;
+  width: 30px;
+  height: 30px;
+  transform: translateY(-0.25rem);
 }
