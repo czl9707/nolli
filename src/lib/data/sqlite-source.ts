@@ -1,22 +1,9 @@
 import type { DataSource, ArchFilter, FilterOptions } from "./data-source.type"
 import type { ArchSummary, Arch } from "./architectures.type"
-
-type WorkerRequest =
-  | { type: "init" }
-  | { type: "getAllArchitectures"; msgId: number; filter?: ArchFilter }
-  | { type: "getArchBySlug"; msgId: number; slug: string }
-  | { type: "searchArchitectures"; msgId: number; query: string }
-  | { type: "getFilterOptions"; msgId: number }
-
-type WorkerResponse =
-  | { type: "ready" }
-  | { type: "error"; msgId?: number; error: string }
-  | { type: "result"; msgId: number; data: unknown }
-
-export type DbStatus = "loading" | "ready" | "error"
+import type { WorkerRequest, WorkerResponse } from "./worker-protocol.type"
 
 type PendingMessage = {
-  resolve: (data: unknown) => void
+  resolve: (response: WorkerResponse) => void
   reject: (error: Error) => void
 }
 
@@ -26,8 +13,6 @@ export class SqliteDataSource implements DataSource {
   private pending = new Map<number, PendingMessage>()
   private initResolve!: () => void
   private initReject!: (err: Error) => void
-  private _status: DbStatus = "loading"
-  private _error: Error | null = null
 
   readonly ready: Promise<void>
 
@@ -47,95 +32,56 @@ export class SqliteDataSource implements DataSource {
     }
 
     this.worker.onerror = (e: ErrorEvent) => {
-      const err = new Error(e.message || "Worker error")
-      this._status = "error"
-      this._error = err
-      this.initReject(err)
-      this.rejectAll(err)
+      this.initReject(new Error(e.message || "Worker error"))
     }
 
-    this.worker.postMessage({ type: "init" } as WorkerRequest)
+    this.worker.postMessage({ type: "init" })
   }
 
   private handleMessage(msg: WorkerResponse) {
-    if (msg.type === "ready") {
-      this._status = "ready"
-      this._error = null
-      this.initResolve()
-      return
-    }
-
-    if (msg.type === "error") {
-      const err = new Error(msg.error)
-      if (msg.msgId != null) {
-        const pending = this.pending.get(msg.msgId)
-        if (pending) {
-          this.pending.delete(msg.msgId)
-          pending.reject(err)
-        }
-      } else {
-        this._status = "error"
-        this._error = err
-        this.rejectAll(err)
-      }
-      return
-    }
-
-    if (msg.type === "result") {
-      const pending = this.pending.get(msg.msgId)
-      if (pending) {
+    switch (msg.type) {
+      case "ready":
+        this.initResolve()
+        break
+      case "error":
+        this.pending.get(msg.msgId)?.reject(new Error(msg.error))
         this.pending.delete(msg.msgId)
-        pending.resolve(msg.data)
-      }
+        break
+      default:
+        this.pending.get(msg.msgId)?.resolve(msg)
+        this.pending.delete(msg.msgId)
     }
   }
 
-  private rejectAll(err: Error) {
-    for (const [id, pending] of this.pending) {
-      this.pending.delete(id)
-      pending.reject(err)
-    }
-  }
-
-  private send<T>(msg: Record<string, unknown>): Promise<T> {
+  private send<T extends WorkerRequest>(msg: T): Promise<WorkerResponse> {
     return new Promise((resolve, reject) => {
       const id = this.msgId++
-      this.pending.set(id, {
-        resolve: (data) => resolve(data as T),
-        reject,
-      })
-      this.worker.postMessage({ ...msg, msgId: id } as WorkerRequest)
+      this.pending.set(id, { resolve, reject })
+      this.worker.postMessage({ ...msg, msgId: id })
     })
   }
 
-  getStatus(): DbStatus {
-    return this._status
-  }
-
-  getError(): Error | null {
-    return this._error
-  }
-
   getAllArchitectures(filter?: ArchFilter): Promise<ArchSummary[]> {
-    return this.send<ArchSummary[]>({ type: "getAllArchitectures", filter })
+    return this.send({ type: "getAllArchitectures", filter })
+      .then((res) => (res as { data: ArchSummary[] }).data)
   }
 
   getArchBySlug(slug: string): Promise<Arch | null> {
-    return this.send<Arch | null>({ type: "getArchBySlug", slug })
+    return this.send({ type: "getArchBySlug", slug })
+      .then((res) => (res as { data: Arch | null }).data)
   }
 
   searchArchitectures(query: string): Promise<ArchSummary[]> {
-    return this.send<ArchSummary[]>({ type: "searchArchitectures", query })
+    return this.send({ type: "searchArchitectures", query })
+      .then((res) => (res as { data: ArchSummary[] }).data)
   }
 
   getFilterOptions(): Promise<FilterOptions> {
-    return this.send<FilterOptions>({ type: "getFilterOptions" })
+    return this.send({ type: "getFilterOptions" })
+      .then((res) => (res as { data: FilterOptions }).data)
   }
 
   destroy() {
-    this.rejectAll(new Error("DataSource destroyed"))
     this.worker.terminate()
-    this._status = "error"
-    this._error = new Error("Destroyed")
   }
 }

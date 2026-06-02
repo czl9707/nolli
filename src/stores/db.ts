@@ -3,10 +3,9 @@ import type { DataSource } from "@/lib/data/data-source.type"
 import { SqliteDataSource } from "@/lib/data/sqlite-source"
 
 type DbState = {
-  status: "loading" | "ready" | "error"
+  loading: boolean
   dataSource: DataSource | null
   error: Error | null
-  retry: () => void
 }
 
 let sourceRef: SqliteDataSource | null = null
@@ -18,7 +17,7 @@ function initSource() {
   }
 
   useDbStore.setState({
-    status: "loading",
+    loading: true,
     dataSource: null,
     error: null,
   })
@@ -29,14 +28,14 @@ function initSource() {
   source.ready
     .then(() => {
       useDbStore.setState({
-        status: "ready",
+        loading: false,
         dataSource: source,
         error: null,
       })
     })
     .catch((err: Error) => {
       useDbStore.setState({
-        status: "error",
+        loading: false,
         dataSource: null,
         error: err,
       })
@@ -44,10 +43,9 @@ function initSource() {
 }
 
 export const useDbStore = create<DbState>(() => ({
-  status: "loading",
   dataSource: null,
   error: null,
-  retry: initSource,
+  loading: true
 }))
 
 initSource()

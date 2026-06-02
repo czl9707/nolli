@@ -1,12 +1,8 @@
 import sqlite3InitModule from "@sqlite.org/sqlite-wasm"
-import type {
-  Database,
-  SAHPoolUtil,
-  SqlValue,
-  Sqlite3Static,
-} from "@sqlite.org/sqlite-wasm"
+import type { Database, SAHPoolUtil, Sqlite3Static, BindingSpec } from "@sqlite.org/sqlite-wasm"
+import type { WorkerResponse } from "./worker-protocol.type"
 import type { ArchFilter, FilterOptions } from "./data-source.type"
-import type { Arch, ArchLinks, ArchSummary } from "./architectures.type"
+import type { Arch, ArchLinks, ArchPhoto, ArchSummary } from "./architectures.type"
 import {
   SQL_GET_ALL_ARCHITECTURES,
   SQL_GET_ARCHITECTS,
@@ -20,30 +16,44 @@ import {
   SQL_SEARCH_ARCHITECTURES,
 } from "./sqlite-queries"
 
-type WorkerMessage =
-  | { type: "init" }
-  | { type: "getAllArchitectures"; filter?: ArchFilter }
-  | { type: "getArchBySlug"; slug: string }
-  | { type: "searchArchitectures"; query: string }
-  | { type: "getFilterOptions" }
+type Row = Record<string, unknown>
+type WorkerInbound = { type: "init"; msgId?: number } | { type: string; msgId: number; [key: string]: unknown }
 
-type WorkerResponse =
-  | { type: "ready" }
-  | { type: "error"; error: string }
-  | { type: "result"; data: unknown }
-
-type Row = Record<string, SqlValue>
-
-let sqlite3: Sqlite3Static
-let poolUtil: SAHPoolUtil
 let db: Database
-
 const DB_NAME = "nolli.db"
 const MANIFEST_KEY = "nolli-db-sha256"
+const BASE_URL = import.meta.env.VITE_R2_PUBLIC_DB_URL as string | undefined
 
-let currentManifestHash: string | null = null
+let manifestHash: string | null = null
 
-function mapRowToSummary(row: Row): ArchSummary {
+function query(sql: string, bind?: unknown[]): Row[] {
+  return db.exec({
+    sql,
+    bind: bind as BindingSpec | undefined,
+    rowMode: "object",
+    returnValue: "resultRows",
+  }) as unknown as Row[]
+}
+
+function getStoredHash(): string | null {
+  try {
+    return localStorage.getItem(MANIFEST_KEY)
+  } catch {
+    return null
+  }
+}
+
+function setStoredHash(hash: string): void {
+  try {
+    localStorage.setItem(MANIFEST_KEY, hash)
+  } catch {}
+}
+
+function post(msg: WorkerResponse): void {
+  self.postMessage(msg)
+}
+
+function mapSummaryRow(row: Row): ArchSummary {
   return {
     slug: row.slug as string,
     name: row.name as string,
@@ -57,152 +67,93 @@ function mapRowToSummary(row: Row): ArchSummary {
   }
 }
 
-async function handleInit() {
+async function handleInit(msgId: number): Promise<void> {
   if (db) {
-    self.postMessage({ type: "ready" } as WorkerResponse)
+    post({ type: "ready", msgId })
     return
   }
 
-  sqlite3 = await sqlite3InitModule()
-  poolUtil = await sqlite3.installOpfsSAHPoolVfs({})
+  const sqlite3: Sqlite3Static = await sqlite3InitModule()
+  const poolUtil: SAHPoolUtil = await sqlite3.installOpfsSAHPoolVfs({})
 
-  const baseUrl = import.meta.env.VITE_R2_PUBLIC_DB_URL
-
-  if (baseUrl) {
-    const needsDownload = await checkManifest()
-    if (needsDownload) {
-      await downloadDb()
+  if (BASE_URL) {
+    if (await checkManifest()) {
+      await downloadDb(poolUtil)
     }
   }
 
   db = new poolUtil.OpfsSAHPoolDb(DB_NAME)
   db.exec("PRAGMA journal_mode=WAL")
 
-  self.postMessage({ type: "ready" } as WorkerResponse)
+  post({ type: "ready", msgId })
 }
 
 async function checkManifest(): Promise<boolean> {
-  const baseUrl = import.meta.env.VITE_R2_PUBLIC_DB_URL as string
-  const manifestUrl = `${baseUrl}/manifest.json`
+  if (!BASE_URL) return true
+
   try {
-    const response = await fetch(manifestUrl)
-    const manifest = (await response.json()) as { sha256: string }
-    currentManifestHash = manifest.sha256
-
-    const stored =
-      (globalThis as unknown as { localStorage: Storage }).localStorage?.getItem(
-        MANIFEST_KEY,
-      ) ?? null
-
-    return stored !== manifest.sha256
+    const res = await fetch(`${BASE_URL}/manifest.json`)
+    const manifest = (await res.json()) as { sha256: string }
+    manifestHash = manifest.sha256
+    return getStoredHash() !== manifest.sha256
   } catch {
     return true
   }
 }
 
-async function downloadDb(): Promise<void> {
-  const baseUrl = import.meta.env.VITE_R2_PUBLIC_DB_URL as string
-  if (!baseUrl) throw new Error("VITE_R2_PUBLIC_DB_URL is not set")
+async function downloadDb(poolUtil: SAHPoolUtil): Promise<void> {
+  if (!BASE_URL) throw new Error("VITE_R2_PUBLIC_DB_URL is not set")
 
-  const dbUrl = `${baseUrl}/latest.db`
+  const res = await fetch(`${BASE_URL}/latest.db`)
+  if (!res.ok) throw new Error(`Failed to download DB: ${res.status}`)
 
-  const response = await fetch(dbUrl)
-  if (!response.ok) {
-    throw new Error(`Failed to download DB: ${response.status}`)
-  }
-
-  const buffer = await response.arrayBuffer()
+  const buffer = await res.arrayBuffer()
   await poolUtil.importDb(DB_NAME, buffer)
 
-  if (currentManifestHash) {
-    try {
-      ;(
-        globalThis as unknown as { localStorage: Storage }
-      ).localStorage?.setItem(MANIFEST_KEY, currentManifestHash)
-    } catch {}
-  }
+  if (manifestHash) setStoredHash(manifestHash)
 }
 
-function queryAllArchitectures(filter?: ArchFilter): ArchSummary[] {
+function handleGetAllArchitectures(filter: ArchFilter | undefined): ArchSummary[] {
   let sql = SQL_GET_ALL_ARCHITECTURES
   const conditions: string[] = []
-  const params: SqlValue[] = []
+  const params: unknown[] = []
 
   if (filter?.bbox) {
-    conditions.push("a.latitude BETWEEN ? AND ?")
-    conditions.push("a.longitude BETWEEN ? AND ?")
-    params.push(
-      filter.bbox.south,
-      filter.bbox.north,
-      filter.bbox.west,
-      filter.bbox.east,
-    )
+    conditions.push("a.latitude BETWEEN ? AND ?", "a.longitude BETWEEN ? AND ?")
+    params.push(filter.bbox.south, filter.bbox.north, filter.bbox.west, filter.bbox.east)
   }
   if (filter?.architectIds?.length) {
-    const placeholders = filter.architectIds.map(() => "?").join(", ")
-    conditions.push(`a.architect_id IN (${placeholders})`)
+    conditions.push(`a.architect_id IN (${filter.architectIds.map(() => "?").join(", ")})`)
     params.push(...filter.architectIds)
   }
   if (filter?.cityIds?.length) {
-    const placeholders = filter.cityIds.map(() => "?").join(", ")
-    conditions.push(`a.city_id IN (${placeholders})`)
+    conditions.push(`a.city_id IN (${filter.cityIds.map(() => "?").join(", ")})`)
     params.push(...filter.cityIds)
   }
   if (filter?.countryCodes?.length) {
-    const placeholders = filter.countryCodes.map(() => "?").join(", ")
-    conditions.push(`c.code IN (${placeholders})`)
+    conditions.push(`c.code IN (${filter.countryCodes.map(() => "?").join(", ")})`)
     params.push(...filter.countryCodes)
   }
 
-  if (conditions.length > 0) {
-    sql += " WHERE " + conditions.join(" AND ")
-  }
+  if (conditions.length > 0) sql += " WHERE " + conditions.join(" AND ")
 
-  const rows = db.exec({
-    sql,
-    bind: params,
-    rowMode: "object",
-    returnValue: "resultRows",
-  })
-
-  return rows.map(mapRowToSummary)
+  return query(sql, params).map(mapSummaryRow)
 }
 
-function queryArchBySlug(slug: string): Arch | null {
-  const idRows = db.exec({
-    sql: SQL_GET_ARCHITECTURE_ID_BY_SLUG,
-    bind: [slug],
-    rowMode: "object",
-    returnValue: "resultRows",
-  })
-
+function handleGetArchBySlug(slug: string): Arch | null {
+  const idRows = query(SQL_GET_ARCHITECTURE_ID_BY_SLUG, [slug])
   if (!idRows.length) return null
 
   const archId = idRows[0].id as number
+  const rows = query(SQL_GET_ARCH_BY_SLUG, [slug])
+  if (!rows.length) return null
 
-  const archRows = db.exec({
-    sql: SQL_GET_ARCH_BY_SLUG,
-    bind: [slug],
-    rowMode: "object",
-    returnValue: "resultRows",
-  })
+  const row = rows[0]
 
-  if (!archRows.length) return null
-
-  const row = archRows[0]
-
-  const photoRows = db.exec({
-    sql: SQL_GET_PHOTOS,
-    bind: [archId],
-    rowMode: "object",
-    returnValue: "resultRows",
-  })
-
+  const photoRows = query(SQL_GET_PHOTOS, [archId])
   let coverImage: string | null = null
-  const photos = photoRows.map((pr) => {
-    if (pr.is_cover) {
-      coverImage = pr.image as string
-    }
+  const photos: ArchPhoto[] = photoRows.map((pr) => {
+    if (pr.is_cover) coverImage = pr.image as string
     return {
       image: pr.image as string,
       caption: (pr.caption as string | null) ?? undefined,
@@ -211,52 +162,31 @@ function queryArchBySlug(slug: string): Arch | null {
     }
   })
 
-  const noteRows = db.exec({
-    sql: SQL_GET_NOTES,
-    bind: [archId],
-    rowMode: "object",
-    returnValue: "resultRows",
-  })
-
-  const notes = noteRows.map((nr) => ({
+  const notes = query(SQL_GET_NOTES, [archId]).map((nr) => ({
     text: nr.text as string,
   }))
 
-  const linkRows = db.exec({
-    sql: SQL_GET_LINKS,
-    bind: [archId],
-    rowMode: "object",
-    returnValue: "resultRows",
-  })
-
-  const links: ArchLinks = {
-    googleMaps: (row.google_maps_url as string) || "",
-  }
+  const links: ArchLinks = { googleMaps: (row.google_maps_url as string) || "" }
   const custom: { url: string; label: string }[] = []
 
-  for (const lr of linkRows) {
-    const linkType = lr.type as string
-    const linkUrl = lr.url as string
-
-    switch (linkType) {
+  for (const lr of query(SQL_GET_LINKS, [archId])) {
+    switch (lr.type as string) {
       case "google_maps":
-        links.googleMaps = linkUrl
+        links.googleMaps = lr.url as string
         break
       case "wikipedia":
-        links.wikipedia = linkUrl
+        links.wikipedia = lr.url as string
         break
       case "archdaily":
-        links.archdaily = linkUrl
+        links.archdaily = lr.url as string
         break
       default:
-        custom.push({ url: linkUrl, label: lr.label as string })
+        custom.push({ url: lr.url as string, label: lr.label as string })
         break
     }
   }
 
-  if (custom.length > 0) {
-    links.custom = custom
-  }
+  if (custom.length > 0) links.custom = custom
 
   return {
     slug: row.slug as string,
@@ -275,97 +205,49 @@ function queryArchBySlug(slug: string): Arch | null {
   }
 }
 
-function querySearchArchitectures(query: string): ArchSummary[] {
-  const rows = db.exec({
-    sql: SQL_SEARCH_ARCHITECTURES,
-    bind: [query, query, query],
-    rowMode: "object",
-    returnValue: "resultRows",
-  })
-
-  return rows.map(mapRowToSummary)
+function handleSearchArchitectures(q: string): ArchSummary[] {
+  return query(SQL_SEARCH_ARCHITECTURES, [q, q, q]).map(mapSummaryRow)
 }
 
-function queryFilterOptions(): FilterOptions {
-  const architects = db
-    .exec({
-      sql: SQL_GET_ARCHITECTS,
-      rowMode: "object",
-      returnValue: "resultRows",
-    })
-    .map((r) => ({
-      id: r.id as number,
-      name: r.name as string,
-    }))
-
-  const cities = db
-    .exec({
-      sql: SQL_GET_CITIES,
-      rowMode: "object",
-      returnValue: "resultRows",
-    })
-    .map((r) => ({
-      id: r.id as number,
-      name: r.name as string,
-      countryCode: r.country_code as string,
-    }))
-
-  const countries = db
-    .exec({
-      sql: SQL_GET_COUNTRIES,
-      rowMode: "object",
-      returnValue: "resultRows",
-    })
-    .map((r) => ({
-      code: r.code as string,
-      name: r.name as string,
-    }))
-
+function handleGetFilterOptions(): FilterOptions {
+  const architects = query(SQL_GET_ARCHITECTS).map((r) => ({
+    id: r.id as number,
+    name: r.name as string,
+  }))
+  const cities = query(SQL_GET_CITIES).map((r) => ({
+    id: r.id as number,
+    name: r.name as string,
+    countryCode: r.country_code as string,
+  }))
+  const countries = query(SQL_GET_COUNTRIES).map((r) => ({
+    code: r.code as string,
+    name: r.name as string,
+  }))
   return { architects, cities, countries }
 }
 
-self.onmessage = async (e: MessageEvent<WorkerMessage & { msgId?: number }>) => {
-  const msgId = e.data.msgId
+self.onmessage = async (e: MessageEvent<WorkerInbound>) => {
+  const { type } = e.data
+  const msgId = e.data.msgId ?? 0
   try {
-    const msg = e.data
-    switch (msg.type) {
+    switch (type) {
       case "init":
-        await handleInit()
+        await handleInit(msgId as number)
         break
       case "getAllArchitectures":
-        self.postMessage({
-          type: "result",
-          msgId,
-          data: queryAllArchitectures(msg.filter),
-        } as WorkerResponse & { msgId?: number })
+        post({ type: "getAllArchitectures", msgId, data: handleGetAllArchitectures(e.data.filter as ArchFilter | undefined) })
         break
       case "getArchBySlug":
-        self.postMessage({
-          type: "result",
-          msgId,
-          data: queryArchBySlug(msg.slug),
-        } as WorkerResponse & { msgId?: number })
+        post({ type: "getArchBySlug", msgId, data: handleGetArchBySlug(e.data.slug as string) })
         break
       case "searchArchitectures":
-        self.postMessage({
-          type: "result",
-          msgId,
-          data: querySearchArchitectures(msg.query),
-        } as WorkerResponse & { msgId?: number })
+        post({ type: "searchArchitectures", msgId, data: handleSearchArchitectures(e.data.query as string) })
         break
       case "getFilterOptions":
-        self.postMessage({
-          type: "result",
-          msgId,
-          data: queryFilterOptions(),
-        } as WorkerResponse & { msgId?: number })
+        post({ type: "getFilterOptions", msgId, data: handleGetFilterOptions() })
         break
     }
   } catch (err) {
-    self.postMessage({
-      type: "error",
-      msgId,
-      error: String(err),
-    } as WorkerResponse & { msgId?: number })
+    post({ type: "error", msgId, error: String(err) })
   }
 }

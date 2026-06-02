@@ -147,7 +147,7 @@ export function MapCore() {
   const navigate = useNavigate()
   const { ready, initialize } = useMapPatterns(mapRef)
   const mode = useLayoutStore((s) => s.mode)
-  const status = useDbStore((s) => s.status)
+  const {loading, error} = useDbStore((s) => ({ loading: s.loading, error: s.error }))
 
   const mapStyles = useMemo(
     () => ({
@@ -167,13 +167,13 @@ export function MapCore() {
   )
 
   useEffect(() => {
-    if (status === "error") {
+    if (error) {
       navigate("/error")
     }
-  }, [status, navigate])
+  }, [error, navigate])
 
   const isHome = mode === "home"
-  const isLoading = !ready || status === "loading"
+  const isLoading = !ready || loading
 
   return (
     <div className={styles.container}>
