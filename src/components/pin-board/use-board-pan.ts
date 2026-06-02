@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useMotionValue, animate } from "framer-motion"
-import { TRANSITION_SHORT } from "@/lib/animation"
+import { TRANSITION_SHORT } from "@/lib/constants"
 
 const MIN_ZOOM = 0.5
 const MAX_ZOOM = 2.0

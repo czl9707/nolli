@@ -13,14 +13,12 @@ import { useLocation, useNavigate } from "react-router"
 import { useArchStore } from "@/stores/arch"
 import { useSidebarStore } from "@/stores/sidebar"
 import { useLayoutStore } from "@/stores/layout"
-import {
-  getAllArchitectures,
-  type ArchSummary,
-} from "@/lib/data/architectures"
+import { useDbStore } from "@/stores/db"
+import type { ArchSummary } from "@/lib/data/architectures.type"
 import { useMapPatterns } from "./use-map-patterns"
 import { useMapClustering, type ClusterPoint } from "./use-map-clustering"
 import { Box, Boxes } from "lucide-react"
-import { TRANSITION_SHORT, TRANSITION_LONG } from "@/lib/animation"
+import { TRANSITION_SHORT, TRANSITION_LONG } from "@/lib/constants"
 import styles from "./index.module.css"
 import { Body2 } from "../ui/typography"
 
@@ -33,6 +31,7 @@ function IndividualMarker({
   const selectArch = useArchStore((s) => s.selectArch)
   const deselectArch = useArchStore((s) => s.deselectArch)
   const setOpen = useSidebarStore((s) => s.setOpen)
+  const dataSource = useDbStore((s) => s.dataSource)
 
   return (
     <MapMarker longitude={point.coordinates[0]} latitude={point.coordinates[1]}>
@@ -43,8 +42,8 @@ function IndividualMarker({
           onClick={() => {
             if (lastSelectedArch?.slug === point.slug) {
               deselectArch()
-            } else {
-              selectArch(point.slug).then((arch) => {
+            } else if (dataSource) {
+              selectArch(point.slug, dataSource).then((arch) => {
                 if (arch) setOpen(true)
               })
             }
@@ -79,12 +78,13 @@ function ClusterMarkerComp({
 
 function ArchMarkers() {
   const { map } = useMap()
+  const dataSource = useDbStore((s) => s.dataSource)
   const [architectures, setArchitectures] = useState<ArchSummary[]>([])
   const { clusters, getExpansionZoom } = useMapClustering(map, architectures)
 
   useEffect(() => {
-    getAllArchitectures().then(setArchitectures)
-  }, [])
+    dataSource?.getAllArchitectures().then(setArchitectures)
+  }, [dataSource])
 
   return (
     <>
@@ -147,6 +147,8 @@ export function MapCore() {
   const navigate = useNavigate()
   const { ready, initialize } = useMapPatterns(mapRef)
   const mode = useLayoutStore((s) => s.mode)
+  const loading = useDbStore((s) => s.loading)
+  const error = useDbStore((s) => s.error)
 
   const mapStyles = useMemo(
     () => ({
@@ -165,11 +167,18 @@ export function MapCore() {
     [navigate, initialize]
   )
 
+  useEffect(() => {
+    if (error) {
+      navigate("/error")
+    }
+  }, [error, navigate])
+
   const isHome = mode === "home"
+  const isLoading = !ready || loading
 
   return (
     <div className={styles.container}>
-      <Map ref={handleRef} styles={mapStyles} loading={!ready}>
+      <Map ref={handleRef} styles={mapStyles} loading={isLoading}>
         {isHome && <MapControls showZoom showLocate showFullscreen />}
         <ArchMarkers />
         <MapNavigator />

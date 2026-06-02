@@ -1,12 +1,12 @@
 import { create } from "zustand"
-import type { Arch } from "@/lib/data/architectures"
-import { getArchBySlug } from "@/lib/data/architectures"
+import type { Arch } from "@/lib/data/architectures.type"
+import type { DataSource } from "@/lib/data/data-source.type"
 
 type ArchState = {
   lastSelectedArch: Arch | null
   loading: boolean
   flyToTrigger: number
-  selectArch: (slug: string) => Promise<Arch | null>
+  selectArch: (slug: string, dataSource: DataSource) => Promise<Arch | null>
   deselectArch: () => void
 }
 
@@ -15,11 +15,11 @@ export const useArchStore = create<ArchState>((set, get) => ({
   loading: false,
   flyToTrigger: 0,
 
-  selectArch: async (slug: string) => {
+  selectArch: async (slug: string, dataSource: DataSource) => {
     const current = get().lastSelectedArch
     if (current?.slug === slug) return current
     set({ loading: true })
-    const arch = await getArchBySlug(slug)
+    const arch = await dataSource.getArchBySlug(slug)
     if (arch) {
       set((s) => ({
         lastSelectedArch: arch,
