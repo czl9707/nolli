@@ -19,7 +19,7 @@ import {
 type Row = Record<string, unknown>
 
 let db: Database
-const DB_NAME = "nolli.db"
+const DB_NAME = "/nolli.db"
 const MANIFEST_KEY = "nolli-db-sha256"
 const BASE_URL = import.meta.env.VITE_R2_PUBLIC_DB_URL as string
 
