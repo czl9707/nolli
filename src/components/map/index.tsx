@@ -18,7 +18,7 @@ import type { ArchSummary } from "@/lib/data/architectures.type"
 import { useMapPatterns } from "./use-map-patterns"
 import { useMapClustering, type ClusterPoint } from "./use-map-clustering"
 import { Box, Boxes } from "lucide-react"
-import { TRANSITION_SHORT, TRANSITION_LONG } from "@/lib/constants"
+import { flyToArchCinematic } from "@/lib/map-flyto"
 import styles from "./index.module.css"
 import { Body2 } from "../ui/typography"
 
@@ -107,36 +107,21 @@ function ArchMarkers() {
   )
 }
 
-let mapInstance: MapRef | null = null
+function MapNavigator() {
+  const lastSelectedArch = useArchStore((s) => s.lastSelectedArch)
+  const mode = useLayoutStore((s) => s.mode)
+  const { map } = useMap()
 
-export function flyToArch(lng: number, lat: number): void {
-  if (!mapInstance) return
-  const map = mapInstance
-  map.stop()
-  map.flyTo({
-    center: [lng, lat],
-    zoom: Math.max(map.getZoom(), 15),
-    duration: TRANSITION_LONG * 1000,
-    curve: 1.2,
-    speed: 1.0,
-    essential: true,
-  })
-}
+  useEffect(() => {
+    if (!map || !lastSelectedArch || mode !== "board") return
+    flyToArchCinematic(
+      map,
+      lastSelectedArch.coordinates.lng,
+      lastSelectedArch.coordinates.lat,
+    )
+  }, [map, lastSelectedArch, mode])
 
-export function flyToArchIfNeeded(lng: number, lat: number): void {
-  if (!mapInstance) return
-  const map = mapInstance
-  const bounds = map.getBounds()
-  const isOnScreen = bounds.contains([lng, lat])
-  if (!isOnScreen) {
-    map.stop()
-    map.flyTo({
-      center: [lng, lat],
-      zoom: Math.max(map.getZoom(), 15),
-      duration: TRANSITION_SHORT * 1000,
-      essential: true,
-    })
-  }
+  return null
 }
 
 export function MapCore() {
@@ -152,20 +137,16 @@ export function MapCore() {
       light: getMapStyle("light"),
       dark: getMapStyle("dark"),
     }),
-    []
+    [],
   )
 
   const handleRef = useCallback(
     (ref: MapRef | null) => {
-      if (!ref) {
-        mapInstance = null
-        return
-      }
+      if (!ref) return
       mapRef.current = ref
-      mapInstance = ref
       initialize(ref)
     },
-    [initialize]
+    [initialize],
   )
 
   useEffect(() => {
@@ -182,6 +163,7 @@ export function MapCore() {
       <Map ref={handleRef} styles={mapStyles} loading={isLoading}>
         {isHome && <MapControls showZoom showLocate showFullscreen />}
         <ArchMarkers />
+        <MapNavigator />
       </Map>
     </div>
   )
