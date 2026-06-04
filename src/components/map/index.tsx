@@ -18,6 +18,7 @@ import type { ArchSummary } from "@/lib/data/architectures.type"
 import { useMapPatterns } from "./use-map-patterns"
 import { useMapClustering, type ClusterPoint } from "./use-map-clustering"
 import { Box, Boxes } from "lucide-react"
+import { TRANSITION_SHORT } from "@/lib/constants"
 import { flyToArchCinematic } from "@/lib/map-flyto"
 import styles from "./index.module.css"
 import { Body2 } from "../ui/typography"
@@ -114,11 +115,16 @@ function MapNavigator() {
 
   useEffect(() => {
     if (!map || !lastSelectedArch || mode !== "board") return
-    flyToArchCinematic(
-      map,
-      lastSelectedArch.coordinates.lng,
-      lastSelectedArch.coordinates.lat,
-    )
+
+    const timer = setTimeout(() => {
+      flyToArchCinematic(
+        map,
+        lastSelectedArch.coordinates.lng,
+        lastSelectedArch.coordinates.lat,
+      )
+    }, TRANSITION_SHORT * 1000)
+
+    return () => clearTimeout(timer)
   }, [map, lastSelectedArch, mode])
 
   return null
