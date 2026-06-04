@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { useNavigate } from "react-router"
 import { motion, AnimatePresence } from "framer-motion"
 import { useLayoutStore } from "@/stores/layout"
@@ -13,7 +13,7 @@ import {
   layoutArchBoard,
 } from "@/lib/pin-board-layout"
 import { TRANSITION_SHORT, DELAY_START } from "@/lib/constants"
-import { MapCore } from "@/components/map"
+import { MapCore, flyToArch } from "@/components/map"
 import { PinBoardItem } from "./pin-board-item"
 import { Pin } from "@/components/ui/pin"
 import { useBoardPan } from "./use-board-pan"
@@ -74,6 +74,7 @@ export function PinBoard() {
   const lastSelectedArch = useArchStore((s) => s.lastSelectedArch)
   const navigate = useNavigate()
   const viewportRef = useRef<HTMLDivElement>(null)
+  const flewForArchRef = useRef<string | null>(null)
   
   const mode = useLayoutStore((s) => s.mode)
   const isBoard = mode === "board"
@@ -88,6 +89,23 @@ export function PinBoard() {
     handlePointerUp,
     handleWheel,
   } = useBoardPan(CANVAS_W, CANVAS_H, isBoard, viewportRef)
+
+  useEffect(() => {
+    if (
+      mode === "board" &&
+      lastSelectedArch &&
+      flewForArchRef.current !== lastSelectedArch.slug
+    ) {
+      flewForArchRef.current = lastSelectedArch.slug
+      flyToArch(
+        lastSelectedArch.coordinates.lng,
+        lastSelectedArch.coordinates.lat
+      )
+    }
+    if (mode === "home") {
+      flewForArchRef.current = null
+    }
+  }, [mode, lastSelectedArch])
 
   const items = useMemo(() => {
     if (!lastSelectedArch) return []
@@ -119,6 +137,19 @@ export function PinBoard() {
           animate={mapSlotVariant}
           variants={MAP_SLOT_VARIANTS}
           transition={EASE_TRANSITION}
+          onAnimationComplete={(definition) => {
+            if (
+              definition === "board" &&
+              lastSelectedArch &&
+              flewForArchRef.current !== lastSelectedArch.slug
+            ) {
+              flewForArchRef.current = lastSelectedArch.slug
+              flyToArch(
+                lastSelectedArch.coordinates.lng,
+                lastSelectedArch.coordinates.lat
+              )
+            }
+          }}
         >
           <MapCore />
           <AnimatePresence>
