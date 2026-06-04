@@ -9,7 +9,7 @@ import {
 import { getMapStyle } from "@/lib/map-style"
 import type { MapRef } from "@/components/ui/map"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useLocation, useNavigate } from "react-router"
+import { useNavigate } from "react-router"
 import { useArchStore } from "@/stores/arch"
 import { useSidebarStore } from "@/stores/sidebar"
 import { useLayoutStore } from "@/stores/layout"
@@ -18,7 +18,8 @@ import type { ArchSummary } from "@/lib/data/architectures.type"
 import { useMapPatterns } from "./use-map-patterns"
 import { useMapClustering, type ClusterPoint } from "./use-map-clustering"
 import { Box, Boxes } from "lucide-react"
-import { TRANSITION_SHORT, TRANSITION_LONG } from "@/lib/constants"
+import { TRANSITION_SHORT } from "@/lib/constants"
+import { flyToArchCinematic } from "@/lib/map-flyto"
 import styles from "./index.module.css"
 import { Body2 } from "../ui/typography"
 
@@ -109,35 +110,22 @@ function ArchMarkers() {
 
 function MapNavigator() {
   const lastSelectedArch = useArchStore((s) => s.lastSelectedArch)
-  const flyToTrigger = useArchStore((s) => s.flyToTrigger)
+  const mode = useLayoutStore((s) => s.mode)
   const { map } = useMap()
-  const location = useLocation()
-  const prevSlugRef = useRef<string | null>(null)
-  const prevLocationRef = useRef<string | null>(null)
 
   useEffect(() => {
-    if (!lastSelectedArch || !map) return
+    if (!map || !lastSelectedArch || mode !== "board") return
 
-    const isSameLocation =
-      prevSlugRef.current === lastSelectedArch.slug &&
-      prevLocationRef.current === location.pathname
+    const timer = setTimeout(() => {
+      flyToArchCinematic(
+        map,
+        lastSelectedArch.coordinates.lng,
+        lastSelectedArch.coordinates.lat,
+      )
+    }, TRANSITION_SHORT * 1000)
 
-    prevSlugRef.current = lastSelectedArch.slug
-    prevLocationRef.current = location.pathname
-
-    setTimeout(
-      () =>
-        map.flyTo({
-          center: [
-            lastSelectedArch.coordinates.lng,
-            lastSelectedArch.coordinates.lat,
-          ],
-          zoom: 16,
-          duration: TRANSITION_LONG * 1000,
-        }),
-      isSameLocation ? 0 : TRANSITION_SHORT * 1000
-    )
-  }, [lastSelectedArch, map, flyToTrigger, location.pathname])
+    return () => clearTimeout(timer)
+  }, [map, lastSelectedArch, mode])
 
   return null
 }
@@ -155,16 +143,16 @@ export function MapCore() {
       light: getMapStyle("light"),
       dark: getMapStyle("dark"),
     }),
-    []
+    [],
   )
 
   const handleRef = useCallback(
-    (map: MapRef | null) => {
-      if (!map) return
-      mapRef.current = map
-      initialize(map)
+    (ref: MapRef | null) => {
+      if (!ref) return
+      mapRef.current = ref
+      initialize(ref)
     },
-    [navigate, initialize]
+    [initialize],
   )
 
   useEffect(() => {
