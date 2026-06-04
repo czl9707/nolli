@@ -9,7 +9,7 @@ import {
 import { getMapStyle } from "@/lib/map-style"
 import type { MapRef } from "@/components/ui/map"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useLocation, useNavigate } from "react-router"
+import { useNavigate } from "react-router"
 import { useArchStore } from "@/stores/arch"
 import { useSidebarStore } from "@/stores/sidebar"
 import { useLayoutStore } from "@/stores/layout"
@@ -107,39 +107,36 @@ function ArchMarkers() {
   )
 }
 
-function MapNavigator() {
-  const lastSelectedArch = useArchStore((s) => s.lastSelectedArch)
-  const flyToTrigger = useArchStore((s) => s.flyToTrigger)
-  const { map } = useMap()
-  const location = useLocation()
-  const prevSlugRef = useRef<string | null>(null)
-  const prevLocationRef = useRef<string | null>(null)
+let mapInstance: MapRef | null = null
 
-  useEffect(() => {
-    if (!lastSelectedArch || !map) return
+export function flyToArch(lng: number, lat: number): void {
+  if (!mapInstance) return
+  const map = mapInstance
+  map.stop()
+  map.flyTo({
+    center: [lng, lat],
+    zoom: Math.max(map.getZoom(), 15),
+    duration: TRANSITION_LONG * 1000,
+    curve: 1.2,
+    speed: 1.0,
+    essential: true,
+  })
+}
 
-    const isSameLocation =
-      prevSlugRef.current === lastSelectedArch.slug &&
-      prevLocationRef.current === location.pathname
-
-    prevSlugRef.current = lastSelectedArch.slug
-    prevLocationRef.current = location.pathname
-
-    setTimeout(
-      () =>
-        map.flyTo({
-          center: [
-            lastSelectedArch.coordinates.lng,
-            lastSelectedArch.coordinates.lat,
-          ],
-          zoom: 16,
-          duration: TRANSITION_LONG * 1000,
-        }),
-      isSameLocation ? 0 : TRANSITION_SHORT * 1000
-    )
-  }, [lastSelectedArch, map, flyToTrigger, location.pathname])
-
-  return null
+export function flyToArchIfNeeded(lng: number, lat: number): void {
+  if (!mapInstance) return
+  const map = mapInstance
+  const bounds = map.getBounds()
+  const isOnScreen = bounds.contains([lng, lat])
+  if (!isOnScreen) {
+    map.stop()
+    map.flyTo({
+      center: [lng, lat],
+      zoom: Math.max(map.getZoom(), 15),
+      duration: TRANSITION_SHORT * 1000,
+      essential: true,
+    })
+  }
 }
 
 export function MapCore() {
@@ -159,12 +156,16 @@ export function MapCore() {
   )
 
   const handleRef = useCallback(
-    (map: MapRef | null) => {
-      if (!map) return
-      mapRef.current = map
-      initialize(map)
+    (ref: MapRef | null) => {
+      if (!ref) {
+        mapInstance = null
+        return
+      }
+      mapRef.current = ref
+      mapInstance = ref
+      initialize(ref)
     },
-    [navigate, initialize]
+    [initialize]
   )
 
   useEffect(() => {
@@ -181,7 +182,6 @@ export function MapCore() {
       <Map ref={handleRef} styles={mapStyles} loading={isLoading}>
         {isHome && <MapControls showZoom showLocate showFullscreen />}
         <ArchMarkers />
-        <MapNavigator />
       </Map>
     </div>
   )

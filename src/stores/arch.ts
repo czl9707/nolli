@@ -5,7 +5,6 @@ import type { DataSource } from "@/lib/data/data-source.type"
 type ArchState = {
   lastSelectedArch: Arch | null
   loading: boolean
-  flyToTrigger: number
   selectArch: (slug: string, dataSource: DataSource) => Promise<Arch | null>
   deselectArch: () => void
 }
@@ -13,7 +12,6 @@ type ArchState = {
 export const useArchStore = create<ArchState>((set, get) => ({
   lastSelectedArch: null,
   loading: false,
-  flyToTrigger: 0,
 
   selectArch: async (slug: string, dataSource: DataSource) => {
     const current = get().lastSelectedArch
@@ -21,11 +19,10 @@ export const useArchStore = create<ArchState>((set, get) => ({
     set({ loading: true })
     const arch = await dataSource.getArchBySlug(slug)
     if (arch) {
-      set((s) => ({
+      set({
         lastSelectedArch: arch,
-        flyToTrigger: s.flyToTrigger + 1,
         loading: false,
-      }))
+      })
     } else {
       set({ loading: false })
     }
