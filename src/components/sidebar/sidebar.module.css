@@ -15,10 +15,13 @@
 
 .scrollArea {
   flex: 1;
+  /* overflow: hidden; */
+}
+
+.scrollAreaContent {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-paragraph);
-  /* overflow-y: auto;  this truncate card shadow, fix later*/ 
   padding-bottom: var(--spacing-paragraph);
 }
 

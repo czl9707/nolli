@@ -17,19 +17,17 @@ export function flyToArchCinematic(
   })
 }
 
-export function flyToArchIfNeeded(
+export function flyToClusterExpand(
   map: MapLibreGL.Map,
   lng: number,
   lat: number,
+  zoom: number,
 ): void {
-  const bounds = map.getBounds()
-  if (!bounds.contains([lng, lat])) {
-    map.stop()
-    map.flyTo({
-      center: [lng, lat],
-      zoom: Math.max(map.getZoom(), 15),
-      duration: TRANSITION_SHORT * 1000,
-      essential: true,
-    })
-  }
+  map.stop()
+  map.flyTo({
+    center: [lng, lat],
+    zoom,
+    duration: TRANSITION_SHORT * 1000,
+    essential: true,
+  })
 }
