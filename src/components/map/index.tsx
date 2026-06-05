@@ -165,7 +165,7 @@ export function MapCore() {
 
   const isHome = mode === "home"
   const isLoading = !ready || loading
-
+  console.log("MapCore render", { ready, loading, error })
   return (
     <div className={styles.container}>
       <Map ref={handleRef} styles={mapStyles} loading={isLoading}>

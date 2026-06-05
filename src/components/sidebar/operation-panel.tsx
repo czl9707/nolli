@@ -101,30 +101,28 @@ export function OperationPanel() {
     <>
       <SidebarCard>
         <H5 className={styles.heading}>Filters</H5>
-        <div className={styles.filterGroup}>
-          <FilterInput
-            label="Architect"
-            placeholder="Filter by architect..."
-            items={archItems}
-            selected={archSelected}
-            onToggle={(item) => toggleArchitect(Number(item.key))}
-          />
-          <FilterInput
-            label="Location"
-            placeholder="Filter by location..."
-            items={locItems}
-            selected={locSelected}
-            onToggle={(item) => {
-              if (item.key.startsWith("country:")) {
-                const code = item.key.replace("country:", "")
-                const ids = cityIdsByCountry.get(code)
-                if (ids) toggleCountry(ids)
-              } else {
-                toggleCity(Number(item.key.replace("city:", "")))
-              }
-            }}
-          />
-        </div>
+        <FilterInput
+          label="Architect"
+          placeholder="Filter by architect..."
+          items={archItems}
+          selected={archSelected}
+          onToggle={(item) => toggleArchitect(Number(item.key))}
+        />
+        <FilterInput
+          label="Location"
+          placeholder="Filter by location..."
+          items={locItems}
+          selected={locSelected}
+          onToggle={(item) => {
+            if (item.key.startsWith("country:")) {
+              const code = item.key.replace("country:", "")
+              const ids = cityIdsByCountry.get(code)
+              if (ids) toggleCountry(ids)
+            } else {
+              toggleCity(Number(item.key.replace("city:", "")))
+            }
+          }}
+        />
       </SidebarCard>
       <SidebarCard>
         <H5 className={styles.heading}>Collections</H5>

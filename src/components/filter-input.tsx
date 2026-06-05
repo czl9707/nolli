@@ -1,5 +1,5 @@
 import * as React from "react"
-import { X } from "lucide-react"
+import { ChevronDown, X } from "lucide-react"
 import {
     Popover,
     PopoverContent,
@@ -14,6 +14,7 @@ import {
     CommandList,
 } from "@/components/ui/command"
 import { Badge } from "@/components/ui/badge"
+import { Caption } from "@/components/ui/typography"
 import styles from "./filter-input.module.css"
 
 type FilterItem = {
@@ -52,81 +53,93 @@ function FilterInput({
     const hasGroups = items.some((i) => i.group !== undefined)
 
     return (
-        <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-                <div
-                    role="combobox"
-                    aria-expanded={open}
-                    aria-label={label}
-                    tabIndex={0}
-                    data-state={open ? "open" : "closed"}
-                    className={styles.trigger}
+        <div>
+            <Caption asChild>
+                <label className={styles.label}>{label}</label>
+            </Caption>
+            <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild>
+                    <div
+                        role="combobox"
+                        aria-expanded={open}
+                        aria-label={label}
+                        tabIndex={0}
+                        data-state={open ? "open" : "closed"}
+                        className={styles.trigger}
+                    >
+                        {selected.length === 0 && (
+                            <span className={styles.placeholder}>{placeholder}</span>
+                        )}
+                        {selected.map((s) => (
+                            <Badge
+                                key={s.key}
+                                variant="secondary"
+                                className={styles.badge}
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    onToggle(s)
+                                }}
+                            >
+                                {s.label}
+                                <X />
+                            </Badge>
+                        ))}
+                        <ChevronDown className={styles.chevron} />
+                    </div>
+                </PopoverTrigger>
+                <PopoverContent
+                    className={styles.popover}
+                    align="start"
+                    onOpenAutoFocus={(e) => e.preventDefault()}
                 >
-                    {selected.length === 0 && (
-                        <span className={styles.placeholder}>{placeholder}</span>
-                    )}
-                    {selected.map((s) => (
-                        <Badge
-                            key={s.key}
-                            variant="secondary"
-                            className={styles.badge}
-                            onClick={(e) => {
-                                e.stopPropagation()
-                                onToggle(s)
-                            }}
-                        >
-                            {s.label}
-                            <X />
-                        </Badge>
-                    ))}
-                </div>
-            </PopoverTrigger>
-            <PopoverContent className={styles.popover} align="start">
-                <Command>
-                    <CommandInput placeholder={`Search ${label.toLowerCase()}...`} />
-                    <CommandList>
-                        <CommandEmpty>No results found.</CommandEmpty>
-                        {hasGroups
-                            ? Array.from(grouped.entries()).map(
-                                ([group, groupItems]) => (
-                                    <CommandGroup
-                                        key={group}
-                                        heading={group}
+                    <Command>
+                        <CommandInput placeholder={`Search ${label.toLowerCase()}...`} />
+                        <CommandList>
+                            <CommandEmpty>No results found.</CommandEmpty>
+                            {hasGroups
+                                ? Array.from(grouped.entries()).map(
+                                    ([group, groupItems]) => (
+                                        <CommandGroup
+                                            key={group}
+                                            heading={group}
+                                        >
+                                            {groupItems.map((item) => (
+                                                <CommandItem
+                                                    key={item.key}
+                                                    value={item.label}
+                                                    data-checked={selected.some(
+                                                        (s) =>
+                                                            s.key === item.key,
+                                                    )}
+                                                    onSelect={() => {
+                                                        onToggle(item)
+                                                    }}
+                                                >
+                                                    {item.label}
+                                                </CommandItem>
+                                            ))}
+                                        </CommandGroup>
+                                    ),
+                                )
+                                : items.map((item) => (
+                                    <CommandItem
+                                        key={item.key}
+                                        value={item.label}
+                                        data-checked={selected.some(
+                                            (s) => s.key === item.key,
+                                        )}
+                                        onSelect={() => {
+                                            onToggle(item)
+                                        }}
                                     >
-                                        {groupItems.map((item) => (
-                                            <CommandItem
-                                                key={item.key}
-                                                value={item.label}
-                                                data-checked={selected.some(
-                                                    (s) =>
-                                                        s.key === item.key,
-                                                )}
-                                                onSelect={() =>
-                                                    onToggle(item)
-                                                }
-                                            >
-                                                {item.label}
-                                            </CommandItem>
-                                        ))}
-                                    </CommandGroup>
-                                ),
-                            )
-                            : items.map((item) => (
-                                <CommandItem
-                                    key={item.key}
-                                    value={item.label}
-                                    data-checked={selected.some(
-                                        (s) => s.key === item.key,
-                                    )}
-                                    onSelect={() => onToggle(item)}
-                                >
-                                    {item.label}
-                                </CommandItem>
-                            ))}
-                    </CommandList>
-                </Command>
-            </PopoverContent>
-        </Popover>
+                                        {item.label}
+                                    </CommandItem>
+                                ))}
+                        </CommandList>
+                    </Command>
+                </PopoverContent>
+            </Popover>
+        </div>
     )
 }
 

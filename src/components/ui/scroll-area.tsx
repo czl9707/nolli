@@ -16,7 +16,6 @@ function ScrollArea({
       <SA.Viewport
         data-slot="scroll-area-viewport"
         className={styles.viewport}
-        style={{ overflow: "" }}  // Keep this for the card shadow preservation
       >
         {children}
       </SA.Viewport>
