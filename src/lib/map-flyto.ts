@@ -5,11 +5,12 @@ export function flyToArchCinematic(
   map: MapLibreGL.Map,
   lng: number,
   lat: number,
+  zoom: number = 15,
 ): void {
   map.stop()
   map.flyTo({
     center: [lng, lat],
-    zoom: Math.max(map.getZoom(), 15),
+    zoom: Math.max(map.getZoom(), zoom),
     duration: TRANSITION_LONG * 1000,
     curve: 1.2,
     speed: 1.0,
@@ -17,17 +18,19 @@ export function flyToArchCinematic(
   })
 }
 
-export function flyToClusterExpand(
+export function flyToArchIfNeeded(
   map: MapLibreGL.Map,
   lng: number,
   lat: number,
-  zoom: number,
 ): void {
-  map.stop()
-  map.flyTo({
-    center: [lng, lat],
-    zoom,
-    duration: TRANSITION_SHORT * 1000,
-    essential: true,
-  })
+  const bounds = map.getBounds()
+  if (!bounds.contains([lng, lat])) {
+    map.stop()
+    map.flyTo({
+      center: [lng, lat],
+      zoom: Math.max(map.getZoom(), 15),
+      duration: TRANSITION_SHORT * 1000,
+      essential: true,
+    })
+  }
 }

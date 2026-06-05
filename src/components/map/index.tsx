@@ -19,7 +19,7 @@ import { useMapPatterns } from "./use-map-patterns"
 import { useMapClustering, type ClusterPoint } from "./use-map-clustering"
 import { Box, Boxes } from "lucide-react"
 import { TRANSITION_SHORT } from "@/lib/constants"
-import { flyToArchCinematic, flyToClusterExpand } from "@/lib/map-flyto"
+import { flyToArchCinematic } from "@/lib/map-flyto"
 import styles from "./index.module.css"
 import { Body2 } from "../ui/typography"
 
@@ -99,7 +99,7 @@ function ArchMarkers() {
             onExpand={() => {
               if (!map) return
               const zoom = getExpansionZoom(point.id, point.coordinates)
-              flyToClusterExpand(map, point.coordinates[0], point.coordinates[1], zoom)
+              flyToArchCinematic(map, point.coordinates[0], point.coordinates[1], zoom)
             }}
           />
         )
