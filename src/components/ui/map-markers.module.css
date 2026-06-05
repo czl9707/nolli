@@ -32,7 +32,7 @@
 }
 
 .popupClose:hover {
-    background-color: rgb(var(--color-secondary-background));
+    background-color: rgb(var(--color-primary-background));
 }
 
 .popupClose:focus-visible {
@@ -62,8 +62,8 @@
     border-radius: var(--size-border-radius);
     overflow: hidden;
     box-shadow: var(--shadow-md);
-    background-color: rgb(var(--color-secondary-background));
-    color: rgb(var(--color-secondary-foreground));
+    background-color: rgb(var(--color-primary-background));
+    color: rgb(var(--color-primary-foreground));
     animation: fadeInZoom 0.2s ease-out;
 }
 
@@ -73,8 +73,8 @@
     text-wrap: balance;
     box-shadow: var(--shadow-md);
     pointer-events: none;
-    background-color: rgb(var(--color-secondary-background));
-    color: rgb(var(--color-secondary-foreground));
+    background-color: rgb(var(--color-primary-background));
+    color: rgb(var(--color-primary-foreground));
     animation: fadeInZoom 0.2s ease-out;
 }
 

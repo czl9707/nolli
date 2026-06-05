@@ -81,13 +81,21 @@ function ClusterMarkerComp({
 function ArchMarkers() {
   const { map } = useMap()
   const dataSource = useDbStore((s) => s.dataSource)
-  const archFilter = useFilterStore((s) => s.getArchFilter)
+  const architectIds = useFilterStore((s) => s.architectIds)
+  const cityIds = useFilterStore((s) => s.cityIds)
   const [architectures, setArchitectures] = useState<ArchSummary[]>([])
   const { clusters, getExpansionZoom } = useMapClustering(map, architectures)
 
   useEffect(() => {
-    dataSource?.getAllArchitectures(archFilter()).then(setArchitectures)
-  }, [dataSource, archFilter])
+    const filter =
+      architectIds.length || cityIds.length
+        ? {
+            ...(architectIds.length ? { architectIds } : {}),
+            ...(cityIds.length ? { cityIds } : {}),
+          }
+        : undefined
+    dataSource?.getAllArchitectures(filter).then(setArchitectures)
+  }, [dataSource, architectIds, cityIds])
 
   return (
     <>

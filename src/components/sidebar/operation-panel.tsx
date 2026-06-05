@@ -14,6 +14,7 @@ function toArchitectItems(
   const items = opts.architects.map((a) => ({
     key: String(a.id),
     label: a.name,
+    value: a.name,
   }))
   const selected = items.filter((i) =>
     selectedIds.includes(Number(i.key)),
@@ -40,25 +41,36 @@ function toLocationItems(
   for (const c of opts.countries) {
     const cities = countryCities.get(c.code)
     if (!cities?.length) continue
+    if (cities.length > 1) {
+      items.push({
+        key: `country:${c.code}`,
+        label: "Select All",
+        value: `select-all ${c.name} ${c.code}`,
+        group: c.name,
+      })
+    }
 
-    items.push({
-      key: `country:${c.code}`,
-      label: c.name,
-      group: c.name,
-    })
     for (const ci of cities) {
       items.push({
         key: `city:${ci.id}`,
-        label: `${c.name} — ${ci.name}`,
+        label: ci.name,
+        value: `${ci.name} ${c.name}`,
         group: c.name,
       })
     }
   }
 
   const selected = items.filter(
-    (i) =>
-      i.key.startsWith("city:") &&
-      selectedCityIds.includes(Number(i.key.replace("city:", ""))),
+    (i) => {
+      if (i.key.startsWith("country:")) {
+        const code = i.key.replace("country:", "")
+        const cityIds = countryCities.get(code)?.map((c) => c.id) ?? []
+        return cityIds.every((id) => selectedCityIds.includes(id))
+      }
+      else {
+        return selectedCityIds.includes(Number(i.key.replace("city:", "")))
+      }
+    }
   )
 
   return { items, selected }
@@ -69,7 +81,9 @@ export function OperationPanel() {
   const architectIds = useFilterStore((s) => s.architectIds)
   const cityIds = useFilterStore((s) => s.cityIds)
   const toggleArchitect = useFilterStore((s) => s.toggleArchitect)
+  const clearArchitects = useFilterStore((s) => s.clearArchitect)
   const toggleCity = useFilterStore((s) => s.toggleCity)
+  const clearCities = useFilterStore((s) => s.clearCity)
   const toggleCountry = useFilterStore((s) => s.toggleCountry)
   const [opts, setOpts] = useState<FilterOptions | null>(null)
 
@@ -102,15 +116,16 @@ export function OperationPanel() {
       <SidebarCard>
         <H5 className={styles.heading}>Filters</H5>
         <FilterInput
-          label="Architect"
-          placeholder="Filter by architect..."
+          label="Filter by Architect"
+          placeholder="no filter"
           items={archItems}
           selected={archSelected}
           onToggle={(item) => toggleArchitect(Number(item.key))}
+          onClear={clearArchitects}
         />
         <FilterInput
-          label="Location"
-          placeholder="Filter by location..."
+          label="Filter by Location"
+          placeholder="no filter"
           items={locItems}
           selected={locSelected}
           onToggle={(item) => {
@@ -122,6 +137,7 @@ export function OperationPanel() {
               toggleCity(Number(item.key.replace("city:", "")))
             }
           }}
+          onClear={clearCities}
         />
       </SidebarCard>
       <SidebarCard>

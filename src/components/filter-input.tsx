@@ -12,6 +12,7 @@ import {
     CommandInput,
     CommandItem,
     CommandList,
+    CommandSeparator,
 } from "@/components/ui/command"
 import { Badge } from "@/components/ui/badge"
 import { Caption } from "@/components/ui/typography"
@@ -20,6 +21,7 @@ import styles from "./filter-input.module.css"
 type FilterItem = {
     key: string
     label: string
+    value: string
     group?: string
 }
 
@@ -29,6 +31,7 @@ type FilterInputProps = {
     items: FilterItem[]
     selected: FilterItem[]
     onToggle: (item: FilterItem) => void
+    onClear: () => void
 }
 
 function FilterInput({
@@ -36,6 +39,7 @@ function FilterInput({
     placeholder,
     items,
     selected,
+    onClear,
     onToggle,
 }: FilterInputProps) {
     const [open, setOpen] = React.useState(false)
@@ -67,24 +71,29 @@ function FilterInput({
                         data-state={open ? "open" : "closed"}
                         className={styles.trigger}
                     >
-                        {selected.length === 0 && (
-                            <span className={styles.placeholder}>{placeholder}</span>
-                        )}
-                        {selected.map((s) => (
-                            <Badge
+                        <div className={styles.badgeContainer}>
+                            {selected.length === 0 && (
+                                <Caption className={styles.placeholder}>{placeholder}</Caption>
+                            )}
+                            {selected.map((s) => (
+                                <Badge
                                 key={s.key}
-                                variant="secondary"
+                                variant="outline"
                                 className={styles.badge}
                                 onClick={(e) => {
                                     e.stopPropagation()
                                     onToggle(s)
                                 }}
-                            >
-                                {s.label}
-                                <X />
-                            </Badge>
-                        ))}
-                        <ChevronDown className={styles.chevron} />
+                                >
+                                    {s.label}
+                                    <X />
+                                </Badge>
+                            ))}
+                        </div>
+                        {selected.length > 0 && (
+                            <X className={styles.icon} size={16} onClick={onClear}/>
+                        )}
+                        <ChevronDown className={styles.icon} size={16} />
                     </div>
                 </PopoverTrigger>
                 <PopoverContent
@@ -98,15 +107,15 @@ function FilterInput({
                             <CommandEmpty>No results found.</CommandEmpty>
                             {hasGroups
                                 ? Array.from(grouped.entries()).map(
-                                    ([group, groupItems]) => (
+                                    ([group, groupItems], i) => (
+                                        <React.Fragment key={group}>
                                         <CommandGroup
-                                            key={group}
                                             heading={group}
                                         >
                                             {groupItems.map((item) => (
                                                 <CommandItem
                                                     key={item.key}
-                                                    value={item.label}
+                                                    value={item.value}
                                                     data-checked={selected.some(
                                                         (s) =>
                                                             s.key === item.key,
@@ -119,22 +128,29 @@ function FilterInput({
                                                 </CommandItem>
                                             ))}
                                         </CommandGroup>
+                                        {i < grouped.size - 1 && <CommandSeparator />}
+                                        </React.Fragment>
                                     ),
                                 )
-                                : items.map((item) => (
-                                    <CommandItem
-                                        key={item.key}
-                                        value={item.label}
-                                        data-checked={selected.some(
-                                            (s) => s.key === item.key,
-                                        )}
-                                        onSelect={() => {
-                                            onToggle(item)
-                                        }}
-                                    >
-                                        {item.label}
-                                    </CommandItem>
-                                ))}
+                                : (
+                                    <CommandGroup>
+                                        {
+                                            items.map((item) => (
+                                            <CommandItem
+                                                key={item.key}
+                                                value={item.value}
+                                                data-checked={selected.some(
+                                                    (s) => s.key === item.key,
+                                                )}
+                                                onSelect={() => {
+                                                    onToggle(item)
+                                                }}
+                                                >
+                                                {item.label}
+                                            </CommandItem>
+                                        ))}
+                                    </CommandGroup>
+                                )}
                         </CommandList>
                     </Command>
                 </PopoverContent>

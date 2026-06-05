@@ -8,7 +8,8 @@ type FilterState = {
   toggleArchitect: (id: number) => void
   toggleCity: (id: number) => void
   toggleCountry: (cityIdsInCountry: number[]) => void
-  clearAll: () => void
+  clearCity: () => void
+  clearArchitect: () => void
 }
 
 export const useFilterStore = create<FilterState>((set, get) => ({
@@ -62,5 +63,6 @@ export const useFilterStore = create<FilterState>((set, get) => ({
     }
   },
 
-  clearAll: () => set({ architectIds: [], cityIds: [] }),
+  clearCity: () => set({ cityIds: [] }),
+  clearArchitect: () => set({ architectIds: [] }),
 }))

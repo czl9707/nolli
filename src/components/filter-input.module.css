@@ -1,10 +1,10 @@
 .trigger {
     position: relative;
     display: flex;
-    min-height: 2rem;
     width: 100%;
+    box-sizing: border-box;
+    min-height: 2.25rem;
     min-width: 0;
-    flex-wrap: wrap;
     align-items: center;
     border-radius: var(--size-border-radius);
     border: var(--border);
@@ -12,46 +12,39 @@
     gap: 0.25rem;
     cursor: pointer;
     transition: border-color var(--transition-instant), box-shadow var(--transition-instant);
-    outline: none;
-    background-color: transparent;
+    background-color: rgb(var(--color-primary-background));
 }
 
-.trigger:focus-within {
+.trigger:focus-within, .trigger[data-state="open"], .trigger:hover {
     border-color: rgb(var(--color-primary-foreground) / 0.5);
     box-shadow: var(--shadow-ring);
 }
 
-.trigger[data-state="open"] {
-    border-color: rgb(var(--color-primary-foreground) / 0.5);
-    box-shadow: var(--shadow-ring);
+.badgeContainer {
+    flex: 1 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
 }
 
 .placeholder {
-    color: rgb(var(--color-secondary-foreground));
-    font-size: 0.875rem;
-    font-family: var(--font-playful);
+    opacity: 0.5;
     pointer-events: none;
     user-select: none;
 }
 
-.chevron {
-    width: 1rem;
-    height: 1rem;
-    margin-left: auto;
+.icon {
     flex-shrink: 0;
     opacity: 0.5;
     transition: opacity var(--transition-instant);
+    
+    &:hover {
+        opacity: 0.8;
+    }
 }
 
-.trigger:hover .chevron {
-    opacity: 0.8;
-}
 
 .badge {
-    cursor: pointer;
-}
-
-.badge svg {
     cursor: pointer;
 }
 
