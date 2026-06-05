@@ -8,14 +8,14 @@ import {
 } from "@/components/ui/map"
 import { getMapStyle } from "@/lib/map-style"
 import type { MapRef } from "@/components/ui/map"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef } from "react"
 import { useNavigate } from "react-router"
 import { useArchDetailStore } from "@/stores/arch-detail"
+import { useMapSelectStore } from "@/stores/map-select"
 import { useSidebarStore } from "@/stores/sidebar"
 import { useLayoutStore } from "@/stores/layout"
 import { useDbStore } from "@/stores/db"
 import { useFilterStore } from "@/stores/filter"
-import type { ArchSummary } from "@/lib/data/architectures.type"
 import { useMapPatterns } from "./use-map-patterns"
 import { useMapClustering, type ClusterPoint } from "./use-map-clustering"
 import { Box, Boxes } from "lucide-react"
@@ -29,22 +29,28 @@ function IndividualMarker({
 }: {
   point: Extract<ClusterPoint, { type: "point" }>
 }) {
-  const selectedArch = useArchDetailStore((s) => s.selectedArch)
+  const selectedSummary = useMapSelectStore((s) => s.selectedSummary)
+  const selectOnMap = useMapSelectStore((s) => s.selectOnMap)
+  const deselectOnMap = useMapSelectStore((s) => s.deselectOnMap)
   const selectArch = useArchDetailStore((s) => s.selectArch)
   const deselectArch = useArchDetailStore((s) => s.deselectArch)
   const setOpen = useSidebarStore((s) => s.setOpen)
   const dataSource = useDbStore((s) => s.dataSource)
+  const filteredArchs = useFilterStore((s) => s.filteredArchs)
 
   return (
     <MapMarker longitude={point.coordinates[0]} latitude={point.coordinates[1]}>
       <MarkerContent>
         <Box
-          data-selected={selectedArch?.slug === point.slug}
+          data-selected={selectedSummary?.slug === point.slug}
           className={styles.individualMarker}
           onClick={() => {
-            if (selectedArch?.slug === point.slug) {
+            if (selectedSummary?.slug === point.slug) {
+              deselectOnMap()
               deselectArch()
             } else if (dataSource) {
+              const summary = filteredArchs.find((a) => a.slug === point.slug)
+              if (summary) selectOnMap(summary)
               selectArch(point.slug, dataSource).then((arch) => {
                 if (arch) setOpen(true)
               })
@@ -80,22 +86,8 @@ function ClusterMarkerComp({
 
 function ArchMarkers() {
   const { map } = useMap()
-  const dataSource = useDbStore((s) => s.dataSource)
-  const architectIds = useFilterStore((s) => s.architectIds)
-  const cityIds = useFilterStore((s) => s.cityIds)
-  const [architectures, setArchitectures] = useState<ArchSummary[]>([])
+  const architectures = useFilterStore((s) => s.filteredArchs)
   const { clusters, getExpansionZoom } = useMapClustering(map, architectures)
-
-  useEffect(() => {
-    const filter =
-      architectIds.length || cityIds.length
-        ? {
-            ...(architectIds.length ? { architectIds } : {}),
-            ...(cityIds.length ? { cityIds } : {}),
-          }
-        : undefined
-    dataSource?.getAllArchitectures(filter).then(setArchitectures)
-  }, [dataSource, architectIds, cityIds])
 
   return (
     <>
