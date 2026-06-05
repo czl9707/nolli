@@ -1,44 +1,50 @@
-.card {
-  display: flex;
+.archCard {
   flex-direction: row;
   align-items: center;
   gap: 0.75rem;
-  width: 100%;
   padding: 0.5rem;
-  border-radius: var(--size-border-radius);
+  background-color: transparent;
+  box-shadow: none;
   cursor: pointer;
   transition: background-color var(--transition-instant) ease;
-  box-sizing: border-box;
   border: 2px solid transparent;
 }
 
-.card:hover {
+.archCard:hover {
   background-color: rgb(var(--color-primary-foreground) / 0.05);
 }
 
-.card[data-selected="true"] {
+.archCard[data-selected="true"] {
   border-color: rgb(var(--color-accent-foreground));
   background-color: rgb(var(--color-accent-foreground) / 0.08);
 }
 
-.image {
+.skeletonCard {
+  cursor: default;
+  opacity: 0.4;
+}
+
+.thumbnail {
   width: 3rem;
   height: 3rem;
   border-radius: calc(var(--size-border-radius) * 0.5);
-  object-fit: cover;
   flex-shrink: 0;
+}
+
+.image {
+  object-fit: cover;
   background-color: rgb(var(--color-primary-foreground) / 0.1);
 }
 
 .placeholder {
-  width: 3rem;
-  height: 3rem;
-  border-radius: calc(var(--size-border-radius) * 0.5);
-  flex-shrink: 0;
   background-color: rgb(var(--color-primary-foreground) / 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.imagePulse {
+  background-color: rgb(var(--color-primary-foreground) / 0.15);
 }
 
 .textBlock {
@@ -46,6 +52,7 @@
   flex-direction: column;
   min-width: 0;
   gap: 0.125rem;
+  flex: 1;
 }
 
 .name {
@@ -70,4 +77,19 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.line {
+  border-radius: 2px;
+  background-color: rgb(var(--color-primary-foreground) / 0.15);
+}
+
+.line1 {
+  height: 0.875rem;
+  width: 70%;
+}
+
+.line2 {
+  height: 0.75rem;
+  width: 50%;
 }
