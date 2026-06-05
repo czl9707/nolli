@@ -14,6 +14,8 @@ import { useArchStore } from "@/stores/arch"
 import { useSidebarStore } from "@/stores/sidebar"
 import { useLayoutStore } from "@/stores/layout"
 import { useDbStore } from "@/stores/db"
+import { useFilterStore, type LocationFilter } from "@/stores/filter"
+import type { ArchFilter } from "@/lib/data/data-source.type"
 import type { ArchSummary } from "@/lib/data/architectures.type"
 import { useMapPatterns } from "./use-map-patterns"
 import { useMapClustering, type ClusterPoint } from "./use-map-clustering"
@@ -77,15 +79,39 @@ function ClusterMarkerComp({
   )
 }
 
+function toArchFilter(
+  architectIds: number[],
+  locations: LocationFilter[],
+): ArchFilter {
+  const countryCodes = locations
+    .filter((l): l is LocationFilter & { type: "country" } => l.type === "country")
+    .map((l) => l.code)
+  const cityIds = locations
+    .filter((l): l is LocationFilter & { type: "city" } => l.type === "city")
+    .map((l) => l.id)
+
+  return {
+    ...(architectIds.length ? { architectIds } : {}),
+    ...(countryCodes.length ? { countryCodes } : {}),
+    ...(cityIds.length ? { cityIds } : {}),
+  }
+}
+
 function ArchMarkers() {
   const { map } = useMap()
   const dataSource = useDbStore((s) => s.dataSource)
+  const architectIds = useFilterStore((s) => s.architectIds)
+  const locations = useFilterStore((s) => s.locations)
   const [architectures, setArchitectures] = useState<ArchSummary[]>([])
   const { clusters, getExpansionZoom } = useMapClustering(map, architectures)
 
   useEffect(() => {
-    dataSource?.getAllArchitectures().then(setArchitectures)
-  }, [dataSource])
+    const filter =
+      architectIds.length || locations.length
+        ? toArchFilter(architectIds, locations)
+        : undefined
+    dataSource?.getAllArchitectures(filter).then(setArchitectures)
+  }, [dataSource, architectIds, locations])
 
   return (
     <>
