@@ -53,12 +53,6 @@
 
 .icon {
     flex-shrink: 0;
-    opacity: 0.5;
-    transition: opacity var(--transition-instant);
-}
-
-.icon:hover {
-    opacity: 0.8;
 }
 
 .label {
@@ -67,7 +61,8 @@
 }
 
 .popover {
-    width: var(--size-sidebar-width);
+    width: var(--radix-popover-trigger-width);
+    box-sizing: border-box;
     max-height: 20rem;
     padding: 0.25rem;
 }
@@ -105,13 +100,6 @@
     font-size: 0.75rem;
     font-weight: 500;
     color: rgb(var(--color-secondary-foreground));
-}
-
-.separator {
-    margin: 0 -0.25rem;
-    height: 1px;
-    width: 100%;
-    background-color: rgb(var(--color-primary-foreground) / 0.25);
 }
 
 .item {

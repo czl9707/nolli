@@ -110,7 +110,7 @@ body {
     --size-footer-height: 2rem;
     --size-sidebar-width: 24rem;
     
-    --shadow-ring: 0 0 2px rgb(var(--color-primary-foreground) / 0.1);
+    --shadow-ring: 0 0 2px rgb(var(--color-primary-foreground) / 0.2);
     --shadow-sm: 2px 2px 2px rgb(var(--color-primary-foreground) / 0.1);
     --shadow-md: 4px 4px 6px rgb(var(--color-primary-foreground) / 0.2);
 

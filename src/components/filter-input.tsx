@@ -7,6 +7,7 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Caption } from "@/components/ui/typography"
 import styles from "./filter-input.module.css"
 
@@ -35,6 +36,7 @@ function FilterInput({
     onToggle,
 }: FilterInputProps) {
     const [open, setOpen] = React.useState(false)
+    const [search, setSearch] = React.useState("")
     const inputRef = React.useRef<HTMLInputElement>(null)
 
     const grouped = React.useMemo(() => {
@@ -51,12 +53,7 @@ function FilterInput({
 
     function handleSelect(item: FilterItem) {
         onToggle(item)
-        if (inputRef.current) {
-            inputRef.current.value = ""
-            inputRef.current.dispatchEvent(
-                new Event("input", { bubbles: true }),
-            )
-        }
+        setSearch("")
     }
 
     return (
@@ -64,7 +61,7 @@ function FilterInput({
             <Caption asChild>
                 <label className={styles.label}>{label}</label>
             </Caption>
-            <Cmd label={label}>
+            <Cmd label={label}>                
                 <Popover open={open} onOpenChange={setOpen}>
                     <PopoverTrigger
                         asChild
@@ -76,6 +73,7 @@ function FilterInput({
                             role="combobox"
                             aria-expanded={open}
                             aria-label={label}
+                            tabIndex={0}
                             data-state={open ? "open" : "closed"}
                             className={styles.trigger}
                         >
@@ -91,12 +89,14 @@ function FilterInput({
                                         }}
                                     >
                                         {s.label}
-                                        <X />
+                                        <X size={14} />
                                     </Badge>
                                 ))}
                                 <Cmd.Input
                                     ref={inputRef}
-                                    placeholder={placeholder}
+                                    value={search}
+                                    onValueChange={setSearch}
+                                    placeholder={selected.length > 0 ? "" : placeholder}
                                     className={styles.input}
                                     onClick={(e) => {
                                         e.stopPropagation()
@@ -105,24 +105,26 @@ function FilterInput({
                                 />
                             </div>
                             {selected.length > 0 && (
-                                <X
+                                <Button
+                                    variant="ghost"
+                                    size="icon-xs"
                                     className={styles.icon}
-                                    size={16}
                                     onClick={(e) => {
                                         e.stopPropagation()
                                         onClear()
-                                        if (inputRef.current) {
-                                            inputRef.current.value = ""
-                                            inputRef.current.dispatchEvent(
-                                                new Event("input", {
-                                                    bubbles: true,
-                                                }),
-                                            )
-                                        }
+                                        setSearch("")
                                     }}
-                                />
+                                >
+                                    <X size={16}/>
+                                </Button>
                             )}
-                            <ChevronDown className={styles.icon} size={16} />
+                            <Button
+                                variant="ghost"
+                                size="icon-xs"
+                                className={styles.icon}
+                            >
+                                <ChevronDown size={16}/>
+                            </Button>
                         </div>
                     </PopoverTrigger>
                     <PopoverContent
@@ -168,13 +170,6 @@ function FilterInput({
                                                     </Cmd.Item>
                                                 ))}
                                             </Cmd.Group>
-                                            {i < grouped.size - 1 && (
-                                                <Cmd.Separator
-                                                    className={
-                                                        styles.separator
-                                                    }
-                                                />
-                                            )}
                                         </React.Fragment>
                                     ),
                                 )
