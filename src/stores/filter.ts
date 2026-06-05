@@ -1,20 +1,28 @@
 import { create } from "zustand"
-
-export type LocationFilter =
-  | { type: "country"; code: string; name: string }
-  | { type: "city"; id: number; name: string; countryCode: string }
+import type { ArchFilter } from "@/lib/data/data-source.type"
 
 type FilterState = {
   architectIds: number[]
-  locations: LocationFilter[]
+  cityIds: number[]
+  getArchFilter: () => ArchFilter | undefined
   toggleArchitect: (id: number) => void
-  toggleLocation: (loc: LocationFilter) => void
+  toggleCity: (id: number) => void
+  toggleCountry: (cityIdsInCountry: number[]) => void
   clearAll: () => void
 }
 
 export const useFilterStore = create<FilterState>((set, get) => ({
   architectIds: [],
-  locations: [],
+  cityIds: [],
+
+  getArchFilter: () => {
+    const { architectIds, cityIds } = get()
+    if (!architectIds.length && !cityIds.length) return undefined
+    return {
+      ...(architectIds.length ? { architectIds } : {}),
+      ...(cityIds.length ? { cityIds } : {}),
+    }
+  },
 
   toggleArchitect: (id) => {
     const ids = get().architectIds
@@ -25,36 +33,34 @@ export const useFilterStore = create<FilterState>((set, get) => ({
     })
   },
 
-  toggleLocation: (loc) => {
-    const locs = get().locations
-    const exists = locs.some((l) =>
-      l.type === loc.type &&
-      (l.type === "country"
-        ? l.code === (loc as { type: "country"; code: string }).code
-        : l.id === (loc as { type: "city"; id: number }).id),
+  toggleCity: (id) => {
+    const ids = get().cityIds
+    set({
+      cityIds: ids.includes(id)
+        ? ids.filter((i) => i !== id)
+        : [...ids, id],
+    })
+  },
+
+  toggleCountry: (cityIdsInCountry) => {
+    const current = get().cityIds
+    const allSelected = cityIdsInCountry.every((id) =>
+      current.includes(id),
     )
-    if (exists) {
+    if (allSelected) {
       set({
-        locations: locs.filter((l) =>
-          l.type === loc.type
-            ? l.type === "country"
-              ? l.code !== (loc as { type: "country"; code: string }).code
-              : l.id !== (loc as { type: "city"; id: number }).id
-            : true,
+        cityIds: current.filter(
+          (id) => !cityIdsInCountry.includes(id),
         ),
       })
     } else {
-      if (loc.type === "country") {
-        const code = (loc as { type: "country"; code: string }).code
-        const filtered = locs.filter(
-          (l) => !(l.type === "city" && l.countryCode === code),
-        )
-        set({ locations: [...filtered, loc] })
-      } else {
-        set({ locations: [...locs, loc] })
-      }
+      set({
+        cityIds: [
+          ...new Set([...current, ...cityIdsInCountry]),
+        ],
+      })
     }
   },
 
-  clearAll: () => set({ architectIds: [], locations: [] }),
+  clearAll: () => set({ architectIds: [], cityIds: [] }),
 }))

@@ -1,11 +1,8 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { H5 } from "@/components/ui/typography"
 import { SidebarCard } from "./sidebar-card"
 import { FilterInput, type FilterItem } from "@/components/filter-input"
-import {
-  useFilterStore,
-  type LocationFilter,
-} from "@/stores/filter"
+import { useFilterStore } from "@/stores/filter"
 import { useDbStore } from "@/stores/db"
 import type { FilterOptions } from "@/lib/data/data-source.type"
 import styles from "./operation-panel.module.css"
@@ -26,14 +23,24 @@ function toArchitectItems(
 
 function toLocationItems(
   opts: FilterOptions,
-  selectedLocs: LocationFilter[],
+  selectedCityIds: number[],
 ): { items: FilterItem[]; selected: FilterItem[] } {
   const items: FilterItem[] = []
+  const countryCities = new Map<
+    string,
+    { id: number; name: string }[]
+  >()
+
+  for (const ci of opts.cities) {
+    const list = countryCities.get(ci.countryCode) ?? []
+    list.push({ id: ci.id, name: ci.name })
+    countryCities.set(ci.countryCode, list)
+  }
 
   for (const c of opts.countries) {
-    const cities = opts.cities.filter(
-      (ci) => ci.countryCode === c.code,
-    )
+    const cities = countryCities.get(c.code)
+    if (!cities?.length) continue
+
     items.push({
       key: `country:${c.code}`,
       label: c.name,
@@ -48,21 +55,11 @@ function toLocationItems(
     }
   }
 
-  const selected = selectedLocs.map((l) => {
-    if (l.type === "country") {
-      return {
-        key: `country:${l.code}`,
-        label: l.name,
-      }
-    }
-    const country = opts.countries.find(
-      (c) => c.code === l.countryCode,
-    )
-    return {
-      key: `city:${l.id}`,
-      label: country ? `${country.name} — ${l.name}` : l.name,
-    }
-  })
+  const selected = items.filter(
+    (i) =>
+      i.key.startsWith("city:") &&
+      selectedCityIds.includes(Number(i.key.replace("city:", ""))),
+  )
 
   return { items, selected }
 }
@@ -70,10 +67,22 @@ function toLocationItems(
 export function OperationPanel() {
   const dataSource = useDbStore((s) => s.dataSource)
   const architectIds = useFilterStore((s) => s.architectIds)
-  const locations = useFilterStore((s) => s.locations)
+  const cityIds = useFilterStore((s) => s.cityIds)
   const toggleArchitect = useFilterStore((s) => s.toggleArchitect)
-  const toggleLocation = useFilterStore((s) => s.toggleLocation)
+  const toggleCity = useFilterStore((s) => s.toggleCity)
+  const toggleCountry = useFilterStore((s) => s.toggleCountry)
   const [opts, setOpts] = useState<FilterOptions | null>(null)
+
+  const cityIdsByCountry = useMemo(() => {
+    if (!opts) return new Map<string, number[]>()
+    const map = new Map<string, number[]>()
+    for (const ci of opts.cities) {
+      const list = map.get(ci.countryCode) ?? []
+      list.push(ci.id)
+      map.set(ci.countryCode, list)
+    }
+    return map
+  }, [opts])
 
   useEffect(() => {
     dataSource?.getFilterOptions().then(setOpts)
@@ -85,7 +94,7 @@ export function OperationPanel() {
     toArchitectItems(opts, architectIds)
   const { items: locItems, selected: locSelected } = toLocationItems(
     opts,
-    locations,
+    cityIds,
   )
 
   return (
@@ -98,9 +107,7 @@ export function OperationPanel() {
             placeholder="Filter by architect..."
             items={archItems}
             selected={archSelected}
-            onToggle={(item) =>
-              toggleArchitect(Number(item.key))
-            }
+            onToggle={(item) => toggleArchitect(Number(item.key))}
           />
           <FilterInput
             label="Location"
@@ -109,35 +116,11 @@ export function OperationPanel() {
             selected={locSelected}
             onToggle={(item) => {
               if (item.key.startsWith("country:")) {
-                const code = item.key.replace(
-                  "country:",
-                  "",
-                )
-                const country = opts.countries.find(
-                  (c) => c.code === code,
-                )
-                if (country) {
-                  toggleLocation({
-                    type: "country",
-                    code,
-                    name: country.name,
-                  })
-                }
+                const code = item.key.replace("country:", "")
+                const ids = cityIdsByCountry.get(code)
+                if (ids) toggleCountry(ids)
               } else {
-                const id = Number(
-                  item.key.replace("city:", ""),
-                )
-                const city = opts.cities.find(
-                  (c) => c.id === id,
-                )
-                if (city) {
-                  toggleLocation({
-                    type: "city",
-                    id,
-                    name: city.name,
-                    countryCode: city.countryCode,
-                  })
-                }
+                toggleCity(Number(item.key.replace("city:", "")))
               }
             }}
           />

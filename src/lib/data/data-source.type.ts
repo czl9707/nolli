@@ -4,7 +4,6 @@ export type ArchFilter = {
   bbox?: BBox
   architectIds?: readonly number[]
   cityIds?: readonly number[]
-  countryCodes?: readonly string[]
 }
 
 export type FilterOptions = {
