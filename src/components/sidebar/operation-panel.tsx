@@ -5,6 +5,7 @@ import { FilterInput, type FilterItem } from "@/components/filter-input"
 import { useFilterStore } from "@/stores/filter"
 import { useDbStore } from "@/stores/db"
 import type { FilterOptions } from "@/lib/data/data-source.type"
+import { ArchList } from "./arch-list"
 import styles from "./operation-panel.module.css"
 
 function toArchitectItems(
@@ -142,6 +143,7 @@ export function OperationPanel() {
       </SidebarCard>
       <SidebarCard>
         <H5 className={styles.heading}>Collections</H5>
+        <ArchList />
       </SidebarCard>
     </>
   )
