@@ -141,10 +141,7 @@ export function OperationPanel() {
           onClear={clearCities}
         />
       </SidebarCard>
-      <SidebarCard>
-        <H5 className={styles.heading}>Collections</H5>
-        <ArchList />
-      </SidebarCard>
+      <ArchList />
     </>
   )
 }
