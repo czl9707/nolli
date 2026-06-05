@@ -131,13 +131,25 @@ function handleGetAllArchitectures(filter: ArchFilter | undefined): ArchSummary[
     conditions.push(`a.architect_id IN (${filter.architectIds.map(() => "?").join(", ")})`)
     params.push(...filter.architectIds)
   }
-  if (filter?.cityIds?.length) {
-    conditions.push(`a.city_id IN (${filter.cityIds.map(() => "?").join(", ")})`)
-    params.push(...filter.cityIds)
-  }
-  if (filter?.countryCodes?.length) {
-    conditions.push(`c.code IN (${filter.countryCodes.map(() => "?").join(", ")})`)
-    params.push(...filter.countryCodes)
+
+  const hasCityIds = filter?.cityIds?.length
+  const hasCountryCodes = filter?.countryCodes?.length
+  if (hasCityIds && hasCountryCodes) {
+    const locParts: string[] = []
+    locParts.push(`a.city_id IN (${filter.cityIds!.map(() => "?").join(", ")})`)
+    params.push(...filter.cityIds!)
+    locParts.push(`c.code IN (${filter.countryCodes!.map(() => "?").join(", ")})`)
+    params.push(...filter.countryCodes!)
+    conditions.push("(" + locParts.join(" OR ") + ")")
+  } else {
+    if (hasCityIds) {
+      conditions.push(`a.city_id IN (${filter.cityIds!.map(() => "?").join(", ")})`)
+      params.push(...filter.cityIds!)
+    }
+    if (hasCountryCodes) {
+      conditions.push(`c.code IN (${filter.countryCodes!.map(() => "?").join(", ")})`)
+      params.push(...filter.countryCodes!)
+    }
   }
 
   if (conditions.length > 0) sql += " WHERE " + conditions.join(" AND ")
