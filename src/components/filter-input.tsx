@@ -1,19 +1,11 @@
 import * as React from "react"
-import { ChevronDown, X } from "lucide-react"
+import { Command as Cmd } from "cmdk"
+import { ChevronDown, CheckIcon, X } from "lucide-react"
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover"
-import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-    CommandList,
-    CommandSeparator,
-} from "@/components/ui/command"
 import { Badge } from "@/components/ui/badge"
 import { Caption } from "@/components/ui/typography"
 import styles from "./filter-input.module.css"
@@ -43,6 +35,7 @@ function FilterInput({
     onToggle,
 }: FilterInputProps) {
     const [open, setOpen] = React.useState(false)
+    const inputRef = React.useRef<HTMLInputElement>(null)
 
     const grouped = React.useMemo(() => {
         const groups = new Map<string, FilterItem[]>()
@@ -56,105 +49,164 @@ function FilterInput({
 
     const hasGroups = items.some((i) => i.group !== undefined)
 
+    function handleSelect(item: FilterItem) {
+        onToggle(item)
+        if (inputRef.current) {
+            inputRef.current.value = ""
+            inputRef.current.dispatchEvent(
+                new Event("input", { bubbles: true }),
+            )
+        }
+    }
+
     return (
         <div>
             <Caption asChild>
                 <label className={styles.label}>{label}</label>
             </Caption>
-            <Popover open={open} onOpenChange={setOpen}>
-                <PopoverTrigger asChild>
-                    <div
-                        role="combobox"
-                        aria-expanded={open}
-                        aria-label={label}
-                        tabIndex={0}
-                        data-state={open ? "open" : "closed"}
-                        className={styles.trigger}
+            <Cmd label={label}>
+                <Popover open={open} onOpenChange={setOpen}>
+                    <PopoverTrigger
+                        asChild
+                        onClick={() => {
+                            if (!open) setOpen(true)
+                        }}
                     >
-                        <div className={styles.badgeContainer}>
-                            {selected.length === 0 && (
-                                <Caption className={styles.placeholder}>{placeholder}</Caption>
+                        <div
+                            role="combobox"
+                            aria-expanded={open}
+                            aria-label={label}
+                            data-state={open ? "open" : "closed"}
+                            className={styles.trigger}
+                        >
+                            <div className={styles.badgeContainer}>
+                                {selected.map((s) => (
+                                    <Badge
+                                        key={s.key}
+                                        variant="outline"
+                                        className={styles.badge}
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            onToggle(s)
+                                        }}
+                                    >
+                                        {s.label}
+                                        <X />
+                                    </Badge>
+                                ))}
+                                <Cmd.Input
+                                    ref={inputRef}
+                                    placeholder={placeholder}
+                                    className={styles.input}
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        if (!open) setOpen(true)
+                                    }}
+                                />
+                            </div>
+                            {selected.length > 0 && (
+                                <X
+                                    className={styles.icon}
+                                    size={16}
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        onClear()
+                                        if (inputRef.current) {
+                                            inputRef.current.value = ""
+                                            inputRef.current.dispatchEvent(
+                                                new Event("input", {
+                                                    bubbles: true,
+                                                }),
+                                            )
+                                        }
+                                    }}
+                                />
                             )}
-                            {selected.map((s) => (
-                                <Badge
-                                key={s.key}
-                                variant="outline"
-                                className={styles.badge}
-                                onClick={(e) => {
-                                    e.stopPropagation()
-                                    onToggle(s)
-                                }}
-                                >
-                                    {s.label}
-                                    <X />
-                                </Badge>
-                            ))}
+                            <ChevronDown className={styles.icon} size={16} />
                         </div>
-                        {selected.length > 0 && (
-                            <X className={styles.icon} size={16} onClick={onClear}/>
-                        )}
-                        <ChevronDown className={styles.icon} size={16} />
-                    </div>
-                </PopoverTrigger>
-                <PopoverContent
-                    className={styles.popover}
-                    align="start"
-                    onOpenAutoFocus={(e) => e.preventDefault()}
-                >
-                    <Command>
-                        <CommandInput placeholder={`Search ${label.toLowerCase()}...`} />
-                        <CommandList>
-                            <CommandEmpty>No results found.</CommandEmpty>
+                    </PopoverTrigger>
+                    <PopoverContent
+                        className={styles.popover}
+                        align="start"
+                        onOpenAutoFocus={(e) => {
+                            e.preventDefault()
+                            inputRef.current?.focus()
+                        }}
+                    >
+                        <Cmd.Empty className={styles.empty}>
+                            No results found.
+                        </Cmd.Empty>
+                        <Cmd.List className={styles.list}>
                             {hasGroups
                                 ? Array.from(grouped.entries()).map(
                                     ([group, groupItems], i) => (
                                         <React.Fragment key={group}>
-                                        <CommandGroup
-                                            heading={group}
-                                        >
-                                            {groupItems.map((item) => (
-                                                <CommandItem
-                                                    key={item.key}
-                                                    value={item.value}
-                                                    data-checked={selected.some(
-                                                        (s) =>
-                                                            s.key === item.key,
-                                                    )}
-                                                    onSelect={() => {
-                                                        onToggle(item)
-                                                    }}
-                                                >
-                                                    {item.label}
-                                                </CommandItem>
-                                            ))}
-                                        </CommandGroup>
-                                        {i < grouped.size - 1 && <CommandSeparator />}
+                                            <Cmd.Group
+                                                heading={group}
+                                                className={styles.group}
+                                            >
+                                                {groupItems.map((item) => (
+                                                    <Cmd.Item
+                                                        key={item.key}
+                                                        value={item.value}
+                                                        data-checked={selected.some(
+                                                            (s) =>
+                                                                s.key ===
+                                                                item.key,
+                                                        )}
+                                                        onSelect={() =>
+                                                            handleSelect(item)
+                                                        }
+                                                        className={styles.item}
+                                                    >
+                                                        {item.label}
+                                                        <CheckIcon
+                                                            className={
+                                                                styles.checkIcon
+                                                            }
+                                                        />
+                                                    </Cmd.Item>
+                                                ))}
+                                            </Cmd.Group>
+                                            {i < grouped.size - 1 && (
+                                                <Cmd.Separator
+                                                    className={
+                                                        styles.separator
+                                                    }
+                                                />
+                                            )}
                                         </React.Fragment>
                                     ),
                                 )
                                 : (
-                                    <CommandGroup>
-                                        {
-                                            items.map((item) => (
-                                            <CommandItem
+                                    <Cmd.Group className={styles.group}>
+                                        {items.map((item) => (
+                                            <Cmd.Item
                                                 key={item.key}
                                                 value={item.value}
                                                 data-checked={selected.some(
-                                                    (s) => s.key === item.key,
+                                                    (s) =>
+                                                        s.key === item.key,
                                                 )}
-                                                onSelect={() => {
-                                                    onToggle(item)
-                                                }}
-                                                >
+                                                onSelect={() =>
+                                                    handleSelect(item)
+                                                }
+                                                className={styles.item}
+                                            >
                                                 {item.label}
-                                            </CommandItem>
+                                                <CheckIcon
+                                                    className={
+                                                        styles.checkIcon
+                                                    }
+                                                />
+                                            </Cmd.Item>
                                         ))}
-                                    </CommandGroup>
+                                    </Cmd.Group>
                                 )}
-                        </CommandList>
-                    </Command>
-                </PopoverContent>
-            </Popover>
+                        </Cmd.List>
+                    </PopoverContent>
+                </Popover>
+            </Cmd>
         </div>
     )
 }
