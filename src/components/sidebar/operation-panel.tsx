@@ -55,9 +55,12 @@ function toLocationItems(
         label: l.name,
       }
     }
+    const country = opts.countries.find(
+      (c) => c.code === l.countryCode,
+    )
     return {
       key: `city:${l.id}`,
-      label: `${l.name}`,
+      label: country ? `${country.name} — ${l.name}` : l.name,
     }
   })
 
