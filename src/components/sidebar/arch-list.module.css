@@ -1,0 +1,16 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 0.25rem;
+}
+
+.emptyState {
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding: 1rem 0;
+  opacity: 0.4;
+  font-family: var(--typography-body2-fontFamily);
+  font-size: var(--typography-body2-fontSize);
+}
