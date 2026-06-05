@@ -20,7 +20,7 @@ import { useMapPatterns } from "./use-map-patterns"
 import { useMapClustering, type ClusterPoint } from "./use-map-clustering"
 import { Box, Boxes } from "lucide-react"
 import { TRANSITION_SHORT } from "@/lib/constants"
-import { flyToArchCinematic } from "@/lib/map-flyto"
+import { flyToArchCinematic, flyToArchIfNeeded } from "@/lib/map-flyto"
 import styles from "./index.module.css"
 import { Body2 } from "../ui/typography"
 
@@ -110,6 +110,22 @@ function ArchMarkers() {
   )
 }
 
+function MapSelectNavigator() {
+  const selectedSummary = useMapSelectStore((s) => s.selectedSummary)
+  const { map } = useMap()
+
+  useEffect(() => {
+    if (!map || !selectedSummary) return
+    flyToArchIfNeeded(
+      map,
+      selectedSummary.coordinates.lng,
+      selectedSummary.coordinates.lat,
+    )
+  }, [map, selectedSummary])
+
+  return null
+}
+
 function MapNavigator() {
   const selectedArch = useArchDetailStore((s) => s.selectedArch)
   const mode = useLayoutStore((s) => s.mode)
@@ -171,6 +187,7 @@ export function MapCore() {
       <Map ref={handleRef} styles={mapStyles} loading={isLoading}>
         {isHome && <MapControls showZoom showLocate showFullscreen />}
         <ArchMarkers />
+        <MapSelectNavigator />
         <MapNavigator />
       </Map>
     </div>

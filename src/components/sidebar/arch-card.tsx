@@ -1,7 +1,5 @@
 import type { ArchSummary } from "@/lib/data/architectures.type"
 import { useMapSelectStore } from "@/stores/map-select"
-import { useMap } from "@/components/ui/map"
-import { flyToArchIfNeeded } from "@/lib/map-flyto"
 import { Box } from "lucide-react"
 import styles from "./arch-card.module.css"
 
@@ -9,7 +7,6 @@ export function ArchCard({ arch }: { arch: ArchSummary }) {
   const selectedSummary = useMapSelectStore((s) => s.selectedSummary)
   const selectOnMap = useMapSelectStore((s) => s.selectOnMap)
   const deselectOnMap = useMapSelectStore((s) => s.deselectOnMap)
-  const { map } = useMap()
   const isSelected = selectedSummary?.slug === arch.slug
 
   const handleClick = () => {
@@ -17,13 +14,6 @@ export function ArchCard({ arch }: { arch: ArchSummary }) {
       deselectOnMap()
     } else {
       selectOnMap(arch)
-      if (map) {
-        flyToArchIfNeeded(
-          map,
-          arch.coordinates.lng,
-          arch.coordinates.lat,
-        )
-      }
     }
   }
 
