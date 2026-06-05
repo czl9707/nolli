@@ -1,5 +1,5 @@
 import { useSidebarStore } from "@/stores/sidebar"
-import { useArchStore } from "@/stores/arch"
+import { useArchDetailStore } from "@/stores/arch-detail"
 import { useLayoutStore } from "@/stores/layout"
 import { motion, AnimatePresence } from "framer-motion"
 import { TRANSITION_SHORT } from "@/lib/constants"
@@ -18,10 +18,10 @@ const Github = createLucideIcon("github", [
 
 export function Sidebar() {
   const sidebarOpen = useSidebarStore((s) => s.sidebarOpen)
-  const lastSelectedArch = useArchStore((s) => s.lastSelectedArch)
+  const selectedArch = useArchDetailStore((s) => s.selectedArch)
   const mode = useLayoutStore((s) => s.mode)
   const isOpen = mode === "home" && sidebarOpen
-  const sidebarView = lastSelectedArch ? "arch" : "panel"
+  const sidebarView = selectedArch ? "arch" : "panel"
 
   return (
     <AnimatePresence>

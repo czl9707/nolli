@@ -1,12 +1,12 @@
 import { useEffect, useRef } from "react"
 import { useLocation } from "react-router"
-import { useArchStore } from "@/stores/arch"
+import { useArchDetailStore } from "@/stores/arch-detail"
 import { useDbStore } from "@/stores/db"
 
 export function ArchSync() {
   const location = useLocation()
   const dataSource = useDbStore((s) => s.dataSource)
-  const selectArch = useArchStore((s) => s.selectArch)
+  const selectArch = useArchDetailStore((s) => s.selectArch)
   const prevSlugRef = useRef<string | null>(null)
 
   useEffect(() => {

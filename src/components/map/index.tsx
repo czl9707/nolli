@@ -10,7 +10,7 @@ import { getMapStyle } from "@/lib/map-style"
 import type { MapRef } from "@/components/ui/map"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useNavigate } from "react-router"
-import { useArchStore } from "@/stores/arch"
+import { useArchDetailStore } from "@/stores/arch-detail"
 import { useSidebarStore } from "@/stores/sidebar"
 import { useLayoutStore } from "@/stores/layout"
 import { useDbStore } from "@/stores/db"
@@ -29,9 +29,9 @@ function IndividualMarker({
 }: {
   point: Extract<ClusterPoint, { type: "point" }>
 }) {
-  const lastSelectedArch = useArchStore((s) => s.lastSelectedArch)
-  const selectArch = useArchStore((s) => s.selectArch)
-  const deselectArch = useArchStore((s) => s.deselectArch)
+  const selectedArch = useArchDetailStore((s) => s.selectedArch)
+  const selectArch = useArchDetailStore((s) => s.selectArch)
+  const deselectArch = useArchDetailStore((s) => s.deselectArch)
   const setOpen = useSidebarStore((s) => s.setOpen)
   const dataSource = useDbStore((s) => s.dataSource)
 
@@ -39,10 +39,10 @@ function IndividualMarker({
     <MapMarker longitude={point.coordinates[0]} latitude={point.coordinates[1]}>
       <MarkerContent>
         <Box
-          data-selected={lastSelectedArch?.slug === point.slug}
+          data-selected={selectedArch?.slug === point.slug}
           className={styles.individualMarker}
           onClick={() => {
-            if (lastSelectedArch?.slug === point.slug) {
+            if (selectedArch?.slug === point.slug) {
               deselectArch()
             } else if (dataSource) {
               selectArch(point.slug, dataSource).then((arch) => {
@@ -119,23 +119,23 @@ function ArchMarkers() {
 }
 
 function MapNavigator() {
-  const lastSelectedArch = useArchStore((s) => s.lastSelectedArch)
+  const selectedArch = useArchDetailStore((s) => s.selectedArch)
   const mode = useLayoutStore((s) => s.mode)
   const { map } = useMap()
 
   useEffect(() => {
-    if (!map || !lastSelectedArch || mode !== "board") return
+    if (!map || !selectedArch || mode !== "board") return
 
     const timer = setTimeout(() => {
       flyToArchCinematic(
         map,
-        lastSelectedArch.coordinates.lng,
-        lastSelectedArch.coordinates.lat,
+        selectedArch.coordinates.lng,
+        selectedArch.coordinates.lat,
       )
     }, TRANSITION_SHORT * 1000)
 
     return () => clearTimeout(timer)
-  }, [map, lastSelectedArch, mode])
+  }, [map, selectedArch, mode])
 
   return null
 }

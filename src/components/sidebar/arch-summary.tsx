@@ -1,4 +1,4 @@
-import { useArchStore } from "@/stores/arch"
+import { useArchDetailStore } from "@/stores/arch-detail"
 import { useNavigate } from "react-router"
 import { H4, Body1 } from "@/components/ui/typography"
 import { Button } from "@/components/ui/button"
@@ -7,8 +7,8 @@ import { SidebarCard } from "./sidebar-card"
 import styles from "./arch-summary.module.css"
 
 export function ArchSummary() {
-  const arch = useArchStore((s) => s.lastSelectedArch)
-  const deselectArch = useArchStore((s) => s.deselectArch)
+  const arch = useArchDetailStore((s) => s.selectedArch)
+  const deselectArch = useArchDetailStore((s) => s.deselectArch)
   const navigate = useNavigate()
 
   if (!arch) return null
