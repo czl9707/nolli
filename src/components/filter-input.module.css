@@ -1,0 +1,45 @@
+.trigger {
+    position: relative;
+    display: flex;
+    min-height: 2rem;
+    width: 100%;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem;
+    border-radius: var(--size-border-radius);
+    border: var(--border);
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+    transition: border-color var(--transition-instant), box-shadow var(--transition-instant);
+}
+
+.trigger:focus-within {
+    border-color: rgb(var(--color-primary-foreground) / 0.5);
+    box-shadow: var(--shadow-ring);
+}
+
+.trigger[data-state="open"] {
+    border-color: rgb(var(--color-primary-foreground) / 0.5);
+    box-shadow: var(--shadow-ring);
+}
+
+.placeholder {
+    color: rgb(var(--color-secondary-foreground));
+    font-size: 0.875rem;
+    font-family: var(--font-playful);
+    pointer-events: none;
+    user-select: none;
+}
+
+.badge {
+    cursor: pointer;
+}
+
+.badge svg {
+    cursor: pointer;
+}
+
+.popover {
+    width: var(--size-sidebar-width);
+    max-height: 20rem;
+}
