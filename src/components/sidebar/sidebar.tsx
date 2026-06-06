@@ -1,3 +1,4 @@
+import { useRef } from "react"
 import { useSidebarStore } from "@/stores/sidebar"
 import { useArchDetailStore } from "@/stores/arch-detail"
 import { useLayoutStore } from "@/stores/layout"
@@ -15,12 +16,36 @@ const Github = createLucideIcon("github", [
   ["path", { key: "tail", d: "M9 18c-4.51 2-5-2-7-2" }],
 ])
 
+const contentVariants = {
+  enter: (direction: "forward" | "backward") => ({
+    x: direction === "forward" ? 40 : -40,
+    opacity: 0,
+  }),
+  center: {
+    x: 0,
+    opacity: 1,
+  },
+  exit: (direction: "forward" | "backward") => ({
+    x: direction === "forward" ? -40 : 40,
+    opacity: 0,
+  }),
+}
+
 export function Sidebar() {
   const sidebarOpen = useSidebarStore((s) => s.sidebarOpen)
   const selectedArch = useArchDetailStore((s) => s.selected)
   const mode = useLayoutStore((s) => s.mode)
   const isOpen = mode === "home" && sidebarOpen
   const sidebarView = selectedArch ? "arch" : "panel"
+
+  const prevViewRef = useRef(sidebarView)
+  const direction = useRef<"forward" | "backward">("forward")
+
+  if (prevViewRef.current !== sidebarView) {
+    direction.current =
+      sidebarView === "arch" ? "forward" : "backward"
+    prevViewRef.current = sidebarView
+  }
 
   return (
     <AnimatePresence>
@@ -42,11 +67,24 @@ export function Sidebar() {
             transition={{ duration: TRANSITION_SHORT, ease: "easeInOut" }}
           >
             <div className={styles.sidebarContent}>
-              {sidebarView === "arch" ? (
-                <ArchSummary key="arch" />
-              ) : (
-                <OperationPanel key="panel" />
-              )}
+              <AnimatePresence mode="wait" custom={direction.current}>
+                <motion.div
+                  key={sidebarView}
+                  className={styles.contentTransition}
+                  custom={direction.current}
+                  variants={contentVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: TRANSITION_SHORT, ease: "easeInOut" }}
+                >
+                  {sidebarView === "arch" ? (
+                    <ArchSummary />
+                  ) : (
+                    <OperationPanel />
+                  )}
+                </motion.div>
+              </AnimatePresence>
             </div>
             <Footer/>
           </motion.div>
