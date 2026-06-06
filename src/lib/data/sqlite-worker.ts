@@ -135,10 +135,6 @@ function handleGetAllArchitectures(filter: ArchFilter | undefined): ArchSummary[
     conditions.push(`a.city_id IN (${filter.cityIds.map(() => "?").join(", ")})`)
     params.push(...filter.cityIds)
   }
-  if (filter?.countryCodes?.length) {
-    conditions.push(`c.code IN (${filter.countryCodes.map(() => "?").join(", ")})`)
-    params.push(...filter.countryCodes)
-  }
 
   if (conditions.length > 0) sql += " WHERE " + conditions.join(" AND ")
 

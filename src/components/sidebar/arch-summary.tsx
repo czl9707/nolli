@@ -1,44 +1,49 @@
-import { useArchStore } from "@/stores/arch"
+import { useRef } from "react"
+import { useArchDetailStore } from "@/stores/arch-detail"
 import { useNavigate } from "react-router"
 import { H4, Body1 } from "@/components/ui/typography"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, X } from "lucide-react"
+import { ArrowRight, ChevronLeft } from "lucide-react"
 import { SidebarCard } from "./sidebar-card"
 import styles from "./arch-summary.module.css"
 
 export function ArchSummary() {
-  const arch = useArchStore((s) => s.lastSelectedArch)
-  const deselectArch = useArchStore((s) => s.deselectArch)
+  const arch = useArchDetailStore((s) => s.selected)
+  const deselectArch = useArchDetailStore((s) => s.deselect)
   const navigate = useNavigate()
 
-  if (!arch) return null
+  const archRef = useRef(arch)
+  if (arch) archRef.current = arch
+  const current = archRef.current
 
-  const cover = arch.coverImage
+  if (!current) return null
+
+  const cover = current.coverImage
 
   return (
     <>
       <SidebarCard className={styles.coverWrapper}>
         <Button
-          className={styles.closeButton}
+          className={styles.returnButton}
           variant="secondary"
           size="icon"
           onClick={() => deselectArch()}
-          aria-label="Close"
+          aria-label="Go back"
         >
-          <X size={18} />
+          <ChevronLeft size={18} />
         </Button>
-        <img className={styles.cover} src={cover ?? ""} alt={arch.name} />
+        <img className={styles.cover} src={cover ?? ""} alt={current.name} />
       </SidebarCard>
       <SidebarCard
         className={styles.archCard}
-        onClick={() => navigate(`/arch/${arch.slug}`)}
+        onClick={() => navigate(`/arch/${current.slug}`)}
       >
-        <H4 className={styles.heading}>{arch.name}</H4>
+        <H4 className={styles.heading}>{current.name}</H4>
         <Body1 className={styles.detail}>
           <span className={styles.muted}>By </span>
-          {arch.architect}
+          {current.architect}
           <span className={styles.muted}> in </span>
-          {arch.year}
+          {current.year}
         </Body1>
         <Button variant="link" className={styles.viewLink}>
           Pin Up ! <ArrowRight size={16} />

@@ -1,32 +1,31 @@
 .sidebarWrapper {
   overflow: hidden;
   flex-shrink: 0;
-  z-index: 100;
+  z-index: 20;
 }
 
-.sidebarContent {
+.sidebarContentWrapper {
   width: var(--size-sidebar-width);
   height: 100%;
+  overflow-y: hidden;
   display: flex;
   flex-direction: column;
   padding-right: var(--spacing-component);
   box-sizing: border-box;
 }
 
-.scrollArea {
-  flex: 1;
-  /* overflow: hidden; */
-}
-
-.scrollAreaContent {
+.sidebarContent {
+  min-height: 0;
+  flex: 1 1;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
   gap: var(--spacing-paragraph);
-  padding-bottom: var(--spacing-paragraph);
 }
 
 .footer {
   display: flex;
+  height: fit-content;
   flex-direction: column;
   gap: 0.25rem;
   padding-top: var(--spacing-paragraph);

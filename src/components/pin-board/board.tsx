@@ -2,7 +2,7 @@ import { useMemo, useRef } from "react"
 import { useNavigate } from "react-router"
 import { motion, AnimatePresence } from "framer-motion"
 import { useLayoutStore } from "@/stores/layout"
-import { useArchStore } from "@/stores/arch"
+import { useArchDetailStore } from "@/stores/arch-detail"
 import {
   CANVAS_W,
   CANVAS_H,
@@ -71,7 +71,7 @@ const MAP_SLOT_VARIANTS = {
 
 export function PinBoard() {
   const sideBarOpen = useSidebarStore((s) => s.sidebarOpen)
-  const lastSelectedArch = useArchStore((s) => s.lastSelectedArch)
+  const selectedArch = useArchDetailStore((s) => s.selected)
   const navigate = useNavigate()
   const viewportRef = useRef<HTMLDivElement>(null)
   
@@ -90,9 +90,9 @@ export function PinBoard() {
   } = useBoardPan(CANVAS_W, CANVAS_H, isBoard, viewportRef)
 
   const items = useMemo(() => {
-    if (!lastSelectedArch) return []
-    return layoutArchBoard(lastSelectedArch)
-  }, [lastSelectedArch])
+    if (!selectedArch) return []
+    return layoutArchBoard(selectedArch)
+  }, [selectedArch])
 
   return (
     <div
@@ -158,7 +158,7 @@ export function PinBoard() {
 
         <AnimatePresence>
           {isBoard &&
-            lastSelectedArch &&
+            selectedArch &&
             items.map((item, i) => (
               <PinBoardItem key={`${item.kind}-${i}`} item={item} delay={i} />
             ))}

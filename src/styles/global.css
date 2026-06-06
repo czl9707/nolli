@@ -59,12 +59,12 @@ body {
     --typography-body1-fontFamily: var(--font-playful);
     --typography-body1-fontWeight: 400;
     --typography-body1-fontSize: 1rem;
-    --typography-body1-lineHeight: 1.5;
+    --typography-body1-lineHeight: 1.25;
 
     --typography-body2-fontFamily: var(--font-playful);
     --typography-body2-fontWeight: 300;
     --typography-body2-fontSize: 0.875rem;
-    --typography-body2-lineHeight: 1.5;
+    --typography-body2-lineHeight: 1.25;
 
     --typography-h1-fontFamily: var(--font-playful);
     --typography-h1-fontWeight: 600;
@@ -110,7 +110,7 @@ body {
     --size-footer-height: 2rem;
     --size-sidebar-width: 24rem;
     
-    --shadow-ring: 0 0 2px rgb(var(--color-primary-foreground) / 0.1);
+    --shadow-ring: 0 0 2px rgb(var(--color-primary-foreground) / 0.2);
     --shadow-sm: 2px 2px 2px rgb(var(--color-primary-foreground) / 0.1);
     --shadow-md: 4px 4px 6px rgb(var(--color-primary-foreground) / 0.2);
 
@@ -136,7 +136,7 @@ body[data-theme='dark'] {
     --color-primary-background: 23 23 23;
     --color-secondary-background: 38 38 38;
     --color-primary-foreground: 255 255 255;
-    --color-secondary-foreground: 225 225 225;
+    --color-secondary-foreground: 185 185 185;
     --color-accent-background: 23 23 23;
     --color-accent-foreground: 238 163 73;
 

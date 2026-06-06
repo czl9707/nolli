@@ -1,54 +1,70 @@
-.command {
+.trigger {
+    position: relative;
     display: flex;
     width: 100%;
-    height: 100%;
-    flex-direction: column;
-    overflow: hidden;
+    box-sizing: border-box;
+    min-height: 2.25rem;
+    min-width: 0;
+    align-items: center;
     border-radius: var(--size-border-radius);
+    border: var(--border);
+    padding: 0.25rem 0.5rem;
+    gap: 0.25rem;
+    cursor: text;
+    transition: border-color var(--transition-instant),
+        box-shadow var(--transition-instant);
     background-color: rgb(var(--color-primary-background));
-    color: rgb(var(--color-primary-foreground));
-    padding: 0.25rem;
 }
 
-.inputWrapper {
-    padding: 0.25rem 0.25rem 0;
+.trigger:focus-within,
+.trigger[data-state="open"],
+.trigger:hover {
+    border-color: rgb(var(--color-primary-foreground) / 0.5);
+    box-shadow: var(--shadow-ring);
 }
 
-.inputGroup {
-    height: 2rem;
-    border: 1px solid rgb(var(--color-primary-foreground) / 0.3);
-    background-color: rgb(var(--color-secondary-background) / 0.3);
-    box-shadow: none;
-}
-
-.inputGroup [data-slot="input-group-addon"] {
-    padding-left: 0.5rem;
+.badgeContainer {
+    flex: 1 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem;
 }
 
 .input {
-    width: 100%;
-    font-size: 0.875rem;
-    font-family: var(--font-playful);
-    background: transparent;
+    flex: 1 1;
+    min-width: 4rem;
     border: none;
     outline: none;
+    background: transparent;
+    font-size: 0.875rem;
+    font-family: var(--font-playful);
     color: rgb(var(--color-primary-foreground));
+    padding: 0;
 }
 
 .input::placeholder {
     color: rgb(var(--color-secondary-foreground));
 }
 
-.input:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
+.badge {
+    cursor: pointer;
 }
 
-.searchIcon {
-    width: 1rem;
-    height: 1rem;
+.icon {
     flex-shrink: 0;
-    opacity: 0.5;
+}
+
+.label {
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.popover {
+    width: var(--radix-popover-trigger-width);
+    box-sizing: border-box;
+    max-height: 20rem;
+    padding: 0.25rem;
 }
 
 .list {
@@ -86,19 +102,13 @@
     color: rgb(var(--color-secondary-foreground));
 }
 
-.separator {
-    margin: 0 -0.25rem;
-    height: 1px;
-    background-color: rgb(var(--color-primary-foreground) / 0.25);
-}
-
 .item {
     position: relative;
     display: flex;
     cursor: default;
     align-items: center;
     gap: 0.5rem;
-    border-radius: 0.125rem;
+    border-radius: var(--size-border-radius);
     padding: 0.375rem 0.5rem;
     font-size: 0.875rem;
     outline: none;
@@ -106,12 +116,12 @@
     color: rgb(var(--color-primary-foreground));
 }
 
-.item[data-selected] {
+.item[data-selected="true"] {
     background-color: rgb(var(--color-secondary-background));
     color: rgb(var(--color-primary-foreground));
 }
 
-.item[data-disabled] {
+.item[data-disabled="true"] {
     pointer-events: none;
     opacity: 0.5;
 }
@@ -121,12 +131,7 @@
     flex-shrink: 0;
 }
 
-.item svg:not([class*="size-"]) {
-    width: 1rem;
-    height: 1rem;
-}
-
-.item[data-selected] svg {
+.item[data-selected="true"] svg {
     color: rgb(var(--color-primary-foreground));
 }
 
@@ -137,21 +142,6 @@
     opacity: 0;
 }
 
-.item:has([data-slot="command-shortcut"]) .checkIcon {
-    display: none;
-}
-
-.item[data-checked] .checkIcon {
+.item[data-checked="true"] .checkIcon {
     opacity: 1;
-}
-
-.shortcut {
-    margin-left: auto;
-    font-size: 0.75rem;
-    letter-spacing: 0.1em;
-    color: rgb(var(--color-secondary-foreground));
-}
-
-.item[data-selected] .shortcut {
-    color: rgb(var(--color-primary-foreground));
 }

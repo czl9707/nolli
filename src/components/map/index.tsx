@@ -8,18 +8,18 @@ import {
 } from "@/components/ui/map"
 import { getMapStyle } from "@/lib/map-style"
 import type { MapRef } from "@/components/ui/map"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef } from "react"
 import { useNavigate } from "react-router"
-import { useArchStore } from "@/stores/arch"
+import { useArchDetailStore } from "@/stores/arch-detail"
 import { useSidebarStore } from "@/stores/sidebar"
 import { useLayoutStore } from "@/stores/layout"
 import { useDbStore } from "@/stores/db"
-import type { ArchSummary } from "@/lib/data/architectures.type"
+import { useFilterStore } from "@/stores/filter"
 import { useMapPatterns } from "./use-map-patterns"
 import { useMapClustering, type ClusterPoint } from "./use-map-clustering"
 import { Box, Boxes } from "lucide-react"
 import { TRANSITION_SHORT } from "@/lib/constants"
-import { flyToArchCinematic, flyToClusterExpand } from "@/lib/map-flyto"
+import { flyToArchCinematic, flyToArchIfNeeded } from "@/lib/map-flyto"
 import styles from "./index.module.css"
 import { Body2 } from "../ui/typography"
 
@@ -28,23 +28,22 @@ function IndividualMarker({
 }: {
   point: Extract<ClusterPoint, { type: "point" }>
 }) {
-  const lastSelectedArch = useArchStore((s) => s.lastSelectedArch)
-  const selectArch = useArchStore((s) => s.selectArch)
-  const deselectArch = useArchStore((s) => s.deselectArch)
+  const selectArch = useArchDetailStore((s) => s.select)
+  const deselectArch = useArchDetailStore((s) => s.deselect)
+  const selectedArch = useArchDetailStore((s) => s.selected)
   const setOpen = useSidebarStore((s) => s.setOpen)
-  const dataSource = useDbStore((s) => s.dataSource)
 
   return (
     <MapMarker longitude={point.coordinates[0]} latitude={point.coordinates[1]}>
       <MarkerContent>
         <Box
-          data-selected={lastSelectedArch?.slug === point.slug}
+          data-selected={selectedArch?.slug === point.slug}
           className={styles.individualMarker}
           onClick={() => {
-            if (lastSelectedArch?.slug === point.slug) {
+            if (selectedArch?.slug === point.slug) {
               deselectArch()
-            } else if (dataSource) {
-              selectArch(point.slug, dataSource).then((arch) => {
+            } else {
+              selectArch(point.slug, "marker").then((arch) => {
                 if (arch) setOpen(true)
               })
             }
@@ -79,13 +78,8 @@ function ClusterMarkerComp({
 
 function ArchMarkers() {
   const { map } = useMap()
-  const dataSource = useDbStore((s) => s.dataSource)
-  const [architectures, setArchitectures] = useState<ArchSummary[]>([])
+  const architectures = useFilterStore((s) => s.filteredArchs)
   const { clusters, getExpansionZoom } = useMapClustering(map, architectures)
-
-  useEffect(() => {
-    dataSource?.getAllArchitectures().then(setArchitectures)
-  }, [dataSource])
 
   return (
     <>
@@ -99,7 +93,7 @@ function ArchMarkers() {
             onExpand={() => {
               if (!map) return
               const zoom = getExpansionZoom(point.id, point.coordinates)
-              flyToClusterExpand(map, point.coordinates[0], point.coordinates[1], zoom)
+              flyToArchCinematic(map, point.coordinates[0], point.coordinates[1], zoom)
             }}
           />
         )
@@ -108,24 +102,44 @@ function ArchMarkers() {
   )
 }
 
+function MapSelectNavigator() {
+  const selected = useArchDetailStore((s) => s.selected)
+  const selectionSource = useArchDetailStore((s) => s.selectionSource)
+  const { map } = useMap()
+
+  useEffect(() => {
+    if (!map || !selected) return
+
+    if (selectionSource === "sidebar" || selectionSource === "url") {
+      flyToArchCinematic(
+        map,
+        selected.coordinates.lng,
+        selected.coordinates.lat,
+      )
+    }
+  }, [map, selected, selectionSource])
+
+  return null
+}
+
 function MapNavigator() {
-  const lastSelectedArch = useArchStore((s) => s.lastSelectedArch)
+  const selectedArch = useArchDetailStore((s) => s.selected)
   const mode = useLayoutStore((s) => s.mode)
   const { map } = useMap()
 
   useEffect(() => {
-    if (!map || !lastSelectedArch || mode !== "board") return
+    if (!map || !selectedArch || mode !== "board") return
 
     const timer = setTimeout(() => {
       flyToArchCinematic(
         map,
-        lastSelectedArch.coordinates.lng,
-        lastSelectedArch.coordinates.lat,
+        selectedArch.coordinates.lng,
+        selectedArch.coordinates.lat,
       )
     }, TRANSITION_SHORT * 1000)
 
     return () => clearTimeout(timer)
-  }, [map, lastSelectedArch, mode])
+  }, [map, selectedArch, mode])
 
   return null
 }
@@ -163,12 +177,13 @@ export function MapCore() {
 
   const isHome = mode === "home"
   const isLoading = !ready || loading
-
+  console.log("MapCore render", { ready, loading, error })
   return (
     <div className={styles.container}>
       <Map ref={handleRef} styles={mapStyles} loading={isLoading}>
         {isHome && <MapControls showZoom showLocate showFullscreen />}
         <ArchMarkers />
+        <MapSelectNavigator />
         <MapNavigator />
       </Map>
     </div>

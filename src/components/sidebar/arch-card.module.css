@@ -1,0 +1,51 @@
+.archCard {
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: background-color var(--transition-instant) ease,
+    box-shadow var(--transition-instant) ease;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+
+  --size-card-height: 6rem;
+  height: var(--size-card-height);
+}
+
+.archCard:hover, .archCard[data-selected="true"] {
+  background-color: rgb(var(--color-primary-foreground) / 0.1);
+  box-shadow: var(--shadow-sm), var(--shadow-ring);
+}
+
+.thumbnail {
+  width: 6rem;
+  height: 6rem;
+  border-radius: calc(var(--size-border-radius));
+  flex-shrink: 0;
+  height: var(--size-card-height);
+}
+
+.image {
+  object-fit: cover;
+  background-color: rgb(var(--color-primary-foreground) / 0.1);
+}
+
+.textBlock {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: var(--spacing-paragraph) var(--spacing-paragraph) var(--spacing-paragraph) 0;
+  flex: 1 1;
+}
+
+.name {
+  display: block;
+  overflow-wrap: break-word;
+  padding-bottom: .5rem;
+}
+
+.architect {
+  display: block;
+  opacity: 0.5;
+  overflow: hidden;
+  white-space: nowrap;
+}

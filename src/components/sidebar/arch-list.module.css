@@ -1,0 +1,26 @@
+.emptyState {
+  width: 100%;
+  text-align: center;
+  padding: var(--spacing-paragraph) 0;
+  opacity: 0.5;
+}
+
+.scrollArea {
+  min-height: 0;
+
+  & [data-slot='scroll-area-thumb'] {
+    display: none;
+  }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-paragraph);
+  width: 0;
+  min-width: 100%;
+}
+
+.sentinel {
+  height: 1px;
+}
