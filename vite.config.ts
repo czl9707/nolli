@@ -33,4 +33,10 @@ export default defineConfig({
       "@": join(process.cwd(), "./src"),
     },
   },
+  server: {
+    headers: {
+      "Cross-Origin-Embedder-Policy": "require-corp",
+      "Cross-Origin-Opener-Policy": "same-origin",
+    },
+  },
 })
