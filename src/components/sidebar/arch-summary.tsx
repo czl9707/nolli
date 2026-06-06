@@ -2,7 +2,7 @@ import { useArchDetailStore } from "@/stores/arch-detail"
 import { useNavigate } from "react-router"
 import { H4, Body1 } from "@/components/ui/typography"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, X } from "lucide-react"
+import { ArrowRight, ChevronLeft } from "lucide-react"
 import { SidebarCard } from "./sidebar-card"
 import styles from "./arch-summary.module.css"
 
@@ -23,9 +23,9 @@ export function ArchSummary() {
           variant="secondary"
           size="icon"
           onClick={() => deselectArch()}
-          aria-label="Close"
+          aria-label="Go back"
         >
-          <X size={18} />
+          <ChevronLeft size={18} />
         </Button>
         <img className={styles.cover} src={cover ?? ""} alt={arch.name} />
       </SidebarCard>
