@@ -17,7 +17,7 @@ const Github = createLucideIcon("github", [
 
 export function Sidebar() {
   const sidebarOpen = useSidebarStore((s) => s.sidebarOpen)
-  const selectedArch = useArchDetailStore((s) => s.selectedArch)
+  const selectedArch = useArchDetailStore((s) => s.selected)
   const mode = useLayoutStore((s) => s.mode)
   const isOpen = mode === "home" && sidebarOpen
   const sidebarView = selectedArch ? "arch" : "panel"

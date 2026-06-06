@@ -23,7 +23,7 @@ export function ArchList() {
   if (!hasFilters) {
     return (
       <Body2 className={styles.emptyState}>
-        Use filters above to browse architectures
+        No filters applied.
       </Body2>
     )
   }

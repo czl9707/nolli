@@ -6,7 +6,7 @@ import { useDbStore } from "@/stores/db"
 export function ArchSync() {
   const location = useLocation()
   const dataSource = useDbStore((s) => s.dataSource)
-  const selectArch = useArchDetailStore((s) => s.selectArch)
+  const selectArch = useArchDetailStore((s) => s.select)
   const prevSlugRef = useRef<string | null>(null)
 
   useEffect(() => {

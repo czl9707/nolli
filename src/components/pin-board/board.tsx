@@ -71,7 +71,7 @@ const MAP_SLOT_VARIANTS = {
 
 export function PinBoard() {
   const sideBarOpen = useSidebarStore((s) => s.sidebarOpen)
-  const selectedArch = useArchDetailStore((s) => s.selectedArch)
+  const selectedArch = useArchDetailStore((s) => s.selected)
   const navigate = useNavigate()
   const viewportRef = useRef<HTMLDivElement>(null)
   

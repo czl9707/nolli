@@ -6,15 +6,18 @@ import styles from "./arch-card.module.css"
 import { Body1, Body2 } from "../ui/typography"
 
 export function ArchCard({ arch }: { arch: ArchSummary }) {
-  const selectedSummary = useMapSelectStore((s) => s.selectedSummary)
-  const selectOnMap = useMapSelectStore((s) => s.selectOnMap)
-  const isSelected = selectedSummary?.slug === arch.slug
+  const selectedOnMap = useMapSelectStore((s) => s.selected)
+  const selectOnMap = useMapSelectStore((s) => s.select)
+  const isSelected = selectedOnMap?.slug === arch.slug
 
   return (
     <SidebarCard
       className={styles.archCard}
       data-selected={isSelected}
-      onClick={() => selectOnMap(arch)}
+      onClick={() => {
+        selectOnMap(arch);
+
+      }}
     >
       <img
         className={`${styles.thumbnail} ${styles.image}`}

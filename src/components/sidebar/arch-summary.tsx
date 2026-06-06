@@ -7,8 +7,8 @@ import { SidebarCard } from "./sidebar-card"
 import styles from "./arch-summary.module.css"
 
 export function ArchSummary() {
-  const arch = useArchDetailStore((s) => s.selectedArch)
-  const deselectArch = useArchDetailStore((s) => s.deselectArch)
+  const arch = useArchDetailStore((s) => s.selected)
+  const deselectArch = useArchDetailStore((s) => s.deselect)
   const navigate = useNavigate()
 
   if (!arch) return null

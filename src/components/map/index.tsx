@@ -29,11 +29,11 @@ function IndividualMarker({
 }: {
   point: Extract<ClusterPoint, { type: "point" }>
 }) {
-  const selectedSummary = useMapSelectStore((s) => s.selectedSummary)
-  const selectOnMap = useMapSelectStore((s) => s.selectOnMap)
-  const deselectOnMap = useMapSelectStore((s) => s.deselectOnMap)
-  const selectArch = useArchDetailStore((s) => s.selectArch)
-  const deselectArch = useArchDetailStore((s) => s.deselectArch)
+  const selected = useMapSelectStore((s) => s.selected)
+  const selectOnMap = useMapSelectStore((s) => s.select)
+  const deselectOnMap = useMapSelectStore((s) => s.deselect)
+  const selectArch = useArchDetailStore((s) => s.select)
+  const deselectArch = useArchDetailStore((s) => s.deselect)
   const setOpen = useSidebarStore((s) => s.setOpen)
   const dataSource = useDbStore((s) => s.dataSource)
   const filteredArchs = useFilterStore((s) => s.filteredArchs)
@@ -42,10 +42,10 @@ function IndividualMarker({
     <MapMarker longitude={point.coordinates[0]} latitude={point.coordinates[1]}>
       <MarkerContent>
         <Box
-          data-selected={selectedSummary?.slug === point.slug}
+          data-selected={selected?.slug === point.slug}
           className={styles.individualMarker}
           onClick={() => {
-            if (selectedSummary?.slug === point.slug) {
+            if (selected?.slug === point.slug) {
               deselectOnMap()
               deselectArch()
             } else if (dataSource) {
@@ -111,23 +111,23 @@ function ArchMarkers() {
 }
 
 function MapSelectNavigator() {
-  const selectedSummary = useMapSelectStore((s) => s.selectedSummary)
+  const selected = useMapSelectStore((s) => s.selected)
   const { map } = useMap()
 
   useEffect(() => {
-    if (!map || !selectedSummary) return
+    if (!map || !selected) return
     flyToArchIfNeeded(
       map,
-      selectedSummary.coordinates.lng,
-      selectedSummary.coordinates.lat,
+      selected.coordinates.lng,
+      selected.coordinates.lat,
     )
-  }, [map, selectedSummary])
+  }, [map, selected])
 
   return null
 }
 
 function MapNavigator() {
-  const selectedArch = useArchDetailStore((s) => s.selectedArch)
+  const selectedArch = useArchDetailStore((s) => s.selected)
   const mode = useLayoutStore((s) => s.mode)
   const { map } = useMap()
 

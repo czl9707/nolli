@@ -2,19 +2,19 @@ import { create } from "zustand"
 import type { ArchSummary } from "@/lib/data/architectures.type"
 
 type MapSelectState = {
-  selectedSummary: ArchSummary | null
-  selectOnMap: (summary: ArchSummary) => void
-  deselectOnMap: () => void
+  selected: ArchSummary | null
+  select: (summary: ArchSummary) => void
+  deselect: () => void
 }
 
 export const useMapSelectStore = create<MapSelectState>((set) => ({
-  selectedSummary: null,
+  selected: null,
 
-  selectOnMap: (summary) => {
-    set({ selectedSummary: summary })
+  select: (summary) => {
+    set({ selected: summary })
   },
 
-  deselectOnMap: () => {
-    set({ selectedSummary: null })
+  deselect: () => {
+    set({ selected: null })
   },
 }))
