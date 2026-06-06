@@ -4,12 +4,10 @@ import { useArchDetailStore } from "@/stores/arch-detail"
 import { SidebarCard } from "./sidebar-card"
 import styles from "./arch-card.module.css"
 import { Body1, Body2 } from "../ui/typography"
-import { useDbStore } from "@/stores/db"
 
 export function ArchCard({ arch }: { arch: ArchSummary }) {
   const selectedArch = useArchDetailStore((s) => s.selected)
   const selectArch = useArchDetailStore((s) => s.select)
-  const dataSource = useDbStore((s) => s.dataSource)
   const isSelected = selectedArch?.slug === arch.slug
 
   return (
@@ -17,7 +15,7 @@ export function ArchCard({ arch }: { arch: ArchSummary }) {
       className={styles.archCard}
       data-selected={isSelected}
       onClick={() => {
-        selectArch(arch.slug, dataSource!);
+        selectArch(arch.slug, "sidebar")
       }}
     >
       <img

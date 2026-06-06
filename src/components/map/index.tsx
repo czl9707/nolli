@@ -32,8 +32,6 @@ function IndividualMarker({
   const deselectArch = useArchDetailStore((s) => s.deselect)
   const selectedArch = useArchDetailStore((s) => s.selected)
   const setOpen = useSidebarStore((s) => s.setOpen)
-  const dataSource = useDbStore((s) => s.dataSource)
-  const filteredArchs = useFilterStore((s) => s.filteredArchs)
 
   return (
     <MapMarker longitude={point.coordinates[0]} latitude={point.coordinates[1]}>
@@ -44,10 +42,8 @@ function IndividualMarker({
           onClick={() => {
             if (selectedArch?.slug === point.slug) {
               deselectArch()
-            } else if (dataSource) {
-              const summary = filteredArchs.find((a) => a.slug === point.slug)
-              if (summary) selectArch(summary.slug, dataSource)
-              selectArch(point.slug, dataSource).then((arch) => {
+            } else {
+              selectArch(point.slug, "marker").then((arch) => {
                 if (arch) setOpen(true)
               })
             }
@@ -108,16 +104,20 @@ function ArchMarkers() {
 
 function MapSelectNavigator() {
   const selected = useArchDetailStore((s) => s.selected)
+  const selectionSource = useArchDetailStore((s) => s.selectionSource)
   const { map } = useMap()
 
   useEffect(() => {
     if (!map || !selected) return
-    flyToArchIfNeeded(
-      map,
-      selected.coordinates.lng,
-      selected.coordinates.lat,
-    )
-  }, [map, selected])
+
+    if (selectionSource === "sidebar" || selectionSource === "url") {
+      flyToArchCinematic(
+        map,
+        selected.coordinates.lng,
+        selected.coordinates.lat,
+      )
+    }
+  }, [map, selected, selectionSource])
 
   return null
 }
