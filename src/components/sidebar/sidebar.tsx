@@ -8,7 +8,6 @@ import { ArchSummary } from "./arch-summary"
 import { NavUser } from "./nav-user"
 import { Button } from "@/components/ui/button"
 import { Info, createLucideIcon } from "lucide-react"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import styles from "./sidebar.module.css"
 
 const Github = createLucideIcon("github", [
@@ -36,40 +35,20 @@ export function Sidebar() {
           onClick={(e) => e.stopPropagation()}
         >
           <motion.div
-            className={styles.sidebarContent}
+            className={styles.sidebarContentWrapper}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: TRANSITION_SHORT, ease: "easeInOut" }}
           >
-            <ScrollArea className={styles.scrollArea}>
-              <div className={styles.scrollAreaContent}>
-                <AnimatePresence mode="wait">
-                  {sidebarView === "arch" ? (
-                    <ArchSummary key="arch" />
-                  ) : (
-                    <OperationPanel key="panel" />
-                  )}
-                </AnimatePresence>
-              </div>
-            </ScrollArea>
-            <div className={styles.footer}>
-              <Button variant="ghost" className={styles.footerLink}>
-                <Info size={16} />
-                About
-              </Button>
-              <a
-                href="https://github.com/czl9707/nolli"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button variant="ghost" className={styles.footerLink}>
-                    <Github size={16} />
-                    GitHub
-                </Button>
-              </a>
-              <NavUser />
+            <div className={styles.sidebarContent}>
+              {sidebarView === "arch" ? (
+                <ArchSummary key="arch" />
+              ) : (
+                <OperationPanel key="panel" />
+              )}
             </div>
+            <Footer/>
           </motion.div>
         </motion.div>
       )}
@@ -77,3 +56,24 @@ export function Sidebar() {
   )
 }
 
+function Footer(){
+  return (
+    <div className={styles.footer}>
+      <Button variant="ghost" className={styles.footerLink}>
+        <Info size={16} />
+        About
+      </Button>
+      <a
+        href="https://github.com/czl9707/nolli"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <Button variant="ghost" className={styles.footerLink}>
+            <Github size={16} />
+            GitHub
+        </Button>
+      </a>
+      <NavUser />
+    </div>
+  )
+}

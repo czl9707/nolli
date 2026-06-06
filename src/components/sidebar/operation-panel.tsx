@@ -114,7 +114,7 @@ export function OperationPanel() {
 
   return (
     <>
-      <SidebarCard>
+      <SidebarCard className={styles.filterCard}>
         <H5 className={styles.heading}>Filters</H5>
         <FilterInput
           label="Filter by Architect"

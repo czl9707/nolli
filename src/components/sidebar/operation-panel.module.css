@@ -17,3 +17,8 @@
   box-sizing: border-box;
   gap: 0.5rem;
 }
+
+.filterCard {
+  flex-shrink: 0;
+  padding: var(--spacing-paragraph);
+}

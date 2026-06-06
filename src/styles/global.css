@@ -59,12 +59,12 @@ body {
     --typography-body1-fontFamily: var(--font-playful);
     --typography-body1-fontWeight: 400;
     --typography-body1-fontSize: 1rem;
-    --typography-body1-lineHeight: 1.5;
+    --typography-body1-lineHeight: 1.25;
 
     --typography-body2-fontFamily: var(--font-playful);
     --typography-body2-fontWeight: 300;
     --typography-body2-fontSize: 0.875rem;
-    --typography-body2-lineHeight: 1.5;
+    --typography-body2-lineHeight: 1.25;
 
     --typography-h1-fontFamily: var(--font-playful);
     --typography-h1-fontWeight: 600;

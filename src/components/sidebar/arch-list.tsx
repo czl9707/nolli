@@ -3,6 +3,8 @@ import { useFilterStore } from "@/stores/filter"
 import { ArchCard } from "./arch-card"
 import { ArchCardSkeleton } from "./arch-card-skeleton"
 import styles from "./arch-list.module.css"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Body2 } from "../ui/typography"
 
 const PAGE_SIZE = 20
 
@@ -20,17 +22,17 @@ export function ArchList() {
 
   if (!hasFilters) {
     return (
-      <span className={styles.emptyState}>
+      <Body2 className={styles.emptyState}>
         Use filters above to browse architectures
-      </span>
+      </Body2>
     )
   }
 
   if (filteredArchs.length === 0) {
     return (
-      <span className={styles.emptyState}>
+      <Body2 className={styles.emptyState}>
         No architectures match your filters
-      </span>
+      </Body2>
     )
   }
 
@@ -38,11 +40,14 @@ export function ArchList() {
   const hasMore = renderCount < filteredArchs.length
 
   return (
-    <div className={styles.list}>
-      {visible.map((arch) => (
-        <ArchCard key={arch.slug} arch={arch} />
-      ))}
-      {hasMore && <ArchCardSkeleton onLoadMore={handleLoadMore} />}
-    </div>
+    <ScrollArea className={styles.scrollArea}>
+      <div className={styles.content}>
+        {visible.map((arch) => (
+          <ArchCard key={arch.slug} arch={arch} />
+        ))}
+        {hasMore && <ArchCardSkeleton onLoadMore={handleLoadMore} />}
+        <span />
+      </div>
+    </ScrollArea>
   )
 }

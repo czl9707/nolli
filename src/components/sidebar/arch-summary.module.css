@@ -37,6 +37,7 @@
 .archCard {
   cursor: pointer;
   align-items: flex-end;
+  padding: var(--spacing-paragraph)
 }
 
 .viewLink {

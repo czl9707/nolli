@@ -1,45 +1,30 @@
 import { useEffect, useRef } from "react"
 import type { ArchSummary } from "@/lib/data/architectures.type"
 import { useMapSelectStore } from "@/stores/map-select"
-import { Box } from "lucide-react"
 import { SidebarCard } from "./sidebar-card"
 import styles from "./arch-card.module.css"
+import { Body1, Body2 } from "../ui/typography"
 
 export function ArchCard({ arch }: { arch: ArchSummary }) {
   const selectedSummary = useMapSelectStore((s) => s.selectedSummary)
   const selectOnMap = useMapSelectStore((s) => s.selectOnMap)
-  const deselectOnMap = useMapSelectStore((s) => s.deselectOnMap)
   const isSelected = selectedSummary?.slug === arch.slug
-
-  const handleClick = () => {
-    if (isSelected) {
-      deselectOnMap()
-    } else {
-      selectOnMap(arch)
-    }
-  }
 
   return (
     <SidebarCard
       className={styles.archCard}
       data-selected={isSelected}
-      onClick={handleClick}
+      onClick={() => selectOnMap(arch)}
     >
-      {arch.coverImage ? (
-        <img
-          className={`${styles.thumbnail} ${styles.image}`}
-          src={arch.coverImage}
-          alt={arch.name}
-          loading="lazy"
-        />
-      ) : (
-        <div className={`${styles.thumbnail} ${styles.placeholder}`}>
-          <Box size={16} opacity={0.3} />
-        </div>
-      )}
+      <img
+        className={`${styles.thumbnail} ${styles.image}`}
+        src={arch.coverImage!}
+        alt={arch.name}
+        loading="lazy"
+      />
       <div className={styles.textBlock}>
-        <span className={styles.name}>{arch.name}</span>
-        <span className={styles.architect}>{arch.architect}</span>
+        <Body1 className={styles.name}>{arch.name}</Body1>
+        <Body2 className={styles.architect}>{arch.architect}</Body2>
       </div>
     </SidebarCard>
   )

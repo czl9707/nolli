@@ -1,16 +1,22 @@
-.list {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  gap: 0.25rem;
-}
-
 .emptyState {
-  display: block;
   width: 100%;
   text-align: center;
-  padding: 1rem 0;
-  opacity: 0.4;
-  font-family: var(--typography-body2-fontFamily);
-  font-size: var(--typography-body2-fontSize);
+  padding: var(--spacing-paragraph) 0;
+  opacity: 0.5;
+}
+
+.scrollArea {
+  min-height: 0;
+
+  & [data-slot='scroll-area-thumb'] {
+    display: none;
+  }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-paragraph);
+  width: 0;
+  min-width: 100%;
 }
