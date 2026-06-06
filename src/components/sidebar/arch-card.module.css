@@ -16,11 +16,6 @@
   box-shadow: var(--shadow-sm), var(--shadow-ring);
 }
 
-.skeletonCard {
-  cursor: default;
-  opacity: 0.4;
-}
-
 .thumbnail {
   width: 6rem;
   height: 6rem;
@@ -32,17 +27,6 @@
 .image {
   object-fit: cover;
   background-color: rgb(var(--color-primary-foreground) / 0.1);
-}
-
-.placeholder {
-  background-color: rgb(var(--color-primary-foreground) / 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.imagePulse {
-  background-color: rgb(var(--color-primary-foreground) / 0.15);
 }
 
 .textBlock {
@@ -64,19 +48,4 @@
   opacity: 0.5;
   overflow: hidden;
   white-space: nowrap;
-}
-
-.line {
-  border-radius: 2px;
-  background-color: rgb(var(--color-primary-foreground) / 0.15);
-}
-
-.line1 {
-  height: 0.875rem;
-  width: 70%;
-}
-
-.line2 {
-  height: 0.75rem;
-  width: 50%;
 }

@@ -1,4 +1,3 @@
-import { useEffect, useRef } from "react"
 import type { ArchSummary } from "@/lib/data/architectures.type"
 import { useArchDetailStore } from "@/stores/arch-detail"
 import { SidebarCard } from "./sidebar-card"
@@ -27,44 +26,6 @@ export function ArchCard({ arch }: { arch: ArchSummary }) {
       <div className={styles.textBlock}>
         <Body1 className={styles.name}>{arch.name}</Body1>
         <Body2 className={styles.architect}>{arch.architect}</Body2>
-      </div>
-    </SidebarCard>
-  )
-}
-
-export function ArchCardSkeleton({
-  onLoadMore,
-}: {
-  onLoadMore: () => void
-}) {
-  const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          onLoadMore()
-        }
-      },
-      { threshold: 0.1 },
-    )
-
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [onLoadMore])
-
-  return (
-    <SidebarCard
-      ref={ref}
-      className={`${styles.archCard} ${styles.skeletonCard}`}
-    >
-      <div className={`${styles.thumbnail} ${styles.imagePulse}`} />
-      <div className={styles.textBlock}>
-        <div className={`${styles.line} ${styles.line1}`} />
-        <div className={`${styles.line} ${styles.line2}`} />
       </div>
     </SidebarCard>
   )
