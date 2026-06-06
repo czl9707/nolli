@@ -1,9 +1,9 @@
-import { useRef } from "react"
+import { useState } from "react"
 import { useSidebarStore } from "@/stores/sidebar"
 import { useArchDetailStore } from "@/stores/arch-detail"
 import { useLayoutStore } from "@/stores/layout"
 import { motion, AnimatePresence } from "framer-motion"
-import { TRANSITION_SHORT } from "@/lib/constants"
+import { TRANSITION_INSTANT, TRANSITION_SHORT } from "@/lib/constants"
 import { OperationPanel } from "./operation-panel"
 import { ArchSummary } from "./arch-summary"
 import { NavUser } from "./nav-user"
@@ -38,13 +38,20 @@ export function Sidebar() {
   const isOpen = mode === "home" && sidebarOpen
   const sidebarView = selectedArch ? "arch" : "panel"
 
-  const prevViewRef = useRef(sidebarView)
-  const direction = useRef<"forward" | "backward">("forward")
+  const [[view, direction], setView] = useState<
+    [string, "forward" | "backward"]
+  >([sidebarView, "forward"])
 
-  if (prevViewRef.current !== sidebarView) {
-    direction.current =
-      sidebarView === "arch" ? "forward" : "backward"
-    prevViewRef.current = sidebarView
+  if (view !== sidebarView) {
+    setView([
+      sidebarView,
+      sidebarView === "arch" ? "forward" : "backward",
+    ])
+  }
+
+  const transition = {
+    duration: TRANSITION_INSTANT,
+    ease: "easeInOut" as const,
   }
 
   return (
@@ -67,16 +74,16 @@ export function Sidebar() {
             transition={{ duration: TRANSITION_SHORT, ease: "easeInOut" }}
           >
             <div className={styles.sidebarContent}>
-              <AnimatePresence mode="wait" custom={direction.current}>
+              <AnimatePresence mode="wait" custom={direction}>
                 <motion.div
-                  key={sidebarView}
+                  key={view}
                   className={styles.contentTransition}
-                  custom={direction.current}
+                  custom={direction}
                   variants={contentVariants}
                   initial="enter"
                   animate="center"
                   exit="exit"
-                  transition={{ duration: TRANSITION_SHORT, ease: "easeInOut" }}
+                  transition={transition}
                 >
                   {sidebarView === "arch" ? (
                     <ArchSummary />
