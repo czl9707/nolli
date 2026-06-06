@@ -22,3 +22,14 @@
   flex-shrink: 0;
   padding: var(--spacing-paragraph);
 }
+
+.skeletonGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.skeletonLabel {
+  margin-bottom: 0.25rem;
+}

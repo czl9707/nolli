@@ -1,0 +1,18 @@
+.skeleton {
+  display: inline-block;
+  border-radius: var(--size-border-radius);
+  background-color: rgb(var(--color-primary-foreground) / 0.08);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 1;
+  }
+}

@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react"
-import { H5 } from "@/components/ui/typography"
+import { Caption } from "@/components/ui/typography"
 import { SidebarCard } from "./sidebar-card"
 import { FilterInput, type FilterItem } from "@/components/filter-input"
+import { Skeleton } from "@/components/ui/skeleton"
 import { useFilterStore } from "@/stores/filter"
 import { useDbStore } from "@/stores/db"
 import type { FilterOptions } from "@/lib/data/data-source.type"
@@ -77,8 +78,20 @@ function toLocationItems(
   return { items, selected }
 }
 
+function FilterSkeleton() {
+  return (
+    <div className={styles.skeletonGroup}>
+      <Skeleton className={styles.skeletonLabel} height="0.75rem" width="6rem" />
+      <Skeleton height="2.25rem" width="100%" />
+      <Skeleton className={styles.skeletonLabel} height="0.75rem" width="5rem" />
+      <Skeleton height="2.25rem" width="100%" />
+    </div>
+  )
+}
+
 export function OperationPanel() {
   const dataSource = useDbStore((s) => s.dataSource)
+  const dataLoading = useDbStore((s) => s.loading)
   const architectIds = useFilterStore((s) => s.architectIds)
   const cityIds = useFilterStore((s) => s.cityIds)
   const toggleArchitect = useFilterStore((s) => s.toggleArchitect)
@@ -100,46 +113,43 @@ export function OperationPanel() {
   }, [opts])
 
   useEffect(() => {
-    dataSource?.getFilterOptions().then(setOpts)
-  }, [dataSource])
-
-  if (!opts) return null
-
-  const { items: archItems, selected: archSelected } =
-    toArchitectItems(opts, architectIds)
-  const { items: locItems, selected: locSelected } = toLocationItems(
-    opts,
-    cityIds,
-  )
+    if (dataLoading || !dataSource) return
+    dataSource.getFilterOptions().then(setOpts)
+  }, [dataSource, dataLoading])
 
   return (
     <>
       <SidebarCard className={styles.filterCard}>
-        {/* <H5 className={styles.heading}>Filters</H5> */}
-        <FilterInput
-          label="Filter by Architect"
-          placeholder="no filter"
-          items={archItems}
-          selected={archSelected}
-          onToggle={(item) => toggleArchitect(Number(item.key))}
-          onClear={clearArchitects}
-        />
-        <FilterInput
-          label="Filter by Location"
-          placeholder="no filter"
-          items={locItems}
-          selected={locSelected}
-          onToggle={(item) => {
-            if (item.key.startsWith("country:")) {
-              const code = item.key.replace("country:", "")
-              const ids = cityIdsByCountry.get(code)
-              if (ids) toggleCountry(ids)
-            } else {
-              toggleCity(Number(item.key.replace("city:", "")))
-            }
-          }}
-          onClear={clearCities}
-        />
+        {opts ? (
+          <>
+            <FilterInput
+              label="Filter by Architect"
+              placeholder="no filter"
+              items={toArchitectItems(opts, architectIds).items}
+              selected={toArchitectItems(opts, architectIds).selected}
+              onToggle={(item) => toggleArchitect(Number(item.key))}
+              onClear={clearArchitects}
+            />
+            <FilterInput
+              label="Filter by Location"
+              placeholder="no filter"
+              items={toLocationItems(opts, cityIds).items}
+              selected={toLocationItems(opts, cityIds).selected}
+              onToggle={(item) => {
+                if (item.key.startsWith("country:")) {
+                  const code = item.key.replace("country:", "")
+                  const ids = cityIdsByCountry.get(code)
+                  if (ids) toggleCountry(ids)
+                } else {
+                  toggleCity(Number(item.key.replace("city:", "")))
+                }
+              }}
+              onClear={clearCities}
+            />
+          </>
+        ) : (
+          <FilterSkeleton />
+        )}
       </SidebarCard>
       <ArchList />
     </>
