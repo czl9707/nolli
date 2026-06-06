@@ -13,10 +13,10 @@
   object-fit: cover;
 }
 
-.closeButton {
+.returnButton {
   position: absolute;
   top: var(--spacing-paragraph);
-  right: var(--spacing-paragraph);
+  left: var(--spacing-paragraph);
   z-index: 10;
 }
 

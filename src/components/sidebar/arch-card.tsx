@@ -1,22 +1,23 @@
 import { useEffect, useRef } from "react"
 import type { ArchSummary } from "@/lib/data/architectures.type"
-import { useMapSelectStore } from "@/stores/map-select"
+import { useArchDetailStore } from "@/stores/arch-detail"
 import { SidebarCard } from "./sidebar-card"
 import styles from "./arch-card.module.css"
 import { Body1, Body2 } from "../ui/typography"
+import { useDbStore } from "@/stores/db"
 
 export function ArchCard({ arch }: { arch: ArchSummary }) {
-  const selectedOnMap = useMapSelectStore((s) => s.selected)
-  const selectOnMap = useMapSelectStore((s) => s.select)
-  const isSelected = selectedOnMap?.slug === arch.slug
+  const selectedArch = useArchDetailStore((s) => s.selected)
+  const selectArch = useArchDetailStore((s) => s.select)
+  const dataSource = useDbStore((s) => s.dataSource)
+  const isSelected = selectedArch?.slug === arch.slug
 
   return (
     <SidebarCard
       className={styles.archCard}
       data-selected={isSelected}
       onClick={() => {
-        selectOnMap(arch);
-
+        selectArch(arch.slug, dataSource!);
       }}
     >
       <img

@@ -11,7 +11,6 @@ import type { MapRef } from "@/components/ui/map"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import { useNavigate } from "react-router"
 import { useArchDetailStore } from "@/stores/arch-detail"
-import { useMapSelectStore } from "@/stores/map-select"
 import { useSidebarStore } from "@/stores/sidebar"
 import { useLayoutStore } from "@/stores/layout"
 import { useDbStore } from "@/stores/db"
@@ -29,11 +28,9 @@ function IndividualMarker({
 }: {
   point: Extract<ClusterPoint, { type: "point" }>
 }) {
-  const selected = useMapSelectStore((s) => s.selected)
-  const selectOnMap = useMapSelectStore((s) => s.select)
-  const deselectOnMap = useMapSelectStore((s) => s.deselect)
   const selectArch = useArchDetailStore((s) => s.select)
   const deselectArch = useArchDetailStore((s) => s.deselect)
+  const selectedArch = useArchDetailStore((s) => s.selected)
   const setOpen = useSidebarStore((s) => s.setOpen)
   const dataSource = useDbStore((s) => s.dataSource)
   const filteredArchs = useFilterStore((s) => s.filteredArchs)
@@ -42,15 +39,14 @@ function IndividualMarker({
     <MapMarker longitude={point.coordinates[0]} latitude={point.coordinates[1]}>
       <MarkerContent>
         <Box
-          data-selected={selected?.slug === point.slug}
+          data-selected={selectedArch?.slug === point.slug}
           className={styles.individualMarker}
           onClick={() => {
-            if (selected?.slug === point.slug) {
-              deselectOnMap()
+            if (selectedArch?.slug === point.slug) {
               deselectArch()
             } else if (dataSource) {
               const summary = filteredArchs.find((a) => a.slug === point.slug)
-              if (summary) selectOnMap(summary)
+              if (summary) selectArch(summary.slug, dataSource)
               selectArch(point.slug, dataSource).then((arch) => {
                 if (arch) setOpen(true)
               })
@@ -111,7 +107,7 @@ function ArchMarkers() {
 }
 
 function MapSelectNavigator() {
-  const selected = useMapSelectStore((s) => s.selected)
+  const selected = useArchDetailStore((s) => s.selected)
   const { map } = useMap()
 
   useEffect(() => {

@@ -24,7 +24,7 @@ export function ArchSummary() {
     <>
       <SidebarCard className={styles.coverWrapper}>
         <Button
-          className={styles.closeButton}
+          className={styles.returnButton}
           variant="secondary"
           size="icon"
           onClick={() => deselectArch()}

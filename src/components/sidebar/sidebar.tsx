@@ -73,26 +73,24 @@ export function Sidebar() {
             exit={{ opacity: 0 }}
             transition={{ duration: TRANSITION_SHORT, ease: "easeInOut" }}
           >
-            <div className={styles.sidebarContent}>
-              <AnimatePresence mode="wait" custom={direction}>
-                <motion.div
-                  key={view}
-                  className={styles.contentTransition}
-                  custom={direction}
-                  variants={contentVariants}
-                  initial="enter"
-                  animate="center"
-                  exit="exit"
-                  transition={transition}
-                >
-                  {sidebarView === "arch" ? (
-                    <ArchSummary />
-                  ) : (
-                    <OperationPanel />
-                  )}
-                </motion.div>
-              </AnimatePresence>
-            </div>
+            <AnimatePresence mode="wait" custom={direction}>
+              <motion.div
+                key={view}
+                className={styles.sidebarContent}
+                custom={direction}
+                variants={contentVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={transition}
+              >
+                {sidebarView === "arch" ? (
+                  <ArchSummary />
+                ) : (
+                  <OperationPanel />
+                )}
+              </motion.div>
+            </AnimatePresence>
             <Footer/>
           </motion.div>
         </motion.div>
