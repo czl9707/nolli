@@ -31,6 +31,7 @@ function initSource() {
 
   source.ready
     .then(() => {
+      toast.success("Map data loaded")
       useDbStore.setState({
         loading: false,
         dataSource: source,
