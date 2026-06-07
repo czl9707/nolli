@@ -74,7 +74,7 @@ async function handleInit(msgId: number): Promise<void> {
     throw new Error("OPFS VFS is not available in this environment")
   }
 
-  const warning = await downloadDbIfNecessary(OpfsDb)
+  const message = await downloadDbIfNecessary(OpfsDb)
 
   try {
     db = new OpfsDb(DB_NAME, "r")
@@ -82,7 +82,7 @@ async function handleInit(msgId: number): Promise<void> {
     throw new Error(`Database file "${DB_NAME}" not found in OPFS.`)
   }
 
-  self.postMessage({ type: "ready", msgId, warning })
+  self.postMessage({ type: "ready", msgId, message })
 }
 
 async function getRemoteHash(): Promise<string> {
@@ -99,16 +99,16 @@ async function downloadDbIfNecessary(OpfsDb: NonNullable<Sqlite3Static["oo1"]["O
   try {
     manifestHash = await getRemoteHash()
   } catch {
-    return "Could not check for map data updates. Using cached data."
+    return "Using cached map data (could not check for updates)"
   }
 
   if (storedHash === manifestHash) {
-    return undefined
+    return "Map data is up to date"
   }
 
   const res = await fetch(`${BASE_URL}/latest.db`)
   if (!res.ok) {
-    return "Could not download updated map data. Using cached data."
+    return "Using cached map data (update download failed)"
   }
 
   const buffer = await res.arrayBuffer()

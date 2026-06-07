@@ -3,7 +3,7 @@ import type { ArchSummary, Arch } from "./architectures.type"
 import type { WorkerRequest, WorkerResponse } from "./worker-protocol.type"
 
 export type DataSourceOptions = {
-  onWarning?: (message: string) => void
+  onMessage?: (message: string) => void
 }
 
 type PendingMessage = {
@@ -17,12 +17,12 @@ export class SqliteDataSource implements DataSource {
   private pending = new Map<number, PendingMessage>()
   private initResolve!: () => void
   private initReject!: (err: Error) => void
-  private onWarning?: (message: string) => void
+  private onMessage?: (message: string) => void
 
   readonly ready: Promise<void>
 
   constructor(options?: DataSourceOptions) {
-    this.onWarning = options?.onWarning
+    this.onMessage = options?.onMessage
     this.ready = new Promise<void>((resolve, reject) => {
       this.initResolve = resolve
       this.initReject = reject
@@ -42,8 +42,8 @@ export class SqliteDataSource implements DataSource {
       if (msg.type === "error") {
         pending.reject(new Error(msg.error))
       } else {
-        if (msg.type === "ready" && msg.warning) {
-          this.onWarning?.(msg.warning)
+        if (msg.type === "ready" && msg.message) {
+          this.onMessage?.(msg.message)
         }
         pending.resolve(msg)
       }

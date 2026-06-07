@@ -25,13 +25,12 @@ function initSource() {
   })
 
   const source = new SqliteDataSource({
-    onWarning: (message) => toast.info(message),
+    onMessage: (message) => toast.info(message),
   })
   sourceRef = source
 
   source.ready
     .then(() => {
-      toast.success("Map data loaded")
       useDbStore.setState({
         loading: false,
         dataSource: source,
