@@ -1,6 +1,7 @@
 import { create } from "zustand"
 import type { DataSource } from "@/lib/data/data-source.type"
 import { SqliteDataSource } from "@/lib/data/sqlite-source"
+import { toast } from "sonner"
 
 type DbState = {
   loading: boolean
@@ -22,7 +23,9 @@ function initSource() {
     error: null,
   })
 
-  const source = new SqliteDataSource()
+  const source = new SqliteDataSource({
+    onMessage: (message) => toast.info(message),
+  })
   sourceRef = source
 
   source.ready
@@ -34,6 +37,9 @@ function initSource() {
       })
     })
     .catch((err: Error) => {
+      toast.error("Failed to load map data", {
+        description: err.message,
+      })
       useDbStore.setState({
         loading: false,
         dataSource: null,

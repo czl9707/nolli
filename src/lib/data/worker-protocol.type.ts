@@ -9,7 +9,7 @@ export type WorkerRequest =
   | { type: "getFilterOptions" }
 
 export type WorkerResponse =
-  | { type: "ready"; msgId: number }
+  | { type: "ready"; msgId: number; message?: string }
   | { type: "error"; msgId: number; error: string }
   | { type: "getAllArchitectures"; msgId: number; data: ArchSummary[] }
   | { type: "getArchBySlug"; msgId: number; data: Arch | null }

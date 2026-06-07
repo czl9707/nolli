@@ -12,6 +12,7 @@ import {
   type ReactNode,
 } from "react"
 import { createPortal } from "react-dom"
+import { toast } from "sonner"
 import { useThemeStore } from "@/stores/theme"
 import {
   X,
@@ -674,7 +675,9 @@ function MapControls({
           setWaitingForLocation(false)
         },
         (error) => {
-          console.error("Error getting location:", error)
+          toast.error("Could not get your location", {
+            description: error.message,
+          })
           setWaitingForLocation(false)
         }
       )
