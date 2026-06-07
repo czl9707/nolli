@@ -21,8 +21,6 @@ type Row = Record<string, unknown>
 let db: Database
 let sqlite3: Sqlite3Static
 const DB_NAME = "nolli.db"
-const MANIFEST_KEY = "nolli-db-sha256"
-const BASE_URL = import.meta.env.VITE_R2_PUBLIC_DB_URL as string
 
 function query(sql: string, bind?: BindingSpec): Row[] {
   return db.exec({
@@ -31,20 +29,6 @@ function query(sql: string, bind?: BindingSpec): Row[] {
     rowMode: "object",
     returnValue: "resultRows",
   }) as unknown as Row[]
-}
-
-function getStoredHash(): string | null {
-  try {
-    return localStorage.getItem(MANIFEST_KEY)
-  } catch {
-    return null
-  }
-}
-
-function setStoredHash(hash: string): void {
-  try {
-    localStorage.setItem(MANIFEST_KEY, hash)
-  } catch {}
 }
 
 function mapSummaryRow(row: Row): ArchSummary {
@@ -61,7 +45,7 @@ function mapSummaryRow(row: Row): ArchSummary {
   }
 }
 
-async function handleInit(msgId: number): Promise<void> {
+async function handleInit(msgId: number, download: boolean): Promise<void> {
   if (db) {
     self.postMessage({ type: "ready", msgId, message: "Database already initialized" })
     return
@@ -74,7 +58,10 @@ async function handleInit(msgId: number): Promise<void> {
     throw new Error("OPFS VFS is not available in this environment")
   }
 
-  const message = await downloadDbIfNecessary(OpfsDb)
+  let message: string | undefined = undefined;
+  if (download) {
+    message = await downloadDb(OpfsDb)
+  }
 
   try {
     db = new OpfsDb(DB_NAME, "r")
@@ -85,37 +72,16 @@ async function handleInit(msgId: number): Promise<void> {
   self.postMessage({ type: "ready", msgId, message })
 }
 
-async function getRemoteHash(): Promise<string> {
-  const res = await fetch(`${BASE_URL}/manifest.json`)
-  if (!res.ok) throw new Error(`Failed to fetch manifest: ${res.status}`)
-
-  const manifest = (await res.json()) as { version: string }
-  return manifest.version
-}
-
-async function downloadDbIfNecessary(OpfsDb: NonNullable<Sqlite3Static["oo1"]["OpfsDb"]>): Promise<string | undefined> {
-  const storedHash = getStoredHash()
-  let manifestHash: string | null = null
-  try {
-    manifestHash = await getRemoteHash()
-  } catch {
-    return "Fail to fetch manifest, using cached version"
-  }
-
-  if (storedHash === manifestHash) {
-    return "Map data is up to date."
-  }
-
-  const res = await fetch(`${BASE_URL}/latest.db`)
+async function downloadDb(OpfsDb: NonNullable<Sqlite3Static["oo1"]["OpfsDb"]>): Promise<string> {
+  const baseUrl = import.meta.env.VITE_R2_PUBLIC_DB_URL as string
+  const res = await fetch(`${baseUrl}/latest.db`)
   if (!res.ok) {
-    return "Fail to fetch latest map data, using cached version"
+    return "Failed to fetch latest map data, using cached version"
   }
 
   const buffer = await res.arrayBuffer()
   await OpfsDb.importDb(DB_NAME, buffer)
-
-  if (manifestHash) setStoredHash(manifestHash)
-  return "Latest Map data loaded."
+  return "Latest map data loaded."
 }
 
 function handleGetAllArchitectures(filter: ArchFilter | undefined): ArchSummary[] {
@@ -232,8 +198,7 @@ self.onmessage = async (e: MessageEvent<WorkerRequest & { msgId: number }>) => {
   const msgId = e.data.msgId
 
   if (type === "init") {
-    // If init fails, the worker will be in a broken state, so we don't want to handle any more messages
-    await handleInit(msgId)
+    await handleInit(msgId, e.data.download as boolean)
   }
 
   try {

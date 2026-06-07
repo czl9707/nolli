@@ -3,6 +3,9 @@ import type { ArchSummary, Arch } from "./architectures.type"
 import type { WorkerRequest, WorkerResponse } from "./worker-protocol.type"
 import { toast } from "sonner"
 
+const MANIFEST_KEY = "nolli-db-sha256"
+const BASE_URL = import.meta.env.VITE_R2_PUBLIC_DB_URL as string
+
 type PendingMessage = {
   resolve: (response: WorkerResponse) => void
   reject: (error: Error) => void
@@ -38,8 +41,8 @@ export class SqliteDataSource implements DataSource {
         toast.error("Failed to load map data")
         pending.reject(new Error(msg.error))
       } else {
-        if (msg.type === "ready") {
-          toast.info(msg.message, { duration: 30000 })
+        if (msg.type === "ready" && msg.message) {
+          toast.info(msg.message)
         }
         pending.resolve(msg)
       }
@@ -49,7 +52,30 @@ export class SqliteDataSource implements DataSource {
       this.initReject(new Error(e.message || "Worker error"))
     }
 
-    this.send({ type: "init" }).then(this.initResolve).catch(this.initReject)
+    this.init().then(this.initResolve).catch(this.initReject)
+  }
+
+  private async init(): Promise<void> {
+    let download = false
+    const storedHash = localStorage.getItem(MANIFEST_KEY)
+
+    try {
+      const res = await fetch(`${BASE_URL}/manifest.json`)
+      if (res.ok) {
+        const manifest = (await res.json()) as { version: string }
+        if (manifest.version !== storedHash) {
+          download = true
+          localStorage.setItem(MANIFEST_KEY, manifest.version)
+        }
+        else {
+          toast.info("Map data is up to date.")
+        }
+      }
+    } catch {
+      toast.info("Failed to fetch manifest.")
+    }
+
+    await this.send({ type: "init", download })
   }
 
   private send(msg: WorkerRequest): Promise<WorkerResponse> {

@@ -2,7 +2,7 @@ import type { ArchFilter, FilterOptions } from "./data-source.type"
 import type { Arch, ArchSummary } from "./architectures.type"
 
 export type WorkerRequest =
-  | { type: "init" }
+  | { type: "init"; download: boolean }
   | { type: "getAllArchitectures"; filter?: ArchFilter }
   | { type: "getArchBySlug"; slug: string }
   | { type: "searchArchitectures"; query: string }
