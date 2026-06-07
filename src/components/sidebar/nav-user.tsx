@@ -6,7 +6,7 @@ import {
   MapPlus,
   Star,
 } from "lucide-react"
-import { useAuthStore } from "@/stores/auth"
+import { useAuthStore, AUTH_ENABLED } from "@/stores/auth"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Body2, Caption } from "@/components/ui/typography"
 import {
@@ -43,6 +43,25 @@ const GoogleIcon = createLucideIcon("Google", [
 function GuestNav() {
   const signIn = useAuthStore((s) => s.signIn)
   const loading = useAuthStore((s) => s.loading)
+
+  if (!AUTH_ENABLED) {
+    return (
+      <Button variant="ghost" size="lg" className={styles.trigger} disabled>
+        <Avatar size="sm">
+          <AvatarFallback>{guestUser.name.charAt(0)}</AvatarFallback>
+        </Avatar>
+        <div className={styles.userInfo}>
+          <Body2 asChild>
+            <span className={styles.userName}>{guestUser.name}</span>
+          </Body2>
+          <Caption asChild>
+            <span className={styles.userEmail}>Coming soon</span>
+          </Caption>
+        </div>
+        <ChevronsUpDown className={styles.chevron} />
+      </Button>
+    )
+  }
 
   return (
     <Dialog>

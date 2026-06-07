@@ -1,6 +1,8 @@
 import { create } from "zustand"
 import { supabase } from "@/lib/data/supabase-client"
 
+export const AUTH_ENABLED = import.meta.env.VITE_AUTH_ENABLED === "true"
+
 export type AuthUser = {
   id: string
   name: string
@@ -32,6 +34,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   initialized: false,
 
   init: () => {
+    if (!AUTH_ENABLED) return
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       set({
         user: session?.user ? mapUser(session.user) : null,
@@ -53,6 +57,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   signIn: async () => {
+    if (!AUTH_ENABLED) return
     set({ loading: true })
     const { data, error } = await supabase.auth.signInWithOAuth({ provider: "google" })
     if (error) {
@@ -62,6 +67,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   signOut: async () => {
+    if (!AUTH_ENABLED) return
     await supabase.auth.signOut()
   },
 }))
