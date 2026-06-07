@@ -74,7 +74,7 @@ async function handleInit(msgId: number): Promise<void> {
     throw new Error("OPFS VFS is not available in this environment")
   }
 
-  await downloadDbIfNecessary(OpfsDb)
+  const warning = await downloadDbIfNecessary(OpfsDb)
 
   try {
     db = new OpfsDb(DB_NAME, "r")
@@ -82,7 +82,7 @@ async function handleInit(msgId: number): Promise<void> {
     throw new Error(`Database file "${DB_NAME}" not found in OPFS.`)
   }
 
-  self.postMessage({ type: "ready", msgId })
+  self.postMessage({ type: "ready", msgId, warning })
 }
 
 async function getRemoteHash(): Promise<string> {
@@ -93,32 +93,29 @@ async function getRemoteHash(): Promise<string> {
   return manifest.version
 }
 
-async function downloadDbIfNecessary(OpfsDb: NonNullable<Sqlite3Static["oo1"]["OpfsDb"]>): Promise<void> {
+async function downloadDbIfNecessary(OpfsDb: NonNullable<Sqlite3Static["oo1"]["OpfsDb"]>): Promise<string | undefined> {
   const storedHash = getStoredHash()
-  let manifestHash: string | null = null;
+  let manifestHash: string | null = null
   try {
     manifestHash = await getRemoteHash()
-  }
-  catch (err) {
-    console.warn("Failed to get manifest, proceeding without cache check:", err)
-    return;
+  } catch {
+    return "Could not check for map data updates. Using cached data."
   }
 
-  if (storedHash === manifestHash){
-    console.log("DB is up to date, no download needed")
-    return;
-  };
+  if (storedHash === manifestHash) {
+    return undefined
+  }
 
   const res = await fetch(`${BASE_URL}/latest.db`)
   if (!res.ok) {
-    console.warn(`Failed to download DB (status ${res.status}), proceeding without updating:`, await res.text())
-    return
+    return "Could not download updated map data. Using cached data."
   }
 
   const buffer = await res.arrayBuffer()
   await OpfsDb.importDb(DB_NAME, buffer)
 
   if (manifestHash) setStoredHash(manifestHash)
+  return undefined
 }
 
 function handleGetAllArchitectures(filter: ArchFilter | undefined): ArchSummary[] {
