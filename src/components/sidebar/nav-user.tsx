@@ -1,10 +1,9 @@
 import {
-  BadgeCheck,
-  Bell,
   ChevronsUpDown,
   CreditCard,
   LogOut,
-  Sparkles,
+  MapPlus,
+  Star,
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Body2, Caption } from "@/components/ui/typography"
@@ -59,28 +58,17 @@ export function NavUser() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>
-            <Sparkles />
-            Upgrade to Pro
+          <DropdownMenuItem disabled>
+            <MapPlus />
+            Contribution (Coming soon)
+          </DropdownMenuItem>
+          <DropdownMenuItem disabled>
+            <Star />
+            Favorites (Coming soon)
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuItem>
-            <BadgeCheck />
-            Account
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <CreditCard />
-            Billing
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Bell />
-            Notifications
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem variant="destructive">
+        <DropdownMenuItem variant="destructive" disabled>
           <LogOut />
           Log out
         </DropdownMenuItem>

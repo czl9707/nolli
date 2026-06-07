@@ -4,6 +4,7 @@
   box-sizing: border-box;
   user-select: none;
   overflow: hidden;
+  position: relative;
 }
 
 .surface::before {
