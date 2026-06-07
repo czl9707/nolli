@@ -15,3 +15,5 @@ export type WorkerResponse =
   | { type: "getArchBySlug"; msgId: number; data: Arch | null }
   | { type: "searchArchitectures"; msgId: number; data: ArchSummary[] }
   | { type: "getFilterOptions"; msgId: number; data: FilterOptions }
+
+export type WorkerInbound = WorkerRequest & { msgId: number }

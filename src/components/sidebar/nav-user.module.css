@@ -1,6 +1,7 @@
 .trigger {
   width: 100%;
   box-sizing: border-box;
+  margin-top: .5rem;
 }
 
 .userInfo {
@@ -36,4 +37,8 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.25rem 0;
+}
+
+.signInButton {
+  width: 100%;
 }

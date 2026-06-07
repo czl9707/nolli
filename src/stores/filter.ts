@@ -15,6 +15,7 @@ type FilterState = {
   toggleCountry: (cityIdsInCountry: number[]) => void
   clearCity: () => void
   clearArchitect: () => void
+  loading: boolean
 }
 
 export const useFilterStore = create(
@@ -22,6 +23,7 @@ export const useFilterStore = create(
     architectIds: [],
     cityIds: [],
     filteredArchs: [],
+    loading: false,
 
     getArchFilter: () => {
       const { architectIds, cityIds } = get()
@@ -35,6 +37,7 @@ export const useFilterStore = create(
     toggleArchitect: (id) => {
       const ids = get().architectIds
       set({
+        loading: true,
         architectIds: ids.includes(id)
           ? ids.filter((i) => i !== id)
           : [...ids, id],
@@ -44,6 +47,7 @@ export const useFilterStore = create(
     toggleCity: (id) => {
       const ids = get().cityIds
       set({
+        loading: true,
         cityIds: ids.includes(id)
           ? ids.filter((i) => i !== id)
           : [...ids, id],
@@ -57,6 +61,7 @@ export const useFilterStore = create(
       )
       if (allSelected) {
         set({
+          loading: true,
           cityIds: current.filter(
             (id) => !cityIdsInCountry.includes(id),
           ),
@@ -70,8 +75,8 @@ export const useFilterStore = create(
       }
     },
 
-    clearCity: () => set({ cityIds: [] }),
-    clearArchitect: () => set({ architectIds: [] }),
+    clearCity: () => set({ cityIds: [], loading: true }),
+    clearArchitect: () => set({ architectIds: [], loading: true }),
   })),
 )
 
@@ -81,7 +86,7 @@ function startFilterSync(dataSource: DataSource) {
     () => {
       const filter = useFilterStore.getState().getArchFilter()
       dataSource.getAllArchitectures(filter).then((archs) => {
-        useFilterStore.setState({ filteredArchs: archs })
+        useFilterStore.setState({ filteredArchs: archs, loading: false })
       })
     },
     { equalityFn: (a, b) => a[0] === b[0] && a[1] === b[1] },
@@ -89,7 +94,7 @@ function startFilterSync(dataSource: DataSource) {
 
   dataSource
     .getAllArchitectures(undefined)
-    .then((archs) => useFilterStore.setState({ filteredArchs: archs }))
+    .then((archs) => useFilterStore.setState({ filteredArchs: archs, loading: false }))
 }
 
 let prevDataSource: DataSource | null = null
