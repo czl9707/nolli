@@ -1,0 +1,131 @@
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    isolation: isolate;
+    background-color: rgb(var(--color-primary-foreground) / 0.1);
+    backdrop-filter: blur(4px);
+}
+
+.overlay[data-state="open"] {
+    animation: fadeIn var(--transition-instant) ease-out;
+}
+
+.overlay[data-state="closed"] {
+    animation: fadeOut var(--transition-instant) ease-in forwards;
+}
+
+.content {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: 101;
+    display: grid;
+    width: calc(100% - 2 * var(--spacing-paragraph));
+    max-width: 24rem;
+    transform: translate(-50%, -50%);
+    gap: 1rem;
+    border-radius: var(--size-border-radius);
+    background-color: rgb(var(--color-primary-background));
+    color: rgb(var(--color-primary-foreground));
+    padding: var(--spacing-paragraph);
+    font-size: var(--typography-body2-fontSize);
+    font-family: var(--font-playful);
+    box-shadow: var(--shadow-md), var(--shadow-ring);
+    outline: none;
+}
+
+.content[data-state="open"] {
+    animation: dialogIn var(--transition-instant) ease-out;
+}
+
+.content[data-state="closed"] {
+    animation: dialogOut var(--transition-instant) ease-in forwards;
+}
+
+.closeButton {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+}
+
+.srOnly {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+.header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.footer {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 0.5rem;
+    margin: 0 calc(-1 * var(--spacing-paragraph)) calc(-1 * var(--spacing-paragraph));
+    padding: var(--spacing-paragraph);
+    border-top: var(--border);
+    border-radius: 0 0 var(--size-border-radius) var(--size-border-radius);
+    background-color: rgb(var(--color-secondary-background) / 0.5);
+}
+
+@media (--larger-than-sm) {
+    .footer {
+        flex-direction: row;
+        justify-content: flex-end;
+    }
+}
+
+.description {
+    color: rgb(var(--color-secondary-foreground));
+}
+
+.description a {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.description a:hover {
+    color: rgb(var(--color-primary-foreground));
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+@keyframes dialogIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+@keyframes dialogOut {
+    from {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.95);
+    }
+}
