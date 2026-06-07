@@ -12,6 +12,7 @@ export function ArchList() {
   const architectIds = useFilterStore((s) => s.architectIds)
   const cityIds = useFilterStore((s) => s.cityIds)
   const hasFilters = architectIds.length > 0 || cityIds.length > 0
+  const filterLoading = useFilterStore((s) => s.loading)
 
   const [renderCount, setRenderCount] = useState(PAGE_SIZE)
   const sentinelRef = useRef<HTMLDivElement>(null)
@@ -35,10 +36,14 @@ export function ArchList() {
     return () => observer.disconnect()
   }, [hasMore])
 
-  if (!hasFilters) {
+  if (!hasFilters || filterLoading) {
     return (
       <Body2 className={styles.emptyState}>
-        No filters applied.
+        {
+          filterLoading ? "Loading..."
+            : "No filters applied."
+        }
+        
       </Body2>
     )
   }
