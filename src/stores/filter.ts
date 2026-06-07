@@ -3,6 +3,7 @@ import { subscribeWithSelector } from "zustand/middleware"
 import type { ArchFilter } from "@/lib/data/data-source.type"
 import type { ArchSummary } from "@/lib/data/architectures.type"
 import type { DataSource } from "@/lib/data/data-source.type"
+import { useDbStore } from "@/stores/db"
 
 type FilterState = {
   architectIds: number[]
@@ -74,8 +75,8 @@ export const useFilterStore = create(
   })),
 )
 
-export function initFilterSync(dataSource: DataSource): () => void {
-  const unsubscribe = useFilterStore.subscribe(
+function startFilterSync(dataSource: DataSource) {
+  useFilterStore.subscribe(
     (state) => [state.architectIds, state.cityIds] as const,
     () => {
       const filter = useFilterStore.getState().getArchFilter()
@@ -89,6 +90,12 @@ export function initFilterSync(dataSource: DataSource): () => void {
   dataSource
     .getAllArchitectures(undefined)
     .then((archs) => useFilterStore.setState({ filteredArchs: archs }))
-
-  return unsubscribe
 }
+
+let prevDataSource: DataSource | null = null
+useDbStore.subscribe((state) => {
+  if (state.dataSource && !prevDataSource) {
+    startFilterSync(state.dataSource)
+  }
+  prevDataSource = state.dataSource
+})
