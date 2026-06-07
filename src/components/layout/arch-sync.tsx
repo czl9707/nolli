@@ -11,7 +11,7 @@ export function ArchSync() {
     const match = location.pathname.match(/^\/arch\/([^/]+)/)
     if (!match || match[1] === prevSlugRef.current) return
     prevSlugRef.current = match[1]
-    selectArch(match[1], "url")
+    selectArch(match[1], true)
   }, [location.pathname, selectArch])
 
   return null

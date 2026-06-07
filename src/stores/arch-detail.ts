@@ -2,22 +2,20 @@ import { create } from "zustand"
 import type { Arch } from "@/lib/data/architectures.type"
 import { useDbStore } from "@/stores/db"
 
-export type SelectionSource = "sidebar" | "marker" | "url"
-
 type ArchDetailState = {
   selected: Arch | null
   loading: boolean
-  selectionSource: SelectionSource | null
-  select: (slug: string, source: SelectionSource) => Promise<Arch | null>
+  shouldFlyTo: boolean
+  select: (slug: string, shouldFlyTo: boolean) => Promise<Arch | null>
   deselect: () => void
 }
 
 export const useArchDetailStore = create<ArchDetailState>((set, get) => ({
   selected: null,
   loading: false,
-  selectionSource: null,
+  shouldFlyTo: false,
 
-  select: async (slug: string, source: SelectionSource) => {
+  select: async (slug: string, shouldFlyTo: boolean) => {
     const current = get().selected
     if (current?.slug === slug) return current
     const dataSource = useDbStore.getState().dataSource
@@ -28,7 +26,7 @@ export const useArchDetailStore = create<ArchDetailState>((set, get) => ({
       set({
         selected: arch,
         loading: false,
-        selectionSource: source,
+        shouldFlyTo,
       })
     } else {
       set({ loading: false })
@@ -37,6 +35,6 @@ export const useArchDetailStore = create<ArchDetailState>((set, get) => ({
   },
 
   deselect: () => {
-    set({ selected: null, loading: false, selectionSource: null })
+    set({ selected: null, loading: false, shouldFlyTo: false })
   },
 }))

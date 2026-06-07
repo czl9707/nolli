@@ -14,7 +14,7 @@ export function ArchCard({ arch }: { arch: ArchSummary }) {
       className={styles.archCard}
       data-selected={isSelected}
       onClick={() => {
-        selectArch(arch.slug, "sidebar")
+        selectArch(arch.slug, true)
       }}
     >
       <img

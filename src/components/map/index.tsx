@@ -43,7 +43,7 @@ function IndividualMarker({
             if (selectedArch?.slug === point.slug) {
               deselectArch()
             } else {
-              selectArch(point.slug, "marker").then((arch) => {
+              selectArch(point.slug, false).then((arch) => {
                 if (arch) setOpen(true)
               })
             }
@@ -102,44 +102,34 @@ function ArchMarkers() {
   )
 }
 
-function MapSelectNavigator() {
+function MapFlyNavigator() {
   const selected = useArchDetailStore((s) => s.selected)
-  const selectionSource = useArchDetailStore((s) => s.selectionSource)
+  const shouldFlyTo = useArchDetailStore((s) => s.shouldFlyTo)
+  const mode = useLayoutStore((s) => s.mode)
   const { map } = useMap()
 
   useEffect(() => {
     if (!map || !selected) return
 
-    if (selectionSource === "sidebar" || selectionSource === "url") {
+    if (mode === "board") {
+      const timer = setTimeout(() => {
+        flyToArchCinematic(
+          map,
+          selected.coordinates.lng,
+          selected.coordinates.lat,
+        )
+      }, TRANSITION_SHORT * 1000)
+      return () => clearTimeout(timer)
+    }
+
+    if (shouldFlyTo) {
       flyToArchCinematic(
         map,
         selected.coordinates.lng,
         selected.coordinates.lat,
       )
     }
-  }, [map, selected, selectionSource])
-
-  return null
-}
-
-function MapNavigator() {
-  const selectedArch = useArchDetailStore((s) => s.selected)
-  const mode = useLayoutStore((s) => s.mode)
-  const { map } = useMap()
-
-  useEffect(() => {
-    if (!map || !selectedArch || mode !== "board") return
-
-    const timer = setTimeout(() => {
-      flyToArchCinematic(
-        map,
-        selectedArch.coordinates.lng,
-        selectedArch.coordinates.lat,
-      )
-    }, TRANSITION_SHORT * 1000)
-
-    return () => clearTimeout(timer)
-  }, [map, selectedArch, mode])
+  }, [map, selected, shouldFlyTo, mode])
 
   return null
 }
@@ -182,8 +172,7 @@ export function MapCore() {
       <Map ref={handleRef} styles={mapStyles} loading={isLoading}>
         {isHome && <MapControls showZoom showLocate showFullscreen />}
         <ArchMarkers />
-        <MapSelectNavigator />
-        <MapNavigator />
+        <MapFlyNavigator />
       </Map>
     </div>
   )
