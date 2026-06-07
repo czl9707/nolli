@@ -1,6 +1,6 @@
 import sqlite3InitModule from "@sqlite.org/sqlite-wasm"
 import type { Database, Sqlite3Static, BindingSpec, BindableValue } from "@sqlite.org/sqlite-wasm"
-import type { WorkerResponse, WorkerRequest } from "./worker-protocol.type"
+import type { WorkerRequest } from "./worker-protocol.type"
 import type { ArchFilter, FilterOptions } from "./data-source.type"
 import type { Arch, ArchLinks, ArchPhoto, ArchSummary } from "./architectures.type"
 import {
@@ -63,7 +63,7 @@ function mapSummaryRow(row: Row): ArchSummary {
 
 async function handleInit(msgId: number): Promise<void> {
   if (db) {
-    self.postMessage({ type: "ready", msgId })
+    self.postMessage({ type: "ready", msgId, message: "Database already initialized" })
     return
   }
 
@@ -99,23 +99,23 @@ async function downloadDbIfNecessary(OpfsDb: NonNullable<Sqlite3Static["oo1"]["O
   try {
     manifestHash = await getRemoteHash()
   } catch {
-    return "Using cached map data (could not check for updates)"
+    return "Fail to fetch manifest, using cached version"
   }
 
   if (storedHash === manifestHash) {
-    return "Map data is up to date"
+    return "Map data is up to date."
   }
 
   const res = await fetch(`${BASE_URL}/latest.db`)
   if (!res.ok) {
-    return "Using cached map data (update download failed)"
+    return "Fail to fetch latest map data, using cached version"
   }
 
   const buffer = await res.arrayBuffer()
   await OpfsDb.importDb(DB_NAME, buffer)
 
   if (manifestHash) setStoredHash(manifestHash)
-  return undefined
+  return "Latest Map data loaded."
 }
 
 function handleGetAllArchitectures(filter: ArchFilter | undefined): ArchSummary[] {

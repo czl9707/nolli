@@ -1,10 +1,7 @@
 import type { DataSource, ArchFilter, FilterOptions } from "./data-source.type"
 import type { ArchSummary, Arch } from "./architectures.type"
 import type { WorkerRequest, WorkerResponse } from "./worker-protocol.type"
-
-export type DataSourceOptions = {
-  onMessage?: (message: string) => void
-}
+import { toast } from "sonner"
 
 type PendingMessage = {
   resolve: (response: WorkerResponse) => void
@@ -17,12 +14,10 @@ export class SqliteDataSource implements DataSource {
   private pending = new Map<number, PendingMessage>()
   private initResolve!: () => void
   private initReject!: (err: Error) => void
-  private onMessage?: (message: string) => void
 
   readonly ready: Promise<void>
 
-  constructor(options?: DataSourceOptions) {
-    this.onMessage = options?.onMessage
+  constructor() {
     this.ready = new Promise<void>((resolve, reject) => {
       this.initResolve = resolve
       this.initReject = reject
@@ -40,10 +35,11 @@ export class SqliteDataSource implements DataSource {
       this.pending.delete(msg.msgId)
 
       if (msg.type === "error") {
+        toast.error("Failed to load map data")
         pending.reject(new Error(msg.error))
       } else {
-        if (msg.type === "ready" && msg.message) {
-          this.onMessage?.(msg.message)
+        if (msg.type === "ready") {
+          toast.info(msg.message, { duration: 30000 })
         }
         pending.resolve(msg)
       }

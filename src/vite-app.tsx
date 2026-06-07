@@ -21,6 +21,7 @@ function RouterSync() {
 export function ViteApp() {
   return (
     <BrowserRouter>
+      <Toaster position="bottom-right" />
       <ThemeSync />
       <RouterSync />
       <Header />
@@ -29,7 +30,6 @@ export function ViteApp() {
         <PinBoard />
       </div>
       <Footer />
-      <Toaster />
     </BrowserRouter>
   )
 }
