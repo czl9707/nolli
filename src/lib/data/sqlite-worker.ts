@@ -1,6 +1,6 @@
 import sqlite3InitModule from "@sqlite.org/sqlite-wasm"
 import type { Database, Sqlite3Static, BindingSpec, BindableValue } from "@sqlite.org/sqlite-wasm"
-import type { WorkerRequest } from "./worker-protocol.type"
+import type { WorkerInbound, WorkerResponse } from "./worker-protocol.type"
 import type { ArchFilter, FilterOptions } from "./data-source.type"
 import type { Arch, ArchLinks, ArchPhoto, ArchSummary } from "./architectures.type"
 import {
@@ -17,6 +17,8 @@ import {
 } from "./sqlite-queries"
 
 type Row = Record<string, unknown>
+
+const post = (msg: WorkerResponse) => self.postMessage(msg)
 
 let db: Database
 let sqlite3: Sqlite3Static
@@ -47,7 +49,7 @@ function mapSummaryRow(row: Row): ArchSummary {
 
 async function handleInit(msgId: number, download: boolean): Promise<void> {
   if (db) {
-    self.postMessage({ type: "ready", msgId, message: "Database already initialized" })
+    post({ type: "ready", msgId, message: "Database already initialized" })
     return
   }
 
@@ -69,7 +71,7 @@ async function handleInit(msgId: number, download: boolean): Promise<void> {
     throw new Error(`Database file "${DB_NAME}" not found in OPFS.`)
   }
 
-  self.postMessage({ type: "ready", msgId, message })
+  post({ type: "ready", msgId, message })
 }
 
 async function downloadDb(OpfsDb: NonNullable<Sqlite3Static["oo1"]["OpfsDb"]>): Promise<string> {
@@ -193,30 +195,29 @@ function handleGetFilterOptions(): FilterOptions {
   return { architects, cities, countries }
 }
 
-self.onmessage = async (e: MessageEvent<WorkerRequest & { msgId: number }>) => {
-  const { type } = e.data
-  const msgId = e.data.msgId
+self.onmessage = async (e: MessageEvent<WorkerInbound>) => {
+  const { type, msgId } = e.data
 
   if (type === "init") {
-    await handleInit(msgId, e.data.download as boolean)
+    await handleInit(msgId, e.data.download)
   }
 
   try {
     switch (type) {
       case "getAllArchitectures":
-        self.postMessage({ type: "getAllArchitectures", msgId, data: handleGetAllArchitectures(e.data.filter as ArchFilter | undefined) })
+        post({ type: "getAllArchitectures", msgId, data: handleGetAllArchitectures(e.data.filter) })
         break
       case "getArchBySlug":
-        self.postMessage({ type: "getArchBySlug", msgId, data: handleGetArchBySlug(e.data.slug as string) })
+        post({ type: "getArchBySlug", msgId, data: handleGetArchBySlug(e.data.slug) })
         break
       case "searchArchitectures":
-        self.postMessage({ type: "searchArchitectures", msgId, data: handleSearchArchitectures(e.data.query as string) })
+        post({ type: "searchArchitectures", msgId, data: handleSearchArchitectures(e.data.query) })
         break
       case "getFilterOptions":
-        self.postMessage({ type: "getFilterOptions", msgId, data: handleGetFilterOptions() })
+        post({ type: "getFilterOptions", msgId, data: handleGetFilterOptions() })
         break
     }
   } catch (err) {
-    self.postMessage({ type: "error", msgId, error: String(err) })
+    post({ type: "error", msgId, error: String(err) })
   }
 }

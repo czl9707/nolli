@@ -88,22 +88,34 @@ export class SqliteDataSource implements DataSource {
 
   getAllArchitectures(filter?: ArchFilter): Promise<ArchSummary[]> {
     return this.send({ type: "getAllArchitectures", filter })
-      .then((res) => (res as { data: ArchSummary[] }).data)
+      .then((res) => {
+        if (res.type === "getAllArchitectures") return res.data
+        throw new Error(`Unexpected response: ${res.type}`)
+      })
   }
 
   getArchBySlug(slug: string): Promise<Arch | null> {
     return this.send({ type: "getArchBySlug", slug })
-      .then((res) => (res as { data: Arch | null }).data)
+      .then((res) => {
+        if (res.type === "getArchBySlug") return res.data
+        throw new Error(`Unexpected response: ${res.type}`)
+      })
   }
 
   searchArchitectures(query: string): Promise<ArchSummary[]> {
     return this.send({ type: "searchArchitectures", query })
-      .then((res) => (res as { data: ArchSummary[] }).data)
+      .then((res) => {
+        if (res.type === "searchArchitectures") return res.data
+        throw new Error(`Unexpected response: ${res.type}`)
+      })
   }
 
   getFilterOptions(): Promise<FilterOptions> {
     return this.send({ type: "getFilterOptions" })
-      .then((res) => (res as { data: FilterOptions }).data)
+      .then((res) => {
+        if (res.type === "getFilterOptions") return res.data
+        throw new Error(`Unexpected response: ${res.type}`)
+      })
   }
 
   destroy() {
