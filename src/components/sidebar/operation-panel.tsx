@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react"
-import { Caption } from "@/components/ui/typography"
 import { SidebarCard } from "./sidebar-card"
 import { FilterInput, type FilterItem } from "@/components/filter-input"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -114,12 +113,12 @@ export function OperationPanel() {
   }, [opts])
 
   useEffect(() => {
-    if (dataLoading || !dataSource) return
-    if (dbError) {
+    if (dataLoading) return
+    if (dbError != null || !dataSource) {
       setOpts({
-        architects: [{id: -1, name: "Error"}],
-        cities: [{id: -1, name: "Error", countryCode: "ERROR"}],
-        countries: [{code: "ERROR", name: "Error"}],
+        architects: [],
+        cities: [],
+        countries: [],
       })
       return
     }
@@ -133,7 +132,7 @@ export function OperationPanel() {
           <>
             <FilterInput
               label="Filter by Architect"
-              placeholder="no filter"
+              placeholder={dbError != null ? "Error" : "None"}
               items={toArchitectItems(opts, architectIds).items}
               selected={toArchitectItems(opts, architectIds).selected}
               onToggle={(item) => toggleArchitect(Number(item.key))}
@@ -141,7 +140,7 @@ export function OperationPanel() {
             />
             <FilterInput
               label="Filter by Location"
-              placeholder="no filter"
+              placeholder={dbError != null ? "Error" : "None"}
               items={toLocationItems(opts, cityIds).items}
               selected={toLocationItems(opts, cityIds).selected}
               onToggle={(item) => {

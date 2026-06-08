@@ -21,7 +21,6 @@ import { TRANSITION_SHORT } from "@/lib/constants"
 import { flyToArchCinematic } from "@/lib/map-flyto"
 import styles from "./index.module.css"
 import { Caption } from "../ui/typography"
-import { toast } from "sonner"
 
 function IndividualMarker({
   point,
@@ -170,7 +169,7 @@ export function MapCore() {
   )
 
   useEffect(() => {
-    if (error) {
+    if (error != null) {
       navigate("/error")
     }
   }, [error, navigate])
