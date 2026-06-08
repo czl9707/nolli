@@ -4,4 +4,5 @@
     z-index: 20;
     width: 80px;
     filter: drop-shadow(var(--shadow-md));
+    user-select: none;
 }
