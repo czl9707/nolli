@@ -20,6 +20,16 @@
     cursor: pointer;
     position: relative;
   }
+
+  &[data-selected="true"]:hover {
+    box-shadow: none;
+    background: none;
+  }
+
+}
+
+:global(.maplibregl-marker):has(.marker:hover) {
+  z-index: 100;
 }
 
 .pins {
@@ -37,17 +47,18 @@
     width var(--transition-short) ease-in-out,
     height var(--transition-short) ease-in-out,
     transform var(--transition-short) ease-in-out;
+    
+    & + & {
+      margin-left: -20px;
+    }
+    
+    .marker[data-selected="true"] & {  
+      stroke-width: 1.5;
+      width: 30px;
+      height: 30px;
+    }
 }
 
-.pin + .pin {
-  margin-left: -20px;
-}
-
-.pin[data-selected="true"] {  
-  stroke-width: 1.5;
-  width: 30px;
-  height: 30px;
-}
 
 .label {
   max-width: 0;
@@ -65,7 +76,13 @@
     opacity: 1;
     padding-left: 0.5rem;
     transition: max-width var(--transition-short) ease-in-out,
-      opacity var(--transition-short) var(--transition-instant) ease-in-out,
+      opacity var(--transition-short) .3s ease-in-out,
       padding-left var(--transition-short) ease-in-out;
+  }
+
+  .marker[data-selected="true"]:hover & {
+    max-width: 0;
+    opacity: 0;
+    padding-left: 0;
   }
 }

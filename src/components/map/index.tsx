@@ -37,6 +37,7 @@ function IndividualMarker({
       <MarkerContent>
         <div
           className={styles.marker}
+          data-selected={selectedArch?.slug === point.slug}
           onClick={() => {
             if (selectedArch?.slug === point.slug) {
               deselectArch()
