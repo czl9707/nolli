@@ -115,15 +115,21 @@ export function OperationPanel() {
 
   useEffect(() => {
     if (dataLoading || !dataSource) return
+    if (dbError) {
+      setOpts({
+        architects: [{id: -1, name: "Error"}],
+        cities: [{id: -1, name: "Error", countryCode: "ERROR"}],
+        countries: [{code: "ERROR", name: "Error"}],
+      })
+      return
+    }
     dataSource.getFilterOptions().then(setOpts)
-  }, [dataSource, dataLoading])
+  }, [dataSource, dataLoading, dbError])
 
   return (
     <>
       <SidebarCard className={styles.filterCard}>
-        {dbError ? (
-          <Caption>Failed to load map data. Try refreshing the page.</Caption>
-        ) : opts ? (
+        {opts ? (
           <>
             <FilterInput
               label="Filter by Architect"

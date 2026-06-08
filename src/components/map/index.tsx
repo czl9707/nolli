@@ -21,6 +21,7 @@ import { TRANSITION_SHORT } from "@/lib/constants"
 import { flyToArchCinematic } from "@/lib/map-flyto"
 import styles from "./index.module.css"
 import { Caption } from "../ui/typography"
+import { toast } from "sonner"
 
 function IndividualMarker({
   point,
@@ -146,7 +147,7 @@ function MapFlyNavigator() {
 export function MapCore() {
   const mapRef = useRef<MapRef | null>(null)
   const navigate = useNavigate()
-  const { ready, initialize } = useMapPatterns(mapRef)
+  const { ready: patternReady, initialize } = useMapPatterns(mapRef)
   const mode = useLayoutStore((s) => s.mode)
   const loading = useDbStore((s) => s.loading)
   const error = useDbStore((s) => s.error)
@@ -175,7 +176,7 @@ export function MapCore() {
   }, [error, navigate])
 
   const isHome = mode === "home"
-  const isLoading = !ready || loading
+  const isLoading = !patternReady || loading || (!!error);
   return (
     <div className={styles.container}>
       <Map ref={handleRef} styles={mapStyles} loading={isLoading}>

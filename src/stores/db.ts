@@ -36,7 +36,7 @@ function initSource() {
       })
     })
     .catch((err: Error) => {
-      toast.error(err.message || "Failed to load map data")
+      toast.error(err.message || "Failed to load map data", { duration: 20000, position: "top-center" })
       useDbStore.setState({
         loading: false,
         dataSource: null,

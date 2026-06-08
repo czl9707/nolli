@@ -5,10 +5,12 @@ import type { WorkerRequest, WorkerResponse } from "./worker-protocol.type"
 const MANIFEST_KEY = "nolli-db-sha256"
 const BASE_URL = import.meta.env.VITE_R2_PUBLIC_DB_URL as string
 
+
 type PendingMessage = {
   resolve: (response: WorkerResponse) => void
   reject: (error: Error) => void
 }
+
 
 export class SqliteDataSource implements DataSource {
   private worker: Worker
@@ -24,6 +26,10 @@ export class SqliteDataSource implements DataSource {
       this.initResolve = resolve
       this.initReject = reject
     })
+    
+    // if ('serviceWorker' in navigator)
+    if (typeof Worker === 'undefined')
+      this.initReject(new Error("Browser do not support service worker."));
 
     this.worker = new Worker(
       new URL("./sqlite-worker.ts", import.meta.url),
