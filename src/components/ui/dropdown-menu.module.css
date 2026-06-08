@@ -8,7 +8,7 @@
   background-color: rgb(var(--color-primary-background));
   color: rgb(var(--color-primary-foreground));
   padding: 0.25rem;
-  box-shadow: var(--shadow-md), var(--shadow-ring);
+  box-shadow: var(--shadow-sm), var(--shadow-ring);
   transform-origin: var(--radix-dropdown-menu-content-transform-origin);
 }
 

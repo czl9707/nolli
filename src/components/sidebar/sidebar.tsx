@@ -60,7 +60,7 @@ export function Sidebar() {
         <motion.div
           key="sidebar"
           className={styles.sidebarWrapper}
-          initial={{ width: 0 }}
+          // initial={{ width: 0 }}
           animate={{ width: "var(--size-sidebar-width)" }}
           exit={{ width: 0 }}
           transition={{ duration: TRANSITION_SHORT, ease: "easeInOut" }}

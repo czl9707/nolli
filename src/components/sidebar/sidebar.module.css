@@ -8,6 +8,7 @@
   width: var(--size-sidebar-width);
   height: 100%;
   overflow-y: hidden;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   padding-right: var(--spacing-component);

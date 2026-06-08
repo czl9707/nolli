@@ -3,7 +3,6 @@ import {
   MapControls,
   MapMarker,
   MarkerContent,
-  MarkerTooltip,
   useMap,
 } from "@/components/ui/map"
 import { getMapStyle } from "@/lib/map-style"
@@ -17,11 +16,11 @@ import { useDbStore } from "@/stores/db"
 import { useFilterStore } from "@/stores/filter"
 import { useMapPatterns } from "./use-map-patterns"
 import { useMapClustering, type ClusterPoint } from "./use-map-clustering"
-import { Box, Boxes } from "lucide-react"
+import { MapPin } from "lucide-react"
 import { TRANSITION_SHORT } from "@/lib/constants"
-import { flyToArchCinematic, flyToArchIfNeeded } from "@/lib/map-flyto"
+import { flyToArchCinematic } from "@/lib/map-flyto"
 import styles from "./index.module.css"
-import { Body2 } from "../ui/typography"
+import { Caption } from "../ui/typography"
 
 function IndividualMarker({
   point,
@@ -36,9 +35,9 @@ function IndividualMarker({
   return (
     <MapMarker longitude={point.coordinates[0]} latitude={point.coordinates[1]}>
       <MarkerContent>
-        <Box
+        <div
+          className={styles.marker}
           data-selected={selectedArch?.slug === point.slug}
-          className={styles.individualMarker}
           onClick={() => {
             if (selectedArch?.slug === point.slug) {
               deselectArch()
@@ -48,11 +47,16 @@ function IndividualMarker({
               })
             }
           }}
-        />
+        >
+          <div className={styles.pins}>
+            <MapPin
+              data-selected={selectedArch?.slug === point.slug}
+              className={styles.pin}
+            />
+          </div>
+          <Caption className={styles.label}>{point.name}</Caption>
+        </div>
       </MarkerContent>
-      <MarkerTooltip>
-        <Body2>{point.name}</Body2>
-      </MarkerTooltip>
     </MapMarker>
   )
 }
@@ -64,14 +68,19 @@ function ClusterMarkerComp({
   point: Extract<ClusterPoint, { type: "cluster" }>
   onExpand: () => void
 }) {
+
   return (
     <MapMarker longitude={point.coordinates[0]} latitude={point.coordinates[1]}>
       <MarkerContent>
-        <Boxes className={styles.clusterMarker} onClick={onExpand} />
+        <div className={styles.marker} onClick={onExpand}>
+          <div className={styles.pins}>
+            <MapPin className={styles.pin} />
+            <MapPin className={styles.pin} />
+            <MapPin className={styles.pin} />
+          </div>
+          <Caption className={styles.label}>{point.count} Architecture</Caption>
+        </div>
       </MarkerContent>
-      <MarkerTooltip>
-        <Body2>{point.count} Architecture</Body2>
-      </MarkerTooltip>
     </MapMarker>
   )
 }
