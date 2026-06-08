@@ -2,6 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "nolli",
   "compatibility_date": "2026-06-01",
+  "main": "src/worker.ts",
   "observability": {
     "enabled": true
   },
@@ -10,5 +11,8 @@
   },
   "compatibility_flags": [
     "nodejs_compat"
-  ]
+  ],
+  "vars": {
+    "DB_ORIGIN": "https://db.nolli-map.com"
+  }
 }
