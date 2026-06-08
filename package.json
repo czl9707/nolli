@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "npm run generate:patterns && vite build",
-    "generate:patterns": "tsx scripts/generate-patterns.ts",
+    "generate:patterns": "tsx --tsconfig tsconfig.vite.json scripts/generate-patterns.ts",
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "bake": "tsx scripts/bake-sqlite.ts",
@@ -39,6 +39,7 @@
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.1056.0",
     "@cloudflare/vite-plugin": "^1.39.0",
+    "@cloudflare/workers-types": "^4.20260608.1",
     "@csstools/postcss-global-data": "^4.0.0",
     "@eslint/eslintrc": "^3",
     "@types/better-sqlite3": "^7.6.13",

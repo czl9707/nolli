@@ -92,6 +92,7 @@ function FilterSkeleton() {
 export function OperationPanel() {
   const dataSource = useDbStore((s) => s.dataSource)
   const dataLoading = useDbStore((s) => s.loading)
+  const dbError = useDbStore((s) => s.error)
   const architectIds = useFilterStore((s) => s.architectIds)
   const cityIds = useFilterStore((s) => s.cityIds)
   const toggleArchitect = useFilterStore((s) => s.toggleArchitect)
@@ -120,7 +121,9 @@ export function OperationPanel() {
   return (
     <>
       <SidebarCard className={styles.filterCard}>
-        {opts ? (
+        {dbError ? (
+          <Caption>Failed to load map data. Try refreshing the page.</Caption>
+        ) : opts ? (
           <>
             <FilterInput
               label="Filter by Architect"

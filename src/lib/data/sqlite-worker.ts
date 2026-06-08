@@ -66,7 +66,7 @@ async function handleInit(msgId: number, download: boolean): Promise<void> {
   }
 
   try {
-    db = new OpfsDb(DB_NAME, "r")
+    db = new OpfsDb(DB_NAME, "r");
   } catch {
     throw new Error(`Database file "${DB_NAME}" not found in OPFS.`)
   }

@@ -1,7 +1,6 @@
 import type { DataSource, ArchFilter, FilterOptions } from "./data-source.type"
 import type { ArchSummary, Arch } from "./architectures.type"
 import type { WorkerRequest, WorkerResponse } from "./worker-protocol.type"
-import { toast } from "sonner"
 
 const MANIFEST_KEY = "nolli-db-sha256"
 const BASE_URL = import.meta.env.VITE_R2_PUBLIC_DB_URL as string
@@ -15,13 +14,13 @@ export class SqliteDataSource implements DataSource {
   private worker: Worker
   private msgId = 0
   private pending = new Map<number, PendingMessage>()
-  private initResolve!: () => void
+  private initResolve!: (value: string | undefined) => void
   private initReject!: (err: Error) => void
 
-  readonly ready: Promise<void>
+  readonly ready: Promise<string | undefined>
 
   constructor() {
-    this.ready = new Promise<void>((resolve, reject) => {
+    this.ready = new Promise<string | undefined>((resolve, reject) => {
       this.initResolve = resolve
       this.initReject = reject
     })
@@ -38,44 +37,49 @@ export class SqliteDataSource implements DataSource {
       this.pending.delete(msg.msgId)
 
       if (msg.type === "error") {
-        toast.error("Failed to load map data")
         pending.reject(new Error(msg.error))
       } else {
-        if (msg.type === "ready" && msg.message) {
-          toast.info(msg.message)
-        }
         pending.resolve(msg)
       }
     }
 
-    this.worker.onerror = (e: ErrorEvent) => {
-      this.initReject(new Error(e.message || "Worker error"))
+    this.worker.onerror = () => {
+      localStorage.removeItem(MANIFEST_KEY)
+      this.initReject(new Error("Worker failed to load"))
     }
 
     this.init().then(this.initResolve).catch(this.initReject)
   }
 
-  private async init(): Promise<void> {
+  private async init(): Promise<string | undefined> {
     let download = false
+    let newHash: string | undefined
     const storedHash = localStorage.getItem(MANIFEST_KEY)
 
+    let message = "";
     try {
       const res = await fetch(`${BASE_URL}/manifest.json`)
       if (res.ok) {
         const manifest = (await res.json()) as { version: string }
-        if (manifest.version !== storedHash) {
-          download = true
-          localStorage.setItem(MANIFEST_KEY, manifest.version)
-        }
-        else {
-          toast.info("Map data is up to date.")
-        }
+        download = manifest.version !== storedHash;
+        newHash = manifest.version;
+        message = download ? "" : "Map data is up to date. "
       }
     } catch {
-      toast.info("Failed to fetch manifest.")
+      message = "Fail to fetch meta data. "
     }
 
-    await this.send({ type: "init", download })
+    try {
+      const response = await this.send({ type: "init", download })
+      if (newHash) {
+        localStorage.setItem(MANIFEST_KEY, newHash)
+      }
+      if (response.type === "ready") return message + (response.message ?? "")
+      else throw new Error(`Unexpected response: ${response.type}`)
+    } catch {
+      localStorage.removeItem(MANIFEST_KEY)
+      throw new Error("Failed to load map data")
+    }
   }
 
   private send(msg: WorkerRequest): Promise<WorkerResponse> {

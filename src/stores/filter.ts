@@ -4,6 +4,7 @@ import type { ArchFilter } from "@/lib/data/data-source.type"
 import type { ArchSummary } from "@/lib/data/architectures.type"
 import type { DataSource } from "@/lib/data/data-source.type"
 import { useDbStore } from "@/stores/db"
+import { toast } from "sonner"
 
 type FilterState = {
   architectIds: number[]
@@ -87,6 +88,9 @@ function startFilterSync(dataSource: DataSource) {
       const filter = useFilterStore.getState().getArchFilter()
       dataSource.getAllArchitectures(filter).then((archs) => {
         useFilterStore.setState({ filteredArchs: archs, loading: false })
+      }).catch(() => {
+        toast.error("Failed to get data. Try refreshing the page.")
+        useFilterStore.setState({ loading: false })
       })
     },
     { equalityFn: (a, b) => a[0] === b[0] && a[1] === b[1] },
@@ -95,6 +99,10 @@ function startFilterSync(dataSource: DataSource) {
   dataSource
     .getAllArchitectures(undefined)
     .then((archs) => useFilterStore.setState({ filteredArchs: archs, loading: false }))
+    .catch(() => {
+      toast.error("Failed to get data. Try refreshing the page.")
+      useFilterStore.setState({ loading: false })
+    })
 }
 
 let prevDataSource: DataSource | null = null

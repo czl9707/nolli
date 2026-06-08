@@ -23,11 +23,12 @@ function initSource() {
     error: null,
   })
 
-  const source = new SqliteDataSource();
+  const source = new SqliteDataSource()
   sourceRef = source
 
   source.ready
-    .then(() => {
+    .then((message) => {
+      if (message) toast.info(message)
       useDbStore.setState({
         loading: false,
         dataSource: source,
@@ -35,6 +36,7 @@ function initSource() {
       })
     })
     .catch((err: Error) => {
+      toast.error(err.message || "Failed to load map data")
       useDbStore.setState({
         loading: false,
         dataSource: null,
@@ -46,7 +48,7 @@ function initSource() {
 export const useDbStore = create<DbState>(() => ({
   dataSource: null,
   error: null,
-  loading: true
+  loading: true,
 }))
 
 initSource()
