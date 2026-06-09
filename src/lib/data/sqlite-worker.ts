@@ -53,20 +53,26 @@ async function handleInit(msgId: number, download: boolean): Promise<void> {
     return
   }
 
-  sqlite3 = await sqlite3InitModule()
-
-  const OpfsDb = sqlite3.oo1.OpfsDb
-  if (!OpfsDb) {
-    throw new Error("OPFS VFS is not available in this environment")
+  try {
+    sqlite3 = await sqlite3InitModule()
+  
+    if (!sqlite3.oo1.OpfsDb) {
+      throw new Error("OPFS VFS is not supported in this environment, please switch to a standard browser.")
+    }
   }
+  catch (err) {
+    post({ type: "error", msgId, error: String(err) })
+    return
+  }
+
 
   let message: string | undefined = undefined;
   if (download) {
-    message = await downloadDb(OpfsDb)
+    message = await downloadDb(sqlite3.oo1.OpfsDb)
   }
 
   try {
-    db = new OpfsDb(DB_NAME, "r");
+    db = new sqlite3.oo1.OpfsDb(DB_NAME, "r");
   } catch {
     throw new Error(`Database file "${DB_NAME}" not found in OPFS.`)
   }
@@ -198,12 +204,11 @@ function handleGetFilterOptions(): FilterOptions {
 self.onmessage = async (e: MessageEvent<WorkerInbound>) => {
   const { type, msgId } = e.data
 
-  if (type === "init") {
-    await handleInit(msgId, e.data.download)
-  }
-
   try {
     switch (type) {
+      case "init":
+        await handleInit(msgId, e.data.download)
+        break
       case "getAllArchitectures":
         post({ type: "getAllArchitectures", msgId, data: handleGetAllArchitectures(e.data.filter) })
         break

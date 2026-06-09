@@ -29,7 +29,7 @@ export class SqliteDataSource implements DataSource {
     
     // if ('serviceWorker' in navigator)
     if (typeof Worker === 'undefined')
-      this.initReject(new Error("Browser do not support service worker."));
+      this.initReject(new Error("Web worker is not supported in this environment, please switch to a standard browser."));
 
     this.worker = new Worker(
       new URL("./sqlite-worker.ts", import.meta.url),
@@ -82,9 +82,9 @@ export class SqliteDataSource implements DataSource {
       }
       if (response.type === "ready") return message + (response.message ?? "")
       else throw new Error(`Unexpected response: ${response.type}`)
-    } catch {
+    } catch (err) {
       localStorage.removeItem(MANIFEST_KEY)
-      throw new Error("Failed to load map data")
+      throw err
     }
   }
 
