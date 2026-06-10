@@ -30,7 +30,7 @@ export function PhotoItem({ photo, position, delay }: PhotoItemProps) {
       <BoardModal open={open} onClose={() => setOpen(false)}>
         <div
           className={`${
-            photo.width > photo.height
+            photo.width * 0.8 > photo.height  // refer the css.
               ? styles.modalPhoto_width
               : styles.modalPhoto_height
           }`}

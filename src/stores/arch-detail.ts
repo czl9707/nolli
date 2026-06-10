@@ -18,8 +18,13 @@ export const useArchDetailStore = create<ArchDetailState>((set, get) => ({
   select: async (slug: string, shouldFlyTo: boolean) => {
     const current = get().selected
     if (current?.slug === slug) return current
-    const dataSource = useDbStore.getState().dataSource
-    if (!dataSource) return null
+        
+    while (useDbStore.getState().loading)
+    {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    const dataSource = useDbStore.getState().dataSource;
+    if (dataSource == null) return null;
     set({ loading: true })
     const arch = await dataSource.getArchBySlug(slug)
     if (arch) {
