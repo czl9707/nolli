@@ -6,6 +6,7 @@
   height: 100%;
   flex-shrink: 0;
   box-sizing: border-box;
+  padding-right: .25rem;
   z-index: 20;
 }
 

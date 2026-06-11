@@ -109,7 +109,7 @@ body {
     --size-header-height: 3.5rem;
     --size-footer-height: 2rem;
     --size-sidebar-width: 24rem;
-    --size-rail-width: 3rem;
+    --size-rail-width: 3.5rem;
 
     --safe-area-top: env(safe-area-inset-top);
     --safe-area-bottom: env(safe-area-inset-bottom);

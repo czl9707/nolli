@@ -42,21 +42,3 @@
 .signInButton {
   width: 100%;
 }
-
-.compactTrigger {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  border-radius: var(--size-border-radius);
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: rgb(var(--color-secondary-foreground));
-  transition: background var(--transition-instant) ease;
-}
-
-.compactTrigger:hover {
-  background: rgb(var(--color-secondary-background));
-}

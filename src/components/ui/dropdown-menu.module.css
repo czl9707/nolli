@@ -1,7 +1,7 @@
 .content,
 .subContent {
   z-index: 50;
-  min-width: 8rem;
+  min-width: 12rem;
   overflow-x: hidden;
   overflow-y: auto;
   border-radius: var(--size-border-radius);

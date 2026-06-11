@@ -15,6 +15,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuItem,
+  DropdownMenuGroup,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
@@ -77,10 +78,12 @@ function UserDropdownContent() {
         </div>
       </DropdownMenuLabel>
       <DropdownMenuSeparator />
-      <DropdownMenuItem disabled>
-        <UserCircle />
-        Profile
-      </DropdownMenuItem>
+      <DropdownMenuGroup>
+        <DropdownMenuItem disabled>
+          <UserCircle />
+          Profile
+        </DropdownMenuItem>
+      </DropdownMenuGroup>
       <DropdownMenuSeparator />
       <DropdownMenuItem variant="destructive" onSelect={signOut}>
         <LogOut />
@@ -136,7 +139,7 @@ function CompactTrigger(props: ComponentPropsWithoutRef<"button">) {
   const user = useAuthStore((s) => s.user)
 
   return (
-    <button className={styles.compactTrigger} {...props}>
+    <Button variant="ghost" size="icon-lg" className={styles.trigger} {...props}>
       <Avatar size="sm">
         {user ? (
           <>
@@ -147,7 +150,7 @@ function CompactTrigger(props: ComponentPropsWithoutRef<"button">) {
           <AvatarFallback>G</AvatarFallback>
         )}
       </Avatar>
-    </button>
+    </Button>
   )
 }
 
