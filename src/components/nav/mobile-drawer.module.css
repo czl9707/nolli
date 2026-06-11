@@ -1,0 +1,64 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgb(0 0 0 / 0.5);
+  z-index: 100;
+}
+
+.content {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 18rem;
+  background: rgb(var(--color-primary-background));
+  z-index: 101;
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-paragraph);
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.navList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  height: 2.75rem;
+  padding: 0 0.75rem;
+  border-radius: var(--size-border-radius);
+  font-family: var(--font-playful);
+  font-size: 0.875rem;
+  color: rgb(var(--color-secondary-foreground));
+  cursor: pointer;
+  transition: background var(--transition-instant) ease,
+    color var(--transition-instant) ease;
+  border: none;
+  background: none;
+}
+
+.navItem:hover {
+  background: rgb(var(--color-secondary-background));
+}
+
+.navItemActive {
+  background: rgb(var(--color-secondary-background));
+  color: rgb(var(--color-primary-foreground));
+}
+
+.spacer {
+  flex: 1;
+}
+
+.divider {
+  height: 1px;
+  background: rgb(var(--color-primary-foreground) / 0.1);
+  margin: var(--spacing-paragraph) 0;
+}

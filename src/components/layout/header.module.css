@@ -50,3 +50,11 @@
 .spacer {
     flex: 1;
 }
+
+@media (--smaller-than-sm) {
+  .header {
+    padding-left: calc(var(--safe-area-left) + var(--spacing-paragraph));
+    padding-right: calc(var(--safe-area-right) + var(--spacing-paragraph));
+    padding-top: var(--safe-area-top);
+  }
+}

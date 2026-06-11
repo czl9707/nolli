@@ -109,7 +109,13 @@ body {
     --size-header-height: 3.5rem;
     --size-footer-height: 2rem;
     --size-sidebar-width: 24rem;
-    
+    --size-rail-width: 3rem;
+
+    --safe-area-top: env(safe-area-inset-top);
+    --safe-area-bottom: env(safe-area-inset-bottom);
+    --safe-area-left: env(safe-area-inset-left);
+    --safe-area-right: env(safe-area-inset-right);
+
     --color-paper-background: 242 240 235;
     --color-paper-foreground: 45 45 45;
 }

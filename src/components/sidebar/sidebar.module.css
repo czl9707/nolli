@@ -1,10 +1,11 @@
-.sidebarWrapper {
-  overflow: hidden;
+.sidebarOuter {
+  display: flex;
   flex-shrink: 0;
   z-index: 20;
+  overflow: hidden;
 }
 
-.sidebarContentWrapper {
+.panelWrapper {
   width: var(--size-sidebar-width);
   height: 100%;
   overflow-y: hidden;
@@ -15,25 +16,11 @@
   box-sizing: border-box;
 }
 
-.sidebarContent {
+.panelContent {
   min-height: 0;
   flex: 1 1;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
   gap: var(--spacing-paragraph);
-}
-
-.footer {
-  display: flex;
-  height: fit-content;
-  flex-direction: column;
-  gap: 0.25rem;
-  padding-top: var(--spacing-paragraph);
-  border-top: 1px solid rgb(var(--color-primary-foreground) / 0.1);
-}
-
-.footerLink {
-  width: 100%;
-  justify-content: flex-start;
 }

@@ -4,6 +4,10 @@
     overflow: hidden;
     box-sizing: border-box;
     display: flex;
-    padding-left: var(--spacing-component);
-    padding-right: var(--spacing-component);
+}
+
+@media (--larger-than-sm) {
+    .appContainer {
+        padding-right: var(--spacing-component);
+    }
 }
