@@ -19,6 +19,7 @@ import { Pin } from "@/components/ui/pin"
 import { useBoardPan } from "./use-board-pan"
 import styles from "./board.module.css"
 import { useSidebarStore } from "@/stores/sidebar"
+import { useIsMobile } from "@/hooks/use-is-mobile"
 
 const EASE_TRANSITION = {
   duration: TRANSITION_SHORT,
@@ -67,6 +68,15 @@ const MAP_SLOT_VARIANTS = {
     boxShadow: "var(--shadow-sm)",
     borderWidth: 10,
   },
+  mobile: {
+    top: "0rem",
+    left: "0rem",
+    width: "100%",
+    height: "100%",
+    borderRadius: 0,
+    boxShadow: "none",
+    borderWidth: 0,
+  }
 }
 
 export function PinBoard() {
@@ -74,10 +84,12 @@ export function PinBoard() {
   const selectedArch = useArchDetailStore((s) => s.selected)
   const navigate = useNavigate()
   const viewportRef = useRef<HTMLDivElement>(null)
-  
+  const isMobile = useIsMobile();
+
   const mode = useLayoutStore((s) => s.mode)
   const isBoard = mode === "board"
-  const mapSlotVariant = sideBarOpen && !isBoard ? "homeSidebarOpen" : mode;
+  let mapSlotVariant = sideBarOpen && !isBoard ? "homeSidebarOpen" : mode;
+  if (isMobile) mapSlotVariant = "mobile";
 
   const {
     panX,

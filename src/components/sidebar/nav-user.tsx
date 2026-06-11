@@ -64,7 +64,7 @@ function UserDropdownContent() {
   const signOut = useAuthStore((s) => s.signOut)
 
   return (
-    <DropdownMenuContent align="end" side="right" sideOffset={4}>
+    <DropdownMenuContent className={styles.dropdownContent} align="end" side="right" sideOffset={4}>
       <DropdownMenuLabel>
         <div className={styles.dropdownUser}>
           <Avatar size="sm">

@@ -6,11 +6,9 @@ import { ArchSync } from "@/components/layout/arch-sync"
 import { ThemeSync } from "@/components/layout/theme-sync"
 import { AuthSync } from "@/components/layout/auth-sync"
 import { PinBoard } from "@/components/pin-board"
-import { Sidebar } from "@/components/sidebar/sidebar"
-import { MobileDrawer } from "@/components/nav/mobile-drawer"
-import { BottomSheet } from "@/components/nav/bottom-sheet"
+import { NavSidebar } from "@/components/nav/nav-sidebar"
+import { ContentPanel } from "@/components/sidebar/content-panel"
 import { Toaster } from "@/components/ui/sonner"
-import { NavRail } from "@/components/nav/nav-rail"
 import styles from "./vite-app.module.css"
 
 function RouterSync() {
@@ -31,12 +29,10 @@ export function ViteApp() {
       <RouterSync />
       <Header />
       <div className={styles.appContainer}>
-        <NavRail />
-        <Sidebar />
+        <NavSidebar />
+        <ContentPanel />
         <PinBoard />
       </div>
-      <MobileDrawer />
-      <BottomSheet />
       <Footer />
     </BrowserRouter>
   )

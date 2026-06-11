@@ -4,7 +4,7 @@
     height: var(--size-header-height);
     align-items: center;
     padding-right: var(--spacing-component);
-    background: linear-gradient(to bottom, rgb(var(--color-primary-background)), transparent);
+    background: linear-gradient(to bottom, rgb(var(--color-primary-background)), rgb(var(--color-primary-background) / .8) 50%, transparent);
 }
 
 /* .title {
@@ -61,7 +61,7 @@
 
 @media (--smaller-than-sm) {
   .header {
-    padding-left: calc(var(--safe-area-left) + var(--spacing-paragraph));
+    padding-left: calc(var(--safe-area-left));
     padding-right: calc(var(--safe-area-right) + var(--spacing-paragraph));
     padding-top: var(--safe-area-top);
   }

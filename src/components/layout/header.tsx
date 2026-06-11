@@ -29,7 +29,8 @@ export function Header() {
   return (
     <header className={styles.header}>
       <div className={styles.iconContainer}>
-      <img src="/favicon.svg" alt="Nolli Icon" className={styles.icon} />
+      <img src="/favicon.svg" alt="Nolli Icon" className={styles.icon} 
+        onClick={() => navigation("/")}/>
       </div>
       {
         showSideBar &&
