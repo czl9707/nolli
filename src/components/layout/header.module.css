@@ -7,7 +7,13 @@
     background: linear-gradient(to bottom, rgb(var(--color-primary-background)), rgb(var(--color-primary-background) / .8) 50%, transparent);
 }
 
-/* .title {
+@media (--larger-than-sm) {
+  .header {
+    margin-left: var(--size-rail-width);
+  }
+}
+
+.title {
     height: 1.125rem;
     font-size: 1.125rem;
     font-weight: 800;
@@ -17,20 +23,13 @@
     display: flex;
     align-items: center;
     justify-content: stretch;
-} */
-
-.iconContainer {
-    width: var(--size-rail-width);
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding-right: .25rem
 }
 
+
 .icon {
-    height: 1.5rem;
-    width: 1.5rem;
+    height: 1.25rem;
+    width: 1.25rem;
+    margin-right: .5rem;
 
     filter: contrast(1) brightness(0.1);
     body[data-theme='dark'] & {
@@ -39,7 +38,7 @@
 }
 
 .sidebarButton {
-    flex: 1;    
+    flex: 1;
     display: flex;
     align-items: center;
     gap: var(--spacing-paragraph);
@@ -54,14 +53,9 @@
     justify-content: flex-end;
 }
 
-
-.spacer {
-    flex: 1;
-}
-
 @media (--smaller-than-sm) {
   .header {
-    padding-left: calc(var(--safe-area-left));
+    padding-left: calc(var(--safe-area-left) + var(--spacing-paragraph));
     padding-right: calc(var(--safe-area-right) + var(--spacing-paragraph));
     padding-top: var(--safe-area-top);
   }

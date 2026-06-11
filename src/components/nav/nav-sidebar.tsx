@@ -35,6 +35,14 @@ function Rail() {
   return (
     <TooltipProvider>
       <div className={styles.rail}>
+        <div className={styles.faviconContainer}>
+          <img
+            src="/favicon.svg"
+            alt="Nolli"
+            className={styles.favicon}
+            onClick={() => navigate("/")}
+            />
+        </div>
         <div className={styles.navItems}>
           {navItems.map((item) => {
             const active = isActiveRoute(item.path, location.pathname)

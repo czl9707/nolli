@@ -10,6 +10,12 @@
     user-select: none;
 }
 
+@media (--larger-than-sm) {
+  .footer {
+    margin-left: var(--size-rail-width);
+  }
+}
+
 .copyright {
     opacity: 0.5;
 }

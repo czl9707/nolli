@@ -28,10 +28,6 @@ export function Header() {
 
   return (
     <header className={styles.header}>
-      <div className={styles.iconContainer}>
-      <img src="/favicon.svg" alt="Nolli Icon" className={styles.icon} 
-        onClick={() => navigation("/")}/>
-      </div>
       {
         showSideBar &&
         <div className={styles.sidebarButton}>
@@ -49,9 +45,13 @@ export function Header() {
           </Button>
         </div>
       }
-      {/* <div className={styles.title} onClick={() => navigation("/")}>
-        Nolli
-      </div> */}
+      {
+        isMobile &&
+        <div className={styles.title} onClick={() => navigation("/")}>
+        <img src="/favicon.svg" alt="Nolli Icon" className={styles.icon} />
+          Nolli
+        </div>
+      }
       <div className={styles.right}>
         <ThemeToggle />
       </div>

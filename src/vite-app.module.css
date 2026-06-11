@@ -8,6 +8,7 @@
 
 @media (--larger-than-sm) {
     .appContainer {
+        margin-left: var(--size-rail-width);
         padding-right: var(--spacing-component);
     }
 }
