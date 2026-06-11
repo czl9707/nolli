@@ -1,0 +1,79 @@
+/* ── Desktop panel ── */
+
+.sidebarOuter {
+  display: flex;
+  flex-shrink: 0;
+  z-index: 20;
+  overflow: hidden;
+}
+
+.panelWrapper {
+  width: var(--size-sidebar-width);
+  height: 100%;
+  overflow-y: hidden;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  padding-right: var(--spacing-component);
+  box-sizing: border-box;
+}
+
+.panelContent {
+  min-height: 0;
+  flex: 1 1;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  gap: var(--spacing-paragraph);
+}
+
+/* ── Mobile bottom sheet ── */
+
+.sheetWrapper {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  background: rgb(var(--color-primary-background));
+  border-top: 1px solid rgb(var(--color-primary-foreground) / 0.1);
+  border-radius: var(--size-border-radius) var(--size-border-radius) 0 0;
+  box-shadow: 0 -2px 10px rgb(var(--color-primary-foreground) / 0.1);
+  touch-action: none;
+}
+
+.handleBar {
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem 0 0.25rem;
+  cursor: grab;
+}
+
+.handleIndicator {
+  width: 2rem;
+  height: 0.25rem;
+  border-radius: 0.125rem;
+  background: rgb(var(--color-primary-foreground) / 0.3);
+}
+
+.peekContent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 1rem 0.75rem;
+  font-family: var(--font-playful);
+  font-size: 0.875rem;
+  color: rgb(var(--color-secondary-foreground));
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+}
+
+.sheetContent {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 var(--spacing-paragraph) var(--spacing-paragraph);
+}

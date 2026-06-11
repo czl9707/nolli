@@ -1,0 +1,102 @@
+.content {
+  z-index: 50;
+  border-radius: var(--size-border-radius);
+  background-color: rgb(var(--color-primary-foreground));
+  color: rgb(var(--color-primary-background));
+  padding: 0.25rem 0.5rem;
+  box-shadow: var(--shadow-sm), var(--shadow-ring);
+  transform-origin: var(--radix-tooltip-content-transform-origin);
+}
+
+.arrow {
+  z-index: 50;
+  translate: 0 calc(-50% - 2px);
+  width: .5rem;
+  height: .5rem;
+  rotate: 45deg;
+  background-color: rgb(var(--color-primary-foreground));
+  fill: rgb(var(--color-primary-foreground))
+}
+
+.content[data-side="bottom"]:not([data-state="closed"]) {
+  animation: slideUp var(--transition-instant) ease-out;
+}
+
+.content[data-side="top"]:not([data-state="closed"]) {
+  animation: slideDown var(--transition-instant) ease-out;
+}
+
+.content[data-side="left"]:not([data-state="closed"]) {
+  animation: slideRight var(--transition-instant) ease-out;
+}
+
+.content[data-side="right"]:not([data-state="closed"]) {
+  animation: slideLeft var(--transition-instant) ease-out;
+}
+
+.content[data-state="closed"] {
+  overflow: hidden;
+  animation: fadeOut var(--transition-instant) ease-in forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideRight {
+  from {
+    opacity: 0;
+    transform: translateX(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}

@@ -42,3 +42,7 @@
 .signInButton {
   width: 100%;
 }
+
+.dropdownContent {
+  min-width: 12rem;
+}

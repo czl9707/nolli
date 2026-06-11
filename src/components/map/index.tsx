@@ -179,7 +179,7 @@ export function MapCore() {
   return (
     <div className={styles.container}>
       <Map ref={handleRef} styles={mapStyles} loading={isLoading}>
-        {isHome && <MapControls showZoom showLocate showFullscreen />}
+        {isHome && <MapControls showZoom showLocate />}
         <ArchMarkers />
         <MapFlyNavigator />
       </Map>
