@@ -8,6 +8,7 @@ import { AuthSync } from "@/components/layout/auth-sync"
 import { PinBoard } from "@/components/pin-board"
 import { NavSidebar } from "@/components/nav/nav-sidebar"
 import { ContentPanel } from "@/components/sidebar/content-panel"
+import { PanelContent } from "@/components/sidebar/panel-content"
 import { Toaster } from "@/components/ui/sonner"
 import styles from "./vite-app.module.css"
 
@@ -30,7 +31,9 @@ export function ViteApp() {
       <Header />
       <div className={styles.appContainer}>
         <NavSidebar />
-        <ContentPanel />
+        <ContentPanel>
+          <PanelContent />
+        </ContentPanel>
         <PinBoard />
       </div>
       <Footer />

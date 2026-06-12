@@ -9,6 +9,8 @@
 
 .panelWrapper {
   width: var(--size-sidebar-width);
+  min-width: var(--size-sidebar-width);
+  flex-shrink: 0;
   height: 100%;
   overflow-y: hidden;
   overflow-x: hidden;
@@ -34,6 +36,9 @@
   bottom: 0;
   left: 0;
   right: 0;
+  height: 100vh;
+  padding-bottom: calc(10vh - var(--spacing-paragraph));
+  box-sizing: border-box;
   z-index: 90;
   display: flex;
   flex-direction: column;
@@ -47,33 +52,25 @@
 .handleBar {
   display: flex;
   justify-content: center;
+  height: var(--spacing-paragraph);
   padding: 0.5rem 0 0.25rem;
   cursor: grab;
 }
 
 .handleIndicator {
-  width: 2rem;
+  width: var(--spacing-group);
   height: 0.25rem;
   border-radius: 0.125rem;
   background: rgb(var(--color-primary-foreground) / 0.3);
 }
 
-.peekContent {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.25rem 1rem 0.75rem;
-  font-family: var(--font-playful);
-  font-size: 0.875rem;
-  color: rgb(var(--color-secondary-foreground));
-  background: none;
-  border: none;
-  cursor: pointer;
-  width: 100%;
-}
-
 .sheetContent {
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  gap: var(--spacing-paragraph);
   padding: 0 var(--spacing-paragraph) var(--spacing-paragraph);
+  overflow: hidden;
 }

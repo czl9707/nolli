@@ -94,3 +94,29 @@
   background: rgb(var(--color-primary-foreground) / 0.1);
   margin: var(--spacing-paragraph) 0;
 }
+
+/* ── Mobile drawer branding ── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: stretch;
+  
+  user-select: none;
+  cursor: pointer;
+  padding-left: .75rem;
+}
+
+.title {
+  color: rgb(var(--color-primary-foreground));
+}
+
+.icon {
+    height: 1.25rem;
+    width: 1.25rem;
+    margin-right: .5rem;
+
+    filter: contrast(1) brightness(0.1);
+    body[data-theme='dark'] & {
+        filter: none;   
+    }
+}
