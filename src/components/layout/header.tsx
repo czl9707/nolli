@@ -48,7 +48,7 @@ export function Header() {
       {
         isMobile &&
         <div className={styles.title} onClick={() => navigation("/")}>
-        <img src="/favicon.svg" alt="Nolli Icon" className={styles.icon} />
+          <img src="/favicon.svg" alt="Nolli Icon" className={styles.icon} />
           Nolli
         </div>
       }

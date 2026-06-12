@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { TRANSITION_INSTANT } from "@/lib/constants"
 import { Button } from "../ui/button"
 import styles from "./nav-sidebar.module.css"
+import { H5 } from "../ui/typography"
 
 const navItems = [
   { icon: Home, label: "Map", path: "/", disabled: false },
@@ -113,6 +114,11 @@ function Drawer() {
                   aria-label="Navigation"
                   forceMount
                 >
+                  <div className={styles.header} onClick={() => handleNav("/")}>
+                    <img src="/favicon.svg" alt="Nolli" className={styles.icon} />
+                    <H5 className={styles.title}><b>Nolli</b></H5>
+                  </div>
+                  <div className={styles.divider} />
                   <nav className={styles.navList}>
                     {navItems.map((item) => {
                       const active = isActiveRoute(item.path, location.pathname)

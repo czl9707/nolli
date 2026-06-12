@@ -88,8 +88,11 @@ export function PinBoard() {
 
   const mode = useLayoutStore((s) => s.mode)
   const isBoard = mode === "board"
-  let mapSlotVariant = sideBarOpen && !isBoard ? "homeSidebarOpen" : mode;
-  if (isMobile) mapSlotVariant = "mobile";
+  let mapSlotVariant = mode as string;
+  if (!isBoard)  {
+      mapSlotVariant = sideBarOpen ? "homeSidebarOpen" : "home";
+      if (isMobile) mapSlotVariant = "mobile";
+  }
 
   const {
     panX,
@@ -125,12 +128,13 @@ export function PinBoard() {
       >
         {isBoard && <div className={styles.dotGrid} />}
         <motion.div
-          className={styles.mapSlot}
-          style={MAP_SLOT_VARS as React.CSSProperties}
-          initial={mapSlotVariant}
-          animate={mapSlotVariant}
-          variants={MAP_SLOT_VARIANTS}
-          transition={EASE_TRANSITION}
+            key={`map-${isMobile ? "mobile" : "desktop"}`}
+            className={styles.mapSlot}
+            style={MAP_SLOT_VARS as React.CSSProperties}
+            initial={mapSlotVariant}
+            animate={mapSlotVariant}
+            variants={MAP_SLOT_VARIANTS}
+            transition={EASE_TRANSITION}
         >
           <MapCore />
           <AnimatePresence>
