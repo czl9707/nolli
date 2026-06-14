@@ -364,9 +364,9 @@ function MapMarker({
       const fromLng = start.lng
       const fromLat = start.lat
       easingControlsRef.current = animate(0, 1, {
-        duration: transition.duration ?? 0.6,
-        ease: transition.ease ?? "easeOut",
-        delay: transition.delay ?? 0,
+        duration: transition.duration,
+        ease: transition.ease,
+        delay: transition.delay,
         onUpdate: (t) => {
           marker.setLngLat([
             fromLng + (longitude - fromLng) * t,

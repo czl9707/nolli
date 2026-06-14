@@ -1,9 +1,9 @@
 import {
+  type RefObject,
   useCallback,
   useEffect,
   useRef,
   useState,
-  type MutableRefObject,
 } from "react"
 import Supercluster from "supercluster"
 import type MapLibreGL from "maplibre-gl"
@@ -60,13 +60,180 @@ type RawCluster = { id: number; count: number; coords: LngLat }
 
 type ClusterInfo = { centroid: LngLat; childIds: number[] }
 
+type ClusterResult = GeoJSON.Feature<GeoJSON.Point, ClusterProperties>
+
+// --- Pure helpers (one job each, no React) ---------------------------------
+
+/** Visible map bounds as a supercluster bbox: [west, south, east, north]. */
+function viewportBBox(
+  map: MapLibreGL.Map,
+): [number, number, number, number] {
+  const b = map.getBounds()
+  return [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()]
+}
+
+/**
+ * Split supercluster results into individual markers, raw clusters, and per-arch
+ * state. Each clustered arch is recorded at its cluster's centroid so its
+ * "emerge-from" origin stays fresh across recomputes.
+ */
+function collectMarkers(
+  index: Supercluster<ArchProperties, ClusterProperties>,
+  results: ClusterResult[],
+): {
+  individual: RawMarker[]
+  rawClusters: RawCluster[]
+  archState: Record<string, ArchState>
+} {
+  const individual: RawMarker[] = []
+  const rawClusters: RawCluster[] = []
+  const archState: Record<string, ArchState> = {}
+
+  for (const feature of results) {
+    const [lng, lat] = feature.geometry.coordinates as LngLat
+    const isCluster =
+      "cluster" in feature.properties && feature.properties.cluster
+    if (isCluster) {
+      const props = feature.properties as Supercluster.ClusterProperties &
+        ArchProperties
+      const centroid: LngLat = [lng, lat]
+      rawClusters.push({
+        id: props.cluster_id,
+        count: props.point_count,
+        coords: centroid,
+      })
+      const leaves = index.getLeaves(props.cluster_id, Infinity) as Array<
+        GeoJSON.Feature<GeoJSON.Point, ArchProperties>
+      >
+      for (const leaf of leaves) {
+        archState[leaf.properties.slug] = {
+          clustered: true,
+          position: centroid,
+        }
+      }
+    } else {
+      const props = feature.properties as ArchProperties
+      individual.push({
+        slug: props.slug,
+        name: props.name,
+        coords: [lng, lat],
+      })
+      archState[props.slug] = { clustered: false, position: [lng, lat] }
+    }
+  }
+
+  return { individual, rawClusters, archState }
+}
+
+/**
+ * Detect point transitions (clustered↔individual) vs the previous recompute and
+ * record `from`/`to` slide origins. Prunes entries for slugs that left the
+ * viewport so a stale `from` can't re-trigger a slide on scroll-back.
+ */
+function applyPointTransitions(
+  transitions: MarkerTransitions,
+  archState: Record<string, ArchState>,
+  prevArchState: Record<string, ArchState>,
+): void {
+  for (const [slug, ns] of Object.entries(archState)) {
+    const ps = prevArchState[slug]
+    if (!ns.clustered && ps?.clustered) {
+      transitions[slug] = { from: ps.position }
+    } else if (ns.clustered && ps && !ps.clustered) {
+      transitions[slug] = { to: ns.position }
+    }
+  }
+  for (const key of Object.keys(transitions)) {
+    if (key.startsWith("cluster-")) continue
+    if (!(key in archState)) delete transitions[key]
+  }
+}
+
+/** One-level cluster tree: each cluster + the cluster-ids it splits into down a
+ *  zoom step. Used to link children to parents across a zoom change. */
+function buildClusterTree(
+  index: Supercluster<ArchProperties, ClusterProperties>,
+  rawClusters: RawCluster[],
+): Record<number, ClusterInfo> {
+  const info: Record<number, ClusterInfo> = {}
+  for (const c of rawClusters) {
+    const childIds = index
+      .getChildren(c.id)
+      .filter((ch) => "cluster" in ch.properties)
+      .map(
+        (ch) =>
+          (ch.properties as Supercluster.ClusterProperties).cluster_id,
+      )
+    info[c.id] = { centroid: c.coords, childIds }
+  }
+  return info
+}
+
+/**
+ * Detect cluster transitions (splits/merges) via parent↔child links and record
+ * `from`/`to` slide origins — the same pattern as points. A new cluster that was
+ * a child of a previous one slides out of it (split); a disappeared cluster that
+ * is now a child of a new one slides into it (merge); a disappeared cluster with
+ * no merge target just leaves (fade).
+ */
+function applyClusterTransitions(
+  transitions: MarkerTransitions,
+  rawClusters: RawCluster[],
+  clusterInfo: Record<number, ClusterInfo>,
+  prevClusterInfo: Record<number, ClusterInfo>,
+): void {
+  for (const c of rawClusters) {
+    if (prevClusterInfo[c.id]) continue
+    const parent = Object.values(prevClusterInfo).find((p) =>
+      p.childIds.includes(c.id),
+    )
+    if (parent) {
+      const key = `cluster-${c.id}`
+      transitions[key] = { ...transitions[key], from: parent.centroid }
+    }
+  }
+  for (const [pidStr] of Object.entries(prevClusterInfo)) {
+    const pid = Number(pidStr)
+    if (pid in clusterInfo) continue
+    const into = rawClusters.find((c) => clusterInfo[c.id].childIds.includes(pid))
+    const key = `cluster-${pid}`
+    if (into) {
+      transitions[key] = { ...transitions[key], to: into.coords }
+    } else {
+      delete transitions[key]
+    }
+  }
+}
+
+/** Flatten collected markers/clusters into the ClusterPoint[] the UI renders. */
+function toClusterPoints(
+  individual: RawMarker[],
+  rawClusters: RawCluster[],
+): ClusterPoint[] {
+  const points: ClusterPoint[] = individual.map((p) => ({
+    type: "point",
+    slug: p.slug,
+    name: p.name,
+    coordinates: p.coords,
+  }))
+  const clusterPoints: ClusterPoint[] = rawClusters.map((c) => ({
+    type: "cluster",
+    id: c.id,
+    count: c.count,
+    coordinates: c.coords,
+  }))
+  return [...points, ...clusterPoints]
+}
+
+// --- Hook ------------------------------------------------------------------
+
 export function useMapClustering(
   map: MapLibreGL.Map | null,
   architectures: ArchSummary[],
 ): {
   clusters: ClusterPoint[]
   getExpansionZoom: (clusterId: number, coordinates?: LngLat) => number
-  transitions: MutableRefObject<MarkerTransitions>
+  transitions: RefObject<MarkerTransitions>
 } {
   const [clusters, setClusters] = useState<ClusterPoint[]>([])
   const indexRef = useRef<Supercluster<ArchProperties, ClusterProperties> | null>(
@@ -111,132 +278,22 @@ export function useMapClustering(
       const index = indexRef.current
       if (!index) return
 
-      const bounds = map.getBounds()
-      const zoom = Math.floor(map.getZoom())
-      const bbox: [number, number, number, number] = [
-        bounds.getWest(),
-        bounds.getSouth(),
-        bounds.getEast(),
-        bounds.getNorth(),
-      ]
-
-      const results = index.getClusters(bbox, zoom)
-
-      const individual: RawMarker[] = []
-      const rawClusters: RawCluster[] = []
-      const newArchState: Record<string, ArchState> = {}
-
-      for (const feature of results) {
-        const [lng, lat] = feature.geometry.coordinates as LngLat
-        if ("cluster" in feature.properties && feature.properties.cluster) {
-          const props = feature.properties as Supercluster.ClusterProperties &
-            ArchProperties
-          const centroid: LngLat = [lng, lat]
-          rawClusters.push({
-            id: props.cluster_id,
-            count: props.point_count,
-            coords: centroid,
-          })
-          // Record each leaf as clustered at this centroid (keeps lastPosition fresh).
-          const leaves = index.getLeaves(props.cluster_id, Infinity) as Array<
-            GeoJSON.Feature<GeoJSON.Point, ArchProperties>
-          >
-          for (const leaf of leaves) {
-            newArchState[leaf.properties.slug] = {
-              clustered: true,
-              position: centroid,
-            }
-          }
-        } else {
-          const props = feature.properties as ArchProperties
-          individual.push({
-            slug: props.slug,
-            name: props.name,
-            coords: [lng, lat],
-          })
-          newArchState[props.slug] = {
-            clustered: false,
-            position: [lng, lat],
-          }
-        }
-      }
+      const results = index.getClusters(viewportBBox(map), Math.floor(map.getZoom()))
+      const { individual, rawClusters, archState } = collectMarkers(index, results)
 
       const transitions = transitionsRef.current
+      applyPointTransitions(transitions, archState, archStateRef.current)
+      const clusterInfo = buildClusterTree(index, rawClusters)
+      applyClusterTransitions(
+        transitions,
+        rawClusters,
+        clusterInfo,
+        clusterInfoRef.current,
+      )
 
-      // --- Point transitions: enter from / exit to a cluster centroid. ---
-      const prevArch = archStateRef.current
-      for (const [slug, ns] of Object.entries(newArchState)) {
-        const ps = prevArch[slug]
-        if (!ns.clustered && ps?.clustered) {
-          transitions[slug] = { ...transitions[slug], from: ps.position }
-        } else if (ns.clustered && ps && !ps.clustered) {
-          transitions[slug] = { ...transitions[slug], to: ns.position }
-        }
-      }
-      // Drop point entries for slugs no longer on-screen (prevents a stale `from`
-      // re-triggering a slide if the pin later scrolls back into view).
-      for (const key of Object.keys(transitions)) {
-        if (key.startsWith("cluster-")) continue
-        if (!(key in newArchState)) delete transitions[key]
-      }
-
-      // --- Cluster transitions (splits/merges), same pattern as points. ---
-      // Build this zoom's cluster tree (each cluster + the cluster-ids it splits
-      // into one level down) so we can link children to parents across a zoom step.
-      const newClusterInfo: Record<number, ClusterInfo> = {}
-      for (const c of rawClusters) {
-        const children = index.getChildren(c.id, Infinity)
-        newClusterInfo[c.id] = {
-          centroid: c.coords,
-          childIds: children
-            .filter((ch) => ch.properties.cluster)
-            .map((ch) => ch.properties.cluster_id),
-        }
-      }
-      const prevClusterInfo = clusterInfoRef.current
-      // Split: a new cluster that was a child of a previous cluster slides out of it.
-      for (const c of rawClusters) {
-        if (prevClusterInfo[c.id]) continue
-        const parent = Object.values(prevClusterInfo).find((info) =>
-          info.childIds.includes(c.id),
-        )
-        if (parent) {
-          const key = `cluster-${c.id}`
-          transitions[key] = { ...transitions[key], from: parent.centroid }
-        }
-      }
-      // Merge: a disappeared cluster that is now a child of a new cluster slides
-      // into it. A disappeared cluster with no merge target just leaves (fade).
-      for (const [pidStr, info] of Object.entries(prevClusterInfo)) {
-        const pid = Number(pidStr)
-        if (pid in newClusterInfo) continue
-        const into = rawClusters.find((c) =>
-          newClusterInfo[c.id].childIds.includes(pid),
-        )
-        const key = `cluster-${pid}`
-        if (into) {
-          transitions[key] = { ...transitions[key], to: into.coords }
-        } else {
-          delete transitions[key]
-        }
-      }
-      clusterInfoRef.current = newClusterInfo
-
-      archStateRef.current = newArchState
-
-      const points: ClusterPoint[] = individual.map((p) => ({
-        type: "point",
-        slug: p.slug,
-        name: p.name,
-        coordinates: p.coords,
-      }))
-      const clusterPoints: ClusterPoint[] = rawClusters.map((c) => ({
-        type: "cluster",
-        id: c.id,
-        count: c.count,
-        coordinates: c.coords,
-      }))
-      setClusters([...points, ...clusterPoints])
+      archStateRef.current = archState
+      clusterInfoRef.current = clusterInfo
+      setClusters(toClusterPoints(individual, rawClusters))
     }
 
     update()

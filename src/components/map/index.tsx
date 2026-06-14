@@ -14,7 +14,7 @@ import {
   useMemo,
   useRef,
   useState,
-  type MutableRefObject,
+  type RefObject,
 } from "react"
 import { useNavigate } from "react-router"
 import { useArchDetailStore } from "@/stores/arch-detail"
@@ -52,7 +52,7 @@ type LngLat = [number, number]
 function useMarkerPresence(
   key: string,
   ownCoords: LngLat,
-  transitions: MutableRefObject<MarkerTransitions>,
+  transitions: RefObject<MarkerTransitions>,
 ) {
   const [isPresent, safeToRemove] = usePresence()
 
@@ -103,7 +103,7 @@ const IndividualMarker = memo(
     transitions,
   }: {
     point: Extract<ClusterPoint, { type: "point" }>
-    transitions: MutableRefObject<MarkerTransitions>
+    transitions: RefObject<MarkerTransitions>
   }) {
     const selectArch = useArchDetailStore((s) => s.select)
     const deselectArch = useArchDetailStore((s) => s.deselect)
@@ -174,7 +174,7 @@ const ClusterMarkerComp = memo(
   }: {
     point: Extract<ClusterPoint, { type: "cluster" }>
     onExpand: () => void
-    transitions: MutableRefObject<MarkerTransitions>
+    transitions: RefObject<MarkerTransitions>
   }) {
     const { isPresent, from, coords, delay } = useMarkerPresence(
       `cluster-${point.id}`,
