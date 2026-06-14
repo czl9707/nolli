@@ -280,12 +280,6 @@ type MapMarkerProps = {
   onMouseEnter?: (e: MouseEvent) => void
   /** Callback when mouse leaves marker */
   onMouseLeave?: (e: MouseEvent) => void
-  /** Callback when marker drag starts (requires draggable: true) */
-  onDragStart?: (lngLat: { lng: number; lat: number }) => void
-  /** Callback during marker drag (requires draggable: true) */
-  onDrag?: (lngLat: { lng: number; lat: number }) => void
-  /** Callback when marker drag ends (requires draggable: true) */
-  onDragEnd?: (lngLat: { lng: number; lat: number }) => void
 } & Omit<MarkerOptions, "element">
 
 function MapMarker({
@@ -295,10 +289,6 @@ function MapMarker({
   onClick,
   onMouseEnter,
   onMouseLeave,
-  onDragStart,
-  onDrag,
-  onDragEnd,
-  draggable = false,
   ...markerOptions
 }: MapMarkerProps) {
   const { map } = useMap()
@@ -307,24 +297,17 @@ function MapMarker({
     onClick,
     onMouseEnter,
     onMouseLeave,
-    onDragStart,
-    onDrag,
-    onDragEnd,
   })
   callbacksRef.current = {
     onClick,
     onMouseEnter,
     onMouseLeave,
-    onDragStart,
-    onDrag,
-    onDragEnd,
   }
 
   const marker = useMemo(() => {
     const markerInstance = new MapLibreGL.Marker({
       ...markerOptions,
       element: document.createElement("div"),
-      draggable,
     }).setLngLat([longitude, latitude])
 
     const handleClick = (e: MouseEvent) => callbacksRef.current.onClick?.(e)
@@ -340,23 +323,6 @@ function MapMarker({
     markerInstance
       .getElement()
       ?.addEventListener("mouseleave", handleMouseLeave)
-
-    const handleDragStart = () => {
-      const lngLat = markerInstance.getLngLat()
-      callbacksRef.current.onDragStart?.({ lng: lngLat.lng, lat: lngLat.lat })
-    }
-    const handleDrag = () => {
-      const lngLat = markerInstance.getLngLat()
-      callbacksRef.current.onDrag?.({ lng: lngLat.lng, lat: lngLat.lat })
-    }
-    const handleDragEnd = () => {
-      const lngLat = markerInstance.getLngLat()
-      callbacksRef.current.onDragEnd?.({ lng: lngLat.lng, lat: lngLat.lat })
-    }
-
-    markerInstance.on("dragstart", handleDragStart)
-    markerInstance.on("drag", handleDrag)
-    markerInstance.on("dragend", handleDragEnd)
 
     return markerInstance
 
@@ -380,9 +346,6 @@ function MapMarker({
     marker.getLngLat().lat !== latitude
   ) {
     marker.setLngLat([longitude, latitude])
-  }
-  if (marker.isDraggable() !== draggable) {
-    marker.setDraggable(draggable)
   }
 
   const currentOffset = marker.getOffset()
