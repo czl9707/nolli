@@ -7,7 +7,15 @@ import {
 } from "@/components/ui/map"
 import { getMapStyle } from "@/lib/map-style"
 import type { MapRef } from "@/components/ui/map"
-import { useCallback, useEffect, useMemo, useRef } from "react"
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type RefObject,
+} from "react"
 import { useNavigate } from "react-router"
 import { useArchDetailStore } from "@/stores/arch-detail"
 import { useSidebarStore } from "@/stores/sidebar"
@@ -15,99 +23,239 @@ import { useLayoutStore } from "@/stores/layout"
 import { useDbStore } from "@/stores/db"
 import { useFilterStore } from "@/stores/filter"
 import { useMapPatterns } from "./use-map-patterns"
-import { useMapClustering, type ClusterPoint } from "./use-map-clustering"
+import {
+  useMapClustering,
+  type ClusterPoint,
+  type MarkerTransitions,
+} from "./use-map-clustering"
 import { MapPin } from "lucide-react"
-import { TRANSITION_SHORT } from "@/lib/constants"
+import {
+  TRANSITION_SHORT,
+  CLUSTER_SPREAD_DURATION,
+  CLUSTER_SPREAD_EASE,
+  CLUSTER_SPREAD_MAX_DELAY,
+} from "@/lib/constants"
 import { flyToArchCinematic } from "@/lib/map-flyto"
+import { AnimatePresence, motion, usePresence } from "framer-motion"
 import styles from "./index.module.css"
 import { Caption } from "../ui/typography"
 
-function IndividualMarker({
-  point,
-}: {
-  point: Extract<ClusterPoint, { type: "point" }>
-}) {
-  const selectArch = useArchDetailStore((s) => s.select)
-  const deselectArch = useArchDetailStore((s) => s.deselect)
-  const selectedArch = useArchDetailStore((s) => s.selected)
-  const setOpen = useSidebarStore((s) => s.setOpen)
+type LngLat = [number, number]
 
-  return (
-    <MapMarker longitude={point.coordinates[0]} latitude={point.coordinates[1]}>
-      <MarkerContent>
-        <div
-          className={styles.marker}
-          data-selected={selectedArch?.slug === point.slug}
-          onClick={() => {
-            if (selectedArch?.slug === point.slug) {
-              deselectArch()
-            } else {
-              selectArch(point.slug, false).then((arch) => {
-                if (arch) setOpen(true)
-              })
-            }
-          }}
-        >
-          <div className={styles.pins}>
-            <MapPin
-              data-selected={selectedArch?.slug === point.slug}
-              className={styles.pin}
-            />
-          </div>
-          <Caption className={styles.label}>{point.name}</Caption>
-        </div>
-      </MarkerContent>
-    </MapMarker>
+/**
+ * Owns a marker's enter/exit animation, shared by individual pins and clusters.
+ * Reads its enter origin (`from`) on mount and slides from there to `ownCoords`;
+ * on AnimatePresence exit, reads its exit target (`to`), slides there, fades, and
+ * calls `safeToRemove` when it lands — so the hook never tracks exit timing.
+ * `key` matches the marker's React key (slug, or `cluster-${id}`) into `transitions`.
+ */
+function useMarkerPresence(
+  key: string,
+  ownCoords: LngLat,
+  transitions: RefObject<MarkerTransitions>,
+) {
+  const [isPresent, safeToRemove] = usePresence()
+
+  // Enter-slide origin, read once on mount. Read-only (no delete) so it's safe
+  // under StrictMode double-invocation of the initializer.
+  const [from] = useState<LngLat | undefined>(
+    () => transitions.current[key]?.from,
   )
+  const [entered, setEntered] = useState(false)
+  const [exitTo, setExitTo] = useState<LngLat | undefined>(undefined)
+
+  // Stable per-mount random delay — the organic "same speed, different start" burst.
+  const delay = useMemo(() => Math.random() * CLUSTER_SPREAD_MAX_DELAY, [])
+
+  // After mount, flip to the own coordinate so MapMarker eases from -> own.
+  useEffect(() => {
+    setEntered(true)
+  }, [])
+
+  // On exit, slide to the target (if any) and unmount once it lands.
+  useEffect(() => {
+    if (isPresent) return
+    const entry = transitions.current[key]
+    const to = entry?.to
+    if (to) {
+      delete entry.to
+      setExitTo(to)
+    }
+    const id = setTimeout(
+      safeToRemove,
+      (CLUSTER_SPREAD_DURATION + delay) * 1000 + 60,
+    )
+    return () => clearTimeout(id)
+  }, [isPresent, safeToRemove, key, delay, transitions])
+
+  const coords: LngLat = !isPresent && exitTo
+    ? exitTo
+    : !entered && from
+      ? from
+      : ownCoords
+
+  return { isPresent, from, coords, delay }
 }
 
-function ClusterMarkerComp({
-  point,
-  onExpand,
-}: {
-  point: Extract<ClusterPoint, { type: "cluster" }>
-  onExpand: () => void
-}) {
+const IndividualMarker = memo(
+  function IndividualMarker({
+    point,
+    transitions,
+  }: {
+    point: Extract<ClusterPoint, { type: "point" }>
+    transitions: RefObject<MarkerTransitions>
+  }) {
+    const selectArch = useArchDetailStore((s) => s.select)
+    const deselectArch = useArchDetailStore((s) => s.deselect)
+    const selectedArch = useArchDetailStore((s) => s.selected)
+    const setOpen = useSidebarStore((s) => s.setOpen)
 
-  return (
-    <MapMarker longitude={point.coordinates[0]} latitude={point.coordinates[1]}>
-      <MarkerContent>
-        <div className={styles.marker} onClick={onExpand}>
-          <div className={styles.pins}>
-            <MapPin className={styles.pin} />
-            <MapPin className={styles.pin} />
-            <MapPin className={styles.pin} />
-          </div>
-          <Caption className={styles.label}>{point.count} Architecture</Caption>
-        </div>
-      </MarkerContent>
-    </MapMarker>
-  )
-}
+    const { isPresent, from, coords, delay } = useMarkerPresence(
+      point.slug,
+      point.coordinates,
+      transitions,
+    )
+
+    return (
+      <MapMarker
+        longitude={coords[0]}
+        latitude={coords[1]}
+        transition={{
+          duration: CLUSTER_SPREAD_DURATION,
+          ease: CLUSTER_SPREAD_EASE,
+          delay,
+        }}
+      >
+        <MarkerContent>
+          <motion.div
+            className={styles.marker}
+            data-selected={selectedArch?.slug === point.slug}
+            initial={{ opacity: from ? 0 : 1 }}
+            animate={{ opacity: isPresent ? 1 : 0 }}
+            transition={{
+              duration: CLUSTER_SPREAD_DURATION,
+              ease: "easeOut",
+              delay,
+            }}
+            onClick={() => {
+              if (selectedArch?.slug === point.slug) {
+                deselectArch()
+              } else {
+                selectArch(point.slug, false).then((arch) => {
+                  if (arch) setOpen(true)
+                })
+              }
+            }}
+          >
+            <div className={styles.pins}>
+              <MapPin
+                data-selected={selectedArch?.slug === point.slug}
+                className={styles.pin}
+              />
+            </div>
+            <Caption className={styles.label}>{point.name}</Caption>
+          </motion.div>
+        </MarkerContent>
+      </MapMarker>
+    )
+  },
+  (prev, next) =>
+    prev.point.slug === next.point.slug &&
+    prev.point.coordinates[0] === next.point.coordinates[0] &&
+    prev.point.coordinates[1] === next.point.coordinates[1] &&
+    prev.transitions === next.transitions,
+)
+
+const ClusterMarkerComp = memo(
+  function ClusterMarkerComp({
+    point,
+    onExpand,
+    transitions,
+  }: {
+    point: Extract<ClusterPoint, { type: "cluster" }>
+    onExpand: () => void
+    transitions: RefObject<MarkerTransitions>
+  }) {
+    const { isPresent, from, coords, delay } = useMarkerPresence(
+      `cluster-${point.id}`,
+      point.coordinates,
+      transitions,
+    )
+
+    return (
+      <MapMarker
+        longitude={coords[0]}
+        latitude={coords[1]}
+        transition={{
+          duration: CLUSTER_SPREAD_DURATION,
+          ease: CLUSTER_SPREAD_EASE,
+          delay,
+        }}
+      >
+        <MarkerContent>
+          <motion.div
+            className={styles.marker}
+            initial={{ opacity: from ? 0 : 1 }}
+            animate={{ opacity: isPresent ? 1 : 0 }}
+            transition={{
+              duration: CLUSTER_SPREAD_DURATION,
+              ease: "easeOut",
+              delay,
+            }}
+            onClick={onExpand}
+          >
+            <div className={styles.pins}>
+              <MapPin className={styles.pin} />
+              <MapPin className={styles.pin} />
+              <MapPin className={styles.pin} />
+            </div>
+            <Caption className={styles.label}>{point.count} Architecture</Caption>
+          </motion.div>
+        </MarkerContent>
+      </MapMarker>
+    )
+  },
+  (prev, next) =>
+    prev.point.id === next.point.id &&
+    prev.point.coordinates[0] === next.point.coordinates[0] &&
+    prev.point.coordinates[1] === next.point.coordinates[1] &&
+    prev.transitions === next.transitions,
+)
 
 function ArchMarkers() {
   const { map } = useMap()
   const architectures = useFilterStore((s) => s.filteredArchs)
-  const { clusters, getExpansionZoom } = useMapClustering(map, architectures)
+  const { clusters, getExpansionZoom, transitions } = useMapClustering(
+    map,
+    architectures,
+  )
 
   return (
-    <>
+    // presenceAffectsLayout defaults to true, which makes AnimatePresence re-render
+    // every child (new presence-context identity) on any add/remove — blinking stable
+    // pins. We use no layout animations, so opt out.
+    <AnimatePresence presenceAffectsLayout={false}>
       {clusters.map((point) =>
         point.type === "point" ? (
-          <IndividualMarker key={point.slug} point={point} />
+          <IndividualMarker
+            key={point.slug}
+            point={point}
+            transitions={transitions}
+          />
         ) : (
           <ClusterMarkerComp
             key={`cluster-${point.id}`}
             point={point}
+            transitions={transitions}
             onExpand={() => {
               if (!map) return
               const zoom = getExpansionZoom(point.id, point.coordinates)
               flyToArchCinematic(map, point.coordinates[0], point.coordinates[1], zoom)
             }}
           />
-        )
+        ),
       )}
-    </>
+    </AnimatePresence>
   )
 }
 
@@ -179,7 +327,7 @@ export function MapCore() {
   return (
     <div className={styles.container}>
       <Map ref={handleRef} styles={mapStyles} loading={isLoading}>
-        {isHome && <MapControls showZoom showLocate />}
+        {isHome && <MapControls showZoom showLocate showFullscreen/>}
         <ArchMarkers />
         <MapFlyNavigator />
       </Map>
