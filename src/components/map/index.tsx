@@ -43,14 +43,60 @@ import { Caption } from "../ui/typography"
 type LngLat = [number, number]
 
 /**
- * A single architecture pin. Owns its enter/exit animation:
- *  - On mount, reads its enter origin (`from`) from the shared transitions ref
- *    and slides from the cluster centroid to its own coord.
- *  - On exit (AnimatePresence removed it), reads its exit target (`to`), slides
- *    into the cluster centroid, fades, and calls `safeToRemove` when it lands —
- *    so the hook never needs to track exit timing.
- * Memoized so a parent list re-render doesn't re-render stable pins.
+ * Owns a marker's enter/exit animation, shared by individual pins and clusters.
+ * Reads its enter origin (`from`) on mount and slides from there to `ownCoords`;
+ * on AnimatePresence exit, reads its exit target (`to`), slides there, fades, and
+ * calls `safeToRemove` when it lands — so the hook never tracks exit timing.
+ * `key` matches the marker's React key (slug, or `cluster-${id}`) into `transitions`.
  */
+function useMarkerPresence(
+  key: string,
+  ownCoords: LngLat,
+  transitions: MutableRefObject<MarkerTransitions>,
+) {
+  const [isPresent, safeToRemove] = usePresence()
+
+  // Enter-slide origin, read once on mount. Read-only (no delete) so it's safe
+  // under StrictMode double-invocation of the initializer.
+  const [from] = useState<LngLat | undefined>(
+    () => transitions.current[key]?.from,
+  )
+  const [entered, setEntered] = useState(false)
+  const [exitTo, setExitTo] = useState<LngLat | undefined>(undefined)
+
+  // Stable per-mount random delay — the organic "same speed, different start" burst.
+  const delay = useMemo(() => Math.random() * CLUSTER_SPREAD_MAX_DELAY, [])
+
+  // After mount, flip to the own coordinate so MapMarker eases from -> own.
+  useEffect(() => {
+    setEntered(true)
+  }, [])
+
+  // On exit, slide to the target (if any) and unmount once it lands.
+  useEffect(() => {
+    if (isPresent) return
+    const entry = transitions.current[key]
+    const to = entry?.to
+    if (to) {
+      delete entry.to
+      setExitTo(to)
+    }
+    const id = setTimeout(
+      safeToRemove,
+      (CLUSTER_SPREAD_DURATION + delay) * 1000 + 60,
+    )
+    return () => clearTimeout(id)
+  }, [isPresent, safeToRemove, key, delay, transitions])
+
+  const coords: LngLat = !isPresent && exitTo
+    ? exitTo
+    : !entered && from
+      ? from
+      : ownCoords
+
+  return { isPresent, from, coords, delay }
+}
+
 const IndividualMarker = memo(
   function IndividualMarker({
     point,
@@ -64,42 +110,11 @@ const IndividualMarker = memo(
     const selectedArch = useArchDetailStore((s) => s.selected)
     const setOpen = useSidebarStore((s) => s.setOpen)
 
-    const [isPresent, safeToRemove] = usePresence()
-
-    // Enter-slide origin, read once on mount. Read-only (no delete) so it's safe
-    // under StrictMode double-invocation of the initializer.
-    const [from] = useState<LngLat | undefined>(
-      () => transitions.current[point.slug]?.from,
+    const { isPresent, from, coords, delay } = useMarkerPresence(
+      point.slug,
+      point.coordinates,
+      transitions,
     )
-    const [entered, setEntered] = useState(false)
-    const [exitTo, setExitTo] = useState<LngLat | undefined>(undefined)
-
-    // Stable per-mount random delay — the organic "same speed, different start" burst.
-    const delay = useMemo(() => Math.random() * CLUSTER_SPREAD_MAX_DELAY, [])
-
-    // After mount, flip to the own coordinate so MapMarker eases from -> own.
-    useEffect(() => {
-      setEntered(true)
-    }, [])
-
-    // On exit, slide to the collapse target (if any) and unmount once it lands.
-    useEffect(() => {
-      if (isPresent) return
-      const entry = transitions.current[point.slug]
-      const to = entry?.to
-      if (to) {
-        delete entry.to
-        setExitTo(to)
-      }
-      const id = setTimeout(safeToRemove, (CLUSTER_SPREAD_DURATION + delay) * 1000 + 60)
-      return () => clearTimeout(id)
-    }, [isPresent, safeToRemove, point.slug, delay, transitions])
-
-    const coords: LngLat = !isPresent && exitTo
-      ? exitTo
-      : !entered && from
-        ? from
-        : point.coordinates
 
     return (
       <MapMarker
@@ -151,35 +166,61 @@ const IndividualMarker = memo(
     prev.transitions === next.transitions,
 )
 
-function ClusterMarkerComp({
-  point,
-  onExpand,
-}: {
-  point: Extract<ClusterPoint, { type: "cluster" }>
-  onExpand: () => void
-}) {
-  return (
-    <MapMarker longitude={point.coordinates[0]} latitude={point.coordinates[1]}>
-      <MarkerContent>
-        <motion.div
-          className={styles.marker}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: CLUSTER_SPREAD_DURATION, ease: "easeOut" }}
-          onClick={onExpand}
-        >
-          <div className={styles.pins}>
-            <MapPin className={styles.pin} />
-            <MapPin className={styles.pin} />
-            <MapPin className={styles.pin} />
-          </div>
-          <Caption className={styles.label}>{point.count} Architecture</Caption>
-        </motion.div>
-      </MarkerContent>
-    </MapMarker>
-  )
-}
+const ClusterMarkerComp = memo(
+  function ClusterMarkerComp({
+    point,
+    onExpand,
+    transitions,
+  }: {
+    point: Extract<ClusterPoint, { type: "cluster" }>
+    onExpand: () => void
+    transitions: MutableRefObject<MarkerTransitions>
+  }) {
+    const { isPresent, from, coords, delay } = useMarkerPresence(
+      `cluster-${point.id}`,
+      point.coordinates,
+      transitions,
+    )
+
+    return (
+      <MapMarker
+        longitude={coords[0]}
+        latitude={coords[1]}
+        transition={{
+          duration: CLUSTER_SPREAD_DURATION,
+          ease: CLUSTER_SPREAD_EASE,
+          delay,
+        }}
+      >
+        <MarkerContent>
+          <motion.div
+            className={styles.marker}
+            initial={{ opacity: from ? 0 : 1 }}
+            animate={{ opacity: isPresent ? 1 : 0 }}
+            transition={{
+              duration: CLUSTER_SPREAD_DURATION,
+              ease: "easeOut",
+              delay,
+            }}
+            onClick={onExpand}
+          >
+            <div className={styles.pins}>
+              <MapPin className={styles.pin} />
+              <MapPin className={styles.pin} />
+              <MapPin className={styles.pin} />
+            </div>
+            <Caption className={styles.label}>{point.count} Architecture</Caption>
+          </motion.div>
+        </MarkerContent>
+      </MapMarker>
+    )
+  },
+  (prev, next) =>
+    prev.point.id === next.point.id &&
+    prev.point.coordinates[0] === next.point.coordinates[0] &&
+    prev.point.coordinates[1] === next.point.coordinates[1] &&
+    prev.transitions === next.transitions,
+)
 
 function ArchMarkers() {
   const { map } = useMap()
@@ -202,6 +243,7 @@ function ArchMarkers() {
           <ClusterMarkerComp
             key={`cluster-${point.id}`}
             point={point}
+            transitions={transitions}
             onExpand={() => {
               if (!map) return
               const zoom = getExpansionZoom(point.id, point.coordinates)

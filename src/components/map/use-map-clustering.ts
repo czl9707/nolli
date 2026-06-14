@@ -41,12 +41,12 @@ export function getExpansionZoom(
 type LngLat = [number, number]
 
 /**
- * Per-arch transition targets, handed to markers imperatively via a ref so they
+ * Per-marker transition targets, handed to markers imperatively via a ref so they
  * survive the batched moveend/zoomend at the end of a flyTo (a prop-based value
- * got dropped on the 2nd recompute). Markers read these once:
- *  - `from`: cluster centroid a pin emerged from — enter-slide origin (on mount).
- *  - `to`:   cluster centroid a pin is collapsing into — exit-slide destination
- *            (on exit; the marker consumes/deletes it).
+ * got dropped on the 2nd recompute). Keyed by the marker's React key — a slug for
+ * points, `cluster-${id}` for clusters. Markers read these once:
+ *  - `from`: position to enter-slide from (read on mount).
+ *  - `to`:   position to exit-slide to (read + consumed on exit).
  */
 export type MarkerTransitions = Record<
   string,
@@ -57,6 +57,8 @@ type ArchState = { clustered: boolean; position: LngLat }
 
 type RawMarker = { slug: string; name: string; coords: LngLat }
 type RawCluster = { id: number; count: number; coords: LngLat }
+
+type ClusterInfo = { centroid: LngLat; childIds: number[] }
 
 export function useMapClustering(
   map: MapLibreGL.Map | null,
@@ -70,8 +72,11 @@ export function useMapClustering(
   const indexRef = useRef<Supercluster<ArchProperties, ClusterProperties> | null>(
     null,
   )
-  /** Per-arch state from the last recompute — used to detect transitions. */
+  /** Per-arch state from the last recompute — used to detect point transitions. */
   const archStateRef = useRef<Record<string, ArchState>>({})
+  /** Per-cluster tree info from the last recompute — used to detect cluster
+   *  transitions (splits/merges) via parent↔child links. */
+  const clusterInfoRef = useRef<Record<number, ClusterInfo>>({})
   /** Enter/exit origins handed to markers. The hook writes; markers consume. */
   const transitionsRef = useRef<MarkerTransitions>({})
 
@@ -94,6 +99,7 @@ export function useMapClustering(
 
     indexRef.current.load(points)
     archStateRef.current = {}
+    clusterInfoRef.current = {}
     transitionsRef.current = {}
   }, [architectures])
 
@@ -155,24 +161,66 @@ export function useMapClustering(
         }
       }
 
-      // Detect transitions vs previous state; hand origins to markers via the ref.
-      const prev = archStateRef.current
       const transitions = transitionsRef.current
+
+      // --- Point transitions: enter from / exit to a cluster centroid. ---
+      const prevArch = archStateRef.current
       for (const [slug, ns] of Object.entries(newArchState)) {
-        const ps = prev[slug]
+        const ps = prevArch[slug]
         if (!ns.clustered && ps?.clustered) {
-          // Emerging from a cluster -> enter-slide from the centroid it was at.
           transitions[slug] = { ...transitions[slug], from: ps.position }
         } else if (ns.clustered && ps && !ps.clustered) {
-          // Collapsing into a cluster -> exit-slide to the new centroid.
           transitions[slug] = { ...transitions[slug], to: ns.position }
         }
       }
-      // Drop entries for slugs no longer on-screen, so a stale `from` can't
-      // re-trigger a slide if the pin later scrolls back into view.
-      for (const slug of Object.keys(transitions)) {
-        if (!(slug in newArchState)) delete transitions[slug]
+      // Drop point entries for slugs no longer on-screen (prevents a stale `from`
+      // re-triggering a slide if the pin later scrolls back into view).
+      for (const key of Object.keys(transitions)) {
+        if (key.startsWith("cluster-")) continue
+        if (!(key in newArchState)) delete transitions[key]
       }
+
+      // --- Cluster transitions (splits/merges), same pattern as points. ---
+      // Build this zoom's cluster tree (each cluster + the cluster-ids it splits
+      // into one level down) so we can link children to parents across a zoom step.
+      const newClusterInfo: Record<number, ClusterInfo> = {}
+      for (const c of rawClusters) {
+        const children = index.getChildren(c.id, Infinity)
+        newClusterInfo[c.id] = {
+          centroid: c.coords,
+          childIds: children
+            .filter((ch) => ch.properties.cluster)
+            .map((ch) => ch.properties.cluster_id),
+        }
+      }
+      const prevClusterInfo = clusterInfoRef.current
+      // Split: a new cluster that was a child of a previous cluster slides out of it.
+      for (const c of rawClusters) {
+        if (prevClusterInfo[c.id]) continue
+        const parent = Object.values(prevClusterInfo).find((info) =>
+          info.childIds.includes(c.id),
+        )
+        if (parent) {
+          const key = `cluster-${c.id}`
+          transitions[key] = { ...transitions[key], from: parent.centroid }
+        }
+      }
+      // Merge: a disappeared cluster that is now a child of a new cluster slides
+      // into it. A disappeared cluster with no merge target just leaves (fade).
+      for (const [pidStr, info] of Object.entries(prevClusterInfo)) {
+        const pid = Number(pidStr)
+        if (pid in newClusterInfo) continue
+        const into = rawClusters.find((c) =>
+          newClusterInfo[c.id].childIds.includes(pid),
+        )
+        const key = `cluster-${pid}`
+        if (into) {
+          transitions[key] = { ...transitions[key], to: into.coords }
+        } else {
+          delete transitions[key]
+        }
+      }
+      clusterInfoRef.current = newClusterInfo
 
       archStateRef.current = newArchState
 
