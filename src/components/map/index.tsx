@@ -231,7 +231,10 @@ function ArchMarkers() {
   )
 
   return (
-    <AnimatePresence>
+    // presenceAffectsLayout defaults to true, which makes AnimatePresence re-render
+    // every child (new presence-context identity) on any add/remove — blinking stable
+    // pins. We use no layout animations, so opt out.
+    <AnimatePresence presenceAffectsLayout={false}>
       {clusters.map((point) =>
         point.type === "point" ? (
           <IndividualMarker
