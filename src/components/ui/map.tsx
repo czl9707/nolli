@@ -12,6 +12,7 @@ import {
   type ReactNode,
 } from "react"
 import { createPortal } from "react-dom"
+import { animate, type AnimationPlaybackControls, type Easing } from "framer-motion"
 import { toast } from "sonner"
 import { useThemeStore } from "@/stores/theme"
 import {
@@ -267,6 +268,12 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
   )
 })
 
+type MarkerTransition = {
+  duration?: number
+  ease?: Easing
+  delay?: number
+}
+
 type MapMarkerProps = {
   /** Longitude coordinate for marker position */
   longitude: number
@@ -274,6 +281,8 @@ type MapMarkerProps = {
   latitude: number
   /** Marker subcomponents (MarkerContent, MarkerPopup, MarkerTooltip, MarkerLabel) */
   children: ReactNode
+  /** When provided, position changes ease to the new lng/lat instead of jumping. */
+  transition?: MarkerTransition
   /** Callback when marker is clicked */
   onClick?: (e: MouseEvent) => void
   /** Callback when mouse enters marker */
@@ -285,6 +294,7 @@ type MapMarkerProps = {
 function MapMarker({
   longitude,
   latitude,
+  transition,
   children,
   onClick,
   onMouseEnter,
@@ -292,6 +302,7 @@ function MapMarker({
   ...markerOptions
 }: MapMarkerProps) {
   const { map } = useMap()
+  const easingControlsRef = useRef<AnimationPlaybackControls | null>(null)
 
   const callbacksRef = useRef({
     onClick,
@@ -335,6 +346,7 @@ function MapMarker({
     marker.addTo(map)
 
     return () => {
+      easingControlsRef.current?.stop()
       marker.remove()
     }
 
@@ -345,7 +357,30 @@ function MapMarker({
     marker.getLngLat().lng !== longitude ||
     marker.getLngLat().lat !== latitude
   ) {
-    marker.setLngLat([longitude, latitude])
+    if (transition) {
+      // Ease to the new lng/lat (retarget-safe: stop any in-flight ease first).
+      easingControlsRef.current?.stop()
+      const start = marker.getLngLat()
+      const fromLng = start.lng
+      const fromLat = start.lat
+      easingControlsRef.current = animate(0, 1, {
+        duration: transition.duration ?? 0.6,
+        ease: transition.ease ?? "easeOut",
+        delay: transition.delay ?? 0,
+        onUpdate: (t) => {
+          marker.setLngLat([
+            fromLng + (longitude - fromLng) * t,
+            fromLat + (latitude - fromLat) * t,
+          ])
+        },
+        onComplete: () => {
+          marker.setLngLat([longitude, latitude])
+          easingControlsRef.current = null
+        },
+      })
+    } else {
+      marker.setLngLat([longitude, latitude])
+    }
   }
 
   const currentOffset = marker.getOffset()
