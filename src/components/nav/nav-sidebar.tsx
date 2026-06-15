@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from "react-router"
+import { Link } from "react-router"
 import { Home, Star, Plus, Info } from "lucide-react"
 import { NavUser } from "@/components/sidebar/nav-user"
 import {
@@ -10,6 +10,7 @@ import {
 import { Dialog as RadixDialog } from "radix-ui"
 import { useSidebarStore } from "@/stores/sidebar"
 import { useIsMobile } from "@/hooks/use-is-mobile"
+import { useLayout } from "@/hooks/use-layout"
 import { motion, AnimatePresence } from "framer-motion"
 import { TRANSITION_INSTANT } from "@/lib/constants"
 import { Button } from "../ui/button"
@@ -23,43 +24,48 @@ const navItems = [
   { icon: Info, label: "About", path: "/about", disabled: false },
 ] as const
 
-function isActiveRoute(path: string, pathname: string) {
-  if (path === "/") return pathname === "/" || pathname.startsWith("/arch")
-  return pathname.startsWith(path)
-}
-
 /** Desktop: icon rail */
 function Rail() {
-  const location = useLocation()
-  const navigate = useNavigate()
+  const { isActive } = useLayout()
 
   return (
     <TooltipProvider>
       <div className={styles.rail}>
         <div className={styles.faviconContainer}>
-          <img
-            src="/favicon.svg"
-            alt="Nolli"
-            className={styles.favicon}
-            onClick={() => navigate("/")}
-            />
+          <Link to="/">
+            <img src="/favicon.svg" alt="Nolli" className={styles.favicon} />
+          </Link>
         </div>
         <div className={styles.navItems}>
           {navItems.map((item) => {
-            const active = isActiveRoute(item.path, location.pathname)
+            const active = isActive(item.path)
             return (
               <Tooltip key={item.label}>
                 <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon-lg"
-                    data-active={active}
-                    className={styles.navItem}
-                    onClick={item.disabled ? undefined : () => navigate(item.path)}
-                    aria-label={item.label}
-                  >
-                    <item.icon size={16} />
-                  </Button>
+                  {item.disabled ? (
+                    <Button
+                      variant="ghost"
+                      size="icon-lg"
+                      data-active={active}
+                      className={styles.navItem}
+                      aria-label={item.label}
+                    >
+                      <item.icon size={16} />
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="icon-lg"
+                      data-active={active}
+                      className={styles.navItem}
+                      aria-label={item.label}
+                      asChild
+                    >
+                      <Link to={item.path}>
+                        <item.icon size={16} />
+                      </Link>
+                    </Button>
+                  )}
                 </TooltipTrigger>
                 <TooltipContent side="right" sideOffset={8}>
                   {item.label}
@@ -77,15 +83,9 @@ function Rail() {
 
 /** Mobile: slide-in drawer via Radix Dialog portal */
 function Drawer() {
-  const location = useLocation()
-  const navigate = useNavigate()
+  const { isActive } = useLayout()
   const open = useSidebarStore((s) => s.mobileDrawerOpen)
   const setOpen = useSidebarStore((s) => s.setMobileDrawerOpen)
-
-  function handleNav(path: string) {
-    navigate(path)
-    setOpen(false)
-  }
 
   return (
     <RadixDialog.Root open={open} onOpenChange={setOpen}>
@@ -114,24 +114,39 @@ function Drawer() {
                   aria-label="Navigation"
                   forceMount
                 >
-                  <div className={styles.header} onClick={() => handleNav("/")}>
+                  <Link to="/" className={styles.header} onClick={() => setOpen(false)}>
                     <img src="/favicon.svg" alt="Nolli" className={styles.icon} />
                     <H5 className={styles.title}><b>Nolli</b></H5>
-                  </div>
+                  </Link>
                   <div className={styles.divider} />
                   <nav className={styles.navList}>
                     {navItems.map((item) => {
-                      const active = isActiveRoute(item.path, location.pathname)
+                      const active = isActive(item.path)
+                      if (item.disabled) {
+                        return (
+                          <Button
+                            key={item.label}
+                            className={styles.drawerNavItem}
+                            variant="ghost"
+                            data-active={active}
+                          >
+                            <item.icon size={18} />
+                            {item.label}
+                          </Button>
+                        )
+                      }
                       return (
                         <Button
                           key={item.label}
                           className={styles.drawerNavItem}
                           variant="ghost"
                           data-active={active}
-                          onClick={() => handleNav(item.path)}
+                          asChild
                         >
-                          <item.icon size={18} />
-                          {item.label}
+                          <Link to={item.path} onClick={() => setOpen(false)}>
+                            <item.icon size={18} />
+                            {item.label}
+                          </Link>
                         </Button>
                       )
                     })}

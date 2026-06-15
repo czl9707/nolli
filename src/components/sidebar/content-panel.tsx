@@ -1,6 +1,6 @@
 import type { ReactNode } from "react"
 import { useSidebarStore } from "@/stores/sidebar"
-import { useLayoutStore } from "@/stores/layout"
+import { useLayout } from "@/hooks/use-layout"
 import { motion, type PanInfo } from "framer-motion"
 import { useIsMobile } from "@/hooks/use-is-mobile"
 import styles from "./content-panel.module.css"
@@ -9,8 +9,8 @@ import styles from "./content-panel.module.css"
 
 function DesktopPanel({ children }: { children: ReactNode }) {
   const sidebarOpen = useSidebarStore((s) => s.sidebarOpen)
-  const mode = useLayoutStore((s) => s.mode)
-  const isOpen = mode === "home" && sidebarOpen
+  const { isMap } = useLayout()
+  const isOpen = isMap && sidebarOpen
 
   // Can't use AnimatePresence here without wrapping in a component
   // that reads the store, so we use CSS transition via motion
@@ -80,10 +80,10 @@ function getNearestSnap(topPx: number): SheetSnap {
 function MobileSheet({ children }: { children: ReactNode }) {
   const sheetState = useSidebarStore((s) => s.mobileSheetState)
   const setSheetState = useSidebarStore((s) => s.setMobileSheetState)
-  const mode = useLayoutStore((s) => s.mode)
+  const { isBoard } = useLayout()
 
   // Don't render on board view
-  if (mode === "board") return null
+  if (isBoard) return null
 
   const offsets = getSnapOffsets()
   const currentOffset = offsets[sheetState]

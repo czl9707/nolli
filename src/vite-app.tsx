@@ -2,7 +2,6 @@ import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { BrowserRouter, Route, Routes } from "react-router"
 import { HelmetProvider } from "react-helmet-async"
-import { LayoutSync } from "@/components/layout/layout-sync"
 import { ArchSync } from "@/components/layout/arch-sync"
 import { SeoSync } from "@/components/layout/seo-sync"
 import { ThemeSync } from "@/components/layout/theme-sync"
@@ -19,7 +18,6 @@ import styles from "./vite-app.module.css"
 function RouterSync() {
   return (
     <>
-      <LayoutSync />
       <ArchSync />
       <SeoSync />
     </>
