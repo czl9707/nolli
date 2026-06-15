@@ -46,3 +46,18 @@
 .dropdownContent {
   min-width: 12rem;
 }
+
+.privacyNotice {
+  text-align: center;
+  margin-top: 0.75rem;
+  opacity: 0.7;
+}
+
+.privacyLink {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.privacyLink:hover {
+  opacity: 0.8;
+}

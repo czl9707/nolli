@@ -1,0 +1,31 @@
+/* src/components/pages/content-sections.module.css */
+
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-component);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-paragraph);
+}
+
+.heading {
+  text-align: left;
+}
+
+.paragraph {
+  text-align: left;
+}
+
+/* global.css resets ul to no list-style / no padding — re-add for content lists */
+.list {
+  list-style: disc;
+  margin: 0;
+  padding-left: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}

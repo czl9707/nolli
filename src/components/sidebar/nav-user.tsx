@@ -5,6 +5,7 @@ import {
   LogOut,
   UserCircle,
 } from "lucide-react"
+import { Link } from "react-router"
 import { type ComponentPropsWithoutRef, type ReactNode } from "react"
 import { useAuthStore, AUTH_ENABLED } from "@/stores/auth"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -20,6 +21,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogTrigger,
   DialogHeader,
@@ -55,6 +57,17 @@ function SignInDialogContent() {
         {loading ? <Loader2 size={16} /> : <GoogleIcon size={16} />}
         Sign in with Google
       </Button>
+      <Caption asChild>
+        <p className={styles.privacyNotice}>
+          By continuing, you agree to Nolli's{" "}
+          <DialogClose asChild>
+            <Link to="/privacy" className={styles.privacyLink}>
+              Privacy Policy
+            </Link>
+          </DialogClose>
+          .
+        </p>
+      </Caption>
     </DialogContent>
   )
 }

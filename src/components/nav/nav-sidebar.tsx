@@ -20,7 +20,7 @@ const navItems = [
   { icon: Home, label: "Map", path: "/", disabled: false },
   { icon: Star, label: "Favorites (Coming Soon)", path: "/favorites", disabled: true },
   { icon: Plus, label: "Submit (Coming Soon)", path: "/submit", disabled: true },
-  { icon: Info, label: "About (Coming Soon)", path: "/about", disabled: true },
+  { icon: Info, label: "About", path: "/about", disabled: false },
 ] as const
 
 function isActiveRoute(path: string, pathname: string) {

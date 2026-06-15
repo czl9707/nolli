@@ -2,13 +2,14 @@ import { ThemeToggle } from "@/components/layout/theme-toggle"
 import { useSidebarStore } from "@/stores/sidebar"
 import { Button } from "@/components/ui/button"
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react"
-import { useNavigate } from "react-router"
+import { useLocation, useNavigate } from "react-router"
 import { useIsMobile } from "@/hooks/use-is-mobile"
 import styles from "./header.module.css"
 import { useLayoutStore } from "@/stores/layout"
 
 export function Header() {
   const navigation = useNavigate()
+  const { pathname } = useLocation()
   const isMobile = useIsMobile()
   const layoutMode = useLayoutStore((s) => s.mode)
   const sidebarOpen = useSidebarStore((s) => s.sidebarOpen)
@@ -24,7 +25,11 @@ export function Header() {
   }
 
   const isOpen = isMobile ? false : sidebarOpen
-  const showSideBar = layoutMode === "home"
+  const isStaticRoute =
+    pathname.startsWith("/about") || pathname.startsWith("/privacy")
+  // Desktop ContentPanel toggle is meaningless on static pages (no panel);
+  // mobile keeps the toggle (it opens the nav drawer, which is real navigation).
+  const showSideBar = layoutMode === "home" && (isMobile || !isStaticRoute)
 
   return (
     <header className={styles.header}>

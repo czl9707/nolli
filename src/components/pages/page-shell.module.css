@@ -1,0 +1,49 @@
+/* src/components/pages/page-shell.module.css */
+
+/* ScrollArea root fills the flex center of .appContainer (pattern from arch-list). */
+.root {
+  flex: 1;
+  min-height: 0;
+}
+
+.container {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: var(--spacing-group) var(--spacing-paragraph);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-component);
+  box-sizing: border-box;
+}
+
+.title {
+  text-align: center;
+}
+
+.lead {
+  text-align: center;
+  font-style: italic;
+  font-size: 1.125rem;
+}
+
+.lastUpdated {
+  text-align: center;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-component);
+}
+
+/* Contact block (Privacy) — mirrors .section's internal rhythm. */
+.contact {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-paragraph);
+}
+
+.back {
+  align-self: center;
+  margin-top: var(--spacing-component);
+}

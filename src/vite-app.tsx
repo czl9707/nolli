@@ -1,6 +1,6 @@
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
-import { BrowserRouter } from "react-router"
+import { BrowserRouter, Route, Routes } from "react-router"
 import { HelmetProvider } from "react-helmet-async"
 import { LayoutSync } from "@/components/layout/layout-sync"
 import { ArchSync } from "@/components/layout/arch-sync"
@@ -12,6 +12,8 @@ import { NavSidebar } from "@/components/nav/nav-sidebar"
 import { ContentPanel } from "@/components/sidebar/content-panel"
 import { PanelContent } from "@/components/sidebar/panel-content"
 import { Toaster } from "@/components/ui/sonner"
+import { AboutPage } from "@/components/pages/about/about"
+import { PrivacyPage } from "@/components/pages/privacy/privacy"
 import styles from "./vite-app.module.css"
 
 function RouterSync() {
@@ -20,6 +22,18 @@ function RouterSync() {
       <LayoutSync />
       <ArchSync />
       <SeoSync />
+    </>
+  )
+}
+
+/** The map layout center: side panel + pin-board. Only mounted for map routes. */
+function MapCenter() {
+  return (
+    <>
+      <ContentPanel>
+        <PanelContent />
+      </ContentPanel>
+      <PinBoard />
     </>
   )
 }
@@ -35,10 +49,11 @@ export function ViteApp() {
         <Header />
         <div className={styles.appContainer}>
           <NavSidebar />
-          <ContentPanel>
-            <PanelContent />
-          </ContentPanel>
-          <PinBoard />
+          <Routes>
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/*" element={<MapCenter />} />
+          </Routes>
         </div>
         <Footer />
       </BrowserRouter>
