@@ -31,14 +31,15 @@ import {
 import { MapPin } from "lucide-react"
 import {
   TRANSITION_SHORT,
-  CLUSTER_SPREAD_DURATION,
-  CLUSTER_SPREAD_EASE,
-  CLUSTER_SPREAD_MAX_DELAY,
 } from "@/lib/constants"
 import { flyToArchCinematic } from "@/lib/map-flyto"
 import { AnimatePresence, motion, usePresence } from "framer-motion"
 import styles from "./index.module.css"
 import { Caption } from "../ui/typography"
+
+const CLUSTER_SPREAD_EASE: [number, number, number, number] = [
+  0.22, 1, 0.36, 1,
+]
 
 type LngLat = [number, number]
 
@@ -65,7 +66,7 @@ function useMarkerPresence(
   const [exitTo, setExitTo] = useState<LngLat | undefined>(undefined)
 
   // Stable per-mount random delay — the organic "same speed, different start" burst.
-  const delay = useMemo(() => Math.random() * CLUSTER_SPREAD_MAX_DELAY, [])
+  const delay = useMemo(() => Math.random() * 0.15, [])
 
   // After mount, flip to the own coordinate so MapMarker eases from -> own.
   useEffect(() => {
@@ -83,7 +84,7 @@ function useMarkerPresence(
     }
     const id = setTimeout(
       safeToRemove,
-      (CLUSTER_SPREAD_DURATION + delay) * 1000 + 60,
+      (TRANSITION_SHORT + delay) * 1000 + 60,
     )
     return () => clearTimeout(id)
   }, [isPresent, safeToRemove, key, delay, transitions])
@@ -121,7 +122,7 @@ const IndividualMarker = memo(
         longitude={coords[0]}
         latitude={coords[1]}
         transition={{
-          duration: CLUSTER_SPREAD_DURATION,
+          duration: TRANSITION_SHORT,
           ease: CLUSTER_SPREAD_EASE,
           delay,
         }}
@@ -133,8 +134,8 @@ const IndividualMarker = memo(
             initial={{ opacity: from ? 0 : 1 }}
             animate={{ opacity: isPresent ? 1 : 0 }}
             transition={{
-              duration: CLUSTER_SPREAD_DURATION,
-              ease: "easeOut",
+              duration: TRANSITION_SHORT,
+              ease: CLUSTER_SPREAD_EASE,
               delay,
             }}
             onClick={() => {
@@ -187,8 +188,8 @@ const ClusterMarkerComp = memo(
         longitude={coords[0]}
         latitude={coords[1]}
         transition={{
-          duration: CLUSTER_SPREAD_DURATION,
-          ease: CLUSTER_SPREAD_EASE,
+          duration: TRANSITION_SHORT,
+          ease: "easeOut",
           delay,
         }}
       >
@@ -198,7 +199,7 @@ const ClusterMarkerComp = memo(
             initial={{ opacity: from ? 0 : 1 }}
             animate={{ opacity: isPresent ? 1 : 0 }}
             transition={{
-              duration: CLUSTER_SPREAD_DURATION,
+              duration: TRANSITION_SHORT,
               ease: "easeOut",
               delay,
             }}

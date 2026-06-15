@@ -308,7 +308,7 @@ export function useMapClustering(
 
   const expandZoom = useCallback(
     (clusterId: number, _coordinates?: LngLat) =>
-      getExpansionZoom(indexRef.current, clusterId),
+      getExpansionZoom(indexRef.current, clusterId) + 2,
     [],
   )
 
