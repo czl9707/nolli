@@ -1,6 +1,6 @@
-// src/components/pages/privacy/privacy.content.ts
+// src/pages/privacy/privacy.content.ts
 
-import type { PageContent } from "@/components/pages/content.types"
+import type { PageContent } from "@/components/layout/content.types"
 
 export const privacyContent: PageContent = {
   title: "Privacy Policy",

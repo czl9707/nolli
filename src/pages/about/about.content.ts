@@ -1,6 +1,6 @@
-// src/components/pages/about/about.content.ts
+// src/pages/about/about.content.ts
 
-import type { PageContent } from "@/components/pages/content.types"
+import type { PageContent } from "@/components/layout/content.types"
 
 export const aboutContent: PageContent = {
   title: "About Nolli",

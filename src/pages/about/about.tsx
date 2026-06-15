@@ -1,8 +1,8 @@
-// src/components/pages/about/about.tsx
+// src/pages/about/about.tsx
 
 import { Seo } from "@/components/seo"
-import { ContentSections } from "@/components/pages/content-sections"
-import { PageShell } from "@/components/pages/page-shell"
+import { ContentSections } from "@/components/layout/content-sections"
+import { PageShell } from "@/components/layout/page-shell"
 import { aboutContent } from "./about.content"
 
 export function AboutPage() {

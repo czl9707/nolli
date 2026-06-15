@@ -1,4 +1,4 @@
-// src/components/pages/content-sections.tsx
+// src/components/layout/content-sections.tsx
 
 import { Body1, Body2, H2 } from "@/components/ui/typography"
 import type { ContentSection } from "./content.types"

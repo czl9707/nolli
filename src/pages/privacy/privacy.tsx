@@ -1,11 +1,11 @@
-// src/components/pages/privacy/privacy.tsx
+// src/pages/privacy/privacy.tsx
 
 import { Seo } from "@/components/seo"
 import { Button } from "@/components/ui/button"
 import { H2 } from "@/components/ui/typography"
-import { ContentSections } from "@/components/pages/content-sections"
-import { PageShell } from "@/components/pages/page-shell"
-import shellStyles from "@/components/pages/page-shell.module.css"
+import { ContentSections } from "@/components/layout/content-sections"
+import { PageShell } from "@/components/layout/page-shell"
+import shellStyles from "@/components/layout/page-shell.module.css"
 import { privacyContent } from "./privacy.content"
 
 export function PrivacyPage() {

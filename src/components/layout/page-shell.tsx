@@ -1,4 +1,4 @@
-// src/components/pages/page-shell.tsx
+// src/components/layout/page-shell.tsx
 
 import type { ReactNode } from "react"
 import { Link } from "react-router"

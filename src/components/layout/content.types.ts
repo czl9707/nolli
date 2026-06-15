@@ -1,4 +1,4 @@
-// src/components/pages/content.types.ts
+// src/components/layout/content.types.ts
 
 export type ContentBlock =
   | { kind: "p"; text: string }

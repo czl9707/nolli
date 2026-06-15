@@ -11,8 +11,8 @@ import { NavSidebar } from "@/components/nav/nav-sidebar"
 import { ContentPanel } from "@/components/sidebar/content-panel"
 import { PanelContent } from "@/components/sidebar/panel-content"
 import { Toaster } from "@/components/ui/sonner"
-import { AboutPage } from "@/components/pages/about/about"
-import { PrivacyPage } from "@/components/pages/privacy/privacy"
+import { AboutPage } from "@/pages/about/about"
+import { PrivacyPage } from "@/pages/privacy/privacy"
 import styles from "./vite-app.module.css"
 
 function RouterSync() {
