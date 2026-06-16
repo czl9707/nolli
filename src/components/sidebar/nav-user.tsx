@@ -57,17 +57,6 @@ function SignInDialogContent() {
         {loading ? <Loader2 size={16} /> : <GoogleIcon size={16} />}
         Sign in with Google
       </Button>
-      <Caption asChild>
-        <p className={styles.privacyNotice}>
-          By continuing, you agree to Nolli's{" "}
-          <DialogClose asChild>
-            <Link to="/terms" className={styles.privacyLink}>
-              Terms of Service
-            </Link>
-          </DialogClose>
-          .
-        </p>
-      </Caption>
     </DialogContent>
   )
 }

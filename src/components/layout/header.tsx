@@ -47,13 +47,13 @@ export function Header() {
           </Button>
         </div>
       }
+      {
+        isMobile &&
         <Link to="/" className={styles.title}>
-          {
-            isMobile &&
-            <img src="/favicon.svg" alt="Nolli Icon" className={styles.icon} />
-          } 
+          <img src="/favicon.svg" alt="Nolli Icon" className={styles.icon} />
           Nolli
         </Link>
+      }
       <div className={styles.right}>
         <ThemeToggle />
       </div>

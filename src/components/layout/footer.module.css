@@ -4,6 +4,7 @@
     height: var(--size-footer-height);
     align-items: center;
     justify-content: flex-end;
+    gap: 0.5rem;
     padding-left: var(--spacing-component);
     padding-right: var(--spacing-component);
     pointer-events: none;
@@ -18,4 +19,21 @@
 
 .copyright {
     opacity: 0.5;
+}
+
+.dot {
+    opacity: 0.5;
+}
+
+/* Links re-enable clicks (parent is pointer-events: none so the map behind
+   stays interactive) and underline on hover with a 4px offset. */
+.link {
+    opacity: 0.5;
+    pointer-events: auto;
+    text-underline-offset: 4px;
+}
+
+.link:hover {
+    opacity: 1;
+    text-decoration: underline;
 }
