@@ -1,4 +1,10 @@
 .footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    box-sizing: border-box;
+
     z-index: 50;
     display: flex;
     height: var(--size-footer-height);
@@ -9,11 +15,13 @@
     padding-right: var(--spacing-component);
     pointer-events: none;
     user-select: none;
+
+    background: linear-gradient(to top, rgb(var(--color-primary-background)), transparent);
 }
 
 @media (--larger-than-sm) {
   .footer {
-    margin-left: var(--size-rail-width);
+    left: var(--size-rail-width);
   }
 }
 

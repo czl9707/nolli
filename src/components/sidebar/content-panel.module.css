@@ -5,6 +5,9 @@
   flex-shrink: 0;
   z-index: 20;
   overflow: hidden;
+  margin-top: var(--size-header-height);
+  margin-bottom: var(--size-footer-height);
+  box-sizing: border-box;
 }
 
 .panelWrapper {

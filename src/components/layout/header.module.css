@@ -1,15 +1,21 @@
 .header {
-    z-index: 50;
-    display: flex;
-    height: var(--size-header-height);
-    align-items: center;
-    padding-right: var(--spacing-component);
-    background: linear-gradient(to bottom, rgb(var(--color-primary-background)), rgb(var(--color-primary-background) / .8) 50%, transparent);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  box-sizing: border-box;
+
+  z-index: 50;
+  display: flex;
+  height: var(--size-header-height);
+  align-items: center;
+  padding-right: var(--spacing-component);
+  background: linear-gradient(to bottom, rgb(var(--color-primary-background)), rgb(var(--color-primary-background) / .8) 50%, transparent);
 }
 
 @media (--larger-than-sm) {
   .header {
-    margin-left: var(--size-rail-width);
+    left: var(--size-rail-width);
   }
 }
 
