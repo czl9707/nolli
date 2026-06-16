@@ -1,23 +1,23 @@
-// src/pages/privacy/privacy.tsx
+// src/pages/terms/terms.tsx
 
 import { Seo } from "@/components/seo"
 import { Body1, H4 } from "@/components/ui/typography"
 import { Section, StaticPageShell } from "@/components/layout/static-page-shell"
-import { privacyContent } from "./privacy.content"
+import { termsContent } from "./terms.content"
 
-export function PrivacyPage() {
+export function TermsPage() {
   return (
     <>
       <Seo
-        title="Privacy Policy"
-        description="What Nolli collects (very little), how sign-in works, and your rights."
-        path="/privacy"
+        title="Terms of Service"
+        description="The terms you agree to when using Nolli."
+        path="/terms"
       />
       <StaticPageShell
-        title={privacyContent.title}
-        lastUpdated={privacyContent.lastUpdated}
+        title={termsContent.title}
+        lastUpdated={termsContent.lastUpdated}
       >
-        {privacyContent.blocks.map((block, i) => (
+        {termsContent.blocks.map((block, i) => (
           <Section key={i}>
             {block.title && <H4><b>{block.title}</b></H4>}
             {block.content.map((p, j) => (

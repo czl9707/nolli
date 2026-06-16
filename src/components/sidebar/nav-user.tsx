@@ -61,8 +61,8 @@ function SignInDialogContent() {
         <p className={styles.privacyNotice}>
           By continuing, you agree to Nolli's{" "}
           <DialogClose asChild>
-            <Link to="/privacy" className={styles.privacyLink}>
-              Privacy Policy
+            <Link to="/terms" className={styles.privacyLink}>
+              Terms of Service
             </Link>
           </DialogClose>
           .

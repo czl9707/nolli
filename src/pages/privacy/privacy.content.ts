@@ -1,113 +1,57 @@
 // src/pages/privacy/privacy.content.ts
 
-import type { PageContent } from "@/components/layout/content.types"
+type Block = { title?: string; content: string[] }
 
-export const privacyContent: PageContent = {
+export const privacyContent: {
+  title: string
+  lastUpdated: string
+  blocks: Block[]
+} = {
   title: "Privacy Policy",
   lastUpdated: "June 15, 2026",
-  contactEmail: "nolli.map@gmail.com",
-  sections: [
+  blocks: [
     {
-      heading: "In short",
-      blocks: [
-        {
-          kind: "p",
-          text: "Nolli collects very little. This page explains exactly what we collect, how sign-in works, where it lives, and your rights.",
-        },
+      title: "Information We Collect",
+      content: [
+        "We only collect the minimum amount of information necessary to provide our service. When you log in using your Google account, we collect:",
+        `- Your Email Address: To identify your account and send you essential system notifications.
+- Your Name/Username: To personalize your experience inside the app.
+- Your Profile Picture (Avatar): To display within your account dashboard.`,
+        "We do not collect or track any other personal data, location data, or browsing history.",
       ],
     },
     {
-      heading: "What we collect",
-      blocks: [
-        {
-          kind: "p",
-          text: "When you sign in, Nolli receives your Google profile: your name, email address, and profile picture. That's it — we don't ask for anything else.",
-        },
+      title: "How We Use Your Information",
+      content: [
+        "We use your information strictly for:",
+        `- Creating and maintaining your user account.
+- Authenticating your login sessions.
+- Providing user support if you reach out to us.`,
+        "We will never sell, rent, or share your personal data with third-party advertisers or marketers.",
       ],
     },
     {
-      heading: "How sign-in works",
-      blocks: [
-        {
-          kind: "p",
-          text: "Sign-in uses Google through Supabase. Google confirms who you are; we never see or store your password.",
-        },
+      title: "Data Storage and Security",
+      content: [
+        "Your data is stored securely using industry-standard cloud database providers. We implement modern security practices to protect your information from unauthorized access.",
       ],
     },
     {
-      heading: "Where your data lives",
-      blocks: [
-        {
-          kind: "p",
-          text: "Your account information is stored by Supabase. The map itself — architecture photos and the building database — is hosted on Cloudflare R2 as public catalog content, not personal data. The whole site runs on Cloudflare.",
-        },
+      title: "Third-Party Services",
+      content: [
+        "We use Google OAuth for authentication. Your interaction with Google is governed by Google's own Privacy Policy. We only receive the specific profile data mentioned above.",
       ],
     },
     {
-      heading: "What we don't do",
-      blocks: [
-        {
-          kind: "list",
-          items: [
-            "No analytics or usage tracking.",
-            "No advertising or tracking cookies.",
-            "No selling or sharing your data. (Google and Supabase act only to provide sign-in and data storage.)",
-          ],
-        },
+      title: "Your Rights and Data Deletion",
+      content: [
+        "You own your data. If you would like to delete your account and completely wipe your data from our database, you can do so at any time by emailing us at nolli.map@gmail.com.",
       ],
     },
     {
-      heading: "Third-party services",
-      blocks: [
-        {
-          kind: "p",
-          text: "Three services touch your data: Google (sign-in), Supabase (account data), and Cloudflare (hosting). Each operates under its own privacy policy.",
-        },
-      ],
-    },
-    {
-      heading: "Your rights",
-      blocks: [
-        { kind: "p", text: "You can:" },
-        {
-          kind: "list",
-          items: [
-            "Sign out at any time.",
-            "Ask to see the data we hold about you.",
-            "Ask us to correct or delete it.",
-          ],
-        },
-        {
-          kind: "p",
-          text: "To delete your account and associated data, email us — we'll action it within 30 days.",
-        },
-      ],
-    },
-    {
-      heading: "How long we keep data",
-      blocks: [
-        {
-          kind: "p",
-          text: "We keep your account information until you ask us to delete it.",
-        },
-      ],
-    },
-    {
-      heading: "Children",
-      blocks: [
-        {
-          kind: "p",
-          text: "Nolli isn't intended for anyone under 13. If you believe a minor has registered an account, contact us and we'll remove it.",
-        },
-      ],
-    },
-    {
-      heading: "Changes to this policy",
-      blocks: [
-        {
-          kind: "p",
-          text: "We may update this policy as Nolli changes. The date above reflects the latest version.",
-        },
+      title: "Contact Us",
+      content: [
+        "If you have any questions about this Privacy Policy, please contact us at nolli.map@gmail.com.",
       ],
     },
   ],

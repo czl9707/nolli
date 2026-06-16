@@ -1,8 +1,8 @@
 // src/pages/about/about.tsx
 
 import { Seo } from "@/components/seo"
-import { ContentSections } from "@/components/layout/content-sections"
-import { PageShell } from "@/components/layout/page-shell"
+import { Body1, H3 } from "@/components/ui/typography"
+import { Section, StaticPageShell } from "@/components/layout/static-page-shell"
 import { aboutContent } from "./about.content"
 
 export function AboutPage() {
@@ -13,9 +13,16 @@ export function AboutPage() {
         description="Nolli — the first map built for how architects actually think. Figure-ground map meets pin-up board."
         path="/about"
       />
-      <PageShell title={aboutContent.title} lead={aboutContent.lead}>
-        <ContentSections sections={aboutContent.sections} />
-      </PageShell>
+      <StaticPageShell title={aboutContent.title} lead={aboutContent.lead}>
+        {aboutContent.blocks.map((block, i) => (
+          <Section key={i}>
+            {block.title && <H3><b>{block.title}</b></H3>}
+            {block.content.map((p, j) => (
+              <Body1 key={j}>{p}</Body1>
+            ))}
+          </Section>
+        ))}
+      </StaticPageShell>
     </>
   )
 }

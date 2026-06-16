@@ -8,7 +8,7 @@ export type Layout = "map" | "board" | "static"
  *
  * - `"map"`    — `/`              (home map view, MapCenter mounted)
  * - `"board"`  — `/arch/:slug`    (board view, MapCenter mounted)
- * - `"static"` — `/about`,`/privacy` (no map chrome)
+ * - `"static"` — `/about`,`/privacy`,`/terms` (no map chrome)
  *
  * Replaces the old `useLayoutStore.mode` + scattered `useLocation` checks.
  */
@@ -17,7 +17,9 @@ export function useLayout() {
 
   return useMemo(() => {
     const layout: Layout =
-      pathname.startsWith("/about") || pathname.startsWith("/privacy")
+      pathname.startsWith("/about") ||
+      pathname.startsWith("/privacy") ||
+      pathname.startsWith("/terms")
         ? "static"
         : pathname.startsWith("/arch/")
           ? "board"
