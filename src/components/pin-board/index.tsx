@@ -1,7 +1,7 @@
 import { useMemo, useRef } from "react"
 import { useNavigate } from "react-router"
 import { motion, AnimatePresence } from "framer-motion"
-import { useLayoutStore } from "@/stores/layout"
+import { useLayout } from "@/hooks/use-layout"
 import { useArchDetailStore } from "@/stores/arch-detail"
 import {
   CANVAS_W,
@@ -86,9 +86,9 @@ export function PinBoard() {
   const viewportRef = useRef<HTMLDivElement>(null)
   const isMobile = useIsMobile();
 
-  const mode = useLayoutStore((s) => s.mode)
-  const isBoard = mode === "board"
-  let mapSlotVariant = mode as string;
+  const { isBoard } = useLayout()
+  const mode = isBoard ? "board" : "home"
+  let mapSlotVariant: string = mode
   if (!isBoard)  {
       mapSlotVariant = sideBarOpen ? "homeSidebarOpen" : "home";
       if (isMobile) mapSlotVariant = "mobile";

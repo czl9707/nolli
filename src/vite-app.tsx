@@ -1,28 +1,17 @@
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
-import { BrowserRouter } from "react-router"
+import { BrowserRouter, Route, Routes } from "react-router"
 import { HelmetProvider } from "react-helmet-async"
-import { LayoutSync } from "@/components/layout/layout-sync"
 import { ArchSync } from "@/components/layout/arch-sync"
-import { SeoSync } from "@/components/layout/seo-sync"
 import { ThemeSync } from "@/components/layout/theme-sync"
 import { AuthSync } from "@/components/layout/auth-sync"
-import { PinBoard } from "@/components/pin-board"
 import { NavSidebar } from "@/components/nav/nav-sidebar"
-import { ContentPanel } from "@/components/sidebar/content-panel"
-import { PanelContent } from "@/components/sidebar/panel-content"
 import { Toaster } from "@/components/ui/sonner"
+import { AboutPage } from "@/pages/about/about"
+import { PrivacyPage } from "@/pages/privacy/privacy"
+import { TermsPage } from "@/pages/terms/terms"
+import { MapPage } from "@/pages/map/map"
 import styles from "./vite-app.module.css"
-
-function RouterSync() {
-  return (
-    <>
-      <LayoutSync />
-      <ArchSync />
-      <SeoSync />
-    </>
-  )
-}
 
 export function ViteApp() {
   return (
@@ -31,14 +20,16 @@ export function ViteApp() {
         <Toaster position="bottom-right" />
         <ThemeSync />
         <AuthSync />
-        <RouterSync />
+        <ArchSync />
         <Header />
         <div className={styles.appContainer}>
           <NavSidebar />
-          <ContentPanel>
-            <PanelContent />
-          </ContentPanel>
-          <PinBoard />
+          <Routes>
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/*" element={<MapPage />} />
+          </Routes>
         </div>
         <Footer />
       </BrowserRouter>

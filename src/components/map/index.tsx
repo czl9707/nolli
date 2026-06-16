@@ -19,7 +19,7 @@ import {
 import { useNavigate } from "react-router"
 import { useArchDetailStore } from "@/stores/arch-detail"
 import { useSidebarStore } from "@/stores/sidebar"
-import { useLayoutStore } from "@/stores/layout"
+import { useLayout } from "@/hooks/use-layout"
 import { useDbStore } from "@/stores/db"
 import { useFilterStore } from "@/stores/filter"
 import { useMapPatterns } from "./use-map-patterns"
@@ -263,13 +263,13 @@ function ArchMarkers() {
 function MapFlyNavigator() {
   const selected = useArchDetailStore((s) => s.selected)
   const shouldFlyTo = useArchDetailStore((s) => s.shouldFlyTo)
-  const mode = useLayoutStore((s) => s.mode)
+  const { isBoard } = useLayout()
   const { map } = useMap()
 
   useEffect(() => {
     if (!map || !selected) return
 
-    if (mode === "board") {
+    if (isBoard) {
       const timer = setTimeout(() => {
         flyToArchCinematic(
           map,
@@ -287,7 +287,7 @@ function MapFlyNavigator() {
         selected.coordinates.lat,
       )
     }
-  }, [map, selected, shouldFlyTo, mode])
+  }, [map, selected, shouldFlyTo, isBoard])
 
   return null
 }
@@ -296,7 +296,7 @@ export function MapCore() {
   const mapRef = useRef<MapRef | null>(null)
   const navigate = useNavigate()
   const { ready: patternReady, initialize } = useMapPatterns(mapRef)
-  const mode = useLayoutStore((s) => s.mode)
+  const { isMap } = useLayout()
   const loading = useDbStore((s) => s.loading)
   const error = useDbStore((s) => s.error)
 
@@ -323,7 +323,7 @@ export function MapCore() {
     }
   }, [error, navigate])
 
-  const isHome = mode === "home"
+  const isHome = isMap
   const isLoading = !patternReady || loading || (!!error);
   return (
     <div className={styles.container}>

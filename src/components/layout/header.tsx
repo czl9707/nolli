@@ -2,15 +2,14 @@ import { ThemeToggle } from "@/components/layout/theme-toggle"
 import { useSidebarStore } from "@/stores/sidebar"
 import { Button } from "@/components/ui/button"
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react"
-import { useNavigate } from "react-router"
+import { Link } from "react-router"
 import { useIsMobile } from "@/hooks/use-is-mobile"
+import { useLayout } from "@/hooks/use-layout"
 import styles from "./header.module.css"
-import { useLayoutStore } from "@/stores/layout"
 
 export function Header() {
-  const navigation = useNavigate()
   const isMobile = useIsMobile()
-  const layoutMode = useLayoutStore((s) => s.mode)
+  const { isMap } = useLayout()
   const sidebarOpen = useSidebarStore((s) => s.sidebarOpen)
   const toggle = useSidebarStore((s) => s.toggle)
   const setMobileDrawerOpen = useSidebarStore((s) => s.setMobileDrawerOpen)
@@ -24,7 +23,10 @@ export function Header() {
   }
 
   const isOpen = isMobile ? false : sidebarOpen
-  const showSideBar = layoutMode === "home"
+  // Show the ContentPanel toggle only on the map (board has no panel, static
+  // pages have no map); mobile keeps it even on static pages since it opens the
+  // nav drawer, which is real navigation.
+  const showSideBar = isMobile || isMap
 
   return (
     <header className={styles.header}>
@@ -47,10 +49,10 @@ export function Header() {
       }
       {
         isMobile &&
-        <div className={styles.title} onClick={() => navigation("/")}>
+        <Link to="/" className={styles.title}>
           <img src="/favicon.svg" alt="Nolli Icon" className={styles.icon} />
           Nolli
-        </div>
+        </Link>
       }
       <div className={styles.right}>
         <ThemeToggle />

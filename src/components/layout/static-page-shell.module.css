@@ -1,0 +1,41 @@
+.root {
+  flex: 1;
+  min-height: 0;
+}
+
+.container {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: var(--spacing-group) var(--spacing-component);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-component);
+  box-sizing: border-box;
+}
+
+.centered {
+  text-align: center;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-component);
+}
+
+/* Section: heading + content with paragraph rhythm. */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-paragraph);
+}
+
+/* Content paragraphs: newlines break lines so "- " bullets stay tight. */
+.section p {
+  white-space: pre-line;
+}
+
+.back {
+  align-self: flex-end;
+  margin-top: var(--spacing-component);
+}
