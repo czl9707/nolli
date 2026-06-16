@@ -32,7 +32,7 @@ function Rail() {
     <TooltipProvider>
       <div className={styles.rail}>
         <div className={styles.faviconContainer}>
-          <Link to="/">
+          <Link to="/" >
             <img src="/favicon.svg" alt="Nolli" className={styles.favicon} />
           </Link>
         </div>
