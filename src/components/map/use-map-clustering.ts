@@ -58,7 +58,7 @@ type ArchState = { clustered: boolean; position: LngLat }
 type RawMarker = { slug: string; name: string; coords: LngLat }
 type RawCluster = { id: number; count: number; coords: LngLat }
 
-type ClusterInfo = { centroid: LngLat; childIds: number[] }
+type ClusterInfo = { centroid: LngLat; leaves: Set<string> }
 
 type ClusterResult = GeoJSON.Feature<GeoJSON.Point, ClusterProperties>
 
@@ -149,32 +149,44 @@ function applyPointTransitions(
   }
 }
 
-/** One-level cluster tree: each cluster + the cluster-ids it splits into down a
- *  zoom step. Used to link children to parents across a zoom change. */
+/** Per-cluster leaf slugs + centroid. Leaves give zoom-independent ancestry
+ *  (a descendant's leaves are a subset of its ancestor's), which survives the
+ *  multi-zoom jumps `getExpansionZoom` makes — unlike `getChildren` id matches,
+ *  since supercluster cluster ids are zoom-encoded. */
 function buildClusterTree(
   index: Supercluster<ArchProperties, ClusterProperties>,
   rawClusters: RawCluster[],
 ): Record<number, ClusterInfo> {
   const info: Record<number, ClusterInfo> = {}
   for (const c of rawClusters) {
-    const childIds = index
-      .getChildren(c.id)
-      .filter((ch) => "cluster" in ch.properties)
-      .map(
-        (ch) =>
-          (ch.properties as Supercluster.ClusterProperties).cluster_id,
-      )
-    info[c.id] = { centroid: c.coords, childIds }
+    const leaves = new Set(
+      (index.getLeaves(c.id, Infinity) as Array<
+        GeoJSON.Feature<GeoJSON.Point, ArchProperties>
+      >).map((l) => l.properties.slug),
+    )
+    info[c.id] = { centroid: c.coords, leaves }
   }
   return info
 }
 
+/** True if every slug in `subset` is in `superset`. */
+function isLeafSubset(
+  subset: Set<string>,
+  superset: Set<string>,
+): boolean {
+  for (const s of subset) if (!superset.has(s)) return false
+  return true
+}
+
 /**
- * Detect cluster transitions (splits/merges) via parent↔child links and record
- * `from`/`to` slide origins — the same pattern as points. A new cluster that was
- * a child of a previous one slides out of it (split); a disappeared cluster that
- * is now a child of a new one slides into it (merge); a disappeared cluster with
- * no merge target just leaves (fade).
+ * Detect cluster transitions (splits/merges) via leaf ancestry and record
+ * `from`/`to` slide origins — the same pattern as points. A new cluster whose
+ * leaves descend from a previous one slides out of it (split); a disappeared
+ * cluster whose leaves are now absorbed by a new one slides into it (merge); a
+ * disappeared cluster with no merge target just leaves (fade). Leaf-subset
+ * ancestry is used instead of `getChildren` id matching because cluster ids are
+ * zoom-encoded, so a one-level child id won't match a grandchild that appears
+ * after a multi-zoom expansion jump.
  */
 function applyClusterTransitions(
   transitions: MarkerTransitions,
@@ -185,17 +197,19 @@ function applyClusterTransitions(
   for (const c of rawClusters) {
     if (prevClusterInfo[c.id]) continue
     const parent = Object.values(prevClusterInfo).find((p) =>
-      p.childIds.includes(c.id),
+      isLeafSubset(clusterInfo[c.id].leaves, p.leaves),
     )
     if (parent) {
       const key = `cluster-${c.id}`
       transitions[key] = { ...transitions[key], from: parent.centroid }
     }
   }
-  for (const [pidStr] of Object.entries(prevClusterInfo)) {
+  for (const [pidStr, pinfo] of Object.entries(prevClusterInfo)) {
     const pid = Number(pidStr)
     if (pid in clusterInfo) continue
-    const into = rawClusters.find((c) => clusterInfo[c.id].childIds.includes(pid))
+    const into = rawClusters.find((c) =>
+      isLeafSubset(pinfo.leaves, clusterInfo[c.id].leaves),
+    )
     const key = `cluster-${pid}`
     if (into) {
       transitions[key] = { ...transitions[key], to: into.coords }
