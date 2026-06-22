@@ -6,8 +6,7 @@ export function AuthSync() {
 
   useEffect(() => {
     if (!AUTH_ENABLED) return
-    const cleanup = init()
-    return cleanup
+    void init()
   }, [init])
 
   return null

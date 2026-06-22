@@ -1,30 +1,39 @@
 import { create } from "zustand"
-import { supabase } from "@/lib/data/supabase-client"
 
 export const AUTH_ENABLED = import.meta.env.VITE_AUTH_ENABLED === "true"
 
 export type AuthUser = {
-  id: string
+  id: number
   name: string
   email: string
   avatar: string
+}
+
+type MeResponse = {
+  user: {
+    id: number
+    email: string
+    display_name: string | null
+    avatar_url: string | null
+  } | null
 }
 
 type AuthState = {
   user: AuthUser | null
   loading: boolean
   initialized: boolean
-  init: () => (() => void) | undefined
+  init: () => Promise<void>
   signIn: () => Promise<void>
   signOut: () => Promise<void>
 }
 
-function mapUser(u: { id: string; email?: string; user_metadata?: Record<string, unknown> }): AuthUser {
+function mapUser(u: MeResponse["user"]): AuthUser {
+  if (!u) return { id: 0, name: "", email: "", avatar: "" }
   return {
     id: u.id,
-    name: (u.user_metadata?.full_name as string) ?? (u.user_metadata?.name as string) ?? "",
-    email: u.email ?? "",
-    avatar: (u.user_metadata?.avatar_url as string) ?? "",
+    name: u.display_name ?? "",
+    email: u.email,
+    avatar: u.avatar_url ?? "",
   }
 }
 
@@ -33,41 +42,38 @@ export const useAuthStore = create<AuthState>((set) => ({
   loading: false,
   initialized: false,
 
-  init: () => {
-    if (!AUTH_ENABLED) return
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      set({
-        user: session?.user ? mapUser(session.user) : null,
-        initialized: true,
-      })
-    })
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      set({
-        user: session?.user ? mapUser(session.user) : null,
-        loading: false,
-        initialized: true,
-      })
-    })
-
-    return () => subscription.unsubscribe()
+  init: async () => {
+    if (!AUTH_ENABLED) {
+      set({ initialized: true })
+      return
+    }
+    try {
+      const resp = await fetch("/auth/me", { credentials: "same-origin" })
+      if (resp.ok) {
+        const data = (await resp.json()) as MeResponse
+        set({ user: mapUser(data.user), initialized: true })
+      } else {
+        set({ user: null, initialized: true })
+      }
+    } catch {
+      // Transient fetch failure (network blip, cold start) — don't freeze on Loading.
+      set({ user: null, initialized: true })
+    }
   },
 
   signIn: async () => {
     if (!AUTH_ENABLED) return
     set({ loading: true })
-    const { data, error } = await supabase.auth.signInWithOAuth({ provider: "google" })
-    if (error) {
-      set({ loading: false })
-      return
-    }
+    // Full-page redirect; worker returns the user to "/" after callback.
+    window.location.href = "/auth/login"
   },
 
   signOut: async () => {
     if (!AUTH_ENABLED) return
-    await supabase.auth.signOut()
+    await fetch("/auth/sign-out", {
+      method: "POST",
+      credentials: "same-origin",
+    })
+    set({ user: null })
   },
 }))

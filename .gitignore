@@ -41,7 +41,8 @@ docs/agents
 .worktrees/
 
 # seed data
-/scripts/data/
+scripts/data/
+scripts/_data/
 
 # bake output
 nolli-map.db
