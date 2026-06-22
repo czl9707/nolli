@@ -17,16 +17,19 @@ function isUniqueViolation(err: unknown): boolean {
   )
 }
 
-// Find user by Google sub, or create both a users row and a user_accounts row.
+// Find user by (provider, provider_sub), or create both a users row and a
+// user_accounts row. Provider comes from the route, so adding a provider only
+// requires its own OAuth adapter + route dir — this stays unchanged.
 export async function findOrCreateUser(
   sql: Sql,
+  provider: string,
   profile: GoogleProfile
 ): Promise<User> {
   const existing = await sql<{ id: number }[]>`
     select u.id
     from public.user_accounts ua
     join public.users u on u.id = ua.user_id
-    where ua.provider = 'google' and ua.provider_sub = ${profile.sub}
+    where ua.provider = ${provider} and ua.provider_sub = ${profile.sub}
   `
   if (existing.length) {
     const userId = existing[0].id
@@ -51,7 +54,7 @@ export async function findOrCreateUser(
   try {
     await sql`
       insert into public.user_accounts (user_id, provider, provider_sub)
-      values (${created.id}, 'google', ${profile.sub})
+      values (${created.id}, ${provider}, ${profile.sub})
     `
   } catch (err) {
     if (isUniqueViolation(err)) {
@@ -60,7 +63,7 @@ export async function findOrCreateUser(
         select u.id
         from public.user_accounts ua
         join public.users u on u.id = ua.user_id
-        where ua.provider = 'google' and ua.provider_sub = ${profile.sub}
+        where ua.provider = ${provider} and ua.provider_sub = ${profile.sub}
       `
       return fetchUser(sql, winner.id)
     }

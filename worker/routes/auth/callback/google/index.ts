@@ -23,12 +23,13 @@ export default {
     try {
       const profile = await validateCallback(env, code, codeVerifier)
       await using sql = connect(env.DATABASE_URL)
-      const user = await findOrCreateUser(sql, profile)
-      const { cookie } = await createSession(sql, user.id)
+      const user = await findOrCreateUser(sql, "google", profile)
+      const { cookie, presenceCookie } = await createSession(sql, user.id)
 
       const headers = new Headers()
       headers.set("Location", "/")
       headers.append("set-cookie", cookie)
+      headers.append("set-cookie", presenceCookie)
       for (const c of clearOAuthCookies()) headers.append("set-cookie", c)
       return new Response(null, { status: 302, headers })
     } catch (err) {
