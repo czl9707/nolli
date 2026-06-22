@@ -1,6 +1,6 @@
 import dotenv from "dotenv"
 dotenv.config({ path: [".env.local", ".env"] })
-import { createClient } from "@supabase/supabase-js"
+import postgres from "postgres"
 import {
   S3Client,
   PutObjectCommand,
@@ -18,10 +18,12 @@ const DATA_DIR = join(__dirname, "data")
 
 const DRY_RUN = process.argv.includes("--dry-run")
 
-const supabase = createClient(
-  process.env.VITE_SUPABASE_URL!,
-  process.env.SUPABASE_SECRET_KEY!
-)
+// One client for the whole run; same connection settings as the worker.
+const sql = postgres(process.env.DATABASE_URL!, {
+  max: 1,
+  idle_timeout: 20,
+  connect_timeout: 10,
+})
 
 const s3 = new S3Client({
   region: "auto",
@@ -75,16 +77,22 @@ function log(msg: string) {
   console.log(`[${DRY_RUN ? "DRY-RUN" : "SEED"}] ${msg}`)
 }
 
-async function getOrCreateCountry(code: string, name: string): Promise<number> {
-  const { data } = await supabase
-    .from("countries")
-    .select("id")
-    .eq("code", code)
-    .single()
+// `db` is the request/connection-scoped sql (the module-level `sql`, or the `tx`
+// inside a per-slug transaction). Helpers run on whichever is passed in.
+type Db = postgres.Sql
 
-  if (data) {
+async function getOrCreateCountry(
+  db: Db,
+  code: string,
+  name: string
+): Promise<number> {
+  const [row] = await db<{ id: number }>`
+    SELECT id FROM countries WHERE code = ${code} LIMIT 1
+  `
+
+  if (row) {
     stats.countries.skipped++
-    return data.id
+    return row.id
   }
 
   if (DRY_RUN) {
@@ -93,33 +101,27 @@ async function getOrCreateCountry(code: string, name: string): Promise<number> {
     return -1
   }
 
-  const { data: inserted, error } = await supabase
-    .from("countries")
-    .insert({ code, name })
-    .select("id")
-    .single()
+  const [inserted] = await db<{ id: number }>`
+    INSERT INTO countries (code, name) VALUES (${code}, ${name}) RETURNING id
+  `
 
-  if (error)
-    throw new Error(`Failed to create country ${code}: ${error.message}`)
   stats.countries.created++
   log(`Created country: ${code} (${name})`)
   return inserted.id
 }
 
 async function getOrCreateCity(
+  db: Db,
   name: string,
   countryId: number
 ): Promise<number> {
-  const { data } = await supabase
-    .from("cities")
-    .select("id")
-    .eq("name", name)
-    .eq("country_id", countryId)
-    .single()
+  const [row] = await db<{ id: number }>`
+    SELECT id FROM cities WHERE name = ${name} AND country_id = ${countryId} LIMIT 1
+  `
 
-  if (data) {
+  if (row) {
     stats.cities.skipped++
-    return data.id
+    return row.id
   }
 
   if (DRY_RUN) {
@@ -128,31 +130,27 @@ async function getOrCreateCity(
     return -1
   }
 
-  const { data: inserted, error } = await supabase
-    .from("cities")
-    .insert({ name, country_id: countryId })
-    .select("id")
-    .single()
+  const [inserted] = await db<{ id: number }>`
+    INSERT INTO cities (name, country_id) VALUES (${name}, ${countryId}) RETURNING id
+  `
 
-  if (error) throw new Error(`Failed to create city ${name}: ${error.message}`)
   stats.cities.created++
   log(`Created city: ${name}`)
   return inserted.id
 }
 
 async function getOrCreateArchitect(
+  db: Db,
   name: string,
   countryId: number
 ): Promise<number> {
-  const { data } = await supabase
-    .from("architects")
-    .select("id")
-    .eq("name", name)
-    .single()
+  const [row] = await db<{ id: number }>`
+    SELECT id FROM architects WHERE name = ${name} LIMIT 1
+  `
 
-  if (data) {
+  if (row) {
     stats.architects.skipped++
-    return data.id
+    return row.id
   }
 
   if (DRY_RUN) {
@@ -161,14 +159,10 @@ async function getOrCreateArchitect(
     return -1
   }
 
-  const { data: inserted, error } = await supabase
-    .from("architects")
-    .insert({ name, country_id: countryId })
-    .select("id")
-    .single()
+  const [inserted] = await db<{ id: number }>`
+    INSERT INTO architects (name, country_id) VALUES (${name}, ${countryId}) RETURNING id
+  `
 
-  if (error)
-    throw new Error(`Failed to create architect ${name}: ${error.message}`)
   stats.architects.created++
   log(`Created architect: ${name}`)
   return inserted.id
@@ -256,87 +250,8 @@ async function processSlug(slugDir: string) {
 
   log(`Processing: ${slug}`)
 
-  const countryId = await getOrCreateCountry(meta.country, meta.country)
-  const cityId = await getOrCreateCity(meta.city, countryId)
-
-  let architectCountryId = countryId
-  if (meta.architectCountry && meta.architectCountry !== meta.country) {
-    architectCountryId = await getOrCreateCountry(
-      meta.architectCountry,
-      meta.architectCountry
-    )
-  }
-  const architectId = await getOrCreateArchitect(
-    meta.architect,
-    architectCountryId
-  )
-
-  const { data: existing } = await supabase
-    .from("architectures")
-    .select("id")
-    .eq("slug", slug)
-    .single()
-
-  let archId: number
-
-  if (existing) {
-    if (DRY_RUN) {
-      log(`  Would update architecture: ${slug}`)
-      archId = existing.id
-    } else {
-      const { data: updated, error } = await supabase
-        .from("architectures")
-        .update({
-          name: meta.name,
-          architect_id: architectId,
-          year: meta.year,
-          address: meta.address,
-          city_id: cityId,
-          latitude: meta.latitude,
-          longitude: meta.longitude,
-          google_maps_url: meta.googleMapsUrl,
-        })
-        .eq("slug", slug)
-        .select("id")
-        .single()
-
-      if (error)
-        throw new Error(
-          `Failed to update architecture ${slug}: ${error.message}`
-        )
-      archId = updated.id
-    }
-    stats.architectures.updated++
-  } else {
-    if (DRY_RUN) {
-      log(`  Would create architecture: ${slug}`)
-      archId = -1
-    } else {
-      const { data: inserted, error } = await supabase
-        .from("architectures")
-        .insert({
-          slug,
-          name: meta.name,
-          architect_id: architectId,
-          year: meta.year,
-          address: meta.address,
-          city_id: cityId,
-          latitude: meta.latitude,
-          longitude: meta.longitude,
-          google_maps_url: meta.googleMapsUrl,
-        })
-        .select("id")
-        .single()
-
-      if (error)
-        throw new Error(
-          `Failed to insert architecture ${slug}: ${error.message}`
-        )
-      archId = inserted.id
-    }
-    stats.architectures.created++
-  }
-
+  // Image uploads are pure R2 work. Do them before opening the DB transaction
+  // so the single connection isn't held across slow network I/O.
   const files = await readdir(slugDir)
   const imageFiles = files.filter(
     (f) => f !== "meta.json" && /\.(jpg|jpeg|png|webp|gif|avif)$/i.test(f)
@@ -353,87 +268,130 @@ async function processSlug(slugDir: string) {
     imageEntries.push({ file, ...result })
   }
 
-  if (!DRY_RUN) {
-    await supabase
-      .from("architecture_photos")
-      .delete()
-      .eq("architecture_id", archId)
-    log(`  Cleared old photos for ${slug}`)
-  }
+  // One transaction per slug: a slug either fully applies or fully rolls back.
+  await sql.begin(async (tx) => {
+    const countryId = await getOrCreateCountry(tx, meta.country, meta.country)
+    const cityId = await getOrCreateCity(tx, meta.city, countryId)
 
-  for (const entry of imageEntries) {
-    if (DRY_RUN) {
-      log(`  Would insert photo: ${entry.file}`)
-      continue
+    let architectCountryId = countryId
+    if (meta.architectCountry && meta.architectCountry !== meta.country) {
+      architectCountryId = await getOrCreateCountry(
+        tx,
+        meta.architectCountry,
+        meta.architectCountry
+      )
     }
+    const architectId = await getOrCreateArchitect(
+      tx,
+      meta.architect,
+      architectCountryId
+    )
 
-    const isCover = meta.coverImage
-      ? entry.file === meta.coverImage
-      : imageEntries[0]?.file === entry.file
+    const [existing] = await tx<{ id: number }>`
+      SELECT id FROM architectures WHERE slug = ${slug} LIMIT 1
+    `
 
-    const { error } = await supabase.from("architecture_photos").insert({
-      architecture_id: archId,
-      image: entry.url,
-      is_cover: isCover,
-      caption: null,
-      width: entry.width,
-      height: entry.height,
-    })
+    let archId: number
 
-    if (error)
-      throw new Error(`Failed to insert photo ${entry.file}: ${error.message}`)
-  }
-
-  if (meta.notes?.length) {
-    if (!DRY_RUN) {
-      await supabase
-        .from("architecture_notes")
-        .delete()
-        .eq("architecture_id", archId)
-    }
-
-    for (const text of meta.notes) {
+    if (existing) {
       if (DRY_RUN) {
-        log(`  Would insert note: "${text.slice(0, 40)}..."`)
+        log(`  Would update architecture: ${slug}`)
+        archId = existing.id
       } else {
-        const { error } = await supabase.from("architecture_notes").insert({
-          architecture_id: archId,
-          text,
-        })
-        if (error) throw new Error(`Failed to insert note: ${error.message}`)
+        const [updated] = await tx`
+          UPDATE architectures
+          SET name = ${meta.name},
+              architect_id = ${architectId},
+              year = ${meta.year},
+              address = ${meta.address},
+              city_id = ${cityId},
+              latitude = ${meta.latitude},
+              longitude = ${meta.longitude},
+              google_maps_url = ${meta.googleMapsUrl}
+          WHERE slug = ${slug}
+          RETURNING id
+        `
+        archId = updated.id
       }
-      stats.notes.inserted++
-    }
-  }
-
-  if (meta.links?.length) {
-    if (!DRY_RUN) {
-      await supabase
-        .from("architecture_links")
-        .delete()
-        .eq("architecture_id", archId)
-    }
-
-    for (let i = 0; i < meta.links.length; i++) {
-      const link = meta.links[i]
+      stats.architectures.updated++
+    } else {
       if (DRY_RUN) {
-        log(`  Would insert link: ${link.type} - ${link.label}`)
+        log(`  Would create architecture: ${slug}`)
+        archId = -1
       } else {
-        const { error } = await supabase.from("architecture_links").insert({
-          architecture_id: archId,
-          type: link.type,
-          url: link.url,
-          label: link.label,
-          sort_order: i,
-        })
-        if (error)
-          throw new Error(
-            `Failed to insert link ${link.type}: ${error.message}`
+        const [inserted] = await tx`
+          INSERT INTO architectures (
+            slug, name, architect_id, year, address,
+            city_id, latitude, longitude, google_maps_url
+          ) VALUES (
+            ${slug}, ${meta.name}, ${architectId}, ${meta.year}, ${meta.address},
+            ${cityId}, ${meta.latitude}, ${meta.longitude}, ${meta.googleMapsUrl}
           )
+          RETURNING id
+        `
+        archId = inserted.id
       }
-      stats.links.inserted++
+      stats.architectures.created++
     }
-  }
+
+    if (!DRY_RUN) {
+      await tx`DELETE FROM architecture_photos WHERE architecture_id = ${archId}`
+      log(`  Cleared old photos for ${slug}`)
+    }
+
+    for (const entry of imageEntries) {
+      if (DRY_RUN) {
+        log(`  Would insert photo: ${entry.file}`)
+        continue
+      }
+
+      const isCover = meta.coverImage
+        ? entry.file === meta.coverImage
+        : imageEntries[0]?.file === entry.file
+
+      await tx`
+        INSERT INTO architecture_photos (architecture_id, image, is_cover, caption, width, height)
+        VALUES (${archId}, ${entry.url}, ${isCover}, null, ${entry.width}, ${entry.height})
+      `
+    }
+
+    if (meta.notes?.length) {
+      if (!DRY_RUN) {
+        await tx`DELETE FROM architecture_notes WHERE architecture_id = ${archId}`
+      }
+
+      for (const text of meta.notes) {
+        if (DRY_RUN) {
+          log(`  Would insert note: "${text.slice(0, 40)}..."`)
+        } else {
+          await tx`
+            INSERT INTO architecture_notes (architecture_id, text)
+            VALUES (${archId}, ${text})
+          `
+        }
+        stats.notes.inserted++
+      }
+    }
+
+    if (meta.links?.length) {
+      if (!DRY_RUN) {
+        await tx`DELETE FROM architecture_links WHERE architecture_id = ${archId}`
+      }
+
+      for (let i = 0; i < meta.links.length; i++) {
+        const link = meta.links[i]
+        if (DRY_RUN) {
+          log(`  Would insert link: ${link.type} - ${link.label}`)
+        } else {
+          await tx`
+            INSERT INTO architecture_links (architecture_id, type, url, label, sort_order)
+            VALUES (${archId}, ${link.type}, ${link.url}, ${link.label}, ${i})
+          `
+        }
+        stats.links.inserted++
+      }
+    }
+  })
 }
 
 async function main() {
@@ -444,7 +402,8 @@ async function main() {
     entries = await readdir(DATA_DIR)
   } catch {
     log(`No data directory found at ${DATA_DIR}`)
-    process.exit(1)
+    process.exitCode = 1
+    return
   }
 
   const slugDirs: string[] = []
@@ -456,7 +415,7 @@ async function main() {
 
   if (slugDirs.length === 0) {
     log("No slug directories found in data/")
-    process.exit(0)
+    return
   }
 
   log(`Found ${slugDirs.length} architecture(s) to process`)
@@ -491,3 +450,8 @@ async function main() {
 }
 
 main()
+  .catch((err) => {
+    console.error(err)
+    process.exitCode = 1
+  })
+  .finally(() => sql.end({ timeout: 5 }))
