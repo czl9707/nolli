@@ -11,7 +11,7 @@
   width: var(--size-rail-width);
   flex-shrink: 0;
   box-sizing: border-box;
-  padding: 0 0.25rem 0.5rem 0;
+  padding: 0 0.25rem var(--size-footer-height) 0;
   z-index: 50;
 }
 
@@ -90,6 +90,7 @@
 
 .drawerNavItem {
   width: 100%;
+  box-sizing: border-box;
   justify-content: flex-start;
 }
 

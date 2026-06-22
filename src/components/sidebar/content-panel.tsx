@@ -1,8 +1,9 @@
 import type { ReactNode } from "react"
 import { useSidebarStore } from "@/stores/sidebar"
 import { useLayout } from "@/hooks/use-layout"
-import { motion, type PanInfo } from "framer-motion"
+import { motion, type PanInfo, AnimatePresence } from "framer-motion"
 import { useIsMobile } from "@/hooks/use-is-mobile"
+import { TRANSITION_SHORT, TRANSITION_INSTANT } from "@/lib/constants"
 import styles from "./content-panel.module.css"
 
 // ── Desktop: animated side panel ──
@@ -12,28 +13,25 @@ function DesktopPanel({ children }: { children: ReactNode }) {
   const { isMap } = useLayout()
   const isOpen = isMap && sidebarOpen
 
-  // Can't use AnimatePresence here without wrapping in a component
-  // that reads the store, so we use CSS transition via motion
-  if (!isOpen) return null
-
+  // AnimatePresence must stay mounted (no early return) so it can run the
+  // exit animation. `initial={false}` skips the mount-time grow so the panel
+  // shows at full width on app start; later open/close still animate.
   return (
-    <motion.div
-      key="sidebar"
-      className={styles.sidebarOuter}
-      initial={{ width: 0 }}
-      animate={{ width: "var(--size-sidebar-width)" }}
-      transition={{ duration: 0.6, ease: "easeInOut" }}
-      onClick={(e) => e.stopPropagation()}
-    >
-      <motion.div
-        className={styles.panelWrapper}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.6, ease: "easeInOut" }}
-      >
-        {children}
-      </motion.div>
-    </motion.div>
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          key="sidebar"
+          className={styles.sidebarOuter}
+          initial={{ width: 0, opacity: 0 }}
+          animate={{ width: "var(--size-sidebar-width)", opacity: 1 }}
+          exit={{ width: 0, opacity: 0 }}
+          transition={{ duration: TRANSITION_SHORT, ease: "easeInOut" }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className={styles.panelWrapper}>{children}</div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   )
 }
 
@@ -50,7 +48,7 @@ function getSnapOffsets(): Record<SheetSnap, number> {
   const vh = window.innerHeight
   return {
     peek: vh * 0.9, // 90vh − 4rem
-    expanded: vh * 0.5,        // 90vh − 50vh = 40vh
+    expanded: vh * 0.5, // 90vh − 50vh = 40vh
     full: vh * 0.1,
   }
 }
@@ -90,10 +88,10 @@ function MobileSheet({ children }: { children: ReactNode }) {
 
   function handleDragEnd(
     _event: MouseEvent | TouchEvent | PointerEvent,
-    info: PanInfo,
+    info: PanInfo
   ) {
     const sheetEl = document.querySelector(
-      `.${styles.sheetWrapper}`,
+      `.${styles.sheetWrapper}`
     ) as HTMLElement
     if (!sheetEl) return
     const topY = sheetEl.getBoundingClientRect().top
@@ -109,7 +107,7 @@ function MobileSheet({ children }: { children: ReactNode }) {
     <motion.div
       className={styles.sheetWrapper}
       animate={{ y: currentOffset }}
-      transition={{ duration: 0.3, ease: "easeInOut" }}
+      transition={{ duration: TRANSITION_INSTANT, ease: "easeInOut" }}
       drag="y"
       dragConstraints={{ top: offsets.full, bottom: offsets.peek }}
       dragElastic={0.1}
