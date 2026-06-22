@@ -11,7 +11,10 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "incremental": true,
-    "types": ["@cloudflare/workers-types"]
+    "types": ["@cloudflare/workers-types", "vite/client"],
+    "paths": {
+      "@worker/*": ["./worker/*"]
+    }
   },
   "include": ["worker/**/*.ts"],
   "exclude": ["node_modules"]

@@ -15,7 +15,7 @@
 
 @media (--larger-than-sm) {
   .header {
-    left: var(--size-rail-width);
+    padding-left: var(--size-rail-width);
   }
 }
 

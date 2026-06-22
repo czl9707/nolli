@@ -1,31 +1,53 @@
 import { create } from "zustand"
-import { supabase } from "@/lib/data/supabase-client"
 
 export const AUTH_ENABLED = import.meta.env.VITE_AUTH_ENABLED === "true"
 
 export type AuthUser = {
-  id: string
+  id: number
   name: string
   email: string
   avatar: string
+}
+
+type MeResponse = {
+  user: {
+    id: number
+    email: string
+    display_name: string | null
+    avatar_url: string | null
+  } | null
 }
 
 type AuthState = {
   user: AuthUser | null
   loading: boolean
   initialized: boolean
-  init: () => (() => void) | undefined
+  init: () => Promise<void>
   signIn: () => Promise<void>
   signOut: () => Promise<void>
 }
 
-function mapUser(u: { id: string; email?: string; user_metadata?: Record<string, unknown> }): AuthUser {
+function mapUser(u: MeResponse["user"]): AuthUser {
+  if (!u) return { id: 0, name: "", email: "", avatar: "" }
   return {
     id: u.id,
-    name: (u.user_metadata?.full_name as string) ?? (u.user_metadata?.name as string) ?? "",
-    email: u.email ?? "",
-    avatar: (u.user_metadata?.avatar_url as string) ?? "",
+    name: u.display_name ?? "",
+    email: u.email,
+    avatar: u.avatar_url ?? "",
   }
+}
+
+// Companion to the httpOnly session cookie: a readable "a session exists" flag
+// set by the worker on login. Its absence means anonymous → skip the /auth/me
+// round-trip entirely on page load.
+const PRESENCE_COOKIE = "nolli_authed"
+
+function hasPresence(): boolean {
+  return document.cookie.includes(`${PRESENCE_COOKIE}=1`)
+}
+
+function clearPresence(): void {
+  document.cookie = `${PRESENCE_COOKIE}=; Max-Age=0; Path=/; SameSite=Lax`
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -33,41 +55,45 @@ export const useAuthStore = create<AuthState>((set) => ({
   loading: false,
   initialized: false,
 
-  init: () => {
-    if (!AUTH_ENABLED) return
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      set({
-        user: session?.user ? mapUser(session.user) : null,
-        initialized: true,
-      })
-    })
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      set({
-        user: session?.user ? mapUser(session.user) : null,
-        loading: false,
-        initialized: true,
-      })
-    })
-
-    return () => subscription.unsubscribe()
+  init: async () => {
+    if (!AUTH_ENABLED) {
+      set({ initialized: true })
+      return
+    }
+    // No session flag → anonymous; don't hit /auth/me.
+    if (!hasPresence()) {
+      set({ user: null, initialized: true })
+      return
+    }
+    try {
+      const resp = await fetch("/auth/me", { credentials: "same-origin" })
+      if (resp.ok) {
+        const data = (await resp.json()) as MeResponse
+        set({ user: mapUser(data.user), initialized: true })
+      } else {
+        // Presence flag was stale (session expired/revoked elsewhere) — drop it.
+        clearPresence()
+        set({ user: null, initialized: true })
+      }
+    } catch {
+      // Transient fetch failure (network blip, cold start) — don't freeze on Loading.
+      set({ user: null, initialized: true })
+    }
   },
 
   signIn: async () => {
     if (!AUTH_ENABLED) return
     set({ loading: true })
-    const { data, error } = await supabase.auth.signInWithOAuth({ provider: "google" })
-    if (error) {
-      set({ loading: false })
-      return
-    }
+    // Full-page redirect; worker returns the user to "/" after callback.
+    window.location.href = "/auth/login/google"
   },
 
   signOut: async () => {
     if (!AUTH_ENABLED) return
-    await supabase.auth.signOut()
+    await fetch("/auth/sign-out", {
+      method: "POST",
+      credentials: "same-origin",
+    })
+    set({ user: null })
   },
 }))
