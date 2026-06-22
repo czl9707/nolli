@@ -1,6 +1,6 @@
 import dotenv from "dotenv"
 dotenv.config({ path: [".env.local", ".env"] })
-import { createClient } from "@supabase/supabase-js"
+import postgres from "postgres"
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3"
 import Database from "better-sqlite3"
 import { createHash } from "crypto"
@@ -16,10 +16,12 @@ const PAGE_SIZE = 1000
 
 const DRY_RUN = process.argv.includes("--dry-run")
 
-const supabase = createClient(
-  process.env.VITE_SUPABASE_URL!,
-  process.env.SUPABASE_SECRET_KEY!
-)
+// One client for the whole run; same connection settings as the worker.
+const sql = postgres(process.env.DATABASE_URL!, {
+  max: 1,
+  idle_timeout: 20,
+  connect_timeout: 10,
+})
 
 const s3 = new S3Client({
   region: "auto",
@@ -30,7 +32,7 @@ const s3 = new S3Client({
   },
 })
 
-const R2_BUCKET = process.env.R2_BUCKET_DB!;
+const R2_BUCKET = process.env.R2_BUCKET_DB!
 
 function log(msg: string) {
   console.log(`[${DRY_RUN ? "DRY-RUN" : "BAKE"}] ${msg}`)
@@ -128,21 +130,22 @@ function createSchema(db: Database.Database) {
   `)
 }
 
+// Paginated read of a whole table, ordered by id. `table` is from the fixed
+// TableName union and is interpolated as an identifier via sql(table).
 async function fetchAllRows(
-  table: TableName,
-  select = "*"
+  table: TableName
 ): Promise<Record<string, unknown>[]> {
   const allRows: Record<string, unknown>[] = []
   let offset = 0
 
   while (true) {
-    const { data, error } = await supabase
-      .from(table)
-      .select(select)
-      .range(offset, offset + PAGE_SIZE - 1)
-      .order("id")
+    const data = await sql<Record<string, unknown>[]>`
+      SELECT * FROM ${sql(table)}
+      ORDER BY id
+      LIMIT ${PAGE_SIZE}
+      OFFSET ${offset}
+    `
 
-    if (error) throw new Error(`Failed to fetch ${table}: ${error.message}`)
     if (!data || data.length === 0) break
 
     allRows.push(...data)
@@ -292,7 +295,9 @@ async function main() {
   await uploadToR2()
 }
 
-main().catch((err) => {
-  console.error(err)
-  process.exit(1)
-})
+main()
+  .catch((err) => {
+    console.error(err)
+    process.exitCode = 1
+  })
+  .finally(() => sql.end({ timeout: 5 }))
