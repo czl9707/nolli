@@ -16,5 +16,8 @@
   },
   "compatibility_flags": [
     "nodejs_compat"
-  ]
+  ],
+  "vars": {
+    "OAUTH_REDIRECT_URI": "https://nolli-map.com/auth/callback/google"
+  }
 }
