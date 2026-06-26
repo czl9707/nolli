@@ -174,6 +174,8 @@ function handleGetArchBySlug(slug: string): Arch | null {
     },
     coverImage,
     address: (row.address as string) || "",
+    city: (row.city as string) || "",
+    country: (row.country as string) || "",
     photos,
     notes,
     links,

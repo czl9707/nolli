@@ -14,7 +14,7 @@ SELECT a.slug, a.name, a.year, a.address, a.latitude, a.longitude,
        a.google_maps_url,
        arch.name AS architect,
        ci.name AS city,
-       c.code AS country_code
+       c.name AS country
 FROM architectures a
 JOIN architects arch ON a.architect_id = arch.id
 LEFT JOIN cities ci ON a.city_id = ci.id
