@@ -1,16 +1,44 @@
+.summaryCard {
+  gap: .5rem;
+  background: rgb(var(--color-secondary-background));
+}
+
 .coverWrapper {
   position: relative;
-  padding: 0 !important;
   line-height: 0;
-  background: rgb(var(--color-secondary-background));
-  overflow: hidden;
   border-radius: var(--size-border-radius);
+  overflow: hidden;
 }
 
 .cover {
-  width: 100%;
   aspect-ratio: 1 / 1;
+  width: 100%;
   object-fit: cover;
+  display: block;
+}
+
+.coverOverlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    rgb(var(--color-paper-foreground) / 0.6) 0%,
+    transparent 75%
+  );
+}
+
+.title {
+  position: absolute;
+  left: var(--spacing-paragraph);
+  right: var(--spacing-paragraph);
+  bottom: var(--spacing-paragraph);
+  color: rgb(var(--color-paper-background));
+  pointer-events: none;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .returnButton {
@@ -20,33 +48,34 @@
   z-index: 10;
 }
 
-.heading {
-  display: block;
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+  padding: var(--spacing-paragraph);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   width: 100%;
 }
 
-.detail {
-  display: block;
-  width: 100%;
+.rowIcon {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.locationLink {
+  padding-left: 0 !important;
 }
 
 .muted {
   opacity: 0.5;
 }
 
-.archCard {
-  cursor: pointer;
-  align-items: flex-end;
-  padding: var(--spacing-paragraph)
-}
-
 .viewLink {
   margin-top: var(--spacing-paragraph);
-  width: fit-content;
-  right: 0;
-
-  .archCard:hover & {
-    opacity: 0.5;
-    text-decoration: underline;
-  }
+  justify-content: flex-end;
 }

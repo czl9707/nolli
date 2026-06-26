@@ -47,6 +47,8 @@ export type ArchSummary = z.infer<typeof archSummarySchema>
 
 export const archSchema = archSummarySchema.extend({
   address: z.string(),
+  city: z.string(),
+  country: z.string(),
   photos: z.array(archPhotoSchema),
   notes: z.array(archNoteSchema),
   links: archLinksSchema,
