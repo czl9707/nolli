@@ -19,10 +19,6 @@ export function ArchSummary() {
   if (!current) return null
 
   const cover = current.coverImage
-  const locationText = [current.city, current.country]
-    .filter(Boolean)
-    .join(", ")
-  const hasLocation = locationText.length > 0
   const mapUrl = current.links?.googleMaps
 
   return (
@@ -47,26 +43,27 @@ export function ArchSummary() {
           <User size={14} className={styles.rowIcon} />
           <span className={styles.muted}>By </span>
           {current.architect}
-          <span className={styles.muted}>, {current.year}</span>
+          <span className={styles.muted}>, In </span>
+          {current.year}
         </Body1>
 
-        {hasLocation &&
-          (mapUrl ? (
-            <a
-              className={`${styles.row} ${styles.locationLink}`}
-              href={mapUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <MapPin size={14} className={styles.rowIcon} />
-              {locationText}
-            </a>
-          ) : (
-            <Body1 className={styles.row}>
-              <MapPin size={14} className={styles.rowIcon} />
-              {locationText}
+        <a
+          className={styles.row}
+          href={mapUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <MapPin size={14} className={styles.rowIcon} />
+          <Button 
+            variant="link"
+            className={styles.locationLink}
+            asChild
+          >
+            <Body1>
+              {current.city}, {current.country}
             </Body1>
-          ))}
+          </Button>
+        </a>
 
         <Button
           variant="link"

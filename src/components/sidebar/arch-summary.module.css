@@ -1,19 +1,20 @@
 .summaryCard {
-  padding: 0;
+  gap: .5rem;
+  background: rgb(var(--color-secondary-background));
 }
 
 .coverWrapper {
   position: relative;
   line-height: 0;
-  background: rgb(var(--color-secondary-background));
+  border-radius: var(--size-border-radius);
+  overflow: hidden;
 }
 
 .cover {
-  width: 100%;
   aspect-ratio: 1 / 1;
+  width: 100%;
   object-fit: cover;
   display: block;
-  border-radius: var(--size-border-radius);
 }
 
 .coverOverlay {
@@ -22,8 +23,8 @@
   pointer-events: none;
   background: linear-gradient(
     to top,
-    rgba(0, 0, 0, 0.7) 0%,
-    rgba(0, 0, 0, 0) 55%
+    rgb(var(--color-paper-foreground) / 0.6) 0%,
+    transparent 75%
   );
 }
 
@@ -32,9 +33,7 @@
   left: var(--spacing-paragraph);
   right: var(--spacing-paragraph);
   bottom: var(--spacing-paragraph);
-  margin: 0;
-  color: #fff;
-  line-height: 1.2;
+  color: rgb(var(--color-paper-background));
   pointer-events: none;
   display: -webkit-box;
   -webkit-line-clamp: 3;
@@ -52,7 +51,7 @@
 .info {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-paragraph);
+  gap: .25rem;
   padding: var(--spacing-paragraph);
 }
 
@@ -69,13 +68,7 @@
 }
 
 .locationLink {
-  text-decoration: none;
-  color: inherit;
-  cursor: pointer;
-}
-
-.locationLink:hover {
-  opacity: 0.7;
+  padding-left: 0 !important;
 }
 
 .muted {
@@ -83,5 +76,6 @@
 }
 
 .viewLink {
-  width: fit-content;
+  margin-top: var(--spacing-paragraph);
+  justify-content: flex-end;
 }
