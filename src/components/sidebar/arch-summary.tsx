@@ -68,7 +68,7 @@ export function ArchSummary() {
         <Button
           variant="link"
           className={styles.viewLink}
-          onClick={() => navigate(`/arch/${current.slug}`)}
+          onClick={() => navigate(`/arch/${current.slug}/board`)}
         >
           Go to Pin Board <ArrowRight size={16} />
         </Button>

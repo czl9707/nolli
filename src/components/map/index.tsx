@@ -110,6 +110,7 @@ const IndividualMarker = memo(
     const deselectArch = useArchDetailStore((s) => s.deselect)
     const selectedArch = useArchDetailStore((s) => s.selected)
     const setOpen = useSidebarStore((s) => s.setOpen)
+    const navigate = useNavigate()
 
     const { isPresent, from, coords, delay } = useMarkerPresence(
       point.slug,
@@ -141,9 +142,13 @@ const IndividualMarker = memo(
             onClick={() => {
               if (selectedArch?.slug === point.slug) {
                 deselectArch()
+                navigate("/")
               } else {
                 selectArch(point.slug, false).then((arch) => {
-                  if (arch) setOpen(true)
+                  if (arch) {
+                    setOpen(true)
+                    navigate(`/arch/${point.slug}`)
+                  }
                 })
               }
             }}

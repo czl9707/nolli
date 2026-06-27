@@ -148,7 +148,9 @@ export function PinBoard() {
                   transition: { delay: DELAY_START + TRANSITION_SHORT },
                 }}
                 exit={{ opacity: 0 }}
-                onClick={() => navigate("/")}
+                onClick={() =>
+                  navigate(selectedArch ? `/arch/${selectedArch.slug}` : "/")
+                }
               >
                 <span className={styles.overlayText}>
                   Click to go back to map view
