@@ -148,9 +148,12 @@ export function PinBoard() {
                   transition: { delay: DELAY_START + TRANSITION_SHORT },
                 }}
                 exit={{ opacity: 0 }}
-                onClick={() =>
-                  navigate(selectedArch ? `/arch/${selectedArch.slug}` : "/")
-                }
+                onClick={() => {
+                  // Pop back to the summary if there's a prior entry; fall back
+                  // to an explicit navigate when deep-linked cold (no history).
+                  if ((window.history.state?.idx ?? 0) > 0) navigate(-1)
+                  else navigate(selectedArch ? `/arch/${selectedArch.slug}` : "/")
+                }}
               >
                 <span className={styles.overlayText}>
                   Click to go back to map view

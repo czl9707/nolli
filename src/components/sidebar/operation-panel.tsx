@@ -5,7 +5,8 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useFilterStore } from "@/stores/filter"
 import { useDbStore } from "@/stores/db"
 import type { FilterOptions } from "@/lib/data/data-source.type"
-import { ArchList } from "./arch-list"
+import { ArchScrollList } from "./arch-scroll-list"
+import { Body2 } from "../ui/typography"
 import styles from "./operation-panel.module.css"
 
 function toArchitectItems(
@@ -159,7 +160,34 @@ export function OperationPanel() {
           <FilterSkeleton />
         )}
       </SidebarCard>
-      <ArchList />
+      <FilterResults />
     </>
   )
+}
+
+/** Filter-driven list: loading / no-filter / empty-match states, then results. */
+function FilterResults() {
+  const filteredArchs = useFilterStore((s) => s.filteredArchs)
+  const architectIds = useFilterStore((s) => s.architectIds)
+  const cityIds = useFilterStore((s) => s.cityIds)
+  const hasFilters = architectIds.length > 0 || cityIds.length > 0
+  const filterLoading = useFilterStore((s) => s.loading)
+
+  if (!hasFilters || filterLoading) {
+    return (
+      <Body2 className={styles.emptyState}>
+        {filterLoading ? "Loading..." : "No filters applied."}
+      </Body2>
+    )
+  }
+
+  if (filteredArchs.length === 0) {
+    return (
+      <Body2 className={styles.emptyState}>
+        No architectures match your filters
+      </Body2>
+    )
+  }
+
+  return <ArchScrollList archs={filteredArchs} />
 }

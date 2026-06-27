@@ -1,7 +1,5 @@
 import { create } from "zustand"
 
-export const AUTH_ENABLED = import.meta.env.VITE_AUTH_ENABLED === "true"
-
 export type AuthUser = {
   id: number
   name: string
@@ -56,10 +54,6 @@ export const useAuthStore = create<AuthState>((set) => ({
   initialized: false,
 
   init: async () => {
-    if (!AUTH_ENABLED) {
-      set({ initialized: true })
-      return
-    }
     // No session flag → anonymous; don't hit /auth/me.
     if (!hasPresence()) {
       set({ user: null, initialized: true })
@@ -82,14 +76,12 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   signIn: async () => {
-    if (!AUTH_ENABLED) return
     set({ loading: true })
     // Full-page redirect; worker returns the user to "/" after callback.
     window.location.href = "/auth/login/google"
   },
 
   signOut: async () => {
-    if (!AUTH_ENABLED) return
     await fetch("/auth/sign-out", {
       method: "POST",
       credentials: "same-origin",

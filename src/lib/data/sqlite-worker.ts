@@ -7,6 +7,7 @@ import {
   SQL_GET_ALL_ARCHITECTURES,
   SQL_GET_ARCHITECTS,
   SQL_GET_ARCHITECTURE_ID_BY_SLUG,
+  SQL_GET_ARCHITECTURES_BY_IDS,
   SQL_GET_ARCH_BY_SLUG,
   SQL_GET_CITIES,
   SQL_GET_COUNTRIES,
@@ -35,6 +36,7 @@ function query(sql: string, bind?: BindingSpec): Row[] {
 
 function mapSummaryRow(row: Row): ArchSummary {
   return {
+    id: row.id as number,
     slug: row.slug as string,
     name: row.name as string,
     architect: row.architect as string,
@@ -164,6 +166,7 @@ function handleGetArchBySlug(slug: string): Arch | null {
   if (custom.length > 0) links.custom = custom
 
   return {
+    id: row.id as number,
     slug: row.slug as string,
     name: row.name as string,
     architect: row.architect as string,
@@ -184,6 +187,13 @@ function handleGetArchBySlug(slug: string): Arch | null {
 
 function handleSearchArchitectures(q: string): ArchSummary[] {
   return query(SQL_SEARCH_ARCHITECTURES, [q, q, q]).map(mapSummaryRow)
+}
+
+function handleGetArchSummariesByIds(ids: number[]): ArchSummary[] {
+  if (ids.length === 0) return []
+  const placeholders = ids.map(() => "?").join(", ")
+  const sql = SQL_GET_ARCHITECTURES_BY_IDS.replace("__IDS__", placeholders)
+  return query(sql, ids).map(mapSummaryRow)
 }
 
 function handleGetFilterOptions(): FilterOptions {
@@ -219,6 +229,9 @@ self.onmessage = async (e: MessageEvent<WorkerInbound>) => {
         break
       case "searchArchitectures":
         post({ type: "searchArchitectures", msgId, data: handleSearchArchitectures(e.data.query) })
+        break
+      case "getArchSummariesByIds":
+        post({ type: "getArchSummariesByIds", msgId, data: handleGetArchSummariesByIds(e.data.ids) })
         break
       case "getFilterOptions":
         post({ type: "getFilterOptions", msgId, data: handleGetFilterOptions() })

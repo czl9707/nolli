@@ -1,0 +1,6 @@
+.indicator {
+  /* Match the toggle's favorited color: the project accent token. */
+  color: rgb(var(--color-accent-foreground));
+  fill: currentColor;
+  flex-shrink: 0;
+}

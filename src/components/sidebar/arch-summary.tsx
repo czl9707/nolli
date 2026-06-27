@@ -1,15 +1,17 @@
-import { useRef } from "react"
+import { useRef, useState } from "react"
 import { useArchDetailStore } from "@/stores/arch-detail"
 import { useNavigate } from "react-router"
 import { H4, Body1 } from "@/components/ui/typography"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, ChevronLeft, MapPin, User } from "lucide-react"
+import { ArrowRight, ChevronLeft, Heart, Loader2, MapPin, User } from "lucide-react"
 import { SidebarCard } from "./sidebar-card"
 import styles from "./arch-summary.module.css"
+import { useAuthStore } from "@/stores/auth"
+import { useFavoritesStore } from "@/stores/favorites"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
 
 export function ArchSummary() {
   const arch = useArchDetailStore((s) => s.selected)
-  const deselectArch = useArchDetailStore((s) => s.deselect)
   const navigate = useNavigate()
 
   const archRef = useRef(arch)
@@ -28,11 +30,22 @@ export function ArchSummary() {
           className={styles.returnButton}
           variant="secondary"
           size="icon"
-          onClick={() => deselectArch()}
+          onClick={() => {
+            // History back if there's a prior in-app entry; otherwise go home.
+            // Guards against `back()` exiting the app when deep-linked in cold.
+            if ((window.history.state?.idx ?? 0) > 0) {
+              navigate(-1)
+            } else {
+              navigate("/")
+            }
+          }}
           aria-label="Go back"
         >
           <ChevronLeft size={18} />
         </Button>
+        <div className={styles.favoriteButton}>
+          <FavoriteToggle id={current.id} />
+        </div>
         <img className={styles.cover} src={cover ?? ""} alt={current.name} />
         <div className={styles.coverOverlay} />
         <H4 className={styles.title}>{current.name}</H4>
@@ -75,4 +88,56 @@ export function ArchSummary() {
       </div>
     </SidebarCard>
   )
+}
+
+function FavoriteToggle({ id }: { id: number }) {
+  const user = useAuthStore((s) => s.user)
+  const ids = useFavoritesStore((s) => s.ids)
+  const toggle = useFavoritesStore((s) => s.toggle)
+  const [loading, setLoading] = useState(false);
+
+  const authed = !!user
+  const isFav = ids.includes(id)
+
+  const button = (
+    <Button
+      variant="secondary"
+      size="icon"
+      aria-label={isFav ? "Remove from favorites" : "Add to favorites"}
+      aria-pressed={isFav}
+      disabled={loading}
+      data-fav={isFav}
+      className={styles.favToggle}
+      onClick={authed ? (e) => {
+        e.stopPropagation()
+        setLoading(true)
+        toggle(id).then(() => {
+          setLoading(false)
+        })
+      }: undefined}
+    >
+      {loading ? (
+        <Loader2 size={16} className={styles.favSpinner} />
+      ) : (
+        <Heart size={16} className={styles.favHeart} />
+      )}
+    </Button>
+  )
+
+  // Guests get a tooltip explaining why the heart is dead. Tooltip opens on
+  // hover AND focus/press, so it's reachable on touch (no hover) devices.
+  if (!authed) {
+    return (
+      <TooltipProvider delayDuration={100}>
+        <Tooltip>
+          <TooltipTrigger asChild>{button}</TooltipTrigger>
+          <TooltipContent side="top">
+            Sign in to save favorites
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    )
+  }
+
+  return button
 }
