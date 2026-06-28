@@ -20,6 +20,7 @@ import { useNavigate } from "react-router"
 import { useArchDetailStore } from "@/stores/arch-detail"
 import { useSidebarStore } from "@/stores/sidebar"
 import { useLayout } from "@/hooks/use-layout"
+import { useArchNavigate } from "@/hooks/use-arch-navigate"
 import { useDbStore } from "@/stores/db"
 import { useFilterStore } from "@/stores/filter"
 import { useMapPatterns } from "./use-map-patterns"
@@ -106,10 +107,9 @@ const IndividualMarker = memo(
     point: Extract<ClusterPoint, { type: "point" }>
     transitions: RefObject<MarkerTransitions>
   }) {
-    const selectArch = useArchDetailStore((s) => s.select)
     const selectedArch = useArchDetailStore((s) => s.selected)
     const setOpen = useSidebarStore((s) => s.setOpen)
-    const navigate = useNavigate()
+    const navigateArch = useArchNavigate()
 
     const { isPresent, from, coords, delay } = useMarkerPresence(
       point.slug,
@@ -139,12 +139,8 @@ const IndividualMarker = memo(
               delay,
             }}
             onClick={() => {
-              selectArch(point.slug, false).then((arch) => {
-                if (arch) {
-                  setOpen(true)
-                  navigate(`/arch/${point.slug}`)
-                }
-              })
+              setOpen(true)
+              navigateArch(point.slug, false)
             }}
           >
             <div className={styles.pins}>

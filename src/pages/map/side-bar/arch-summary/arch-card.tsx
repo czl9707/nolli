@@ -1,6 +1,6 @@
 import type { ArchSummary } from "@/lib/data/architectures.type"
-import { useNavigate } from "react-router"
 import { useArchDetailStore } from "@/stores/arch-detail"
+import { useArchNavigate } from "@/hooks/use-arch-navigate"
 import { SidebarCard } from "./sidebar-card"
 import { FavoriteToggle } from "../favorite/favorite-toggle"
 import styles from "./arch-card.module.css"
@@ -8,21 +8,14 @@ import { Body1, Body2 } from "@/components/ui/typography"
 
 export function ArchCard({ arch }: { arch: ArchSummary }) {
   const selectedArch = useArchDetailStore((s) => s.selected)
-  const selectArch = useArchDetailStore((s) => s.select)
-  const navigate = useNavigate()
+  const navigateArch = useArchNavigate()
   const isSelected = selectedArch?.slug === arch.slug
 
   return (
     <SidebarCard
       className={styles.archCard}
       data-selected={isSelected}
-      onClick={() => {
-        // Navigate after the load resolves so <ArchSync> sees the store already
-        // holds this slug and early-returns — no second load, no double fly.
-        void selectArch(arch.slug, true).then((loaded) => {
-          if (loaded) navigate(`/arch/${arch.slug}`)
-        })
-      }}
+      onClick={() => navigateArch(arch.slug, true)}
     >
       <span className={styles.toggleWrap}>
         <FavoriteToggle

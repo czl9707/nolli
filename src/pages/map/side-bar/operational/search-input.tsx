@@ -19,7 +19,11 @@ const DEBOUNCE_MS = 250
  */
 export function SearchInput() {
   const setSearchQuery = useFilterStore((s) => s.setSearchQuery)
-  const [value, setValue] = useState("")
+  // Seed from the store so the input survives unmount/remount (e.g. navigating
+  // into an arch and back). The store is the source of truth; local state only
+  // exists to keep typing responsive across the debounce round-trip.
+  const searchQuery = useFilterStore((s) => s.searchQuery)
+  const [value, setValue] = useState(searchQuery)
   const timer = useRef<number | null>(null)
   const first = useRef(true)
 

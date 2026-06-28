@@ -10,6 +10,7 @@ import {
   CollapsibleContent,
 } from "@/components/ui/collapsible"
 import { useFilterStore } from "@/stores/filter"
+import { useSidebarStore } from "@/stores/sidebar"
 import { useDbStore } from "@/stores/db"
 import type { FilterOptions } from "@/lib/data/data-source.type"
 import { ArchScrollList } from "../arch-summary/arch-scroll-list"
@@ -109,7 +110,8 @@ export function OperationPanel() {
   const clearCities = useFilterStore((s) => s.clearCity)
   const toggleCountry = useFilterStore((s) => s.toggleCountry)
   const [opts, setOpts] = useState<FilterOptions | null>(null)
-  const [filtersOpen, setFiltersOpen] = useState(false)
+  const filtersOpen = useSidebarStore((s) => s.filtersOpen)
+  const setFiltersOpen = useSidebarStore((s) => s.setFiltersOpen)
   const activeFilterCount = architectIds.length + cityIds.length
 
   const cityIdsByCountry = useMemo(() => {

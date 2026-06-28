@@ -78,6 +78,13 @@
   padding-left: 0 !important;
 }
 
+.locationText {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .muted {
   opacity: 0.5;
 }

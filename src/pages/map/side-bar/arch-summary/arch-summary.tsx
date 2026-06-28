@@ -65,12 +65,12 @@ export function ArchSummary() {
           rel="noopener noreferrer"
         >
           <MapPin size={14} className={styles.rowIcon} />
-          <Button 
+          <Button
             variant="link"
             className={styles.locationLink}
             asChild
           >
-            <Body1>
+            <Body1 className={styles.locationText}>
               {current.city}, {current.country}
             </Body1>
           </Button>
