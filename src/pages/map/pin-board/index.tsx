@@ -15,7 +15,7 @@ import {
 import { TRANSITION_SHORT, DELAY_START } from "@/lib/constants"
 import { MapCore } from "@/pages/map/map-core"
 import { PinBoardItem } from "./pin-board-item"
-import { Pin } from "@/components/ui/pin"
+import { Pin } from "./pin"
 import { useBoardPan } from "./use-board-pan"
 import styles from "./board.module.css"
 import { useSidebarStore } from "@/stores/sidebar"
