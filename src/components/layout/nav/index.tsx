@@ -1,6 +1,6 @@
 import { Link } from "react-router"
 import { Home, Star, Plus, Info } from "lucide-react"
-import { NavUser } from "@/components/sidebar/nav-user"
+import { NavUser } from "./nav-user"
 import {
   Tooltip,
   TooltipContent,
