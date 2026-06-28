@@ -13,7 +13,7 @@ import {
   layoutArchBoard,
 } from "@/lib/pin-board-layout"
 import { TRANSITION_SHORT, DELAY_START } from "@/lib/constants"
-import { MapCore } from "@/components/map"
+import { MapCore } from "@/pages/map/map-core"
 import { PinBoardItem } from "./pin-board-item"
 import { Pin } from "@/components/ui/pin"
 import { useBoardPan } from "./use-board-pan"

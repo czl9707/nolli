@@ -4,9 +4,9 @@ import {
   MapMarker,
   MarkerContent,
   useMap,
-} from "@/components/ui/map"
+} from "./map"
 import { getMapStyle } from "@/lib/map-style"
-import type { MapRef } from "@/components/ui/map"
+import type { MapRef } from "./map"
 import {
   memo,
   useCallback,
