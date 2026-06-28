@@ -12,6 +12,11 @@ type SidebarState = {
 
   mobileSheetState: MobileSheetState
   setMobileSheetState: (state: MobileSheetState) => void
+
+  // Operation-panel filters collapsible. Lives in the store so it survives
+  // unmount/remount when navigating into an arch and back.
+  filtersOpen: boolean
+  setFiltersOpen: (open: boolean) => void
 }
 
 export const useSidebarStore = create<SidebarState>((set) => ({
@@ -24,4 +29,7 @@ export const useSidebarStore = create<SidebarState>((set) => ({
 
   mobileSheetState: "peek",
   setMobileSheetState: (state) => set({ mobileSheetState: state }),
+
+  filtersOpen: false,
+  setFiltersOpen: (open) => set({ filtersOpen: open }),
 }))

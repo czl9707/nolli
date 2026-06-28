@@ -1,11 +1,13 @@
 import type MapLibreGL from "maplibre-gl"
 import { MAP_TRANSITION_SHORT, MAP_TRANSITION_LONG } from "@/lib/constants"
 
+const DEFALT_MAP_ZOOM_LEVEL = 14;
+
 export function flyToArchCinematic(
   map: MapLibreGL.Map,
   lng: number,
   lat: number,
-  zoom: number = 15,
+  zoom: number = DEFALT_MAP_ZOOM_LEVEL,
 ): void {
   const zoomDest = Math.max(map.getZoom(), zoom);
   const zoomDelta = zoomDest - map.getZoom();
@@ -39,7 +41,7 @@ export function flyToArchIfNeeded(
     map.stop()
     map.flyTo({
       center: [lng, lat],
-      zoom: Math.max(map.getZoom(), 15),
+      zoom: Math.max(map.getZoom(), DEFALT_MAP_ZOOM_LEVEL),
       duration: MAP_TRANSITION_LONG * 1000,
       essential: true,
     })
