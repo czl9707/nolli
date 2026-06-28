@@ -1,26 +1,25 @@
-.heading {
-  display: block;
-  width: 100%;
-  margin-bottom: 0.5rem;
-}
-
-.body {
-  opacity: 0.5;
-  display: block;
-  width: 100%;
-}
-
-.filterGroup {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  box-sizing: border-box;
-  gap: 0.5rem;
-}
-
 .filterCard {
   flex-shrink: 0;
   padding: var(--spacing-paragraph);
+}
+
+.filtersCollapsableWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-paragraph);
+  width: 100%;
+}
+
+.filtersToggleWrapper {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: .25rem;
+  margin-bottom: -.5rem;
+}
+
+.filtersToggle {
+  opacity: .75;
 }
 
 .skeletonGroup {

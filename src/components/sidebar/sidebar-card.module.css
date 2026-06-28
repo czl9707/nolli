@@ -1,7 +1,6 @@
 .card {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-paragraph);
   width: 100%;
   background-color: rgb(var(--color-secondary-background));
   border-radius: var(--size-border-radius);

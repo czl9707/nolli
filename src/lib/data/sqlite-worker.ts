@@ -14,7 +14,6 @@ import {
   SQL_GET_LINKS,
   SQL_GET_NOTES,
   SQL_GET_PHOTOS,
-  SQL_SEARCH_ARCHITECTURES,
 } from "./sqlite-queries"
 
 type Row = Record<string, unknown>
@@ -111,6 +110,13 @@ function handleGetAllArchitectures(filter: ArchFilter | undefined): ArchSummary[
     conditions.push(`a.city_id IN (${filter.cityIds.map(() => "?").join(", ")})`)
     params.push(...filter.cityIds)
   }
+  if (filter?.query?.trim()) {
+    const q = filter.query.trim()
+    conditions.push(
+      "(a.name LIKE '%' || ? || '%' OR arch.name LIKE '%' || ? || '%')",
+    )
+    params.push(q, q)
+  }
 
   if (conditions.length > 0) sql += " WHERE " + conditions.join(" AND ")
 
@@ -185,10 +191,6 @@ function handleGetArchBySlug(slug: string): Arch | null {
   }
 }
 
-function handleSearchArchitectures(q: string): ArchSummary[] {
-  return query(SQL_SEARCH_ARCHITECTURES, [q, q, q]).map(mapSummaryRow)
-}
-
 function handleGetArchSummariesByIds(ids: number[]): ArchSummary[] {
   if (ids.length === 0) return []
   const placeholders = ids.map(() => "?").join(", ")
@@ -226,9 +228,6 @@ self.onmessage = async (e: MessageEvent<WorkerInbound>) => {
         break
       case "getArchBySlug":
         post({ type: "getArchBySlug", msgId, data: handleGetArchBySlug(e.data.slug) })
-        break
-      case "searchArchitectures":
-        post({ type: "searchArchitectures", msgId, data: handleSearchArchitectures(e.data.query) })
         break
       case "getArchSummariesByIds":
         post({ type: "getArchSummariesByIds", msgId, data: handleGetArchSummariesByIds(e.data.ids) })

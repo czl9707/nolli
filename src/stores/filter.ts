@@ -9,6 +9,7 @@ import { toast } from "sonner"
 type FilterState = {
   architectIds: number[]
   cityIds: number[]
+  searchQuery: string
   filteredArchs: ArchSummary[]
   getArchFilter: () => ArchFilter | undefined
   toggleArchitect: (id: number) => void
@@ -16,6 +17,7 @@ type FilterState = {
   toggleCountry: (cityIdsInCountry: number[]) => void
   clearCity: () => void
   clearArchitect: () => void
+  setSearchQuery: (q: string) => void
   loading: boolean
 }
 
@@ -23,15 +25,18 @@ export const useFilterStore = create(
   subscribeWithSelector<FilterState>((set, get) => ({
     architectIds: [],
     cityIds: [],
+    searchQuery: "",
     filteredArchs: [],
     loading: false,
 
     getArchFilter: () => {
-      const { architectIds, cityIds } = get()
-      if (!architectIds.length && !cityIds.length) return undefined
+      const { architectIds, cityIds, searchQuery } = get()
+      const query = searchQuery.trim()
+      if (!architectIds.length && !cityIds.length && !query) return undefined
       return {
         ...(architectIds.length ? { architectIds } : {}),
         ...(cityIds.length ? { cityIds } : {}),
+        ...(query ? { query } : {}),
       }
     },
 
@@ -78,12 +83,16 @@ export const useFilterStore = create(
 
     clearCity: () => set({ cityIds: [], loading: true }),
     clearArchitect: () => set({ architectIds: [], loading: true }),
+    setSearchQuery: (q) => {
+      if (get().searchQuery === q) return
+      set({ loading: true, searchQuery: q })
+    },
   })),
 )
 
 function startFilterSync(dataSource: DataSource) {
   useFilterStore.subscribe(
-    (state) => [state.architectIds, state.cityIds] as const,
+    (state) => [state.architectIds, state.cityIds, state.searchQuery] as const,
     () => {
       const filter = useFilterStore.getState().getArchFilter()
       dataSource.getAllArchitectures(filter).then((archs) => {
@@ -93,7 +102,7 @@ function startFilterSync(dataSource: DataSource) {
         useFilterStore.setState({ loading: false })
       })
     },
-    { equalityFn: (a, b) => a[0] === b[0] && a[1] === b[1] },
+    { equalityFn: (a, b) => a[0] === b[0] && a[1] === b[1] && a[2] === b[2] },
   )
 
   dataSource

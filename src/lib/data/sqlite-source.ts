@@ -120,14 +120,6 @@ export class SqliteDataSource implements DataSource {
       })
   }
 
-  searchArchitectures(query: string): Promise<ArchSummary[]> {
-    return this.send({ type: "searchArchitectures", query })
-      .then((res) => {
-        if (res.type === "searchArchitectures") return res.data
-        throw new Error(`Unexpected response: ${res.type}`)
-      })
-  }
-
   getFilterOptions(): Promise<FilterOptions> {
     return this.send({ type: "getFilterOptions" })
       .then((res) => {
