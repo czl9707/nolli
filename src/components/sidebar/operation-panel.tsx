@@ -128,6 +128,7 @@ export function OperationPanel() {
 
   return (
     <>
+      {/* <H5>Home</H5> */}
       <SidebarCard className={styles.filterCard}>
         {opts ? (
           <>

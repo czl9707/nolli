@@ -26,7 +26,6 @@ function DesktopPanel({ children }: { children: ReactNode }) {
           animate={{ width: "var(--size-sidebar-width)", opacity: 1 }}
           exit={{ width: 0, opacity: 0 }}
           transition={{ duration: TRANSITION_SHORT, ease: "easeInOut" }}
-          onClick={(e) => e.stopPropagation()}
         >
           <div className={styles.panelWrapper}>{children}</div>
         </motion.div>

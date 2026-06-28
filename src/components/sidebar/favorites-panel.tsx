@@ -4,7 +4,7 @@ import { useAuthStore } from "@/stores/auth"
 import { useFavoritesStore } from "@/stores/favorites"
 import type { ArchSummary } from "@/lib/data/architectures.type"
 import { ArchScrollList } from "./arch-scroll-list"
-import { Body2 } from "../ui/typography"
+import { Body2, H5 } from "../ui/typography"
 import styles from "./favorites-panel.module.css"
 
 export function FavoritesPanel() {
@@ -41,9 +41,10 @@ export function FavoritesPanel() {
     }
   }, [dataSource, key]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  let content;
   // Guest state: prompt sign-in.
   if (!user) {
-    return (
+    content= (
       <Body2 className={styles.message}>
         Sign in to save and view your favorite architectures.
       </Body2>
@@ -52,15 +53,20 @@ export function FavoritesPanel() {
 
   if (summaries.length === 0){
     if ((loading || loadingSummaries)) {
-      return <Body2 className={styles.message}>Loading...</Body2>
+      content = <Body2 className={styles.message}>Loading...</Body2>
+    } else {
+      content = (
+        <Body2 className={styles.message}>
+          No favorites yet — tap the ♥ on any building to save it here.
+        </Body2>
+      )
     }
-
-    return (
-      <Body2 className={styles.message}>
-        No favorites yet — tap the ♥ on any building to save it here.
-      </Body2>
-    )
+  } else {
+    content =  <ArchScrollList archs={summaries} />
   }
 
-  return <ArchScrollList archs={summaries} />
+  return <>
+    <H5>My Favorites</H5>
+    {content}
+  </>
 }

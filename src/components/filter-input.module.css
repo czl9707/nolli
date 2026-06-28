@@ -33,7 +33,7 @@
 
 .input {
     flex: 1 1;
-    min-width: 4rem;
+    min-width: 1rem;
     border: none;
     outline: none;
     background: transparent;
