@@ -1,6 +1,6 @@
 // src/pages/about/about.tsx
 
-import { Seo } from "@/components/seo"
+import { Seo } from "@/components/layout/seo"
 import { Body1, H3 } from "@/components/ui/typography"
 import { Section, StaticPageShell } from "@/components/layout/static-page-shell"
 import { aboutContent } from "./about.content"

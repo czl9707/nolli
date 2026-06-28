@@ -1,6 +1,6 @@
 // src/pages/map/map.tsx
 
-import { Seo } from "@/components/seo"
+import { Seo } from "@/components/layout/seo"
 import { ContentPanel } from "@/components/sidebar/content-panel"
 import { PanelContent } from "@/components/sidebar/panel-content"
 import { PinBoard } from "@/components/pin-board"
