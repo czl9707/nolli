@@ -33,3 +33,10 @@
 .skeletonLabel {
   margin-bottom: 0.25rem;
 }
+
+.emptyState {
+  width: 100%;
+  text-align: center;
+  padding: var(--spacing-paragraph) 0;
+  opacity: 0.5;
+}

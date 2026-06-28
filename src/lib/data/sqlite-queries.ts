@@ -1,5 +1,5 @@
 export const SQL_GET_ALL_ARCHITECTURES = `
-SELECT a.slug, a.name, a.year, a.latitude, a.longitude,
+SELECT a.id, a.slug, a.name, a.year, a.latitude, a.longitude,
        arch.name AS architect,
        p.image AS cover_image
 FROM architectures a
@@ -10,7 +10,7 @@ JOIN countries c ON ci.country_id = c.id
 `
 
 export const SQL_GET_ARCH_BY_SLUG = `
-SELECT a.slug, a.name, a.year, a.address, a.latitude, a.longitude,
+SELECT a.id, a.slug, a.name, a.year, a.address, a.latitude, a.longitude,
        a.google_maps_url,
        arch.name AS architect,
        ci.name AS city,
@@ -43,7 +43,7 @@ ORDER BY sort_order
 `
 
 export const SQL_SEARCH_ARCHITECTURES = `
-SELECT a.slug, a.name, a.year, a.latitude, a.longitude,
+SELECT a.id, a.slug, a.name, a.year, a.latitude, a.longitude,
        arch.name AS architect,
        p.image AS cover_image
 FROM architectures a
@@ -53,6 +53,16 @@ WHERE a.name LIKE '%' || ? || '%'
    OR arch.name LIKE '%' || ? || '%'
    OR a.address LIKE '%' || ? || '%'
 ORDER BY a.name
+`
+
+export const SQL_GET_ARCHITECTURES_BY_IDS = `
+SELECT a.id, a.slug, a.name, a.year, a.latitude, a.longitude,
+       arch.name AS architect,
+       p.image AS cover_image
+FROM architectures a
+JOIN architects arch ON a.architect_id = arch.id
+LEFT JOIN architecture_photos p ON p.architecture_id = a.id AND p.is_cover = 1
+WHERE a.id IN (__IDS__)
 `
 
 export const SQL_GET_ARCHITECTS = `

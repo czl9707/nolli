@@ -5,6 +5,7 @@ export type WorkerRequest =
   | { type: "init"; download: boolean }
   | { type: "getAllArchitectures"; filter?: ArchFilter }
   | { type: "getArchBySlug"; slug: string }
+  | { type: "getArchSummariesByIds"; ids: number[] }
   | { type: "searchArchitectures"; query: string }
   | { type: "getFilterOptions" }
 
@@ -13,6 +14,7 @@ export type WorkerResponse =
   | { type: "error"; msgId: number; error: string }
   | { type: "getAllArchitectures"; msgId: number; data: ArchSummary[] }
   | { type: "getArchBySlug"; msgId: number; data: Arch | null }
+  | { type: "getArchSummariesByIds"; msgId: number; data: ArchSummary[] }
   | { type: "searchArchitectures"; msgId: number; data: ArchSummary[] }
   | { type: "getFilterOptions"; msgId: number; data: FilterOptions }
 

@@ -2,6 +2,7 @@ import type { PlacedArchItem } from "@/lib/pin-board-layout"
 import { BoardItem } from "./board-item"
 import styles from "./metadata-item.module.css"
 import { Body1, H3, H6 } from "@/components/ui/typography"
+import { useArchDetailStore } from "@/stores/arch-detail"
 
 type MetadataItemProps = Extract<PlacedArchItem, { kind: "metadata" }> & {
   delay: number
@@ -15,6 +16,7 @@ export function MetadataItem({
   position,
   delay,
 }: MetadataItemProps) {
+  const id = useArchDetailStore((s) => s.selected?.id)
   return (
     <BoardItem
       id="metadata"

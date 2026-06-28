@@ -1,4 +1,5 @@
 .archCard {
+  position: relative;
   box-shadow: var(--shadow-sm);
   cursor: pointer;
   transition: background-color var(--transition-instant) ease,
@@ -33,12 +34,17 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: var(--spacing-paragraph) var(--spacing-paragraph) var(--spacing-paragraph) 0;
+  /* Right gutter reserves the top-right corner so the title never runs under
+     the heart. */
+  padding: var(--spacing-paragraph) calc(var(--spacing-paragraph) + 0.75rem) var(--spacing-paragraph) 0;
   flex: 1 1;
 }
 
 .name {
-  display: block;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
   overflow-wrap: break-word;
   padding-bottom: .5rem;
 }
@@ -48,4 +54,28 @@
   opacity: 0.5;
   overflow: hidden;
   white-space: nowrap;
+}
+
+.toggleWrap {
+  position: absolute;
+  top: .25rem;
+  right: .25rem;
+  z-index: 1;
+}
+
+/* Empty heart hidden until the card is hovered or focused, so un-favorited rows
+   stay clean while browsing; favorited hearts always show. Forced visible while
+   disabled (in-flight toggle) so the spinner is never invisible. */
+.toggleWrap [data-fav='false'] {
+  opacity: 0;
+}
+
+.toggleWrap [data-fav] {
+  transition: opacity var(--transition-instant) ease;
+}
+
+.archCard:hover .toggleWrap [data-fav='false'],
+.toggleWrap:has(:focus-visible) [data-fav='false'],
+.toggleWrap [data-fav='false']:disabled {
+  opacity: 1;
 }

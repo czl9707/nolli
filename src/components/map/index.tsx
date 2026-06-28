@@ -107,9 +107,9 @@ const IndividualMarker = memo(
     transitions: RefObject<MarkerTransitions>
   }) {
     const selectArch = useArchDetailStore((s) => s.select)
-    const deselectArch = useArchDetailStore((s) => s.deselect)
     const selectedArch = useArchDetailStore((s) => s.selected)
     const setOpen = useSidebarStore((s) => s.setOpen)
+    const navigate = useNavigate()
 
     const { isPresent, from, coords, delay } = useMarkerPresence(
       point.slug,
@@ -139,13 +139,12 @@ const IndividualMarker = memo(
               delay,
             }}
             onClick={() => {
-              if (selectedArch?.slug === point.slug) {
-                deselectArch()
-              } else {
-                selectArch(point.slug, false).then((arch) => {
-                  if (arch) setOpen(true)
-                })
-              }
+              selectArch(point.slug, false).then((arch) => {
+                if (arch) {
+                  setOpen(true)
+                  navigate(`/arch/${point.slug}`)
+                }
+              })
             }}
           >
             <div className={styles.pins}>

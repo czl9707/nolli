@@ -48,6 +48,13 @@
   z-index: 10;
 }
 
+.favoriteButton {
+  position: absolute;
+  top: var(--spacing-paragraph);
+  right: var(--spacing-paragraph);
+  z-index: 10;
+}
+
 .info {
   display: flex;
   flex-direction: column;

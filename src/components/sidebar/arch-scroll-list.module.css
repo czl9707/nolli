@@ -1,11 +1,5 @@
-.emptyState {
-  width: 100%;
-  text-align: center;
-  padding: var(--spacing-paragraph) 0;
-  opacity: 0.5;
-}
-
 .scrollArea {
+  flex: 1;
   min-height: 0;
 
   & [data-slot='scroll-area-thumb'] {

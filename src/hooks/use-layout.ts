@@ -6,22 +6,24 @@ export type Layout = "map" | "board" | "static"
 /**
  * Single source of truth for "which layout are we in", derived from the URL.
  *
- * - `"map"`    — `/`              (home map view, MapCenter mounted)
- * - `"board"`  — `/arch/:slug`    (board view, MapCenter mounted)
+ * - `"map"`    — `/` or `/arch/:slug`        (home map view; selection shown in the sidebar)
+ * - `"board"`  — `/arch/:slug/board`         (pin-board view, MapCenter mounted in a slot)
  * - `"static"` — `/about`,`/privacy`,`/terms` (no map chrome)
  *
- * Replaces the old `useLayoutStore.mode` + scattered `useLocation` checks.
+ * Selection and board are distinct URL axes: `/arch/:slug` selects an arch on
+ * the home map; appending `/board` enters the pin-board for that arch.
  */
 export function useLayout() {
   const { pathname } = useLocation()
 
   return useMemo(() => {
+    const isBoard = /^\/arch\/[^/]+\/board$/.test(pathname)
     const layout: Layout =
       pathname.startsWith("/about") ||
       pathname.startsWith("/privacy") ||
       pathname.startsWith("/terms")
         ? "static"
-        : pathname.startsWith("/arch/")
+        : isBoard
           ? "board"
           : "map"
 

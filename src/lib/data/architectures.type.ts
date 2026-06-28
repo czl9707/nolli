@@ -36,6 +36,7 @@ export const archLinksSchema = z.object({
 export type ArchLinks = z.infer<typeof archLinksSchema>
 
 export const archSummarySchema = z.object({
+  id: z.number(),
   slug: z.string(),
   name: z.string(),
   architect: z.string(),

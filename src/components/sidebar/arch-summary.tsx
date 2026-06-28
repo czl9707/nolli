@@ -5,11 +5,11 @@ import { H4, Body1 } from "@/components/ui/typography"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, ChevronLeft, MapPin, User } from "lucide-react"
 import { SidebarCard } from "./sidebar-card"
+import { FavoriteToggle } from "./favorite-toggle"
 import styles from "./arch-summary.module.css"
 
 export function ArchSummary() {
   const arch = useArchDetailStore((s) => s.selected)
-  const deselectArch = useArchDetailStore((s) => s.deselect)
   const navigate = useNavigate()
 
   const archRef = useRef(arch)
@@ -28,11 +28,22 @@ export function ArchSummary() {
           className={styles.returnButton}
           variant="secondary"
           size="icon"
-          onClick={() => deselectArch()}
+          onClick={() => {
+            // History back if there's a prior in-app entry; otherwise go home.
+            // Guards against `back()` exiting the app when deep-linked in cold.
+            if ((window.history.state?.idx ?? 0) > 0) {
+              navigate(-1)
+            } else {
+              navigate("/")
+            }
+          }}
           aria-label="Go back"
         >
           <ChevronLeft size={18} />
         </Button>
+        <div className={styles.favoriteButton}>
+          <FavoriteToggle id={current.id} />
+        </div>
         <img className={styles.cover} src={cover ?? ""} alt={current.name} />
         <div className={styles.coverOverlay} />
         <H4 className={styles.title}>{current.name}</H4>
@@ -68,7 +79,7 @@ export function ArchSummary() {
         <Button
           variant="link"
           className={styles.viewLink}
-          onClick={() => navigate(`/arch/${current.slug}`)}
+          onClick={() => navigate(`/arch/${current.slug}/board`)}
         >
           Go to Pin Board <ArrowRight size={16} />
         </Button>

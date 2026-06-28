@@ -5,9 +5,8 @@ import {
   LogOut,
   UserCircle,
 } from "lucide-react"
-import { Link } from "react-router"
 import { type ComponentPropsWithoutRef, type ReactNode } from "react"
-import { useAuthStore, AUTH_ENABLED } from "@/stores/auth"
+import { useAuthStore } from "@/stores/auth"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Body2, Caption } from "@/components/ui/typography"
 import {
@@ -109,7 +108,7 @@ function DefaultGuestTrigger(props: ComponentPropsWithoutRef<typeof Button>) {
         </Body2>
         <Caption asChild>
           <span className={styles.userEmail}>
-            {AUTH_ENABLED ? "Sign in" : "Coming soon"}
+            Sign in
           </span>
         </Caption>
       </div>
@@ -159,10 +158,6 @@ function CompactTrigger(props: ComponentPropsWithoutRef<"button">) {
 // --- Compositions ---
 
 function GuestNav({ trigger }: { trigger: ReactNode }) {
-  if (!AUTH_ENABLED) {
-    return <>{trigger}</>
-  }
-
   return (
     <Dialog>
       <DialogTrigger asChild>{trigger}</DialogTrigger>

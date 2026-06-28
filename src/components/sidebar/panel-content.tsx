@@ -1,8 +1,10 @@
-import { useState } from "react"
-import { useArchDetailStore } from "@/stores/arch-detail"
+import { useEffect, useRef } from "react"
+import { useLocation } from "react-router"
 import { motion, AnimatePresence } from "framer-motion"
 import { TRANSITION_INSTANT } from "@/lib/constants"
+import { useArchDetailStore } from "@/stores/arch-detail"
 import { OperationPanel } from "./operation-panel"
+import { FavoritesPanel } from "./favorites-panel"
 import { ArchSummary } from "./arch-summary"
 import styles from "./content-panel.module.css"
 
@@ -11,33 +13,40 @@ const contentVariants = {
     x: direction === "forward" ? 40 : -40,
     opacity: 0,
   }),
-  center: {
-    x: 0,
-    opacity: 1,
-  },
+  center: { x: 0, opacity: 1 },
   exit: (direction: "forward" | "backward") => ({
     x: direction === "forward" ? -40 : 40,
     opacity: 0,
   }),
 }
 
-/** Switches between OperationPanel and ArchSummary with animated transitions */
+/** URL is the source of truth for panel mode. Selection (a deeper state) wins. */
 export function PanelContent() {
   const selectedArch = useArchDetailStore((s) => s.selected)
-  const panelView = selectedArch ? "arch" : "panel"
+  const { pathname } = useLocation()
 
-  const [[view, direction], setView] = useState<
-    [string, "forward" | "backward"]
-  >([panelView, "forward"])
+  const target = selectedArch
+    ? "arch"
+    : pathname === "/favorite"
+      ? "favorite"
+      : "filter"
 
-  if (view !== panelView) {
-    setView([panelView, panelView === "arch" ? "forward" : "backward"])
-  }
+  const prevRef = useRef<string>(target)
+  useEffect(() => {
+    prevRef.current = target
+  }, [target])
+
+  // Deeper states animate "forward". prevRef.current still holds the previous
+  // target on this render (the ref is updated in the effect below), so this
+  // reflects the actual direction of travel.
+  const order: Record<string, number> = { filter: 0, favorite: 1, arch: 2 }
+  const direction: "forward" | "backward" =
+    order[target] >= order[prevRef.current] ? "forward" : "backward"
 
   return (
     <AnimatePresence mode="wait" custom={direction}>
       <motion.div
-        key={view}
+        key={target}
         className={styles.panelContent}
         custom={direction}
         variants={contentVariants}
@@ -46,7 +55,13 @@ export function PanelContent() {
         exit="exit"
         transition={{ duration: TRANSITION_INSTANT, ease: "easeInOut" }}
       >
-        {panelView === "arch" ? <ArchSummary /> : <OperationPanel />}
+        {target === "arch" ? (
+          <ArchSummary />
+        ) : target === "favorite" ? (
+          <FavoritesPanel />
+        ) : (
+          <OperationPanel />
+        )}
       </motion.div>
     </AnimatePresence>
   )

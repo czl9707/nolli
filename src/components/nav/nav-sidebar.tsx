@@ -17,12 +17,19 @@ import { Button } from "../ui/button"
 import styles from "./nav-sidebar.module.css"
 import { H5 } from "../ui/typography"
 
-const navItems = [
+type NavItem = {
+  icon: typeof Home
+  label: string
+  path: string
+  disabled: boolean
+}
+
+const navItems: NavItem[] = [
   { icon: Home, label: "Map", path: "/", disabled: false },
-  { icon: Star, label: "Favorites (Coming Soon)", path: "/favorites", disabled: true },
+  { icon: Star, label: "Favorites", path: "/favorite", disabled: false },
   { icon: Plus, label: "Submit (Coming Soon)", path: "/submit", disabled: true },
   { icon: Info, label: "About", path: "/about", disabled: false },
-] as const
+]
 
 /** Desktop: icon rail */
 function Rail() {

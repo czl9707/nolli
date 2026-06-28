@@ -28,6 +28,7 @@ export function ViteApp() {
             <Route path="/about" element={<AboutPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/terms" element={<TermsPage />} />
+            <Route path="/favorite" element={<MapPage />} />
             <Route path="/*" element={<MapPage />} />
           </Routes>
         </div>
