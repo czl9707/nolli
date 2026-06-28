@@ -3,10 +3,10 @@ import { useLocation } from "react-router"
 import { motion, AnimatePresence } from "framer-motion"
 import { TRANSITION_INSTANT } from "@/lib/constants"
 import { useArchDetailStore } from "@/stores/arch-detail"
-import { OperationPanel } from "./operation-panel"
-import { FavoritesPanel } from "./favorites-panel"
-import { ArchSummary } from "./arch-summary"
-import styles from "./content-panel.module.css"
+import { OperationPanel } from "./operational/operation-panel"
+import { FavoritesPanel } from "./favorite/favorites-panel"
+import { ArchSummary } from "./arch-summary/arch-summary"
+import styles from "./index.module.css"
 
 const contentVariants = {
   enter: (direction: "forward" | "backward") => ({
@@ -21,7 +21,7 @@ const contentVariants = {
 }
 
 /** URL is the source of truth for panel mode. Selection (a deeper state) wins. */
-export function PanelContent() {
+export function SideBarContent() {
   const selectedArch = useArchDetailStore((s) => s.selected)
   const { pathname } = useLocation()
 

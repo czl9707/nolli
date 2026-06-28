@@ -4,9 +4,9 @@ import {
   MapMarker,
   MarkerContent,
   useMap,
-} from "@/components/ui/map"
+} from "./map"
 import { getMapStyle } from "@/lib/map-style"
-import type { MapRef } from "@/components/ui/map"
+import type { MapRef } from "./map"
 import {
   memo,
   useCallback,
@@ -35,7 +35,7 @@ import {
 import { flyToArchCinematic } from "@/lib/map-flyto"
 import { AnimatePresence, motion, usePresence } from "framer-motion"
 import styles from "./index.module.css"
-import { Caption } from "../ui/typography"
+import { Caption } from "@/components/ui/typography"
 
 const CLUSTER_SPREAD_EASE: [number, number, number, number] = [
   0.22, 1, 0.36, 1,

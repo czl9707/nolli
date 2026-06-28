@@ -30,7 +30,7 @@ import {
   useMap,
   useMarkerContext,
 } from "./map-context"
-import { Button } from "./button"
+import { Button } from "@/components/ui/button"
 import controlStyles from "./map-controls.module.css"
 import mapCss from "./map.module.css"
 import markerStyles from "./map-markers.module.css"

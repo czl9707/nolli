@@ -3,8 +3,8 @@ import { useDbStore } from "@/stores/db"
 import { useAuthStore } from "@/stores/auth"
 import { useFavoritesStore } from "@/stores/favorites"
 import type { ArchSummary } from "@/lib/data/architectures.type"
-import { ArchScrollList } from "./arch-scroll-list"
-import { Body2, H5 } from "../ui/typography"
+import { ArchScrollList } from "../arch-summary/arch-scroll-list"
+import { Body2, H5 } from "@/components/ui/typography"
 import styles from "./favorites-panel.module.css"
 
 export function FavoritesPanel() {

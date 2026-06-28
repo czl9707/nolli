@@ -2,9 +2,9 @@ import type { ArchSummary } from "@/lib/data/architectures.type"
 import { useNavigate } from "react-router"
 import { useArchDetailStore } from "@/stores/arch-detail"
 import { SidebarCard } from "./sidebar-card"
-import { FavoriteToggle } from "./favorite-toggle"
+import { FavoriteToggle } from "../favorite/favorite-toggle"
 import styles from "./arch-card.module.css"
-import { Body1, Body2 } from "../ui/typography"
+import { Body1, Body2 } from "@/components/ui/typography"
 
 export function ArchCard({ arch }: { arch: ArchSummary }) {
   const selectedArch = useArchDetailStore((s) => s.selected)
