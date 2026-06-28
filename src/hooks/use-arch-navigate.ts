@@ -1,14 +1,19 @@
 import { useCallback } from "react"
-import { useLocation, useNavigate } from "react-router"
+import { useNavigate } from "react-router"
 import { useArchDetailStore } from "@/stores/arch-detail"
+
+export type NavMode = "push" | "replace"
 
 /**
  * Selects an arch and navigates to `/arch/:slug` in one step.
  *
- * History strategy: switching arches REPLACES the current slot, so the back
- * stack collapses — `home → arch1 → arch2` + Back lands on `home` (or `fav`
- * if that's where you started), not on `arch1`. Entering the arch view from a
- * non-arch page (home, fav) PUSHES, so you can still back out to the origin.
+ * `mode` is the caller's intent:
+ * - "push" always grows the back stack. Used by suggestion hops so Back
+ *   retraces the exploration chain (A → B → C, Back = B → A → map).
+ * - "replace" asks to overwrite the current slot. It only takes effect when a
+ *   detail route is already open — otherwise we push, so entering detail from
+ *   the map never replaces (and loses) the origin entry. Used by map-marker
+ *   entry: Back escapes to the map instead of stepping through every pin.
  *
  * Navigation happens after `select` resolves so <ArchSync> sees the store
  * already holds this slug and early-returns — no second load, no double fly.
@@ -16,15 +21,16 @@ import { useArchDetailStore } from "@/stores/arch-detail"
 export function useArchNavigate() {
   const select = useArchDetailStore((s) => s.select)
   const navigate = useNavigate()
-  const { pathname } = useLocation()
 
   return useCallback(
-    (slug: string, shouldFlyTo: boolean) => {
-      const replace = pathname.startsWith("/arch/")
+    (slug: string, shouldFlyTo: boolean, mode: NavMode) => {
+      const onDetail = window.location.pathname.startsWith("/arch/")
       void select(slug, shouldFlyTo).then((loaded) => {
-        if (loaded) navigate(`/arch/${slug}`, { replace })
+        if (loaded) {
+          navigate(`/arch/${slug}`, { replace: mode === "replace" && onDetail })
+        }
       })
     },
-    [select, navigate, pathname],
+    [select, navigate],
   )
 }

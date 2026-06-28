@@ -1,0 +1,32 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-paragraph);
+}
+
+/* Plain scroll container for the paginated variant — NOT radix ScrollArea.
+   Radix's viewport wraps children in `display: table`, which sizes to content
+   and lets a long nowrap name blow the panel out horizontally. A normal block
+   scroller keeps the cards' widths honest; the scrollbar is hidden to match
+   the rest of the UI. */
+.scrollArea {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  /* 4px gutter (mirroring radix ScrollArea's viewport) so the cards'
+     box-shadow isn't cropped by the overflow clip — bottom via padding, right
+     via the negative-margin trick that keeps card positions unchanged. */
+  padding-bottom: 4px;
+  padding-right: 4px;
+  margin-right: -4px;
+}
+
+.scrollArea::-webkit-scrollbar {
+  display: none;
+}
+
+.sentinel {
+  height: 1px;
+}

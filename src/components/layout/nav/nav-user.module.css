@@ -55,7 +55,7 @@
 
 .privacyLink {
   text-decoration: underline;
-  text-underline-offset: 2px;
+  text-underline-offset: 3px;
 }
 
 .privacyLink:hover {

@@ -140,7 +140,7 @@ const IndividualMarker = memo(
             }}
             onClick={() => {
               setOpen(true)
-              navigateArch(point.slug, false)
+              navigateArch(point.slug, false, "replace")
             }}
           >
             <div className={styles.pins}>
