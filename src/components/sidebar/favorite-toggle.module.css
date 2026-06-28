@@ -2,12 +2,8 @@
   color: rgb(var(--color-primary-foreground));
 }
 
-/* Favorited: project-accent stroke + filled glyph. */
-.fav[data-fav='true'] {
+.fav[data-fav='true'] .heart {
   color: rgb(var(--color-accent-foreground));
-}
-
-.fav[data-fav='true'] svg {
   fill: currentColor;
 }
 

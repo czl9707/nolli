@@ -68,7 +68,7 @@ export function FavoriteToggle({
       {loading ? (
         <Loader2 size={resolvedIconSize} className={styles.spinner} />
       ) : (
-        <Heart size={resolvedIconSize} />
+        <Heart size={resolvedIconSize} className={styles.heart}/>
       )}
     </Button>
   )
