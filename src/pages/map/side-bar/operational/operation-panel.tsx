@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { ChevronDown, ChevronUp } from "lucide-react"
-import { SidebarCard } from "./sidebar-card"
-import { FilterInput, type FilterItem } from "@/components/filter-input"
+import { SidebarCard } from "../arch-summary/sidebar-card"
+import { FilterInput, type FilterItem } from "./filter-input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import {
@@ -12,9 +12,9 @@ import {
 import { useFilterStore } from "@/stores/filter"
 import { useDbStore } from "@/stores/db"
 import type { FilterOptions } from "@/lib/data/data-source.type"
-import { ArchScrollList } from "./arch-scroll-list"
+import { ArchScrollList } from "../arch-summary/arch-scroll-list"
 import { SearchInput } from "./search-input"
-import { Body2 } from "../ui/typography"
+import { Body2 } from "@/components/ui/typography"
 import styles from "./operation-panel.module.css"
 
 function toArchitectItems(

@@ -5,7 +5,7 @@ import { H4, Body1 } from "@/components/ui/typography"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, ChevronLeft, MapPin, User } from "lucide-react"
 import { SidebarCard } from "./sidebar-card"
-import { FavoriteToggle } from "./favorite-toggle"
+import { FavoriteToggle } from "../favorite/favorite-toggle"
 import styles from "./arch-summary.module.css"
 
 export function ArchSummary() {

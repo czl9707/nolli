@@ -4,7 +4,7 @@ import { useLayout } from "@/hooks/use-layout"
 import { motion, type PanInfo, AnimatePresence } from "framer-motion"
 import { useIsMobile } from "@/hooks/use-is-mobile"
 import { TRANSITION_SHORT, TRANSITION_INSTANT } from "@/lib/constants"
-import styles from "./content-panel.module.css"
+import styles from "./index.module.css"
 
 // ── Desktop: animated side panel ──
 
@@ -124,7 +124,7 @@ function MobileSheet({ children }: { children: ReactNode }) {
 
 /** Generic container: desktop side panel or mobile bottom sheet.
  *  Accepts children — the consumer controls what's rendered inside. */
-export function ContentPanel({ children }: { children: ReactNode }) {
+export function SideBar({ children }: { children: ReactNode }) {
   const isMobile = useIsMobile()
 
   if (isMobile) return <MobileSheet>{children}</MobileSheet>
