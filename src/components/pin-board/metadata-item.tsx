@@ -3,7 +3,6 @@ import { BoardItem } from "./board-item"
 import styles from "./metadata-item.module.css"
 import { Body1, H3, H6 } from "@/components/ui/typography"
 import { useArchDetailStore } from "@/stores/arch-detail"
-import { FavoriteIndicator } from "@/components/sidebar/favorite-indicator"
 
 type MetadataItemProps = Extract<PlacedArchItem, { kind: "metadata" }> & {
   delay: number

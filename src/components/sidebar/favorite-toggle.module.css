@@ -1,0 +1,22 @@
+.fav {
+  color: rgb(var(--color-primary-foreground));
+}
+
+/* Favorited: project-accent stroke + filled glyph. */
+.fav[data-fav='true'] {
+  color: rgb(var(--color-accent-foreground));
+}
+
+.fav[data-fav='true'] svg {
+  fill: currentColor;
+}
+
+.spinner {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

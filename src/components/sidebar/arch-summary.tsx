@@ -1,14 +1,12 @@
-import { useRef, useState } from "react"
+import { useRef } from "react"
 import { useArchDetailStore } from "@/stores/arch-detail"
 import { useNavigate } from "react-router"
 import { H4, Body1 } from "@/components/ui/typography"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, ChevronLeft, Heart, Loader2, MapPin, User } from "lucide-react"
+import { ArrowRight, ChevronLeft, MapPin, User } from "lucide-react"
 import { SidebarCard } from "./sidebar-card"
+import { FavoriteToggle } from "./favorite-toggle"
 import styles from "./arch-summary.module.css"
-import { useAuthStore } from "@/stores/auth"
-import { useFavoritesStore } from "@/stores/favorites"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
 
 export function ArchSummary() {
   const arch = useArchDetailStore((s) => s.selected)
@@ -88,56 +86,4 @@ export function ArchSummary() {
       </div>
     </SidebarCard>
   )
-}
-
-function FavoriteToggle({ id }: { id: number }) {
-  const user = useAuthStore((s) => s.user)
-  const ids = useFavoritesStore((s) => s.ids)
-  const toggle = useFavoritesStore((s) => s.toggle)
-  const [loading, setLoading] = useState(false);
-
-  const authed = !!user
-  const isFav = ids.includes(id)
-
-  const button = (
-    <Button
-      variant="secondary"
-      size="icon"
-      aria-label={isFav ? "Remove from favorites" : "Add to favorites"}
-      aria-pressed={isFav}
-      disabled={loading}
-      data-fav={isFav}
-      className={styles.favToggle}
-      onClick={authed ? (e) => {
-        e.stopPropagation()
-        setLoading(true)
-        toggle(id).then(() => {
-          setLoading(false)
-        })
-      }: undefined}
-    >
-      {loading ? (
-        <Loader2 size={16} className={styles.favSpinner} />
-      ) : (
-        <Heart size={16} className={styles.favHeart} />
-      )}
-    </Button>
-  )
-
-  // Guests get a tooltip explaining why the heart is dead. Tooltip opens on
-  // hover AND focus/press, so it's reachable on touch (no hover) devices.
-  if (!authed) {
-    return (
-      <TooltipProvider delayDuration={100}>
-        <Tooltip>
-          <TooltipTrigger asChild>{button}</TooltipTrigger>
-          <TooltipContent side="top">
-            Sign in to save favorites
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    )
-  }
-
-  return button
 }
