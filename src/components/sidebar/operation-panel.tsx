@@ -1,11 +1,19 @@
 import { useEffect, useMemo, useState } from "react"
+import { ChevronDown, ChevronUp } from "lucide-react"
 import { SidebarCard } from "./sidebar-card"
 import { FilterInput, type FilterItem } from "@/components/filter-input"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Button } from "@/components/ui/button"
+import {
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from "@/components/ui/collapsible"
 import { useFilterStore } from "@/stores/filter"
 import { useDbStore } from "@/stores/db"
 import type { FilterOptions } from "@/lib/data/data-source.type"
 import { ArchScrollList } from "./arch-scroll-list"
+import { SearchInput } from "./search-input"
 import { Body2 } from "../ui/typography"
 import styles from "./operation-panel.module.css"
 
@@ -101,6 +109,8 @@ export function OperationPanel() {
   const clearCities = useFilterStore((s) => s.clearCity)
   const toggleCountry = useFilterStore((s) => s.toggleCountry)
   const [opts, setOpts] = useState<FilterOptions | null>(null)
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  const activeFilterCount = architectIds.length + cityIds.length
 
   const cityIdsByCountry = useMemo(() => {
     if (!opts) return new Map<string, number[]>()
@@ -129,38 +139,57 @@ export function OperationPanel() {
   return (
     <>
       {/* <H5>Home</H5> */}
-      <SidebarCard className={styles.filterCard}>
-        {opts ? (
-          <>
-            <FilterInput
-              label="Filter by Architect"
-              placeholder={dbError != null ? "Error" : "None"}
-              items={toArchitectItems(opts, architectIds).items}
-              selected={toArchitectItems(opts, architectIds).selected}
-              onToggle={(item) => toggleArchitect(Number(item.key))}
-              onClear={clearArchitects}
-            />
-            <FilterInput
-              label="Filter by Location"
-              placeholder={dbError != null ? "Error" : "None"}
-              items={toLocationItems(opts, cityIds).items}
-              selected={toLocationItems(opts, cityIds).selected}
-              onToggle={(item) => {
-                if (item.key.startsWith("country:")) {
-                  const code = item.key.replace("country:", "")
-                  const ids = cityIdsByCountry.get(code)
-                  if (ids) toggleCountry(ids)
-                } else {
-                  toggleCity(Number(item.key.replace("city:", "")))
-                }
-              }}
-              onClear={clearCities}
-            />
-          </>
-        ) : (
-          <FilterSkeleton />
-        )}
-      </SidebarCard>
+      <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen} asChild>
+        <SidebarCard className={styles.filterCard}>
+          <SearchInput />
+          <div className={styles.filtersToggleWrapper}>
+            <CollapsibleTrigger asChild>
+              <Button variant="link" size="xs" className={styles.filtersToggle}>
+                {filtersOpen
+                  ? "Hide filters"
+                  : `Show filters${activeFilterCount ? ` (${activeFilterCount})` : ""}`}
+                {filtersOpen ? (
+                  <ChevronUp size={14} />
+                ) : (
+                  <ChevronDown size={14} />
+                )}
+              </Button>
+            </CollapsibleTrigger>
+          </div>
+          <CollapsibleContent className={styles.filtersCollapsableWrapper}>
+            {opts ? (
+              <>
+                <FilterInput
+                  label="Filter by Architect"
+                  placeholder={dbError != null ? "Error" : "None"}
+                  items={toArchitectItems(opts, architectIds).items}
+                  selected={toArchitectItems(opts, architectIds).selected}
+                  onToggle={(item) => toggleArchitect(Number(item.key))}
+                  onClear={clearArchitects}
+                />
+                <FilterInput
+                  label="Filter by Location"
+                  placeholder={dbError != null ? "Error" : "None"}
+                  items={toLocationItems(opts, cityIds).items}
+                  selected={toLocationItems(opts, cityIds).selected}
+                  onToggle={(item) => {
+                    if (item.key.startsWith("country:")) {
+                      const code = item.key.replace("country:", "")
+                      const ids = cityIdsByCountry.get(code)
+                      if (ids) toggleCountry(ids)
+                    } else {
+                      toggleCity(Number(item.key.replace("city:", "")))
+                    }
+                  }}
+                  onClear={clearCities}
+                />
+              </>
+            ) : (
+              <FilterSkeleton />
+            )}
+          </CollapsibleContent>
+        </SidebarCard>
+      </Collapsible>
       <FilterResults />
     </>
   )
@@ -171,7 +200,9 @@ function FilterResults() {
   const filteredArchs = useFilterStore((s) => s.filteredArchs)
   const architectIds = useFilterStore((s) => s.architectIds)
   const cityIds = useFilterStore((s) => s.cityIds)
-  const hasFilters = architectIds.length > 0 || cityIds.length > 0
+  const searchQuery = useFilterStore((s) => s.searchQuery)
+  const hasFilters =
+    architectIds.length > 0 || cityIds.length > 0 || searchQuery.trim() !== ""
   const filterLoading = useFilterStore((s) => s.loading)
 
   if (!hasFilters || filterLoading) {
