@@ -13,9 +13,9 @@ import { useIsMobile } from "@/hooks/use-is-mobile"
 import { useLayout } from "@/hooks/use-layout"
 import { motion, AnimatePresence } from "framer-motion"
 import { TRANSITION_INSTANT } from "@/lib/constants"
-import { Button } from "../ui/button"
+import { Button } from "@/components/ui/button"
 import styles from "./nav-sidebar.module.css"
-import { H5 } from "../ui/typography"
+import { H5 } from "@/components/ui/typography"
 
 type NavItem = {
   icon: typeof Home

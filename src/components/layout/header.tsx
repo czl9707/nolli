@@ -23,7 +23,7 @@ export function Header() {
   }
 
   const isOpen = isMobile ? false : sidebarOpen
-  // Show the ContentPanel toggle only on the map (board has no panel, static
+  // Show the SideBar toggle only on the map (board has no panel, static
   // pages have no map); mobile keeps it even on static pages since it opens the
   // nav drawer, which is real navigation.
   const showSideBar = isMobile || isMap
