@@ -3,6 +3,35 @@
   background: rgb(var(--color-secondary-background));
 }
 
+/* Plain scroll container — NOT radix ScrollArea. Radix's viewport wraps
+   children in `display: table`, which sizes to content and lets a long
+   nowrap title (e.g. "Also by ...") blow the panel out horizontally,
+   defeating the title's ellipsis. A normal block scroller keeps percentage
+   widths + ellipsis working. Scrollbar is hidden to match the rest of the UI. */
+.summaryScroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  /* 4px gutter (mirroring radix ScrollArea's viewport) so the cards'
+     box-shadow isn't cropped by the overflow clip — bottom via padding, right
+     via the negative-margin trick that keeps card positions unchanged. */
+  padding-bottom: 4px;
+  padding-right: 4px;
+  margin-right: -4px;
+}
+
+.summaryScroll::-webkit-scrollbar {
+  display: none;
+}
+
+.summaryScrollContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-paragraph);
+}
+
 .coverWrapper {
   position: relative;
   line-height: 0;

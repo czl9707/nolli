@@ -1,12 +1,12 @@
 import type { ArchSummary } from "@/lib/data/architectures.type"
 import { useArchDetailStore } from "@/stores/arch-detail"
-import { useArchNavigate } from "@/hooks/use-arch-navigate"
+import { useArchNavigate, type NavMode } from "@/hooks/use-arch-navigate"
 import { SidebarCard } from "./sidebar-card"
 import { FavoriteToggle } from "../favorite/favorite-toggle"
 import styles from "./arch-card.module.css"
 import { Body1, Body2 } from "@/components/ui/typography"
 
-export function ArchCard({ arch }: { arch: ArchSummary }) {
+export function ArchCard({ arch, mode }: { arch: ArchSummary; mode: NavMode }) {
   const selectedArch = useArchDetailStore((s) => s.selected)
   const navigateArch = useArchNavigate()
   const isSelected = selectedArch?.slug === arch.slug
@@ -15,7 +15,7 @@ export function ArchCard({ arch }: { arch: ArchSummary }) {
     <SidebarCard
       className={styles.archCard}
       data-selected={isSelected}
-      onClick={() => navigateArch(arch.slug, true)}
+      onClick={() => navigateArch(arch.slug, true, mode)}
     >
       <span className={styles.toggleWrap}>
         <FavoriteToggle
