@@ -4,6 +4,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
+      "@nolli/board": ["../../packages/board/src/index.ts"],
       "@nolli/data": ["../../packages/data/src/index.ts"],
       "@nolli/data/*": ["../../packages/data/src/*"],
       "@nolli/map": ["../../packages/map/src/index.ts"],

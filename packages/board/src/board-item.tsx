@@ -1,10 +1,10 @@
 import { motion, type MotionStyle } from "framer-motion"
 import { useMemo, type ReactNode } from "react"
-import type { Position } from "@/lib/pin-board-layout"
+import type { Position } from "./pin-board-layout"
 import { Pin } from "./pin"
 import styles from "./board-item.module.css"
 import paperStyles from "./paper-texture.module.css"
-import { paperClipPath } from "@/lib/paper-clip"
+import { paperClipPath } from "./paper-clip"
 import { TRANSITION_SHORT, DELAY_START, ITEM_STAGGER } from "@nolli/ui"
 
 type BoardItemProps = {

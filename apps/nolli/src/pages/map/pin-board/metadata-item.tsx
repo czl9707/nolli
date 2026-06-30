@@ -1,5 +1,5 @@
-import type { PlacedArchItem } from "@/lib/pin-board-layout"
-import { BoardItem } from "./board-item"
+import type { PlacedArchItem } from "@nolli/board"
+import { BoardItem } from "@nolli/board"
 import styles from "./metadata-item.module.css"
 import { Body1, H3, H6 } from "@nolli/ui"
 import { useArchDetailStore } from "@/stores/arch-detail"

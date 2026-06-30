@@ -1,5 +1,5 @@
 import { useState } from "react"
-import type { PlacedArchItem } from "@/lib/pin-board-layout"
+import type { PlacedArchItem } from "./pin-board-layout"
 import { Body2 } from "@nolli/ui"
 import { BoardItem } from "./board-item"
 import { BoardModal } from "./board-modal"

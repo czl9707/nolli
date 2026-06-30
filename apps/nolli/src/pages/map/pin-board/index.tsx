@@ -11,12 +11,11 @@ import {
   MAP_SLOT_X,
   MAP_SLOT_Y,
   layoutArchBoard,
-} from "@/lib/pin-board-layout"
+} from "@nolli/board"
 import { TRANSITION_SHORT, DELAY_START } from "@nolli/ui"
 import { MapCore } from "@/pages/map/map-core"
 import { PinBoardItem } from "./pin-board-item"
-import { Pin } from "./pin"
-import { useBoardPan } from "./use-board-pan"
+import { Pin, useBoardPan } from "@nolli/board"
 import styles from "./board.module.css"
 import { useSidebarStore } from "@/stores/sidebar"
 import { useIsMobile } from "@/hooks/use-is-mobile"

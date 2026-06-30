@@ -1,6 +1,6 @@
 import { motion } from "framer-motion"
 import type { CSSProperties } from "react"
-import { hashId, jitter } from "@/lib/paper-clip"
+import { hashId, jitter } from "./paper-clip"
 import { TRANSITION_SHORT, DELAY_START, ITEM_STAGGER } from "@nolli/ui"
 import styles from "./pin.module.css"
 

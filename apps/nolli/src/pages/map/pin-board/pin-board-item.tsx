@@ -1,8 +1,6 @@
-import type { PlacedArchItem } from "@/lib/pin-board-layout"
+import type { PlacedArchItem } from "@nolli/board"
+import { PhotoItem, NoteItem, LinkItem } from "@nolli/board"
 import { MetadataItem } from "./metadata-item"
-import { PhotoItem } from "./photo-item"
-import { NoteItem } from "./note-item"
-import { LinkItem } from "./link-item"
 
 export function PinBoardItem({
   item,

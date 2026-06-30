@@ -1,4 +1,4 @@
-import type { PlacedArchItem } from "@/lib/pin-board-layout"
+import type { PlacedArchItem } from "./pin-board-layout"
 import { BoardItem } from "./board-item"
 import { ExternalLink } from "lucide-react"
 import styles from "./link-item.module.css"
