@@ -210,6 +210,9 @@ importers:
       better-sqlite3:
         specifier: ^12.10.0
         version: 12.11.1
+      eslint:
+        specifier: ^10.5.0
+        version: 10.6.0
       postcss:
         specifier: ^8
         version: 8.5.16
