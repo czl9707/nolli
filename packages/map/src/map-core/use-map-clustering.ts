@@ -60,7 +60,9 @@ type RawCluster = { id: number; count: number; coords: LngLat }
 
 type ClusterInfo = { centroid: LngLat; leaves: Set<string> }
 
-type ClusterResult = GeoJSON.Feature<GeoJSON.Point, ClusterProperties>
+type ClusterResult =
+  | Supercluster.PointFeature<ArchProperties>
+  | Supercluster.ClusterFeature<ClusterProperties>
 
 // --- Pure helpers (one job each, no React) ---------------------------------
 

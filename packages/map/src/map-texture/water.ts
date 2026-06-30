@@ -1,5 +1,5 @@
 import { type Theme } from "./constant"
-import { MAP_COLORS } from "@/lib/map-color"
+import { MAP_COLORS } from "../map-color"
 
 export function waterPattern(theme: Theme): string {
   const colors = {

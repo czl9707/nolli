@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import type MapLibreGL from "maplibre-gl"
 import { useThemeStore, type ResolvedTheme } from "@nolli/ui"
-import { fetchAndCache, applyAllPatterns } from "@/lib/map-texture/map-patterns"
-import type { CachedImage } from "@/lib/map-texture/map-patterns"
+import { fetchAndCache, applyAllPatterns } from "../map-texture/map-patterns"
+import type { CachedImage } from "../map-texture/map-patterns"
 
 function useMapPatterns(mapRef: React.RefObject<MapLibreGL.Map | null>) {
   const resolvedTheme = useThemeStore((s) => s.resolvedTheme)

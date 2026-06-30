@@ -1,5 +1,5 @@
 import { type Theme } from "./constant"
-import { MAP_COLORS } from "@/lib/map-color"
+import { MAP_COLORS } from "../map-color"
 
 export function forestPattern(theme: Theme): string {
   const c = { stroke: MAP_COLORS[theme].landcoverStroke }

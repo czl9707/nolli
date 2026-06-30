@@ -1369,7 +1369,6 @@ function MapArc<T extends MapArcDatum = MapArcDatum>({
 
 export {
   Map,
-  useMap,
   MapMarker,
   MarkerContent,
   MarkerPopup,

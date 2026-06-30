@@ -4,9 +4,9 @@ import {
   MapMarker,
   MarkerContent,
   useMap,
-} from "./map"
-import { getMapStyle } from "@/lib/map-style"
-import type { MapRef } from "./map"
+} from "@nolli/map"
+import { getMapStyle } from "@nolli/map"
+import type { MapRef } from "@nolli/map"
 import {
   memo,
   useCallback,
@@ -23,17 +23,17 @@ import { useLayout } from "@/hooks/use-layout"
 import { useArchNavigate } from "@/hooks/use-arch-navigate"
 import { useDbStore } from "@/stores/db"
 import { useFilterStore } from "@/stores/filter"
-import { useMapPatterns } from "./use-map-patterns"
+import { useMapPatterns } from "@nolli/map"
 import {
   useMapClustering,
   type ClusterPoint,
   type MarkerTransitions,
-} from "./use-map-clustering"
+} from "@nolli/map"
 import { MapPin } from "lucide-react"
 import {
   TRANSITION_SHORT,
 } from "@nolli/ui"
-import { flyToArchCinematic } from "@/lib/map-flyto"
+import { flyToArchCinematic } from "@nolli/map"
 import { AnimatePresence, motion, usePresence } from "framer-motion"
 import styles from "./index.module.css"
 import { Caption } from "@nolli/ui"

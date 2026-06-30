@@ -1,5 +1,5 @@
 import { type Theme } from "./constant"
-import { MAP_COLORS } from "@/lib/map-color"
+import { MAP_COLORS } from "../map-color"
 
 function hatchPattern(
   bg: string | null,

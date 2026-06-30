@@ -1,17 +1,14 @@
 import sharp from "sharp"
 import { mkdirSync, writeFileSync } from "fs"
-import { join, dirname } from "path"
-import { fileURLToPath } from "url"
-import { THEMES, type Theme } from "../src/lib/map-texture/constant"
-import { waterPattern } from "../src/lib/map-texture/water"
-import { grassPattern } from "../src/lib/map-texture/grass"
-import { forestPattern } from "../src/lib/map-texture/forest"
+import { join } from "path"
+import { THEMES, type Theme } from "../src/map-texture/constant"
+import { waterPattern } from "../src/map-texture/water"
+import { grassPattern } from "../src/map-texture/grass"
+import { forestPattern } from "../src/map-texture/forest"
 import {
   buildingPattern,
   landusePattern,
-} from "../src/lib/map-texture/building"
-
-const __dirname = dirname(fileURLToPath(import.meta.url))
+} from "../src/map-texture/building"
 
 const patterns: Record<string, (theme: Theme) => string> = {
   water: waterPattern,
@@ -21,7 +18,7 @@ const patterns: Record<string, (theme: Theme) => string> = {
   landuse: landusePattern,
 }
 
-const OUT_DIR = join(__dirname, "..", "public", "patterns")
+const OUT_DIR = join(process.cwd(), "public", "patterns")
 
 async function main() {
   for (const theme of THEMES) {

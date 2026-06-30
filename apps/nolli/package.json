@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "npm run generate:patterns && vite build",
-    "generate:patterns": "tsx --tsconfig tsconfig.vite.json scripts/generate-patterns.ts",
+    "generate:patterns": "tsx --tsconfig tsconfig.vite.json ../../packages/map/scripts/generate-patterns.ts",
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "bake": "tsx scripts/bake-sqlite.ts",
@@ -21,6 +21,7 @@
     "@fontsource-variable/inter": "^5.2.8",
     "@fontsource/architects-daughter": "^5.2.7",
     "@nolli/data": "workspace:*",
+    "@nolli/map": "workspace:*",
     "@nolli/ui": "workspace:*",
     "@sqlite.org/sqlite-wasm": "^3.53.0-build1",
     "arctic": "^3.7.0",
