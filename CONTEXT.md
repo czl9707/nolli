@@ -49,13 +49,16 @@ _Avoid_: search, query, criteria
 
 ## Modules
 
-**Data layer**: `src/lib/data/` — types, `DataSource` interface, SQLite worker, SQL queries
-**Stores**: `src/stores/` — Zustand stores for theme, layout, sidebar, filter, arch-detail, db
-**Map**: `src/components/map/` — MapLibre wrapper, pattern loading, clustering, markers
-**Pin-board**: `src/components/pin-board/` — board canvas, item components, modal, pan hook
-**Sidebar**: `src/components/sidebar/` — architecture list, cards, filter panel
-**Layout sync**: `src/components/layout/` — URL-to-store synchronization modules
-**Map style**: `src/lib/map-style.ts` — MapLibre style spec builder (~1000 lines)
-**Map texture**: `src/lib/map-texture/` — SVG pattern generators (water, grass, forest, building)
-**Map color**: `src/lib/map-color.ts` — palette derivation from two base colors per theme
-**Board layout**: `src/lib/pin-board-layout.ts` — radial collision-free placement algorithm
+**Workspace layout**: pnpm workspace. The app lives in `apps/nolli/`; shared code is extracted into `packages/{data,ui,map,board}` (package names `@nolli/*`, consumed via `workspace:*`). Packages are **source-exported** — their `exports` point at `./src/index.ts` and there is no per-package build; the consuming app's Vite + TypeScript resolve them directly.
+
+**`@nolli/data`** (`packages/data/src/`) — domain types (`Arch`, `ArchSummary`, etc.), the `DataSource` interface, and the SQLite stack: `sqlite-source` (spawns the worker via `new Worker(new URL("./sqlite-worker.ts", import.meta.url))`), `sqlite-worker`, `sqlite-queries`, `worker-protocol`. Leaf package.
+
+**`@nolli/ui`** (`packages/ui/src/`) — shared design-system layer: `Button`, typography, `Toaster`, animation `constants`, and the `theme` store. Leaf package. Both `@nolli/map` and `@nolli/board` depend on it.
+
+**`@nolli/map`** (`packages/map/src/`) — the figure-ground look + MapLibre primitives: `map-style` (style spec builder), `map-color` (palette per theme), `map-texture/` (SVG pattern generators), `map-core/` (`Map`, `MapMarker`, `MapControls`, `useMapPatterns`, `useMapClustering`), and the texture `scripts/generate-patterns.ts`. Depends on `@nolli/ui` + `@nolli/data`.
+
+**`@nolli/board`** (`packages/board/src/`) — the pinboard aesthetic primitives: `pin`, `paper-clip`, `pin-board-layout` (radial collision-free placement), the item components (`PhotoItem`, `BoardItem`, `BoardModal`, `NoteItem`, `LinkItem`), and `useBoardPan`. Depends on `@nolli/ui` + `@nolli/data`.
+
+**App** (`apps/nolli/src/`) — routing, pages, app-coupled Zustand stores (`auth`, `db`, `filter`, `sidebar`, `arch-detail`, `favorites`), the remaining UI primitives, layout/header/footer, and the **app-coupled integrations** that wire packages to app state. These stay in the app even though their primitives live in a package: `pages/map/map-core/index.tsx` (builds clusters/markers from app stores) and `pages/map/pin-board/{index,pin-board-item,metadata-item}.tsx` (board orchestration; `metadata-item` reads `useArchDetailStore`).
+
+_Architecture note_: a file that imports app stores/hooks is app-coupled and stays in `apps/nolli/src/`, even if the reusable primitives around it were extracted to a package.
