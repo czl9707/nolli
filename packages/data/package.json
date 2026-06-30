@@ -1,0 +1,16 @@
+{
+  "name": "@nolli/data",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": { "typecheck": "tsc -p tsconfig.json --noEmit" },
+  "dependencies": {
+    "@sqlite.org/sqlite-wasm": "*",
+    "zod": "*"
+  },
+  "devDependencies": {
+    "typescript": "*",
+    "vite": "*"
+  }
+}

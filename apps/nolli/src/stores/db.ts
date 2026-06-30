@@ -1,6 +1,6 @@
 import { create } from "zustand"
-import type { DataSource } from "@/lib/data/data-source.type"
-import { SqliteDataSource } from "@/lib/data/sqlite-source"
+import type { DataSource } from "@nolli/data"
+import { SqliteDataSource } from "@nolli/data"
 import { toast } from "sonner"
 
 type DbState = {

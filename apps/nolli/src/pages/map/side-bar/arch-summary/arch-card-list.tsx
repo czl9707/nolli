@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import type { ArchSummary } from "@/lib/data/architectures.type"
+import type { ArchSummary } from "@nolli/data"
 import type { NavMode } from "@/hooks/use-arch-navigate"
 import { ArchCard } from "./arch-card"
 import styles from "./arch-card-list.module.css"

@@ -4,7 +4,7 @@ import { useRelatedBuildings, SUGGESTION_CAP } from "./use-related-buildings"
 import { ArchCardList } from "./arch-card-list"
 import { H5 } from "@/components/ui/typography"
 import { Button } from "@/components/ui/button"
-import type { ArchSummary } from "@/lib/data/architectures.type"
+import type { ArchSummary } from "@nolli/data"
 import styles from "./arch-suggestions.module.css"
 
 export function ArchSuggestions() {

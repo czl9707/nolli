@@ -1,4 +1,4 @@
-import type { ArchSummary } from "@/lib/data/architectures.type"
+import type { ArchSummary } from "@nolli/data"
 import { useArchDetailStore } from "@/stores/arch-detail"
 import { useArchNavigate, type NavMode } from "@/hooks/use-arch-navigate"
 import { SidebarCard } from "./sidebar-card"

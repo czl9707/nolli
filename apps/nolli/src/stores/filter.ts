@@ -1,8 +1,8 @@
 import { create } from "zustand"
 import { subscribeWithSelector } from "zustand/middleware"
-import type { ArchFilter } from "@/lib/data/data-source.type"
-import type { ArchSummary } from "@/lib/data/architectures.type"
-import type { DataSource } from "@/lib/data/data-source.type"
+import type { ArchFilter } from "@nolli/data"
+import type { ArchSummary } from "@nolli/data"
+import type { DataSource } from "@nolli/data"
 import { useDbStore } from "@/stores/db"
 import { toast } from "sonner"
 

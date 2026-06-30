@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import type { Arch, ArchSummary } from "@/lib/data/architectures.type"
+import type { Arch, ArchSummary } from "@nolli/data"
 import { useDbStore } from "@/stores/db"
 
 /** Max suggestions shown per axis. */

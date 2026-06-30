@@ -7,7 +7,7 @@ import {
 } from "react"
 import Supercluster from "supercluster"
 import type MapLibreGL from "maplibre-gl"
-import type { ArchSummary } from "@/lib/data/architectures.type"
+import type { ArchSummary } from "@nolli/data"
 
 type ArchProperties = {
   slug: string

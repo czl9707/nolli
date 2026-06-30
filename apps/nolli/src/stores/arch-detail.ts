@@ -1,5 +1,5 @@
 import { create } from "zustand"
-import type { Arch } from "@/lib/data/architectures.type"
+import type { Arch } from "@nolli/data"
 import { useDbStore } from "@/stores/db"
 
 // Pure data store: loads an Arch and holds selection + fly-to intent. It never

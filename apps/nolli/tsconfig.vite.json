@@ -3,7 +3,9 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@nolli/data": ["../../packages/data/src/index.ts"],
+      "@nolli/data/*": ["../../packages/data/src/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],

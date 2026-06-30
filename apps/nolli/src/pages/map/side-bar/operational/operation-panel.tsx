@@ -12,7 +12,7 @@ import {
 import { useFilterStore } from "@/stores/filter"
 import { useSidebarStore } from "@/stores/sidebar"
 import { useDbStore } from "@/stores/db"
-import type { FilterOptions } from "@/lib/data/data-source.type"
+import type { FilterOptions } from "@nolli/data"
 import { ArchScrollList } from "../arch-summary/arch-card-list"
 import { SearchInput } from "./search-input"
 import { Body2 } from "@/components/ui/typography"
