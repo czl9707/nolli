@@ -1,5 +1,5 @@
 # dependencies
-/node_modules
+node_modules
 /.pnp
 .pnp.*
 .yarn/*
@@ -9,11 +9,11 @@
 !.yarn/versions
 
 # testing
-/coverage
+coverage
 
 # production
-/build
-/dist
+build
+dist
 
 # misc
 .DS_Store
@@ -32,7 +32,7 @@ pnpm-debug.log*
 *.tsbuildinfo
 
 # generated patterns
-/public/patterns/
+apps/nolli/public/patterns/
 docs/plans
 docs/superpowers
 docs/agents
@@ -41,11 +41,12 @@ docs/agents
 .worktrees/
 
 # seed data
-scripts/data/
-scripts/_data/
+apps/nolli/scripts/data/
+apps/nolli/scripts/_data/
 
 # bake output
 nolli-map.db
+apps/nolli/nolli-map.db
 
 # wrangler files
 .wrangler
