@@ -1,5 +1,5 @@
 import type MapLibreGL from "maplibre-gl"
-import { MAP_TRANSITION_SHORT, MAP_TRANSITION_LONG } from "@/lib/constants"
+import { MAP_TRANSITION_SHORT, MAP_TRANSITION_LONG } from "@nolli/ui"
 
 const DEFALT_MAP_ZOOM_LEVEL = 14;
 

@@ -5,7 +5,8 @@
     "paths": {
       "@/*": ["src/*"],
       "@nolli/data": ["../../packages/data/src/index.ts"],
-      "@nolli/data/*": ["../../packages/data/src/*"]
+      "@nolli/data/*": ["../../packages/data/src/*"],
+      "@nolli/ui": ["../../packages/ui/src/index.ts"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],

@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { useThemeStore } from "@/stores/theme"
+import { useThemeStore } from "@nolli/ui"
 
 export function ThemeSync() {
   const resolvedTheme = useThemeStore((s) => s.resolvedTheme)

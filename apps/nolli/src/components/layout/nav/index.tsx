@@ -12,10 +12,10 @@ import { useSidebarStore } from "@/stores/sidebar"
 import { useIsMobile } from "@/hooks/use-is-mobile"
 import { useLayout } from "@/hooks/use-layout"
 import { motion, AnimatePresence } from "framer-motion"
-import { TRANSITION_INSTANT } from "@/lib/constants"
-import { Button } from "@/components/ui/button"
+import { TRANSITION_INSTANT } from "@nolli/ui"
+import { Button } from "@nolli/ui"
 import styles from "./nav-sidebar.module.css"
-import { H5 } from "@/components/ui/typography"
+import { H5 } from "@nolli/ui"
 
 type NavItem = {
   icon: typeof Home

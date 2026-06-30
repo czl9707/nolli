@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react"
 import { useLocation } from "react-router"
 import { motion, AnimatePresence } from "framer-motion"
-import { TRANSITION_INSTANT } from "@/lib/constants"
+import { TRANSITION_INSTANT } from "@nolli/ui"
 import { useArchDetailStore } from "@/stores/arch-detail"
 import { OperationPanel } from "./operational/operation-panel"
 import { FavoritesPanel } from "./favorite/favorites-panel"

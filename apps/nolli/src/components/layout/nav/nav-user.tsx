@@ -8,7 +8,7 @@ import {
 import { type ComponentPropsWithoutRef, type ReactNode } from "react"
 import { useAuthStore } from "@/stores/auth"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Body2, Caption } from "@/components/ui/typography"
+import { Body2, Caption } from "@nolli/ui"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,7 +27,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import styles from "./nav-user.module.css"
-import { Button } from "@/components/ui/button"
+import { Button } from "@nolli/ui"
 
 const GoogleIcon = createLucideIcon("Google", [
   ["path", { d: "M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z", fill: "#4285F4", stroke: "none" }],

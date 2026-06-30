@@ -2,8 +2,8 @@ import * as React from "react"
 import { X } from "lucide-react"
 import { Dialog as RadixDialog } from "radix-ui"
 import styles from "./dialog.module.css"
-import { Button } from "@/components/ui/button"
-import { Body2, H5 } from "@/components/ui/typography"
+import { Button } from "@nolli/ui"
+import { Body2, H5 } from "@nolli/ui"
 
 function Dialog(props: React.ComponentProps<typeof RadixDialog.Root>) {
   return <RadixDialog.Root data-slot="dialog" {...props} />

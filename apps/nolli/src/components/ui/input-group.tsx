@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Button } from "@/components/ui/button"
+import { Button } from "@nolli/ui"
 import { Input } from "@/components/ui/input"
 import styles from "./input-group.module.css"
 

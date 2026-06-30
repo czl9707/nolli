@@ -1,6 +1,6 @@
 import { useState } from "react"
 import type { PlacedArchItem } from "@/lib/pin-board-layout"
-import { Body2 } from "@/components/ui/typography"
+import { Body2 } from "@nolli/ui"
 import { BoardItem } from "./board-item"
 import { BoardModal } from "./board-modal"
 import styles from "./photo-item.module.css"

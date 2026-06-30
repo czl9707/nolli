@@ -1,7 +1,7 @@
 import type { PlacedArchItem } from "@/lib/pin-board-layout"
 import { BoardItem } from "./board-item"
 import styles from "./metadata-item.module.css"
-import { Body1, H3, H6 } from "@/components/ui/typography"
+import { Body1, H3, H6 } from "@nolli/ui"
 import { useArchDetailStore } from "@/stores/arch-detail"
 
 type MetadataItemProps = Extract<PlacedArchItem, { kind: "metadata" }> & {

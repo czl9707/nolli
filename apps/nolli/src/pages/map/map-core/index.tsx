@@ -32,11 +32,11 @@ import {
 import { MapPin } from "lucide-react"
 import {
   TRANSITION_SHORT,
-} from "@/lib/constants"
+} from "@nolli/ui"
 import { flyToArchCinematic } from "@/lib/map-flyto"
 import { AnimatePresence, motion, usePresence } from "framer-motion"
 import styles from "./index.module.css"
-import { Caption } from "@/components/ui/typography"
+import { Caption } from "@nolli/ui"
 
 const CLUSTER_SPREAD_EASE: [number, number, number, number] = [
   0.22, 1, 0.36, 1,

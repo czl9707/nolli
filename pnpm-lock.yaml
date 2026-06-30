@@ -19,6 +19,9 @@ importers:
       '@nolli/data':
         specifier: workspace:*
         version: link:../../packages/data
+      '@nolli/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       '@sqlite.org/sqlite-wasm':
         specifier: ^3.53.0-build1
         version: 3.53.0-build1
@@ -153,6 +156,37 @@ importers:
         specifier: '*'
         version: 4.4.3
     devDependencies:
+      typescript:
+        specifier: '*'
+        version: 5.9.3
+      vite:
+        specifier: '*'
+        version: 8.1.0(@types/node@25.9.4)(esbuild@0.28.1)(tsx@4.22.4)
+
+  packages/ui:
+    dependencies:
+      lucide-react:
+        specifier: '*'
+        version: 1.22.0(react@19.2.7)
+      radix-ui:
+        specifier: '*'
+        version: 1.6.0(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      react:
+        specifier: '*'
+        version: 19.2.7
+      react-dom:
+        specifier: '*'
+        version: 19.2.7(react@19.2.7)
+      sonner:
+        specifier: '*'
+        version: 2.0.7(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      zustand:
+        specifier: '*'
+        version: 5.0.14(@types/react@19.2.17)(react@19.2.7)
+    devDependencies:
+      '@types/react':
+        specifier: '*'
+        version: 19.2.17
       typescript:
         specifier: '*'
         version: 5.9.3

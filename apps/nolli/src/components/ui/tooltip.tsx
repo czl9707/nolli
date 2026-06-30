@@ -1,7 +1,7 @@
 import * as React from "react"
 import { Tooltip as T } from "radix-ui"
 import styles from "./tooltip.module.css"
-import { Body2 } from "./typography"
+import { Body2 } from "@nolli/ui"
 
 function TooltipProvider({ delayDuration = 0, ...props}: React.ComponentProps<typeof T.Provider>) {
   return <T.Provider data-slot="tooltip-provider" delayDuration={delayDuration} {...props} />

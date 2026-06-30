@@ -3,7 +3,7 @@ import { useSidebarStore } from "@/stores/sidebar"
 import { useLayout } from "@/hooks/use-layout"
 import { motion, type PanInfo, AnimatePresence } from "framer-motion"
 import { useIsMobile } from "@/hooks/use-is-mobile"
-import { TRANSITION_SHORT, TRANSITION_INSTANT } from "@/lib/constants"
+import { TRANSITION_SHORT, TRANSITION_INSTANT } from "@nolli/ui"
 import styles from "./index.module.css"
 
 // ── Desktop: animated side panel ──

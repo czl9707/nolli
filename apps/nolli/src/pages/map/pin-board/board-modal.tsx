@@ -1,7 +1,7 @@
 import { createPortal } from "react-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import type { ReactNode } from "react"
-import { TRANSITION_SHORT } from "@/lib/constants"
+import { TRANSITION_SHORT } from "@nolli/ui"
 import styles from "./board-modal.module.css"
 import paperStyles from "./paper-texture.module.css"
 

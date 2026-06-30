@@ -1,5 +1,5 @@
 import { Link } from "react-router"
-import { Body2 } from "@/components/ui/typography"
+import { Body2 } from "@nolli/ui"
 import styles from "./footer.module.css"
 
 export function Footer() {

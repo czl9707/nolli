@@ -1,7 +1,7 @@
 // src/pages/privacy/privacy.tsx
 
 import { Seo } from "@/components/layout/seo"
-import { Body1, H4 } from "@/components/ui/typography"
+import { Body1, H4 } from "@nolli/ui"
 import { Section, StaticPageShell } from "@/components/layout/static-page-shell"
 import { privacyContent } from "./privacy.content"
 

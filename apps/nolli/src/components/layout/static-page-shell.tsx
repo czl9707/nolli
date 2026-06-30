@@ -3,9 +3,9 @@
 import type { ReactNode } from "react"
 import { Link } from "react-router"
 import { ArrowLeft } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Button } from "@nolli/ui"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Body1, Caption, H1, H2 } from "@/components/ui/typography"
+import { Body1, Caption, H1, H2 } from "@nolli/ui"
 import styles from "./static-page-shell.module.css"
 
 interface StaticPageShellProps {

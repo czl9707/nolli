@@ -14,7 +14,7 @@ import {
 import { createPortal } from "react-dom"
 import { animate, type AnimationPlaybackControls, type Easing } from "framer-motion"
 import { toast } from "sonner"
-import { useThemeStore } from "@/stores/theme"
+import { useThemeStore } from "@nolli/ui"
 import {
   X,
   Minus,
@@ -30,7 +30,7 @@ import {
   useMap,
   useMarkerContext,
 } from "./map-context"
-import { Button } from "@/components/ui/button"
+import { Button } from "@nolli/ui"
 import controlStyles from "./map-controls.module.css"
 import mapCss from "./map.module.css"
 import markerStyles from "./map-markers.module.css"

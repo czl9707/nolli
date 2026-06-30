@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Heart, Loader2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Button } from "@nolli/ui"
 import { useAuthStore } from "@/stores/auth"
 import { useFavoritesStore } from "@/stores/favorites"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"

@@ -4,7 +4,7 @@ import { useAuthStore } from "@/stores/auth"
 import { useFavoritesStore } from "@/stores/favorites"
 import type { ArchSummary } from "@nolli/data"
 import { ArchScrollList } from "../arch-summary/arch-card-list"
-import { Body2, H5 } from "@/components/ui/typography"
+import { Body2, H5 } from "@nolli/ui"
 import styles from "./favorites-panel.module.css"
 
 export function FavoritesPanel() {

@@ -1,7 +1,7 @@
 import * as React from "react"
 import { CheckIcon, ChevronRightIcon } from "lucide-react"
 import { DropdownMenu as DM } from "radix-ui"
-import { Body2, Caption } from "@/components/ui/typography"
+import { Body2, Caption } from "@nolli/ui"
 import styles from "./dropdown-menu.module.css"
 
 function DropdownMenu(props: React.ComponentProps<typeof DM.Root>) {

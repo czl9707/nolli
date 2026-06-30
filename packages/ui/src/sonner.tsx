@@ -1,4 +1,4 @@
-import { useThemeStore } from "@/stores/theme"
+import { useThemeStore } from "./theme"
 import {
   CircleCheckIcon,
   InfoIcon,

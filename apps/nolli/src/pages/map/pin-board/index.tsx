@@ -12,7 +12,7 @@ import {
   MAP_SLOT_Y,
   layoutArchBoard,
 } from "@/lib/pin-board-layout"
-import { TRANSITION_SHORT, DELAY_START } from "@/lib/constants"
+import { TRANSITION_SHORT, DELAY_START } from "@nolli/ui"
 import { MapCore } from "@/pages/map/map-core"
 import { PinBoardItem } from "./pin-board-item"
 import { Pin } from "./pin"

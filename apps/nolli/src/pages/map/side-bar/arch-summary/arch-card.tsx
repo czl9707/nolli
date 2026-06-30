@@ -4,7 +4,7 @@ import { useArchNavigate, type NavMode } from "@/hooks/use-arch-navigate"
 import { SidebarCard } from "./sidebar-card"
 import { FavoriteToggle } from "../favorite/favorite-toggle"
 import styles from "./arch-card.module.css"
-import { Body1, Body2 } from "@/components/ui/typography"
+import { Body1, Body2 } from "@nolli/ui"
 
 export function ArchCard({ arch, mode }: { arch: ArchSummary; mode: NavMode }) {
   const selectedArch = useArchDetailStore((s) => s.selected)

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import type MapLibreGL from "maplibre-gl"
-import { useThemeStore, type ResolvedTheme } from "@/stores/theme"
+import { useThemeStore, type ResolvedTheme } from "@nolli/ui"
 import { fetchAndCache, applyAllPatterns } from "@/lib/map-texture/map-patterns"
 import type { CachedImage } from "@/lib/map-texture/map-patterns"
 

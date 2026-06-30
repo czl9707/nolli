@@ -3,7 +3,7 @@ import { ChevronDown, ChevronUp } from "lucide-react"
 import { SidebarCard } from "../arch-summary/sidebar-card"
 import { FilterInput, type FilterItem } from "./filter-input"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Button } from "@/components/ui/button"
+import { Button } from "@nolli/ui"
 import {
   Collapsible,
   CollapsibleTrigger,
@@ -15,7 +15,7 @@ import { useDbStore } from "@/stores/db"
 import type { FilterOptions } from "@nolli/data"
 import { ArchScrollList } from "../arch-summary/arch-card-list"
 import { SearchInput } from "./search-input"
-import { Body2 } from "@/components/ui/typography"
+import { Body2 } from "@nolli/ui"
 import styles from "./operation-panel.module.css"
 
 function toArchitectItems(

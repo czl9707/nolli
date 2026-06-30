@@ -5,7 +5,7 @@ import { Pin } from "./pin"
 import styles from "./board-item.module.css"
 import paperStyles from "./paper-texture.module.css"
 import { paperClipPath } from "@/lib/paper-clip"
-import { TRANSITION_SHORT, DELAY_START, ITEM_STAGGER } from "@/lib/constants"
+import { TRANSITION_SHORT, DELAY_START, ITEM_STAGGER } from "@nolli/ui"
 
 type BoardItemProps = {
   id?: string
