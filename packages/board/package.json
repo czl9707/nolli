@@ -1,0 +1,16 @@
+{
+  "name": "@nolli/board",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": { "typecheck": "tsc -p tsconfig.json --noEmit" },
+  "dependencies": {
+    "framer-motion": "*",
+    "lucide-react": "*",
+    "@nolli/ui": "workspace:*",
+    "@nolli/data": "workspace:*"
+  },
+  "devDependencies": { "@types/react": "*", "@types/react-dom": "*", "typescript": "*", "vite": "*" },
+  "peerDependencies": { "react": "*", "react-dom": "*" }
+}

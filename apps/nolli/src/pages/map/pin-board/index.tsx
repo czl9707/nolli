@@ -1,0 +1,189 @@
+import { useMemo, useRef } from "react"
+import { useNavigate } from "react-router"
+import { motion, AnimatePresence } from "framer-motion"
+import { useLayout } from "@/hooks/use-layout"
+import { useArchDetailStore } from "@/stores/arch-detail"
+import {
+  CANVAS_W,
+  CANVAS_H,
+  MAP_SLOT_W,
+  MAP_SLOT_H,
+  MAP_SLOT_X,
+  MAP_SLOT_Y,
+  layoutArchBoard,
+} from "@nolli/board"
+import { TRANSITION_SHORT, DELAY_START } from "@nolli/ui"
+import { MapCore } from "@/pages/map/map-core"
+import { PinBoardItem } from "./pin-board-item"
+import { Pin, useBoardPan } from "@nolli/board"
+import styles from "./board.module.css"
+import { useSidebarStore } from "@/stores/sidebar"
+import { useIsMobile } from "@/hooks/use-is-mobile"
+
+const EASE_TRANSITION = {
+  duration: TRANSITION_SHORT,
+  ease: "easeInOut" as const,
+}
+
+const SURFACE_VARIANTS = {
+  home: {
+    width: "100%",
+    height: "100%",
+  },
+  board: {
+    width: CANVAS_W,
+    height: CANVAS_H,
+  },
+}
+
+const MAP_SLOT_VARS = {
+  "--size-container-width": `calc(100% - var(--spacing-component) - var(--size-rail-width))`,
+}
+const MAP_SLOT_VARIANTS = {
+  home: {
+    top: "var(--size-header-height)",
+    left: "var(--size-rail-width)",
+    width: `var(--size-container-width)`,
+    height: `calc(100% - var(--size-header-height) - var(--size-footer-height))`,
+    borderRadius: "var(--size-border-radius)",
+    boxShadow: "none",
+    borderWidth: 0,
+  },
+  homeSidebarOpen: {
+    top: "var(--size-header-height)",
+    left: "calc(var(--size-sidebar-width) + var(--size-rail-width))",
+    width: `calc(var(--size-container-width) - var(--size-sidebar-width))`,
+    height: `calc(100% - var(--size-header-height) - var(--size-footer-height))`,
+    borderRadius: "var(--size-border-radius)",
+    boxShadow: "none",
+    borderWidth: 0,
+  },
+  board: {
+    top: MAP_SLOT_Y,
+    left: MAP_SLOT_X,
+    width: MAP_SLOT_W,
+    height: MAP_SLOT_H,
+    borderRadius: 0,
+    boxShadow: "var(--shadow-sm)",
+    borderWidth: 10,
+  },
+  mobile: {
+    top: "0rem",
+    left: "0rem",
+    width: "100%",
+    height: "100%",
+    borderRadius: 0,
+    boxShadow: "none",
+    borderWidth: 0,
+  }
+}
+
+export function PinBoard() {
+  const sideBarOpen = useSidebarStore((s) => s.sidebarOpen)
+  const selectedArch = useArchDetailStore((s) => s.selected)
+  const navigate = useNavigate()
+  const viewportRef = useRef<HTMLDivElement>(null)
+  const isMobile = useIsMobile();
+
+  const { isBoard } = useLayout()
+  const mode = isBoard ? "board" : "home"
+  let mapSlotVariant: string = mode
+  if (!isBoard)  {
+      mapSlotVariant = sideBarOpen ? "homeSidebarOpen" : "home";
+      if (isMobile) mapSlotVariant = "mobile";
+  }
+
+  const {
+    panX,
+    panY,
+    zoom,
+    handlePointerDown,
+    handlePointerMove,
+    handlePointerUp,
+    handleWheel,
+  } = useBoardPan(CANVAS_W, CANVAS_H, isBoard, viewportRef)
+
+  const items = useMemo(() => {
+    if (!selectedArch) return []
+    return layoutArchBoard(selectedArch)
+  }, [selectedArch])
+
+  return (
+    <div
+      ref={viewportRef}
+      className={styles.viewport}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onWheel={handleWheel}
+      onDragStart={(e) => e.preventDefault()}
+    >
+      <motion.div
+        className={styles.surface}
+        initial={mode}
+        animate={mode}
+        variants={SURFACE_VARIANTS}
+        style={{ x: panX, y: panY, scale: zoom }}
+      >
+        {isBoard && <div className={styles.dotGrid} />}
+        <motion.div
+            key={`map-${isMobile ? "mobile" : "desktop"}`}
+            className={styles.mapSlot}
+            style={MAP_SLOT_VARS as React.CSSProperties}
+            initial={mapSlotVariant}
+            animate={mapSlotVariant}
+            variants={MAP_SLOT_VARIANTS}
+            transition={EASE_TRANSITION}
+        >
+          <MapCore />
+          <AnimatePresence>
+            {isBoard && (
+              <motion.div
+                key="map-overlay"
+                className={styles.mapOverlay}
+                initial={{ opacity: 0 }}
+                animate={{
+                  opacity: 1,
+                  transition: { delay: DELAY_START + TRANSITION_SHORT },
+                }}
+                exit={{ opacity: 0 }}
+                onClick={() => {
+                  // Pop back to the summary if there's a prior entry; fall back
+                  // to an explicit navigate when deep-linked cold (no history).
+                  if ((window.history.state?.idx ?? 0) > 0) navigate(-1)
+                  else navigate(selectedArch ? `/arch/${selectedArch.slug}` : "/")
+                }}
+              >
+                <span className={styles.overlayText}>
+                  Click to go back to map view
+                </span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+
+        <AnimatePresence>
+          {isBoard && (
+            <Pin
+              key="map-pin"
+              id="site-map"
+              delay={3}
+              style={{
+                top: MAP_SLOT_Y - 50,
+                left: MAP_SLOT_X + MAP_SLOT_W / 2,
+              }}
+            />
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {isBoard &&
+            selectedArch &&
+            items.map((item, i) => (
+              <PinBoardItem key={`${item.kind}-${i}`} item={item} delay={i} />
+            ))}
+        </AnimatePresence>
+      </motion.div>
+    </div>
+  )
+}

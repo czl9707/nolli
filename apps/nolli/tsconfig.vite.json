@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@nolli/board": ["../../packages/board/src/index.ts"],
+      "@nolli/data": ["../../packages/data/src/index.ts"],
+      "@nolli/map": ["../../packages/map/src/index.ts"],
+      "@nolli/ui": ["../../packages/ui/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": ["node_modules"]
+}

@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["esnext"],
+    "types": ["@cloudflare/workers-types", "vite/client"],
+    "baseUrl": ".",
+    "paths": {
+      "@worker/*": ["./worker/*"]
+    }
+  },
+  "include": ["worker/**/*.ts"],
+  "exclude": ["node_modules"]
+}

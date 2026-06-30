@@ -1,0 +1,27 @@
+{
+  "name": "@nolli/map",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": { "typecheck": "tsc -p tsconfig.json --noEmit" },
+  "dependencies": {
+    "maplibre-gl": "*",
+    "framer-motion": "*",
+    "lucide-react": "*",
+    "sonner": "*",
+    "supercluster": "*",
+    "@nolli/ui": "workspace:*",
+    "@nolli/data": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/geojson": "*",
+    "@types/react": "*",
+    "@types/react-dom": "*",
+    "@types/supercluster": "*",
+    "sharp": "*",
+    "typescript": "*",
+    "vite": "*"
+  },
+  "peerDependencies": { "react": "*", "react-dom": "*" }
+}
