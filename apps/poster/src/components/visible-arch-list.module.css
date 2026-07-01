@@ -3,10 +3,24 @@
   min-height: 0;
 }
 
+/* radix-ui wraps the viewport's children in a `display:table; min-width:100%`
+   div (inline styles) that shrink-to-fits to the rows' preferred (nowrap)
+   width — blowing past the viewport so long names get hard-clipped at the
+   sidebar edge instead of ellipsising. Force it back to a block that fills the
+   viewport, so rows stretch to the width and `.text { min-width:0 }` clamps. */
+.scroll :global([data-slot="scroll-area-viewport"] > div) {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
 .list {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  /* Equal horizontal padding; the right side also reserves a gutter so row
+     hover boxes clear the scrollbar. */
+  padding: 0 0.75rem;
 }
 
 .row {

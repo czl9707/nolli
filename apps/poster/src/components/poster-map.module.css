@@ -1,8 +1,6 @@
-/* Fills the inset's remaining height (below the header). <ArchMap>'s own
+/* Fills the entire inset (behind the floating header). <ArchMap>'s own
    absolute-fill container anchors to this. */
 .container {
-  position: relative;
-  flex: 1;
-  min-height: 0;
-  min-width: 0;
+  position: absolute;
+  inset: 0;
 }

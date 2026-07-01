@@ -12,7 +12,10 @@
 .sidebarInner {
   width: var(--size-sidebar-width);
   height: 100%;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  padding: 1rem;
+  /* Horizontal padding lives on the header label and the list (so the list can
+     reserve a right gutter for the scrollbar). */
+  padding: 1rem 0;
 }
