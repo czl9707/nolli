@@ -1,48 +1,47 @@
-import { useCallback, useEffect, useMemo, useRef } from "react"
-import { Map, MapControls, getMapStyle, useMapPatterns } from "@nolli/map"
+import { useCallback } from "react"
+import { ArchMap } from "@nolli/map"
 import type { MapRef } from "@nolli/map"
-import { useThemeStore } from "@nolli/ui"
 import { useUiStore } from "@/stores/ui"
-import { ArchMarkers } from "./arch-markers"
-import { PhotoMarkers } from "./photo-markers"
 import { useMapInstanceStore } from "@/stores/map-instance"
+import { PhotoMarkers } from "./photo-markers"
 import type { PosterBuilding } from "@/types"
 import styles from "./poster-map.module.css"
 
+/**
+ * Figure-ground map for the poster. Delegates the MapLibre setup, the clustered
+ * plain-marker layer (with split/merge animations), and the controls to the
+ * shared <ArchMap>. The poster contributes only its photo overlay (children)
+ * and forwards <ArchMap>'s map instance into the shared store so the sidebar's
+ * viewport filter can read map bounds.
+ *
+ * Capture mode passes an empty architectures array so <ArchMap> renders no
+ * plain markers — leaving a clean map + photos frame. The map is always
+ * "ready" here because App early-returns while the snapshot is loading.
+ */
 export function PosterMap({ buildings }: { buildings: PosterBuilding[] }) {
-  const mapRef = useRef<MapRef | null>(null)
-  const { ready: patternReady, initialize } = useMapPatterns(mapRef)
-  const setMapInstance = useMapInstanceStore((s) => s.setMap)
   const captureMode = useUiStore((s) => s.captureMode)
-
-  // Default the poster to the dark figure-ground (matches Nolli's hero look).
-  const setTheme = useThemeStore((s) => s.setTheme)
-  useEffect(() => {
-    setTheme("dark")
-  }, [setTheme])
-
-  const mapStyles = useMemo(
-    () => ({ light: getMapStyle("light"), dark: getMapStyle("dark") }),
-    []
-  )
+  const setMapInstance = useMapInstanceStore((s) => s.setMap)
 
   const handleRef = useCallback(
-    (ref: MapRef | null) => {
-      if (!ref) return
-      mapRef.current = ref
-      setMapInstance(ref)
-      initialize(ref)
+    (m: MapRef | null) => {
+      // <ArchMap> owns pattern init internally; the poster only needs the
+      // instance for the sidebar's bounds filter.
+      if (!m) return
+      setMapInstance(m)
     },
-    [initialize, setMapInstance]
+    [setMapInstance]
   )
 
   return (
     <div className={styles.container}>
-      <Map ref={handleRef} styles={mapStyles} loading={!patternReady}>
-        {!captureMode && <MapControls showZoom showFullscreen />}
-        <ArchMarkers buildings={buildings} />
+      <ArchMap
+        ref={handleRef}
+        architectures={captureMode ? [] : buildings}
+        ready
+        showControls={!captureMode}
+      >
         <PhotoMarkers buildings={buildings} />
-      </Map>
+      </ArchMap>
     </div>
   )
 }
