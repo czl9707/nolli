@@ -1,6 +1,6 @@
-import { useMap } from "@nolli/map"
 import { useSnapshot } from "@/data/use-snapshot"
 import { useVisibleArchs } from "@/hooks/use-visible-archs"
+import { useMapInstanceStore } from "@/stores/map-instance"
 import { PosterMap } from "@/components/poster-map"
 import { SelectionSidebar } from "@/components/selection-sidebar"
 import { VisibleArchList } from "@/components/visible-arch-list"
@@ -22,9 +22,9 @@ export function App() {
   )
 }
 
-/** Reads the map from context to compute viewport-visible buildings. */
+/** Reads the map from the shared store to compute viewport-visible buildings. */
 function VisibleArchListBridge({ buildings }: { buildings: PosterBuilding[] }) {
-  const { map } = useMap()
+  const map = useMapInstanceStore((s) => s.map)
   const visible = useVisibleArchs(map, buildings)
   return (
     <>

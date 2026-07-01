@@ -3,12 +3,14 @@ import { Map, getMapStyle, useMapPatterns } from "@nolli/map"
 import type { MapRef } from "@nolli/map"
 import { useThemeStore } from "@nolli/ui"
 import { ArchMarkers } from "./arch-markers"
+import { useMapInstanceStore } from "@/stores/map-instance"
 import type { PosterBuilding } from "@/types"
 import styles from "./poster-map.module.css"
 
 export function PosterMap({ buildings }: { buildings: PosterBuilding[] }) {
   const mapRef = useRef<MapRef | null>(null)
   const { ready: patternReady, initialize } = useMapPatterns(mapRef)
+  const setMapInstance = useMapInstanceStore((s) => s.setMap)
 
   // Default the poster to the dark figure-ground (matches Nolli's hero look).
   const setTheme = useThemeStore((s) => s.setTheme)
@@ -25,9 +27,10 @@ export function PosterMap({ buildings }: { buildings: PosterBuilding[] }) {
     (ref: MapRef | null) => {
       if (!ref) return
       mapRef.current = ref
+      setMapInstance(ref)
       initialize(ref)
     },
-    [initialize]
+    [initialize, setMapInstance]
   )
 
   return (
