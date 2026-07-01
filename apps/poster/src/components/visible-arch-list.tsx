@@ -25,9 +25,9 @@ export function VisibleArchList({
                 onChange={() => toggle(b.slug)}
               />
               <img className={styles.thumb} src={b.cover.image} alt="" />
-              <span className={styles.name}>
-                {b.name}
-                <span className={styles.architect}> · {b.architect}</span>
+              <span className={styles.text}>
+                <span className={styles.name}>{b.name}</span>
+                <span className={styles.architect}>{b.architect}</span>
               </span>
             </label>
           )

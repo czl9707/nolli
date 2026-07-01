@@ -7,8 +7,7 @@
   height: var(--size-header-height);
   align-items: center;
   padding: 0 var(--spacing-component);
-  background: rgb(var(--color-primary-background));
-  border-bottom: var(--border);
+  background: linear-gradient(to bottom, rgb(var(--color-primary-background)), rgb(var(--color-primary-background) / .8) 50%, transparent);
 }
 
 .title {
