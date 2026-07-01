@@ -1,11 +1,11 @@
 .sidebarOuter {
   position: absolute;
-  top: 0;
+  top: var(--size-header-height);
   left: 0;
   bottom: 0;
   width: var(--size-sidebar-width, 360px);
-  background: var(--color-surface, #111);
-  border-right: 1px solid var(--color-border, #222);
+  background: rgb(var(--color-primary-background));
+  border-right: var(--border);
   overflow: hidden;
   z-index: 10;
 }
@@ -21,6 +21,6 @@
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--color-muted, #888);
+  color: rgb(var(--color-secondary-foreground));
   margin-bottom: 0.75rem;
 }

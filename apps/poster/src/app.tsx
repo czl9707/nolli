@@ -2,7 +2,7 @@ import { useSnapshot } from "@/data/use-snapshot"
 import { useVisibleArchs } from "@/hooks/use-visible-archs"
 import { useMapInstanceStore } from "@/stores/map-instance"
 import { PosterMap } from "@/components/poster-map"
-import { CaptureToggle } from "@/components/capture-toggle"
+import { Header } from "@/components/header"
 import { SelectionSidebar } from "@/components/selection-sidebar"
 import { VisibleArchList } from "@/components/visible-arch-list"
 import type { PosterBuilding } from "@/types"
@@ -15,11 +15,11 @@ export function App() {
 
   return (
     <>
+      <Header />
       <PosterMap buildings={snap.buildings} />
       <SelectionSidebar>
         <VisibleArchListBridge buildings={snap.buildings} />
       </SelectionSidebar>
-      <CaptureToggle />
     </>
   )
 }
