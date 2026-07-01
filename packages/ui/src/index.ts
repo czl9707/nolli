@@ -1,4 +1,5 @@
 export * from "./button"
+export * from "./scroll-area"
 export * from "./typography"
 export * from "./sonner"
 export * from "./constants"
