@@ -8,7 +8,7 @@ import styles from "./header.module.css"
 /**
  * Desktop-only top bar, copy-adapted from nolli's Header. Holds the sidebar
  * toggle (wired to the poster's useUiStore), the brand, and on the right the
- * theme toggle + capture toggle.
+ * capture toggle + theme toggle.
  */
 export function Header() {
   const sidebarOpen = useUiStore((s) => s.sidebarOpen)
@@ -28,8 +28,8 @@ export function Header() {
       </div>
       <div className={styles.title}>Nolli</div>
       <div className={styles.right}>
-        <ThemeToggle />
         <CaptureToggle />
+        <ThemeToggle />
       </div>
     </header>
   )
