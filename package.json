@@ -4,7 +4,9 @@
   "type": "module",
   "scripts": {
     "dev": "pnpm --filter nolli dev",
+    "dev:poster": "pnpm --filter poster dev",
     "build": "pnpm --filter nolli build",
+    "build:poster": "pnpm --filter poster build",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint",
     "format": "pnpm -r format",
