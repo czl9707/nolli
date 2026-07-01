@@ -1,0 +1,46 @@
+.list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  color: var(--color-text, #eee);
+}
+
+.row:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.thumb {
+  width: 2rem;
+  height: 2rem;
+  object-fit: cover;
+  border-radius: 0.2rem;
+  flex-shrink: 0;
+}
+
+.name {
+  flex: 1;
+  font-size: 0.85rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.architect {
+  font-size: 0.7rem;
+  color: var(--color-muted, #888);
+}
+
+.check {
+  accent-color: var(--color-accent, #d97706);
+}
