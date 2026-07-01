@@ -15,5 +15,8 @@ export const useUiStore = create<UiState>((set) => ({
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
   captureMode: false,
   setCaptureMode: (on) => set({ captureMode: on, sidebarOpen: !on }),
-  toggleCapture: () => set((s) => ({ captureMode: !s.captureMode })),
+  toggleCapture: () =>
+    // Entering capture closes the sidebar; exiting restores it. (Matches
+    // setCaptureMode's sidebar coupling so both entry paths behave the same.)
+    set((s) => ({ captureMode: !s.captureMode, sidebarOpen: s.captureMode })),
 }))
