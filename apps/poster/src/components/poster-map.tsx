@@ -3,6 +3,7 @@ import { Map, getMapStyle, useMapPatterns } from "@nolli/map"
 import type { MapRef } from "@nolli/map"
 import { useThemeStore } from "@nolli/ui"
 import { ArchMarkers } from "./arch-markers"
+import { PhotoMarkers } from "./photo-markers"
 import { useMapInstanceStore } from "@/stores/map-instance"
 import type { PosterBuilding } from "@/types"
 import styles from "./poster-map.module.css"
@@ -37,6 +38,7 @@ export function PosterMap({ buildings }: { buildings: PosterBuilding[] }) {
     <div className={styles.container}>
       <Map ref={handleRef} styles={mapStyles} loading={!patternReady}>
         <ArchMarkers buildings={buildings} />
+        <PhotoMarkers buildings={buildings} />
       </Map>
     </div>
   )

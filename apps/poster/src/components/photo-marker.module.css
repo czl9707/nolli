@@ -1,0 +1,22 @@
+/* Anchor bottom-center on the lat/lng so the pin "sticks" into the map. */
+.wrap {
+  position: relative;
+  transform: translate(-50%, -100%);
+}
+
+.photo {
+  display: block;
+  width: 120px;
+  background: #fff;
+  border: 6px solid #fff;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+  /* aspect ratio set inline via the cover's width/height */
+}
+
+.pin {
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  transform: translateX(-50%);
+  height: 26px;
+}
