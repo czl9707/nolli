@@ -6,7 +6,6 @@ type UiState = {
   setSidebarOpen: (open: boolean) => void
   /** Capture mode: hides plain markers, controls, and sidebar for a clean frame. */
   captureMode: boolean
-  setCaptureMode: (on: boolean) => void
   toggleCapture: () => void
 }
 
@@ -14,9 +13,7 @@ export const useUiStore = create<UiState>((set) => ({
   sidebarOpen: true,
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
   captureMode: false,
-  setCaptureMode: (on) => set({ captureMode: on, sidebarOpen: !on }),
+  // Entering capture closes the sidebar; exiting restores it.
   toggleCapture: () =>
-    // Entering capture closes the sidebar; exiting restores it. (Matches
-    // setCaptureMode's sidebar coupling so both entry paths behave the same.)
     set((s) => ({ captureMode: !s.captureMode, sidebarOpen: s.captureMode })),
 }))

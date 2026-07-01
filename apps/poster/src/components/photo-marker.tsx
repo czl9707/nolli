@@ -7,10 +7,7 @@ export function PhotoMarker({ building }: { building: PosterBuilding }) {
   return (
     <MapMarker longitude={lng} latitude={lat}>
       <MarkerContent>
-        <div
-          className={styles.wrap}
-          style={{ transform: `translate(-50%, -100%) rotate(-2deg)` }}
-        >
+        <div className={styles.wrap}>
           <img
             className={styles.photo}
             src={building.cover.image}

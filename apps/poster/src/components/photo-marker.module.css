@@ -1,7 +1,9 @@
-/* Anchor bottom-center on the lat/lng so the pin "sticks" into the map. */
+/* Anchor bottom-center on the lat/lng so the pin "sticks" into the map.
+   The slight rotation gives the static pinboard tilt (deterministic, so it
+   doesn't reshuffle on re-render). */
 .wrap {
   position: relative;
-  transform: translate(-50%, -100%);
+  transform: translate(-50%, -100%) rotate(-2deg);
 }
 
 .photo {
