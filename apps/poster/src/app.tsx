@@ -6,6 +6,7 @@ import { Header } from "@/components/header"
 import { SelectionSidebar } from "@/components/selection-sidebar"
 import { VisibleArchList } from "@/components/visible-arch-list"
 import type { PosterBuilding } from "@/types"
+import styles from "./app.module.css"
 
 export function App() {
   const snap = useSnapshot()
@@ -14,13 +15,15 @@ export function App() {
   if (snap.status === "error") return <div style={{ padding: "2rem" }}>Error: {snap.error.message}</div>
 
   return (
-    <>
-      <Header />
-      <PosterMap buildings={snap.buildings} />
+    <div className={styles.shell}>
       <SelectionSidebar>
         <VisibleArchListBridge buildings={snap.buildings} />
       </SelectionSidebar>
-    </>
+      <div className={styles.inset}>
+        <Header />
+        <PosterMap buildings={snap.buildings} />
+      </div>
+    </div>
   )
 }
 
@@ -30,15 +33,7 @@ function VisibleArchListBridge({ buildings }: { buildings: PosterBuilding[] }) {
   const visible = useVisibleArchs(map, buildings)
   return (
     <>
-      <div
-        style={{
-          fontSize: "0.8rem",
-          textTransform: "uppercase",
-          letterSpacing: "0.05em",
-          color: "#888",
-          marginBottom: "0.75rem",
-        }}
-      >
+      <div className={styles.sidebarHeader}>
         In view · {visible.length}
       </div>
       <VisibleArchList buildings={visible} />

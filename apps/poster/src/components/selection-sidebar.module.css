@@ -1,26 +1,18 @@
+/* In-flow column of the app shell. Width animates via framer-motion; height
+   stretches to fill the shell. overflow:hidden clips content during the
+   width animation. */
 .sidebarOuter {
-  position: absolute;
-  top: var(--size-header-height);
-  left: 0;
-  bottom: 0;
-  width: var(--size-sidebar-width, 360px);
+  height: 100%;
+  flex-shrink: 0;
+  overflow: hidden;
   background: rgb(var(--color-primary-background));
   border-right: var(--border);
-  overflow: hidden;
-  z-index: 10;
 }
 
-.panelWrapper {
+.sidebarInner {
+  width: var(--size-sidebar-width);
   height: 100%;
   display: flex;
   flex-direction: column;
   padding: 1rem;
-}
-
-.header {
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: rgb(var(--color-secondary-foreground));
-  margin-bottom: 0.75rem;
 }
