@@ -7,5 +7,5 @@ export function App() {
   if (snap.status === "loading") return <div style={{ padding: "2rem" }}>Loading…</div>
   if (snap.status === "error") return <div style={{ padding: "2rem" }}>Error: {snap.error.message}</div>
 
-  return <PosterMap />
+  return <PosterMap buildings={snap.buildings} />
 }

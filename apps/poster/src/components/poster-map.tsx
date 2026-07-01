@@ -2,9 +2,11 @@ import { useCallback, useEffect, useMemo, useRef } from "react"
 import { Map, getMapStyle, useMapPatterns } from "@nolli/map"
 import type { MapRef } from "@nolli/map"
 import { useThemeStore } from "@nolli/ui"
+import { ArchMarkers } from "./arch-markers"
+import type { PosterBuilding } from "@/types"
 import styles from "./poster-map.module.css"
 
-export function PosterMap() {
+export function PosterMap({ buildings }: { buildings: PosterBuilding[] }) {
   const mapRef = useRef<MapRef | null>(null)
   const { ready: patternReady, initialize } = useMapPatterns(mapRef)
 
@@ -30,7 +32,9 @@ export function PosterMap() {
 
   return (
     <div className={styles.container}>
-      <Map ref={handleRef} styles={mapStyles} loading={!patternReady} />
+      <Map ref={handleRef} styles={mapStyles} loading={!patternReady}>
+        <ArchMarkers buildings={buildings} />
+      </Map>
     </div>
   )
 }
