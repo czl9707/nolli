@@ -18,8 +18,6 @@
     "preview": "npm run build && wrangler dev"
   },
   "dependencies": {
-    "@fontsource-variable/inter": "^5.2.8",
-    "@fontsource/architects-daughter": "^5.2.7",
     "@nolli/board": "workspace:*",
     "@nolli/data": "workspace:*",
     "@nolli/map": "workspace:*",

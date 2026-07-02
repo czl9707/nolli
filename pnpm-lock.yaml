@@ -10,12 +10,6 @@ importers:
 
   apps/nolli:
     dependencies:
-      '@fontsource-variable/inter':
-        specifier: ^5.2.8
-        version: 5.2.8
-      '@fontsource/architects-daughter':
-        specifier: ^5.2.7
-        version: 5.2.7
       '@nolli/board':
         specifier: workspace:*
         version: link:../../packages/board
@@ -155,12 +149,6 @@ importers:
 
   apps/poster:
     dependencies:
-      '@fontsource-variable/inter':
-        specifier: ^5.2.8
-        version: 5.2.8
-      '@fontsource/architects-daughter':
-        specifier: ^5.2.7
-        version: 5.2.7
       '@nolli/data':
         specifier: workspace:*
         version: link:../../packages/data
@@ -336,6 +324,12 @@ importers:
 
   packages/ui:
     dependencies:
+      '@fontsource-variable/inter':
+        specifier: ^5.2.8
+        version: 5.2.8
+      '@fontsource/architects-daughter':
+        specifier: ^5.2.7
+        version: 5.2.7
       lucide-react:
         specifier: '*'
         version: 1.22.0(react@19.2.7)

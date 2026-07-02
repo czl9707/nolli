@@ -3,9 +3,14 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "exports": { ".": "./src/index.ts" },
+  "exports": {
+    ".": "./src/index.ts",
+    "./global.css": "./src/styles/global.css"
+  },
   "scripts": { "typecheck": "tsc -p tsconfig.json --noEmit" },
   "dependencies": {
+    "@fontsource-variable/inter": "^5.2.8",
+    "@fontsource/architects-daughter": "^5.2.7",
     "lucide-react": "*",
     "radix-ui": "*",
     "sonner": "*",

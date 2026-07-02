@@ -6,7 +6,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
+} from "@nolli/ui"
 import { Dialog as RadixDialog } from "radix-ui"
 import { useSidebarStore } from "@/stores/sidebar"
 import { useIsMobile } from "@/hooks/use-is-mobile"

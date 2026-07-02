@@ -3,7 +3,7 @@ import { Heart, Loader2 } from "lucide-react"
 import { Button } from "@nolli/ui"
 import { useAuthStore } from "@/stores/auth"
 import { useFavoritesStore } from "@/stores/favorites"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@nolli/ui"
 import styles from "./favorite-toggle.module.css"
 
 type FavoriteToggleProps = {

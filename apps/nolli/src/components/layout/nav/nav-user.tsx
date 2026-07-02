@@ -7,7 +7,7 @@ import {
 } from "lucide-react"
 import { type ComponentPropsWithoutRef, type ReactNode } from "react"
 import { useAuthStore } from "@/stores/auth"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@nolli/ui"
 import { Body2, Caption } from "@nolli/ui"
 import {
   DropdownMenu,
@@ -17,7 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuGroup,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@nolli/ui"
 import {
   Dialog,
   DialogClose,
@@ -25,7 +25,7 @@ import {
   DialogTrigger,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from "@nolli/ui"
 import styles from "./nav-user.module.css"
 import { Button } from "@nolli/ui"
 

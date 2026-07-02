@@ -12,8 +12,6 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@fontsource/architects-daughter": "^5.2.7",
-    "@fontsource-variable/inter": "^5.2.8",
     "@nolli/data": "workspace:*",
     "@nolli/map": "workspace:*",
     "@nolli/ui": "workspace:*",

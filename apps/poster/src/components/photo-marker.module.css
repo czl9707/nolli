@@ -3,7 +3,7 @@
    doesn't reshuffle on re-render). */
 .wrap {
   position: relative;
-  transform: translate(-50%, -100%) rotate(-2deg);
+  transform:  translate(0px, 45%);
 }
 
 .photo {
@@ -18,7 +18,7 @@
 .pin {
   position: absolute;
   left: 50%;
-  bottom: -6px;
+  top: -10px;
   transform: translateX(-50%);
   height: 26px;
 }

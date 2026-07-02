@@ -4,7 +4,7 @@ import type { ReactNode } from "react"
 import { Link } from "react-router"
 import { ArrowLeft } from "lucide-react"
 import { Button } from "@nolli/ui"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { ScrollArea } from "@nolli/ui"
 import { Body1, Caption, H1, H2 } from "@nolli/ui"
 import styles from "./static-page-shell.module.css"
 
