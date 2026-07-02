@@ -8,7 +8,9 @@
     "build": "pnpm run generate:patterns && vite build",
     "generate:patterns": "tsx --tsconfig tsconfig.vite.json ../../packages/map/scripts/generate-patterns.ts",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@nolli/data": "workspace:*",
@@ -36,6 +38,7 @@
     "postcss-custom-properties": "^15.0.1",
     "tsx": "^4.22.3",
     "typescript": "^5.9.3",
-    "vite": "^8.0.13"
+    "vite": "^8.0.13",
+    "vitest": "^2.1.9"
   }
 }
