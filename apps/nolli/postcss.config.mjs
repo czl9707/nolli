@@ -3,7 +3,7 @@ const config = {
   plugins: {
     '@csstools/postcss-global-data': {
       files: [
-        'src/styles/global.css',
+        'node_modules/@nolli/ui/src/styles/global.css',
       ],
     },
     'postcss-custom-properties': { preserve: false },
