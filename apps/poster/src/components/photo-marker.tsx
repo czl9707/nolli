@@ -30,14 +30,7 @@ export function PhotoMarker({ building }: { building: PosterBuilding }) {
   }, [building.slug, building.cover.width, building.cover.height])
 
   return (
-    <MapMarker
-      longitude={lng}
-      latitude={lat}
-      anchor="top"
-      /* North (higher lat) paints on top, so lower images are covered by
-         upper ones — the poster cascade. */
-      zIndex={Math.round(lat * 1000)}
-    >
+    <MapMarker longitude={lng} latitude={lat} anchor="top">
       <MarkerContent>
         <div
           className={styles.wrap}

@@ -289,7 +289,9 @@ type MapMarkerProps = {
   onMouseEnter?: (e: MouseEvent) => void
   /** Callback when mouse leaves marker */
   onMouseLeave?: (e: MouseEvent) => void
-  /** Stacking order among sibling markers — higher paints on top. */
+  /** Stacking order among sibling markers — higher paints on top.
+   * Defaults to a latitude-derived value so northern markers cover southern
+   * ones (natural map stacking); override for hover/selection bumps. */
   zIndex?: number
 } & Omit<MarkerOptions, "element">
 
@@ -400,7 +402,7 @@ function MapMarker({
   }
 
   const element = marker.getElement()
-  const z = zIndex != null ? String(zIndex) : ""
+  const z = String(zIndex ?? Math.round(latitude * 1000))
   if (element.style.zIndex !== z) {
     element.style.zIndex = z
   }
