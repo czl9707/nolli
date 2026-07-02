@@ -158,6 +158,9 @@ importers:
       '@nolli/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@sqlite.org/sqlite-wasm':
+        specifier: ^3.53.0-build1
+        version: 3.53.0-build1
       framer-motion:
         specifier: ^12.40.0
         version: 12.42.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -262,6 +265,9 @@ importers:
       zod:
         specifier: '*'
         version: 4.4.3
+      zustand:
+        specifier: '*'
+        version: 5.0.14(@types/react@19.2.17)(react@19.2.7)
     devDependencies:
       typescript:
         specifier: '*'

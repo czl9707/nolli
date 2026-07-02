@@ -1,7 +1,9 @@
 export const SQL_GET_ALL_ARCHITECTURES = `
 SELECT a.id, a.slug, a.name, a.year, a.latitude, a.longitude,
        arch.name AS architect,
-       p.image AS cover_image
+       p.image AS cover_image,
+       p.width AS cover_width,
+       p.height AS cover_height
 FROM architectures a
 JOIN architects arch ON a.architect_id = arch.id
 LEFT JOIN architecture_photos p ON p.architecture_id = a.id AND p.is_cover = 1
@@ -45,7 +47,9 @@ ORDER BY sort_order
 export const SQL_GET_ARCHITECTURES_BY_IDS = `
 SELECT a.id, a.slug, a.name, a.year, a.latitude, a.longitude,
        arch.name AS architect,
-       p.image AS cover_image
+       p.image AS cover_image,
+       p.width AS cover_width,
+       p.height AS cover_height
 FROM architectures a
 JOIN architects arch ON a.architect_id = arch.id
 LEFT JOIN architecture_photos p ON p.architecture_id = a.id AND p.is_cover = 1

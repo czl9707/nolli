@@ -19,7 +19,7 @@ export function ArchSummary() {
 
   if (!current) return null
 
-  const cover = current.coverImage
+  const cover = current.cover.image
   const mapUrl = current.links?.googleMaps
 
   return (

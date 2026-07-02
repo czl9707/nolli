@@ -1,4 +1,4 @@
-import { useSnapshot } from "@/data/use-snapshot"
+import { useBuildings } from "@/data/use-buildings"
 import { useVisibleArchs } from "@/hooks/use-visible-archs"
 import { useMapInstanceStore } from "@/stores/map-instance"
 import { PosterMap } from "@/components/poster-map"
@@ -9,7 +9,7 @@ import type { PosterBuilding } from "@/types"
 import styles from "./app.module.css"
 
 export function App() {
-  const snap = useSnapshot()
+  const snap = useBuildings()
 
   if (snap.status === "loading") return <div style={{ padding: "2rem" }}>Loading…</div>
   if (snap.status === "error") return <div style={{ padding: "2rem" }}>Error: {snap.error.message}</div>

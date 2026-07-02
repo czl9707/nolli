@@ -9,4 +9,10 @@ export default defineConfig({
       "@": join(process.cwd(), "./src"),
     },
   },
+  server: {
+    headers: {
+      "Cross-Origin-Embedder-Policy": "credentialless",
+      "Cross-Origin-Opener-Policy": "same-origin",
+    },
+  },
 })

@@ -5,8 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run build:snapshot && npm run generate:patterns && vite build",
-    "build:snapshot": "tsx --tsconfig tsconfig.vite.json scripts/build-snapshot.ts",
+    "build": "npm run generate:patterns && vite build",
     "generate:patterns": "tsx --tsconfig tsconfig.vite.json ../../packages/map/scripts/generate-patterns.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint"
@@ -15,6 +14,7 @@
     "@nolli/data": "workspace:*",
     "@nolli/map": "workspace:*",
     "@nolli/ui": "workspace:*",
+    "@sqlite.org/sqlite-wasm": "^3.53.0-build1",
     "framer-motion": "^12.40.0",
     "lucide-react": "^1.16.0",
     "maplibre-gl": "^5.24.0",
