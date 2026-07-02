@@ -1,5 +1,5 @@
 import { useUiStore } from "@/stores/ui"
-import { Button } from "@nolli/ui"
+import { Button, H6 } from "@nolli/ui"
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react"
 import { ThemeToggle } from "./theme-toggle"
 import { CaptureToggle } from "./capture-toggle"
@@ -26,7 +26,7 @@ export function Header() {
           {sidebarOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
         </Button>
       </div>
-      <div className={styles.title}>Nolli</div>
+      <H6 className={styles.title}>Nolli</H6>
       <div className={styles.right}>
         <CaptureToggle />
         <ThemeToggle />

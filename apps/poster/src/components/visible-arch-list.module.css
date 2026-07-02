@@ -20,28 +20,28 @@
   gap: 0.25rem;
   /* Equal horizontal padding; the right side also reserves a gutter so row
      hover boxes clear the scrollbar. */
-  padding: 0 0.75rem;
+  padding: 0 var(--spacing-paragraph);
 }
 
 .row {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.4rem 0.5rem;
-  border-radius: 0.25rem;
+  padding: 0.5rem;
+  border-radius: var(--size-border-radius);
   cursor: pointer;
   color: rgb(var(--color-primary-foreground));
 }
 
 .row:hover {
-  background: rgb(var(--color-primary-foreground) / 0.06);
+  background: rgb(var(--color-primary-foreground) / 0.1);
 }
 
 .thumb {
   width: 2rem;
   height: 2rem;
   object-fit: cover;
-  border-radius: 0.2rem;
+  border-radius: var(--size-border-radius);
   flex-shrink: 0;
 }
 
@@ -53,20 +53,14 @@
 }
 
 .name {
-  font-size: 0.85rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .architect {
-  font-size: 0.7rem;
   color: rgb(var(--color-secondary-foreground));
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.check {
-  accent-color: rgb(var(--color-accent-foreground));
 }

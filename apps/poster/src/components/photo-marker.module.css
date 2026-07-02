@@ -39,7 +39,6 @@
 
 .architect {
   max-width: 100%;
-  font-size: .75rem;
   text-overflow: ellipsis;
   overflow: hidden;
   opacity: 0.7;

@@ -54,6 +54,13 @@
     line-height: var(--typography-body2-lineHeight);
 }
 
+.body3 {
+    font-family: var(--typography-body3-fontFamily);
+    font-weight: var(--typography-body3-fontWeight);
+    font-size: var(--typography-body3-fontSize);
+    line-height: var(--typography-body3-lineHeight);
+}
+
 .caption {
     font-family: var(--typography-caption-fontFamily);
     font-weight: var(--typography-caption-fontWeight);

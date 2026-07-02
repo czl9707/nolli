@@ -66,6 +66,11 @@ body {
     --typography-body2-fontSize: 0.875rem;
     --typography-body2-lineHeight: 1.25;
 
+    --typography-body3-fontFamily: var(--font-playful);
+    --typography-body3-fontWeight: 300;
+    --typography-body3-fontSize: 0.75rem;
+    --typography-body3-lineHeight: 1.25;
+
     --typography-h1-fontFamily: var(--font-playful);
     --typography-h1-fontWeight: 600;
     --typography-h1-fontSize: 3rem;

@@ -13,6 +13,8 @@
   background: linear-gradient(to bottom, rgb(var(--color-primary-background)), rgb(var(--color-primary-background) / .8) 50%, transparent);
 }
 
+/* Brand wordmark: H6 supplies family + line-height from tokens; size and the
+   extra-bold weight aren't in the type scale, so they stay local. */
 .title {
   height: 1.125rem;
   font-size: 1.125rem;
