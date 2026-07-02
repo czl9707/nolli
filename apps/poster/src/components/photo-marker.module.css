@@ -4,8 +4,7 @@
    box-shadow would shadow the plain rectangle (same approach as @nolli/board). */
 .wrap {
   position: relative;
-  /* transform-origin: 50% 0%; */
-  filter: drop-shadow(var(--shadow-sm));
+  filter: drop-shadow(4px 4px 4px rgb(var(--color-paper-foreground) / 0.2));
 }
 
 /* White "mat" frame around the photo + caption; the clip-path (inline) cuts the
