@@ -1,5 +1,6 @@
 import { useBuildings } from "@/data/use-buildings"
 import { useVisibleArchs } from "@/hooks/use-visible-archs"
+import { useMapUrlState } from "@/hooks/use-map-url-state"
 import { useMapInstanceStore } from "@/stores/map-instance"
 import { PosterMap } from "@/components/poster-map"
 import { Header } from "@/components/header"
@@ -11,6 +12,9 @@ import { Body2, Skeleton } from "@nolli/ui"
 
 export function App() {
   const snap = useBuildings()
+  const buildingsReady = snap.status === "ready"
+
+  useMapUrlState(buildingsReady)
 
   if (snap.status === "loading")
     return (
