@@ -289,6 +289,8 @@ type MapMarkerProps = {
   onMouseEnter?: (e: MouseEvent) => void
   /** Callback when mouse leaves marker */
   onMouseLeave?: (e: MouseEvent) => void
+  /** Stacking order among sibling markers — higher paints on top. */
+  zIndex?: number
 } & Omit<MarkerOptions, "element">
 
 function MapMarker({
@@ -299,6 +301,7 @@ function MapMarker({
   onClick,
   onMouseEnter,
   onMouseLeave,
+  zIndex,
   ...markerOptions
 }: MapMarkerProps) {
   const { map } = useMap()
@@ -394,6 +397,12 @@ function MapMarker({
 
   if (marker.getRotation() !== markerOptions.rotation) {
     marker.setRotation(markerOptions.rotation ?? 0)
+  }
+
+  const element = marker.getElement()
+  const z = zIndex != null ? String(zIndex) : ""
+  if (element.style.zIndex !== z) {
+    element.style.zIndex = z
   }
   if (marker.getRotationAlignment() !== markerOptions.rotationAlignment) {
     marker.setRotationAlignment(markerOptions.rotationAlignment ?? "auto")
