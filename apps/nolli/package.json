@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "vite",
-    "build": "npm run generate:patterns && vite build",
+    "build": "pnpm run generate:patterns && vite build",
     "generate:patterns": "tsx --tsconfig tsconfig.vite.json ../../packages/map/scripts/generate-patterns.ts",
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
@@ -14,8 +14,8 @@
     "seed": "tsx scripts/seed-architectures.ts",
     "seed:dry": "tsx scripts/seed-architectures.ts --dry-run",
     "typecheck": "tsc --noEmit",
-    "deploy": "npm run build && wrangler deploy",
-    "preview": "npm run build && wrangler dev"
+    "deploy": "pnpm run build && wrangler deploy",
+    "preview": "pnpm run build && wrangler dev"
   },
   "dependencies": {
     "@nolli/board": "workspace:*",

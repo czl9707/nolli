@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run generate:patterns && vite build",
+    "build": "pnpm run generate:patterns && vite build",
     "generate:patterns": "tsx --tsconfig tsconfig.vite.json ../../packages/map/scripts/generate-patterns.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint"
