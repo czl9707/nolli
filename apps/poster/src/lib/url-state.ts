@@ -42,3 +42,33 @@ function parseSelection(raw: string | null): Set<string> {
       .filter((s) => s.length > 0)
   )
 }
+
+export type MapParamState = {
+  center?: LngLat
+  zoom?: number
+  selection: Set<string>
+}
+
+function round(value: number, places: number): number {
+  const factor = 10 ** places
+  return Math.round(value * factor) / factor
+}
+
+export function serializeMapParams(state: MapParamState): string {
+  const parts: string[] = []
+
+  if (state.center) {
+    const [lng, lat] = state.center
+    parts.push(`center=${round(lng, 5)},${round(lat, 5)}`)
+  }
+
+  if (state.zoom !== undefined) {
+    parts.push(`zoom=${round(state.zoom, 2)}`)
+  }
+
+  if (state.selection.size > 0) {
+    parts.push(`selection=${Array.from(state.selection).join(",")}`)
+  }
+
+  return parts.join("&")
+}

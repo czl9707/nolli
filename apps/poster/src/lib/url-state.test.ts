@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { parseMapParams } from "./url-state"
+import { parseMapParams, serializeMapParams } from "./url-state"
 
 describe("parseMapParams", () => {
   it("parses a complete valid query", () => {
@@ -36,5 +36,29 @@ describe("parseMapParams", () => {
   it("ignores empty selection entries", () => {
     const r = parseMapParams("?selection=,,a,,")
     expect(r.selection).toEqual(new Set(["a"]))
+  })
+})
+
+describe("serializeMapParams", () => {
+  it("serializes a full state", () => {
+    const q = serializeMapParams({
+      center: [2.336419, 48.860512],
+      zoom: 14.5239,
+      selection: new Set(["a", "b"]),
+    })
+    expect(q).toBe("center=2.33642,48.86051&zoom=14.52&selection=a,b")
+  })
+
+  it("omits selection when empty", () => {
+    const q = serializeMapParams({
+      center: [2.3364, 48.8605],
+      zoom: 14.5,
+      selection: new Set(),
+    })
+    expect(q).toBe("center=2.3364,48.8605&zoom=14.5")
+  })
+
+  it("returns empty string when nothing is set", () => {
+    expect(serializeMapParams({ selection: new Set() })).toBe("")
   })
 })
