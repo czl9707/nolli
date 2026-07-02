@@ -1,6 +1,6 @@
 ---
 name: collect-architect-masterpieces
-description: Investigate and collect an architect's landmark buildings into the project's seed-data format — scripts/data/{slug}/ directories of meta.json + images. Use when adding an architect's works to the map, e.g. "collect Tadao Ando's masterpieces", "seed Zaha Hadid's buildings", or when working through the Pritzker laureate roster. Runs the full workflow — research the oeuvre, select landmark works (all major landmarks plus architecture-community-famous pieces), gather facts and high-quality images (Dezeen / Arch-Eyes / ArchDaily / Divisare / Unsplash, never Wikimedia), write each meta.json, and validate with `npm run seed:dry`. Stops before the real DB/R2 seed.
+description: Investigate and collect an architect's landmark buildings into the project's seed-data format — scripts/data/{slug}/ directories of meta.json + images. Use when adding an architect's works to the map, e.g. "collect Tadao Ando's masterpieces", "seed Zaha Hadid's buildings", or when working through the Pritzker laureate roster. Runs the full workflow — research the oeuvre, select landmark works (all major landmarks plus architecture-community-famous pieces), gather facts and high-quality images (prefer Arch-Eyes, Divisare, and Dezeen; ArchDaily / Unsplash as fallback, never Wikimedia), write each meta.json, and validate with `npm run seed:dry`. Stops before the real DB/R2 seed.
 ---
 
 # Collect Architect Masterpieces
@@ -104,12 +104,15 @@ each `meta.json`.
 
 ## Image sourcing
 
-- **Use:** Dezeen, Arch-Eyes, ArchDaily, Divisare, Unsplash (prefer Unsplash when a strong free
-  shot exists). Match the project's quality bar.
+- **Prefer:** Arch-Eyes (archeyes.com), Divisare (divisare.com), and Dezeen (dezeen.com) — they
+  consistently offer the cleanest, most artful architectural photography and reliable direct image
+  URLs. Try these first.
+- **Use as fallback:** ArchDaily, Unsplash (prefer Unsplash when a strong free shot exists). Match
+  the project's quality bar.
 - **Never** Wikimedia Commons.
 - Download with `curl`; name `photo-01.jpg`, `photo-02.jpg`, …; aim for 1–4 per building.
-- Dezeen / ArchDaily photos are editorial and copyrighted; the project accepts this tradeoff for
-  quality. Prefer Unsplash when a strong free shot exists; do not block on licensing.
+- Architectural photography is editorial and copyrighted; the project accepts this tradeoff for
+  quality. Do not block on licensing.
 
 ## Slug convention
 
