@@ -10,6 +10,7 @@ import {
   useRef,
   useState,
   type ReactNode,
+  type CSSProperties,
 } from "react"
 import { createPortal } from "react-dom"
 import { animate, type AnimationPlaybackControls, type Easing } from "framer-motion"
@@ -289,10 +290,8 @@ type MapMarkerProps = {
   onMouseEnter?: (e: MouseEvent) => void
   /** Callback when mouse leaves marker */
   onMouseLeave?: (e: MouseEvent) => void
-  /** Stacking order among sibling markers — higher paints on top.
-   * Defaults to a latitude-derived value so northern markers cover southern
-   * ones (natural map stacking); override for hover/selection bumps. */
-  zIndex?: number
+  /** Inline styles applied to the marker element. */
+  style?: CSSProperties
 } & Omit<MarkerOptions, "element">
 
 function MapMarker({
@@ -303,11 +302,12 @@ function MapMarker({
   onClick,
   onMouseEnter,
   onMouseLeave,
-  zIndex,
+  style,
   ...markerOptions
 }: MapMarkerProps) {
   const { map } = useMap()
   const easingControlsRef = useRef<AnimationPlaybackControls | null>(null)
+  const prevStyleRef = useRef<CSSProperties | undefined>(undefined)
 
   const callbacksRef = useRef({
     onClick,
@@ -402,9 +402,15 @@ function MapMarker({
   }
 
   const element = marker.getElement()
-  const z = String(zIndex ?? Math.round(latitude * 1000))
-  if (element.style.zIndex !== z) {
-    element.style.zIndex = z
+  const prevStyle = prevStyleRef.current
+  if (prevStyle !== style) {
+    const target = element.style as unknown as Record<string, string>
+    if (prevStyle) for (const key in prevStyle) target[key] = ""
+    if (style) {
+      const next = style as unknown as Record<string, string | number>
+      for (const key in next) target[key] = String(next[key])
+    }
+    prevStyleRef.current = style
   }
   if (marker.getRotationAlignment() !== markerOptions.rotationAlignment) {
     marker.setRotationAlignment(markerOptions.rotationAlignment ?? "auto")

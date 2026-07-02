@@ -30,7 +30,12 @@ export function PhotoMarker({ building }: { building: PosterBuilding }) {
   }, [building.slug, building.cover.width, building.cover.height])
 
   return (
-    <MapMarker longitude={lng} latitude={lat} anchor="top">
+    <MapMarker
+      longitude={lng}
+      latitude={lat}
+      anchor="top"
+      style={{ zIndex: Math.round(lat * 1000) }}
+    >
       <MarkerContent>
         <div
           className={styles.wrap}
