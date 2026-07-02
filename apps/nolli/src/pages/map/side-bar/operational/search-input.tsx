@@ -6,7 +6,7 @@ import {
   InputGroupAddon,
   InputGroupInput,
   InputGroupButton,
-} from "@/components/ui/input-group"
+} from "@nolli/ui"
 import styles from "./search-input.module.css"
 
 const DEBOUNCE_MS = 250

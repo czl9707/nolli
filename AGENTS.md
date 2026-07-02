@@ -91,3 +91,16 @@ Default vocabulary: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-
 ### Domain docs
 
 Single-context layout — `CONTEXT.md` and `docs/adr/` at repo root. See `docs/agents/domain.md`.
+
+## apps/poster
+
+A standalone static site for composing "map posters": Nolli's figure-ground map
+with curated building photos dropped at their real locations. Hand-pick buildings
+from the left sidebar; selected buildings' cover photos appear on the map.
+Capture mode hides all scaffolding for a clean screenshot.
+
+- Dev: `pnpm dev:poster`
+- Build: `pnpm build:poster` (fetches snapshot from R2, generates patterns, bundles)
+- Data: build-time snapshot fetched from the public R2 db
+  (`https://db.nolli-map.com/latest.db`) → `public/snapshot.json`. No credentials.
+- No worker, no auth, no backend.

@@ -44,7 +44,11 @@ function mapSummaryRow(row: Row): ArchSummary {
       lat: row.latitude as number,
       lng: row.longitude as number,
     },
-    coverImage: row.cover_image as string | null,
+    cover: {
+      image: row.cover_image as string | null,
+      width: (row.cover_width as number | null) ?? null,
+      height: (row.cover_height as number | null) ?? null,
+    },
   }
 }
 
@@ -134,9 +138,19 @@ function handleGetArchBySlug(slug: string): Arch | null {
   const row = rows[0]
 
   const photoRows = query(SQL_GET_PHOTOS, [archId])
-  let coverImage: string | null = null
+  let cover: { image: string | null; width: number | null; height: number | null } = {
+    image: null,
+    width: null,
+    height: null,
+  }
   const photos: ArchPhoto[] = photoRows.map((pr) => {
-    if (pr.is_cover) coverImage = pr.image as string
+    if (pr.is_cover) {
+      cover = {
+        image: pr.image as string,
+        width: pr.width as number,
+        height: pr.height as number,
+      }
+    }
     return {
       image: pr.image as string,
       caption: (pr.caption as string | null) ?? undefined,
@@ -181,7 +195,7 @@ function handleGetArchBySlug(slug: string): Arch | null {
       lat: row.latitude as number,
       lng: row.longitude as number,
     },
-    coverImage,
+    cover,
     address: (row.address as string),
     city: (row.city as string),
     country: (row.country as string),

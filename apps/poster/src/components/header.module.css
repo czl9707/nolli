@@ -1,0 +1,37 @@
+.header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  box-sizing: border-box;
+
+  display: flex;
+  height: var(--size-header-height);
+  align-items: center;
+  padding: 0 var(--spacing-component);
+  background: linear-gradient(to bottom, rgb(var(--color-primary-background)), rgb(var(--color-primary-background) / .8) 50%, transparent);
+}
+
+.title {
+  height: 1.125rem;
+  font-size: 1.125rem;
+  font-weight: 800;
+  user-select: none;
+}
+
+.sidebarButton {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-paragraph);
+  justify-content: flex-start;
+}
+
+.right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-paragraph);
+  justify-content: flex-end;
+}

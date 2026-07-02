@@ -1,0 +1,6 @@
+/* Fills the entire inset (behind the floating header). <ArchMap>'s own
+   absolute-fill container anchors to this. */
+.container {
+  position: absolute;
+  inset: 0;
+}

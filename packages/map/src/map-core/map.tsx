@@ -10,6 +10,7 @@ import {
   useRef,
   useState,
   type ReactNode,
+  type CSSProperties,
 } from "react"
 import { createPortal } from "react-dom"
 import { animate, type AnimationPlaybackControls, type Easing } from "framer-motion"
@@ -289,6 +290,8 @@ type MapMarkerProps = {
   onMouseEnter?: (e: MouseEvent) => void
   /** Callback when mouse leaves marker */
   onMouseLeave?: (e: MouseEvent) => void
+  /** Inline styles applied to the marker element. */
+  style?: CSSProperties
 } & Omit<MarkerOptions, "element">
 
 function MapMarker({
@@ -299,10 +302,12 @@ function MapMarker({
   onClick,
   onMouseEnter,
   onMouseLeave,
+  style,
   ...markerOptions
 }: MapMarkerProps) {
   const { map } = useMap()
   const easingControlsRef = useRef<AnimationPlaybackControls | null>(null)
+  const prevStyleRef = useRef<CSSProperties | undefined>(undefined)
 
   const callbacksRef = useRef({
     onClick,
@@ -394,6 +399,18 @@ function MapMarker({
 
   if (marker.getRotation() !== markerOptions.rotation) {
     marker.setRotation(markerOptions.rotation ?? 0)
+  }
+
+  const element = marker.getElement()
+  const prevStyle = prevStyleRef.current
+  if (prevStyle !== style) {
+    const target = element.style as unknown as Record<string, string>
+    if (prevStyle) for (const key in prevStyle) target[key] = ""
+    if (style) {
+      const next = style as unknown as Record<string, string | number>
+      for (const key in next) target[key] = String(next[key])
+    }
+    prevStyleRef.current = style
   }
   if (marker.getRotationAlignment() !== markerOptions.rotationAlignment) {
     marker.setRotationAlignment(markerOptions.rotationAlignment ?? "auto")

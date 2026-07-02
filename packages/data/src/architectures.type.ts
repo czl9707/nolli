@@ -35,6 +35,13 @@ export const archLinksSchema = z.object({
 })
 export type ArchLinks = z.infer<typeof archLinksSchema>
 
+export const coverSummarySchema = z.object({
+  image: z.string().nullable(),
+  width: z.number().nullable(),
+  height: z.number().nullable(),
+})
+export type CoverSummary = z.infer<typeof coverSummarySchema>
+
 export const archSummarySchema = z.object({
   id: z.number(),
   slug: z.string(),
@@ -42,7 +49,7 @@ export const archSummarySchema = z.object({
   architect: z.string(),
   year: z.number(),
   coordinates: coordinatesSchema,
-  coverImage: z.string().nullable(),
+  cover: coverSummarySchema,
 })
 export type ArchSummary = z.infer<typeof archSummarySchema>
 

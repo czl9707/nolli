@@ -10,12 +10,6 @@ importers:
 
   apps/nolli:
     dependencies:
-      '@fontsource-variable/inter':
-        specifier: ^5.2.8
-        version: 5.2.8
-      '@fontsource/architects-daughter':
-        specifier: ^5.2.7
-        version: 5.2.7
       '@nolli/board':
         specifier: workspace:*
         version: link:../../packages/board
@@ -153,6 +147,82 @@ importers:
         specifier: ^4.95.0
         version: 4.105.0(@cloudflare/workers-types@4.20260629.1)
 
+  apps/poster:
+    dependencies:
+      '@nolli/data':
+        specifier: workspace:*
+        version: link:../../packages/data
+      '@nolli/map':
+        specifier: workspace:*
+        version: link:../../packages/map
+      '@nolli/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@sqlite.org/sqlite-wasm':
+        specifier: ^3.53.0-build1
+        version: 3.53.0-build1
+      framer-motion:
+        specifier: ^12.40.0
+        version: 12.42.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      lucide-react:
+        specifier: ^1.16.0
+        version: 1.22.0(react@19.2.7)
+      maplibre-gl:
+        specifier: ^5.24.0
+        version: 5.24.0
+      react:
+        specifier: ^19.2.4
+        version: 19.2.7
+      react-dom:
+        specifier: ^19.2.4
+        version: 19.2.7(react@19.2.7)
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
+      zustand:
+        specifier: ^5.0.14
+        version: 5.0.14(@types/react@19.2.17)(react@19.2.7)
+    devDependencies:
+      '@csstools/postcss-global-data':
+        specifier: ^4.0.0
+        version: 4.0.0(postcss@8.5.16)
+      '@types/better-sqlite3':
+        specifier: ^7.6.13
+        version: 7.6.13
+      '@types/react':
+        specifier: ^19.2.14
+        version: 19.2.17
+      '@types/react-dom':
+        specifier: ^19.2.3
+        version: 19.2.3(@types/react@19.2.17)
+      '@vitejs/plugin-react':
+        specifier: ^6.0.2
+        version: 6.0.3(vite@8.1.0(@types/node@25.9.4)(esbuild@0.28.1)(tsx@4.22.4))
+      better-sqlite3:
+        specifier: ^12.10.0
+        version: 12.11.1
+      eslint:
+        specifier: ^10.5.0
+        version: 10.6.0
+      postcss:
+        specifier: ^8
+        version: 8.5.16
+      postcss-custom-media:
+        specifier: ^12.0.1
+        version: 12.0.1(postcss@8.5.16)
+      postcss-custom-properties:
+        specifier: ^15.0.1
+        version: 15.0.1(postcss@8.5.16)
+      tsx:
+        specifier: ^4.22.3
+        version: 4.22.4
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vite:
+        specifier: ^8.0.13
+        version: 8.1.0(@types/node@25.9.4)(esbuild@0.28.1)(tsx@4.22.4)
+
   packages/board:
     dependencies:
       '@nolli/data':
@@ -195,6 +265,9 @@ importers:
       zod:
         specifier: '*'
         version: 4.4.3
+      zustand:
+        specifier: '*'
+        version: 5.0.14(@types/react@19.2.17)(react@19.2.7)
     devDependencies:
       typescript:
         specifier: '*'
@@ -257,6 +330,12 @@ importers:
 
   packages/ui:
     dependencies:
+      '@fontsource-variable/inter':
+        specifier: ^5.2.8
+        version: 5.2.8
+      '@fontsource/architects-daughter':
+        specifier: ^5.2.7
+        version: 5.2.7
       lucide-react:
         specifier: '*'
         version: 1.22.0(react@19.2.7)

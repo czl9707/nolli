@@ -1,0 +1,21 @@
+/* In-flow column of the app shell. Width animates via framer-motion; height
+   stretches to fill the shell. overflow:hidden clips content during the
+   width animation. */
+.sidebarOuter {
+  height: 100%;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: rgb(var(--color-primary-background));
+  border-right: var(--border);
+}
+
+.sidebarInner {
+  width: var(--size-sidebar-width);
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  /* Horizontal padding lives on the header label and the list (so the list can
+     reserve a right gutter for the scrollbar). */
+  padding: 1rem 0;
+}

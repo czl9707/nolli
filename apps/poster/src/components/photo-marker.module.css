@@ -1,0 +1,56 @@
+/* Anchor the lat/lng on the pin tip: translate down so the pin sits at the
+   point, then apply the deterministic pinboard tilt inline. The wrapper carries
+   a drop-shadow filter so the shadow follows the torn-paper clip edge —
+   box-shadow would shadow the plain rectangle (same approach as @nolli/board). */
+.wrap {
+  position: relative;
+  /* transform-origin: 50% 0%; */
+  filter: drop-shadow(var(--shadow-sm));
+}
+
+/* White "mat" frame around the photo + caption; the clip-path (inline) cuts the
+   whole card into the irregular torn-paper quadrilateral. */
+.card {
+  background: #fff;
+  padding: 6px 6px 0;
+}
+
+.photo {
+  display: block;
+  background: rgb(var(--color-paper-background));
+}
+
+/* Bottom white margin carrying the name + architect. */
+.caption {
+  display: flex;
+  flex-direction: column;
+  white-space: nowrap;
+  overflow: hidden;
+  padding-bottom: .25rem;
+  padding-top: .25rem;
+  box-sizing: border-box;
+  color: rgb(var(--color-paper-foreground));
+}
+
+.name {
+  max-width: 100%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.architect {
+  max-width: 100%;
+  font-size: .75rem;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  opacity: 0.7;
+}
+
+.pin {
+  position: absolute;
+  left: 50%;
+  top: -10px;
+  transform: translateX(-50%);
+  height: 26px;
+  filter: drop-shadow(var(--shadow-md));
+}

@@ -3,7 +3,9 @@ import type { ArchSummary, Arch } from "./architectures.type"
 import type { WorkerRequest, WorkerResponse } from "./worker-protocol.type"
 
 const MANIFEST_KEY = "nolli-db-sha256"
-const BASE_URL = import.meta.env.VITE_R2_PUBLIC_DB_URL as string
+// Guarded so the barrel can be imported outside Vite (e.g. tsx build scripts).
+// `import.meta.env` is undefined under plain Node/tsx; in Vite it is defined.
+const BASE_URL = (import.meta.env?.VITE_R2_PUBLIC_DB_URL ?? "") as string
 
 
 type PendingMessage = {

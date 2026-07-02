@@ -1,6 +1,6 @@
 import * as React from "react"
-import { Button } from "@nolli/ui"
-import { Input } from "@/components/ui/input"
+import { Button } from "./button"
+import { Input } from "./input"
 import styles from "./input-group.module.css"
 
 function InputGroup({ className, ...props }: React.ComponentProps<"div">) {

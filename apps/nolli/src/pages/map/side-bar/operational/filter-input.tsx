@@ -5,8 +5,8 @@ import {
     Popover,
     PopoverContent,
     PopoverTrigger,
-} from "@/components/ui/popover"
-import { Badge } from "@/components/ui/badge"
+} from "@nolli/ui"
+import { Badge } from "@nolli/ui"
 import { Button } from "@nolli/ui"
 import { Caption } from "@nolli/ui"
 import styles from "./filter-input.module.css"

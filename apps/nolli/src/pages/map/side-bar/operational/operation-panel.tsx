@@ -2,13 +2,13 @@ import { useEffect, useMemo, useState } from "react"
 import { ChevronDown, ChevronUp } from "lucide-react"
 import { SidebarCard } from "../arch-summary/sidebar-card"
 import { FilterInput, type FilterItem } from "./filter-input"
-import { Skeleton } from "@/components/ui/skeleton"
+import { Skeleton } from "@nolli/ui"
 import { Button } from "@nolli/ui"
 import {
   Collapsible,
   CollapsibleTrigger,
   CollapsibleContent,
-} from "@/components/ui/collapsible"
+} from "@nolli/ui"
 import { useFilterStore } from "@/stores/filter"
 import { useSidebarStore } from "@/stores/sidebar"
 import { useDbStore } from "@/stores/db"

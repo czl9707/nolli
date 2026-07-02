@@ -9,7 +9,7 @@
     transition: color var(--transition-instant), box-shadow var(--transition-instant);
     outline: none;
     /* prevent shadow cropping */
-    margin-right: -4px;  
+    margin-right: -4px;
     padding-right: 4px;
 }
 

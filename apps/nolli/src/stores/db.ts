@@ -1,56 +1,23 @@
-import { create } from "zustand"
-import type { DataSource } from "@nolli/data"
-import { SqliteDataSource } from "@nolli/data"
+import { useDbStore } from "@nolli/data"
 import { toast } from "sonner"
 
-type DbState = {
-  loading: boolean
-  dataSource: DataSource | null
-  error: Error | null
-}
+// The db bootstrap store (SqliteDataSource spawn + OPFS download) lives in
+// @nolli/data so both nolli and poster share it. This module re-exports it
+// unchanged and adds nolli's app-side UX: surface the ready/error info as a
+// toast once per session.
+export { useDbStore }
 
-let sourceRef: SqliteDataSource | null = null
-
-function initSource() {
-  if (sourceRef) {
-    sourceRef.destroy()
-    sourceRef = null
+let toasted = false
+useDbStore.subscribe((s) => {
+  if (toasted) return
+  if (s.error) {
+    toasted = true
+    toast.error(s.error.message || "Failed to load map data", {
+      duration: 20000,
+      position: "top-center",
+    })
+  } else if (!s.loading && s.message) {
+    toasted = true
+    toast.info(s.message)
   }
-
-  useDbStore.setState({
-    loading: true,
-    dataSource: null,
-    error: null,
-  })
-
-  const source = new SqliteDataSource()
-  sourceRef = source
-
-  source.ready
-    .then((message) => {
-      if (message) toast.info(message)
-      useDbStore.setState({
-        loading: false,
-        dataSource: source,
-        error: null,
-      })
-    })
-    .catch((err: Error) => {
-      setTimeout(() =>{
-        toast.error(err.message || "Failed to load map data", { duration: 20000, position: "top-center" })
-      }, 100)
-      useDbStore.setState({
-        loading: false,
-        dataSource: null,
-        error: err,
-      })
-    })
-}
-
-export const useDbStore = create<DbState>(() => ({
-  dataSource: null,
-  error: null,
-  loading: true,
-}))
-
-initSource()
+})
