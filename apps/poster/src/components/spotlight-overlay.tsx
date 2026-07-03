@@ -1,10 +1,15 @@
 import { useMemo } from "react"
+import { motion } from "framer-motion"
 import { useRouteStore } from "@/stores/route"
 import { useSelectionStore } from "@/stores/selection"
-import { Body1, Body3 } from "@nolli/ui"
+import { Body1, Body2 } from "@nolli/ui"
 import type { PosterBuilding } from "@/types"
 import { paperClipPath } from "./paper-clip"
 import styles from "./spotlight-overlay.module.css"
+
+/** Layout-move duration (s) — kept in sync with the map's EASE_DURATION so the
+ *  photo card and the camera travel together on a corner change. */
+const LAYOUT_DURATION = 0.6
 
 export function SpotlightOverlay({ buildings }: { buildings: PosterBuilding[] }) {
   const side = useRouteStore((s) => s.side)
@@ -27,7 +32,11 @@ export function SpotlightOverlay({ buildings }: { buildings: PosterBuilding[] })
   const ratio = building.cover.width / building.cover.height
 
   return (
-    <div className={`${styles.wrap} ${styles[side]}`}>
+    <motion.div
+      layout
+      transition={{ duration: LAYOUT_DURATION, ease: [0.4, 0, 0.2, 1] }}
+      className={`${styles.wrap} ${styles[side]}`}
+    >
       <figure
         className={styles.hero}
         style={{ "--ratio": ratio, clipPath } as React.CSSProperties}
@@ -35,9 +44,9 @@ export function SpotlightOverlay({ buildings }: { buildings: PosterBuilding[] })
         <img className={styles.photo} src={building.cover.image} alt={building.name} />
         <figcaption className={styles.caption}>
           <Body1 className={styles.name}>{building.name}</Body1>
-          <Body3 className={styles.architect}>{building.architect}</Body3>
+          <Body2 className={styles.architect}>{building.architect}</Body2>
         </figcaption>
       </figure>
-    </div>
+    </motion.div>
   )
 }

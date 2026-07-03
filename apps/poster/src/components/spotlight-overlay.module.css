@@ -8,7 +8,8 @@
   position: absolute;
   z-index: 5;
   margin: var(--spacing-component);
-  width: min(40vmin, 360px);
+  max-width: max(45vmin, 360px);
+  max-height: max(70vmin, 360px);
   filter: drop-shadow(4px 4px 4px rgb(var(--color-paper-foreground) / 0.2));
   pointer-events: none;
 }
@@ -27,10 +28,11 @@
    The mat carries the same grass-paper texture as @nolli/board (`::before`,
    behind the opaque photo and caption so it reads only on the padding). */
 .hero {
+  margin: 0;
   position: relative;
   box-sizing: border-box;
   background: rgb(var(--color-paper-background));
-  padding: var(--spacing-component);
+  padding: var(--spacing-paragraph);
 }
 
 /* Grass-paper texture over the mat, matching @nolli/board's .surface::before.
@@ -68,5 +70,4 @@ body[data-theme="dark"] .hero::before {
   color: rgb(var(--color-paper-foreground));
 }
 
-.name { font-weight: 600; }
 .architect { opacity: 0.7; }
