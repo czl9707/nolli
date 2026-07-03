@@ -1,3 +1,4 @@
+import { Tabs, TabsList, TabsTrigger } from "@nolli/ui"
 import { useRouteStore } from "@/stores/route"
 import type { Side } from "@/lib/url-state"
 import styles from "./side-flip-control.module.css"
@@ -10,8 +11,8 @@ const SIDES: { id: Side; label: string }[] = [
 ]
 
 /**
- * Photo-side selector for spotlight, rendered inline in the sidebar. Picks
- * which edge the hero photo floats on; the map recomposes so the marker stays
+ * Photo-side selector for spotlight, built on the shared <Tabs>. Picks which
+ * edge the hero photo floats on; the map recomposes so the marker stays
  * centered in the opposite half.
  */
 export function SideFlipControl() {
@@ -21,22 +22,15 @@ export function SideFlipControl() {
   return (
     <div className={styles.wrap}>
       <span className={styles.label}>Photo</span>
-      <div className={styles.btns} role="group" aria-label="Photo side">
-        {SIDES.map((s) => {
-          const active = s.id === side
-          return (
-            <button
-              key={s.id}
-              className={`${styles.btn} ${active ? styles.active : ""}`}
-              onClick={() => setSide(s.id)}
-              aria-pressed={active}
-              aria-label={`Photo on ${s.id}`}
-            >
+      <Tabs value={side} onValueChange={(v) => setSide(v as Side)}>
+        <TabsList>
+          {SIDES.map((s) => (
+            <TabsTrigger key={s.id} value={s.id}>
               {s.label}
-            </button>
-          )
-        })}
-      </div>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
     </div>
   )
 }

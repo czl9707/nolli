@@ -51,7 +51,8 @@
   font-size: var(--typography-body2-fontSize);
   font-weight: 500;
   white-space: nowrap;
-  color: rgb(var(--color-primary-foreground) / 0.6);
+  color: rgb(var(--color-secondary-foreground));
+  background-color: rgb(var(--color-secondary-background));
   transition: all var(--transition-instant);
   cursor: pointer;
   outline: none;
@@ -75,7 +76,7 @@
 .trigger[data-state="active"] {
   background-color: rgb(var(--color-primary-background));
   color: rgb(var(--color-primary-foreground));
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-ring);
 }
 
 .tabs[data-orientation="vertical"] .trigger {

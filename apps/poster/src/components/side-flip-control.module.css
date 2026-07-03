@@ -1,10 +1,11 @@
-/* Inline sidebar row: a "Photo" label + a 2x2 grid of side buttons. */
+/* "Photo" label + the shared <Tabs> pill, stacked. */
 .wrap {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 0.375rem;
-  padding: var(--spacing-paragraph) var(--spacing-paragraph) calc(var(--spacing-paragraph) * 0.5);
+  padding: 0 var(--spacing-paragraph) var(--spacing-paragraph);
 }
 
 .label {
@@ -12,30 +13,4 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
   opacity: 0.7;
-}
-
-.btns {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.25rem;
-}
-
-.btn {
-  border: 1px solid rgb(var(--color-primary-foreground) / 0.15);
-  background: transparent;
-  padding: 0.4rem 0.5rem;
-  border-radius: var(--size-border-radius);
-  cursor: pointer;
-  font-size: 0.8rem;
-  color: rgb(var(--color-primary-foreground));
-}
-
-.btn:hover {
-  background: rgb(var(--color-primary-foreground) / 0.08);
-}
-
-.active {
-  background: rgb(var(--color-primary-foreground));
-  color: rgb(var(--color-primary-background));
-  border-color: transparent;
 }

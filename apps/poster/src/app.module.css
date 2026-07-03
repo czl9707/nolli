@@ -21,3 +21,10 @@
   padding: 0 var(--spacing-component);
   opacity: 0.7;
 }
+
+/* A padded section inside the sidebar (tabs, controls) — horizontal padding
+   matches the list's, with a bottom gap separating stacked sections. */
+.sidebarSection {
+  flex-shrink: 0;
+  padding: 0 var(--spacing-paragraph) var(--spacing-paragraph);
+}

@@ -5,13 +5,13 @@ import { VisibleArchList } from "./visible-arch-list"
 import { SpotlightList } from "./spotlight-list"
 import { SpotlightOverlay } from "./spotlight-overlay"
 import { SideFlipControl } from "./side-flip-control"
-import { SidebarTabs } from "./sidebar-tabs"
 import { useRouteStore } from "@/stores/route"
+import type { Route } from "@/stores/route"
 import { useMapInstanceStore } from "@/stores/map-instance"
 import { useVisibleArchs } from "@/hooks/use-visible-archs"
 import { useRouteSync } from "@/hooks/use-route-sync"
 import { useSpotlightFraming } from "@/hooks/use-spotlight-framing"
-import { Body2, Skeleton } from "@nolli/ui"
+import { Body2, Skeleton, Tabs, TabsList, TabsTrigger } from "@nolli/ui"
 import type { PosterBuilding } from "@/types"
 import styles from "../app.module.css"
 
@@ -28,6 +28,7 @@ export function PosterShell({
   buildingsReady: boolean
 }) {
   const route = useRouteStore((s) => s.route)
+  const setRoute = useRouteStore((s) => s.setRoute)
   const isSpotlight = route === "spotlight"
   useRouteSync()
   useSpotlightFraming(buildings, buildingsReady)
@@ -39,7 +40,16 @@ export function PosterShell({
           the multi-select list, spotlight shows the side-flip + click-to-fly
           list. */}
       <SelectionSidebar>
-        <SidebarTabs />
+        <Tabs
+          value={route}
+          onValueChange={(v) => setRoute(v as Route)}
+          className={styles.sidebarSection}
+        >
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="spotlight">Spotlight</TabsTrigger>
+          </TabsList>
+        </Tabs>
         {isSpotlight ? (
           <>
             <SideFlipControl />
