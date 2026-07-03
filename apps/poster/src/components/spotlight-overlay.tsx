@@ -30,7 +30,7 @@ export function SpotlightOverlay({ buildings }: { buildings: PosterBuilding[] })
   return (
     <motion.div
       layout
-      transition={{ duration: MAP_TRANSITION_SHORT, ease: [0.4, 0, 0.2, 1] }}
+      transition={{ duration: MAP_TRANSITION_SHORT, ease: "easeInOut" }}
       className={`${styles.wrap} ${styles[side]}`}
     >
       <figure
