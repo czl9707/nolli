@@ -1,9 +1,15 @@
 export type LngLat = [number, number]
 
+export type Side = "left" | "right" | "top" | "bottom"
+
+const DEFAULT_SIDE: Side = "right"
+const SIDES: Side[] = ["left", "right", "top", "bottom"]
+
 export type MapParamState = {
   center?: LngLat
   zoom?: number
   selection: Set<string>
+  side?: Side
 }
 
 export function parseMapParams(search: string): MapParamState {
@@ -14,8 +20,9 @@ export function parseMapParams(search: string): MapParamState {
   const center = parseCenter(params.get("center"))
   const zoom = parseZoom(params.get("zoom"))
   const selection = parseSelection(params.get("selection"))
+  const side = parseSide(params.get("side"))
 
-  return { center, zoom, selection }
+  return { center, zoom, selection, side }
 }
 
 /** Web-Mercator latitude limit; longitudes wrap, so clamp to ±180. */
@@ -50,6 +57,11 @@ function parseSelection(raw: string | null): Set<string> {
   )
 }
 
+function parseSide(raw: string | null): Side | undefined {
+  if (!raw) return undefined
+  return SIDES.includes(raw as Side) ? (raw as Side) : undefined
+}
+
 function round(value: number, places: number): number {
   const factor = 10 ** places
   return Math.round(value * factor) / factor
@@ -69,6 +81,10 @@ export function serializeMapParams(state: MapParamState): string {
 
   if (state.selection.size > 0) {
     parts.push(`selection=${Array.from(state.selection).join(",")}`)
+  }
+
+  if (state.side && state.side !== DEFAULT_SIDE) {
+    parts.push(`side=${state.side}`)
   }
 
   return parts.join("&")
