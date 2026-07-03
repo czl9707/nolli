@@ -8,14 +8,14 @@ import styles from "./header.module.css"
 /**
  * Desktop-only top bar. The left slot holds the screenshot button — present
  * only in preview mode, since that's the screenshot-ready frame. The brand sits
- * in the center; preview + theme toggles on the right. Marked
- * `data-no-screenshot` so the capture excludes it from the downloaded image.
+ * in the center; preview + theme toggles on the right. The whole bar is inside
+ * the captured `.inset`, so it appears in the downloaded poster image.
  */
 export function Header() {
   const previewMode = useUiStore((s) => s.previewMode)
 
   return (
-    <header className={styles.header} data-no-screenshot>
+    <header className={styles.header}>
       <div className={styles.left}>
         {previewMode && <ScreenshotButton />}
       </div>
