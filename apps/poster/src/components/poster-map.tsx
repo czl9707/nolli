@@ -18,7 +18,13 @@ import styles from "./poster-map.module.css"
  * plain markers — leaving a clean map + photos frame. The map is always
  * "ready" here because App early-returns while the snapshot is loading.
  */
-export function PosterMap({ buildings }: { buildings: PosterBuilding[] }) {
+export function PosterMap({
+  buildings,
+  spotlight,
+}: {
+  buildings: PosterBuilding[]
+  spotlight: boolean
+}) {
   const captureMode = useUiStore((s) => s.captureMode)
   const setMapInstance = useMapInstanceStore((s) => s.setMap)
 
@@ -40,7 +46,7 @@ export function PosterMap({ buildings }: { buildings: PosterBuilding[] }) {
         ready
         showControls={!captureMode}
       >
-        <PhotoMarkers buildings={buildings} />
+        {!spotlight && <PhotoMarkers buildings={buildings} />}
       </ArchMap>
     </div>
   )
