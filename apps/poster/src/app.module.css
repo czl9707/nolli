@@ -17,7 +17,7 @@
 .sidebarHeader {
   flex-shrink: 0;
   text-transform: uppercase;
-  margin-bottom: 0.75rem;
-  padding: 0 0.75rem;
+  margin-bottom: var(--spacing-paragraph);
+  padding: 0 var(--spacing-component);
   opacity: 0.7;
 }
