@@ -32,11 +32,11 @@ export function PosterShell({
 
   return (
     <div className={styles.shell}>
-      {!isSpotlight && (
-        <SelectionSidebar>
-          <VisibleArchListBridge buildings={buildings} />
-        </SelectionSidebar>
-      )}
+      {/* Sidebar stays mounted in both routes so the user can pick the
+          spotlighted building; capture mode hides it via `sidebarOpen`. */}
+      <SelectionSidebar>
+        <VisibleArchListBridge buildings={buildings} />
+      </SelectionSidebar>
       {/* `.inset` is relative + flex:1; the map is absolute-fill inside it
           (full-bleed), the header floats on top, and spotlight overlays anchor
           to `.inset`. The map stays mounted across the route switch. */}

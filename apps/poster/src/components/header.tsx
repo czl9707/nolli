@@ -14,8 +14,12 @@ import styles from "./header.module.css"
 export function Header() {
   const sidebarOpen = useUiStore((s) => s.sidebarOpen)
   const setSidebarOpen = useUiStore((s) => s.setSidebarOpen)
+  const captureMode = useUiStore((s) => s.captureMode)
   const route = useRouteStore((s) => s.route)
   const setRoute = useRouteStore((s) => s.setRoute)
+
+  // Capture mode renders a clean print — no top chrome.
+  if (captureMode) return null
 
   return (
     <header className={styles.header}>
