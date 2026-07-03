@@ -1,4 +1,3 @@
-import { useRouteStore } from "@/stores/route"
 import { useUiStore } from "@/stores/ui"
 import { Button, H6 } from "@nolli/ui"
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react"
@@ -9,17 +8,12 @@ import styles from "./header.module.css"
 /**
  * Desktop-only top bar, copy-adapted from nolli's Header. Holds the sidebar
  * toggle (wired to the poster's useUiStore), the brand, and on the right the
- * route toggle, capture toggle + theme toggle.
+ * capture toggle + theme toggle. Stays visible in capture mode so the capture
+ * toggle remains reachable to exit.
  */
 export function Header() {
   const sidebarOpen = useUiStore((s) => s.sidebarOpen)
   const setSidebarOpen = useUiStore((s) => s.setSidebarOpen)
-  const captureMode = useUiStore((s) => s.captureMode)
-  const route = useRouteStore((s) => s.route)
-  const setRoute = useRouteStore((s) => s.setRoute)
-
-  // Capture mode renders a clean print — no top chrome.
-  if (captureMode) return null
 
   return (
     <header className={styles.header}>
@@ -35,14 +29,6 @@ export function Header() {
       </div>
       <H6 className={styles.title}>Nolli</H6>
       <div className={styles.right}>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setRoute(route === "spotlight" ? "overview" : "spotlight")}
-          aria-label="Toggle spotlight"
-        >
-          {route === "spotlight" ? "Overview" : "Spotlight"}
-        </Button>
         <CaptureToggle />
         <ThemeToggle />
       </div>

@@ -2,8 +2,10 @@ import { PosterMap } from "./poster-map"
 import { Header } from "./header"
 import { SelectionSidebar } from "./selection-sidebar"
 import { VisibleArchList } from "./visible-arch-list"
+import { SpotlightList } from "./spotlight-list"
 import { SpotlightOverlay } from "./spotlight-overlay"
 import { SideFlipControl } from "./side-flip-control"
+import { SidebarTabs } from "./sidebar-tabs"
 import { useRouteStore } from "@/stores/route"
 import { useMapInstanceStore } from "@/stores/map-instance"
 import { useVisibleArchs } from "@/hooks/use-visible-archs"
@@ -15,8 +17,8 @@ import styles from "../app.module.css"
 
 /**
  * Always-mounted shell. <ArchMap> (via <PosterMap>) never unmounts across the
- * overview ↔ spotlight switch — only the overlay region changes. This keeps
- * tiles, view state, and cluster animations alive.
+ * overview ↔ spotlight switch — only the sidebar's list region and the map
+ * overlay change. This keeps tiles, view state, and cluster animations alive.
  */
 export function PosterShell({
   buildings,
@@ -32,29 +34,42 @@ export function PosterShell({
 
   return (
     <div className={styles.shell}>
-      {/* Sidebar stays mounted in both routes so the user can pick the
-          spotlighted building; capture mode hides it via `sidebarOpen`. */}
+      {/* Sidebar stays mounted in both routes; capture mode hides it via
+          `sidebarOpen`. The tab group switches layout; below it, overview shows
+          the multi-select list, spotlight shows the side-flip + click-to-fly
+          list. */}
       <SelectionSidebar>
-        <VisibleArchListBridge buildings={buildings} />
+        <SidebarTabs />
+        {isSpotlight ? (
+          <>
+            <SideFlipControl />
+            <VisibleSection buildings={buildings} spotlight />
+          </>
+        ) : (
+          <VisibleSection buildings={buildings} />
+        )}
       </SelectionSidebar>
       {/* `.inset` is relative + flex:1; the map is absolute-fill inside it
-          (full-bleed), the header floats on top, and spotlight overlays anchor
+          (full-bleed), the header floats on top, and the spotlight hero anchors
           to `.inset`. The map stays mounted across the route switch. */}
       <div className={styles.inset}>
         <Header />
         <PosterMap buildings={buildings} spotlight={isSpotlight} />
-        {isSpotlight && (
-          <>
-            <SpotlightOverlay buildings={buildings} />
-            <SideFlipControl />
-          </>
-        )}
+        {isSpotlight && <SpotlightOverlay buildings={buildings} />}
       </div>
     </div>
   )
 }
 
-function VisibleArchListBridge({ buildings }: { buildings: PosterBuilding[] }) {
+/** Viewport-visible buildings, headed by a count, rendered as either the
+ *  multi-select overview list or the click-to-fly spotlight list. */
+function VisibleSection({
+  buildings,
+  spotlight = false,
+}: {
+  buildings: PosterBuilding[]
+  spotlight?: boolean
+}) {
   const map = useMapInstanceStore((s) => s.map)
   const visible = useVisibleArchs(map, buildings)
   return (
@@ -62,7 +77,11 @@ function VisibleArchListBridge({ buildings }: { buildings: PosterBuilding[] }) {
       <div className={styles.sidebarHeader}>
         <Body2>In view · {visible.length}</Body2>
       </div>
-      <VisibleArchList buildings={visible} />
+      {spotlight ? (
+        <SpotlightList buildings={visible} />
+      ) : (
+        <VisibleArchList buildings={visible} />
+      )}
     </>
   )
 }

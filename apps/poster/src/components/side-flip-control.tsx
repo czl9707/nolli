@@ -1,30 +1,42 @@
 import { useRouteStore } from "@/stores/route"
-import { useUiStore } from "@/stores/ui"
 import type { Side } from "@/lib/url-state"
 import styles from "./side-flip-control.module.css"
 
-const SIDES: Side[] = ["left", "right", "top", "bottom"]
+const SIDES: { id: Side; label: string }[] = [
+  { id: "left", label: "Left" },
+  { id: "right", label: "Right" },
+  { id: "top", label: "Top" },
+  { id: "bottom", label: "Bottom" },
+]
 
-/** Shown only in spotlight editing state. Flips the photo side; updates the URL. */
+/**
+ * Photo-side selector for spotlight, rendered inline in the sidebar. Picks
+ * which edge the hero photo floats on; the map recomposes so the marker stays
+ * centered in the opposite half.
+ */
 export function SideFlipControl() {
-  const captureMode = useUiStore((s) => s.captureMode)
   const side = useRouteStore((s) => s.side)
   const setSide = useRouteStore((s) => s.setSide)
-  if (captureMode) return null
 
   return (
     <div className={styles.wrap}>
-      {SIDES.map((s) => (
-        <button
-          key={s}
-          className={`${styles.btn} ${s === side ? styles.active : ""}`}
-          onClick={() => setSide(s)}
-          aria-pressed={s === side}
-          aria-label={`Photo on ${s}`}
-        >
-          {s}
-        </button>
-      ))}
+      <span className={styles.label}>Photo</span>
+      <div className={styles.btns} role="group" aria-label="Photo side">
+        {SIDES.map((s) => {
+          const active = s.id === side
+          return (
+            <button
+              key={s.id}
+              className={`${styles.btn} ${active ? styles.active : ""}`}
+              onClick={() => setSide(s.id)}
+              aria-pressed={active}
+              aria-label={`Photo on ${s.id}`}
+            >
+              {s.label}
+            </button>
+          )
+        })}
+      </div>
     </div>
   )
 }
