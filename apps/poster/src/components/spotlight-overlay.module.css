@@ -1,0 +1,33 @@
+.hero {
+  position: absolute;
+  z-index: 5;
+  margin: var(--spacing-component); /* breathing space on every edge */
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-paragraph);
+  /* ~40% of the canvas short edge */
+  width: min(40vmin, 360px);
+  pointer-events: none;
+}
+
+/* Side anchoring. Top/bottom span the cross-axis; left/right stack vertically. */
+.right { top: 50%; right: 0; transform: translateY(-50%); }
+.left  { top: 50%; left: 0;  transform: translateY(-50%); }
+.top   { left: 50%; top: 0;  transform: translateX(-50%); flex-direction: row; align-items: center; }
+.bottom{ left: 50%; bottom: 0; transform: translateX(-50%); flex-direction: row-reverse; align-items: center; }
+
+.photo {
+  width: 100%;
+  aspect-ratio: var(--ratio);
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 8px 30px rgb(0 0 0 / 0.35);
+}
+
+.caption {
+  display: flex;
+  flex-direction: column;
+}
+
+.name { font-weight: 600; }
+.architect { opacity: 0.7; }
