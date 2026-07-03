@@ -32,6 +32,8 @@ export function PosterMap({
 }) {
   const previewMode = useUiStore((s) => s.previewMode)
   const setMapInstance = useMapInstanceStore((s) => s.setMap)
+  const toggle = useSelectionStore((s) => s.toggle)
+  const setAll = useSelectionStore((s) => s.setAll)
   // The single selected building's slug — passed through to <ArchMap> so its
   // plain pin renders in the shared `data-selected` (larger) state. Applies in
   // both modes: in overview the same building also gets a photo card, in
@@ -42,6 +44,17 @@ export function PosterMap({
   )
   // Overview preview = tiles only; spotlight preview keeps the marker.
   const hideMarkers = previewMode && !spotlight
+
+  // Clicking a marker mirrors the sidebar card for the active route: overview
+  // toggles the pin (multi-select), spotlight makes it the single spotlighted
+  // building (which the framing hook then flies to).
+  const handleArchClick = useCallback(
+    (slug: string) => {
+      if (spotlight) setAll(new Set([slug]))
+      else toggle(slug)
+    },
+    [spotlight, setAll, toggle]
+  )
 
   const handleRef = useCallback(
     (m: MapRef | null) => {
@@ -59,6 +72,7 @@ export function PosterMap({
         ref={handleRef}
         architectures={hideMarkers ? [] : buildings}
         selectedSlug={selectedSlug}
+        onArchClick={handleArchClick}
         capture
         ready
         showControls={!previewMode}
