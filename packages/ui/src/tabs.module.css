@@ -10,11 +10,12 @@
 }
 
 /* The trigger group. Default variant is a muted "pill"; `line` is transparent
-   with an underline indicator on the active trigger. */
+   with an underline indicator on the active trigger. The list fills its
+   container's width; triggers (flex:1) split it equally. */
 .list {
-  display: inline-flex;
+  display: flex;
   flex-shrink: 0;
-  width: fit-content;
+  width: 100%;
   align-items: center;
   justify-content: center;
   height: 2rem;

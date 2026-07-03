@@ -11,7 +11,8 @@ import { useMapInstanceStore } from "@/stores/map-instance"
 import { useVisibleArchs } from "@/hooks/use-visible-archs"
 import { useRouteSync } from "@/hooks/use-route-sync"
 import { useSpotlightFraming } from "@/hooks/use-spotlight-framing"
-import { Body2, Skeleton, Tabs, TabsList, TabsTrigger } from "@nolli/ui"
+import { Skeleton, Tabs, TabsList, TabsTrigger } from "@nolli/ui"
+import type { ReactNode } from "react"
 import type { PosterBuilding } from "@/types"
 import styles from "../app.module.css"
 
@@ -36,23 +37,22 @@ export function PosterShell({
   return (
     <div className={styles.shell}>
       {/* Sidebar stays mounted in both routes; capture mode hides it via
-          `sidebarOpen`. The tab group switches layout; below it, overview shows
-          the multi-select list, spotlight shows the side-flip + click-to-fly
-          list. */}
+          `sidebarOpen`. Every block is a SidebarSection so padding + labels
+          stay uniform; the list section grows to fill the remaining height. */}
       <SelectionSidebar>
-        <Tabs
-          value={route}
-          onValueChange={(v) => setRoute(v as Route)}
-          className={styles.sidebarSection}
-        >
-          <TabsList>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="spotlight">Spotlight</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <SidebarSection>
+          <Tabs value={route} onValueChange={(v) => setRoute(v as Route)}>
+            <TabsList>
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="spotlight">Spotlight</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </SidebarSection>
         {isSpotlight ? (
           <>
-            <SideFlipControl />
+            <SidebarSection label="Photo">
+              <SideFlipControl />
+            </SidebarSection>
             <VisibleSection buildings={buildings} spotlight />
           </>
         ) : (
@@ -71,6 +71,27 @@ export function PosterShell({
   )
 }
 
+/** A uniform sidebar block: consistent padding, optional label, flex column.
+ *  `grow` fills the sidebar's remaining height (the building list uses it). */
+function SidebarSection({
+  label,
+  grow = false,
+  children,
+}: {
+  label?: string
+  grow?: boolean
+  children: ReactNode
+}) {
+  return (
+    <section
+      className={`${styles.sidebarSection} ${grow ? styles.sidebarSectionGrow : ""}`}
+    >
+      {label && <span className={styles.sectionLabel}>{label}</span>}
+      {children}
+    </section>
+  )
+}
+
 /** Viewport-visible buildings, headed by a count, rendered as either the
  *  multi-select overview list or the click-to-fly spotlight list. */
 function VisibleSection({
@@ -83,16 +104,13 @@ function VisibleSection({
   const map = useMapInstanceStore((s) => s.map)
   const visible = useVisibleArchs(map, buildings)
   return (
-    <>
-      <div className={styles.sidebarHeader}>
-        <Body2>In view · {visible.length}</Body2>
-      </div>
+    <SidebarSection grow label={`In view · ${visible.length}`}>
       {spotlight ? (
         <SpotlightList buildings={visible} />
       ) : (
         <VisibleArchList buildings={visible} />
       )}
-    </>
+    </SidebarSection>
   )
 }
 

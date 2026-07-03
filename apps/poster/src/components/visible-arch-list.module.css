@@ -18,9 +18,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  /* Equal horizontal padding; the right side also reserves a gutter so row
-     hover boxes clear the scrollbar. */
-  padding: 0 var(--spacing-paragraph);
+  /* Horizontal padding comes from the surrounding SidebarSection. */
+  padding: 0;
 }
 
 .row {
