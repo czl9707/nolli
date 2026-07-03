@@ -27,15 +27,17 @@ export function SpotlightOverlay({ buildings }: { buildings: PosterBuilding[] })
   const ratio = building.cover.width / building.cover.height
 
   return (
-    <figure
-      className={`${styles.hero} ${styles[side]}`}
-      style={{ "--ratio": ratio, clipPath } as React.CSSProperties}
-    >
-      <img className={styles.photo} src={building.cover.image} alt={building.name} />
-      <figcaption className={styles.caption}>
-        <Body1 className={styles.name}>{building.name}</Body1>
-        <Body3 className={styles.architect}>{building.architect}</Body3>
-      </figcaption>
-    </figure>
+    <div className={`${styles.wrap} ${styles[side]}`}>
+      <figure
+        className={styles.hero}
+        style={{ "--ratio": ratio, clipPath } as React.CSSProperties}
+      >
+        <img className={styles.photo} src={building.cover.image} alt={building.name} />
+        <figcaption className={styles.caption}>
+          <Body1 className={styles.name}>{building.name}</Body1>
+          <Body3 className={styles.architect}>{building.architect}</Body3>
+        </figcaption>
+      </figure>
+    </div>
   )
 }

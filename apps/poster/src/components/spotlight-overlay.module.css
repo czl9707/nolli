@@ -1,21 +1,36 @@
-/* Hero photo card. Mirrors the overview <PhotoMarker> card — a paper mat with
-   the photo on top and the name + architect caption along the bottom — minus
-   the pin. The torn-paper edge comes from an inline clip-path (per building),
-   so the shadow must follow the clipped outline: a drop-shadow filter on the
-   card rather than a box-shadow (which would shadow the plain rectangle). The
-   mat carries the same grass-paper texture as @nolli/board (`::before`, behind
-   the opaque photo and caption so it reads only on the padding). `margin`
-   gives breathing space on every edge. */
-.hero {
+/* Anchor wrapper: owns corner positioning, breathing margin, and the
+   drop-shadow. The shadow MUST live here, not on .hero, because clip-path on
+   the same element as a filter clips the shadow away — the shadow renders
+   outside the clip region. Keeping filter on the parent and clip-path on the
+   child lets drop-shadow follow the torn-paper edge (same split as
+   @nolli/board's .shadowWrapper + .surface, and PhotoMarker's .wrap + .card). */
+.wrap {
   position: absolute;
   z-index: 5;
   margin: var(--spacing-component);
   width: min(40vmin, 360px);
+  filter: drop-shadow(4px 4px 4px rgb(var(--color-paper-foreground) / 0.2));
+  pointer-events: none;
+}
+
+/* Corner anchoring. The two offsets pin one corner; no transform needed.
+   Top corners clear the floating header (--size-header-height) so the card
+   never sits under it; the wrapper margin still adds breathing space. */
+.top-left     { top: var(--size-header-height); left: 0;  }
+.top-right    { top: var(--size-header-height); right: 0; }
+.bottom-left  { bottom: 0; left: 0;  }
+.bottom-right { bottom: 0; right: 0; }
+
+/* Hero photo card. Mirrors the overview <PhotoMarker> card — a paper mat with
+   the photo on top and the name + architect caption along the bottom — minus
+   the pin. The torn-paper edge comes from an inline clip-path (per building).
+   The mat carries the same grass-paper texture as @nolli/board (`::before`,
+   behind the opaque photo and caption so it reads only on the padding). */
+.hero {
+  position: relative;
   box-sizing: border-box;
   background: rgb(var(--color-paper-background));
   padding: var(--spacing-component);
-  filter: drop-shadow(0 8px 18px rgb(0 0 0 / 0.35));
-  pointer-events: none;
 }
 
 /* Grass-paper texture over the mat, matching @nolli/board's .surface::before.
@@ -26,7 +41,6 @@
   inset: 0;
   z-index: 0;
   background-image: url("/patterns/light/grass.png");
-  background-size: 128px 128px;
   opacity: 0.3;
   pointer-events: none;
 }
@@ -34,14 +48,6 @@
 body[data-theme="dark"] .hero::before {
   background-image: url("/patterns/dark/grass.png");
 }
-
-/* Corner anchoring. The two offsets pin one corner; no transform needed.
-   Top corners clear the floating header (--size-header-height) so the card
-   never sits under it; the section margin still adds breathing space. */
-.top-left     { top: var(--size-header-height); left: 0;  }
-.top-right    { top: var(--size-header-height); right: 0; }
-.bottom-left  { bottom: 0; left: 0;  }
-.bottom-right { bottom: 0; right: 0; }
 
 /* Lift content above the texture ::before so the mat reads only in the gaps. */
 .photo {
