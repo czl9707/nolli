@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react"
+import { flyToArchCinematic } from "@nolli/map"
 import { useMapInstanceStore } from "@/stores/map-instance"
 import { useRouteStore } from "@/stores/route"
 import type { Route } from "@/stores/route"
@@ -6,17 +7,14 @@ import type { Side } from "@/lib/url-state"
 import { useSelectionStore } from "@/stores/selection"
 import { spotlightPanVector } from "@/lib/spotlight-framing"
 import { parseMapParams } from "@/lib/url-state"
-import { MAP_TRANSITION_LONG, MAP_TRANSITION_SHORT } from "@nolli/ui"
+import { MAP_TRANSITION_SHORT } from "@nolli/ui"
 import type { PosterBuilding } from "@/types"
 
-/** Minimum zoom when entering spotlight, so a single building reads as the
- *  subject rather than a dot on a world map. A deeper current or URL zoom is
- *  preserved; only zoomed-out entries are bumped up. */
+/** Minimum zoom for the spotlighted building, so a single building reads as the
+ *  subject rather than a dot on a world map. Used as the floor for the cinematic
+ *  fly — a deeper current (or, on entry, URL) zoom is preserved. Matches the
+ *  default in @nolli/map's flyToArchCinematic. */
 const DEFAULT_SPOTLIGHT_ZOOM = 14
-
-/** Fly duration (ms) — entry / building change. Uses the shared long map
- *  transition (seconds → ms), the same scale as @nolli/map's long flights. */
-const FLY_DURATION = MAP_TRANSITION_LONG * 1000
 
 /** Ease duration (ms) — a corner-only change, a smooth pan to the new offset
  *  with no fly arc. Uses the shared short map transition; matches the hero
@@ -30,13 +28,15 @@ type FrameMode = "fly" | "ease" | "instant"
  * In spotlight, owns the viewport: center on the selected building, offset so
  * its marker lands centered in the quadrant opposite the hero photo.
  *
- * - Entering spotlight or changing the spotlighted building → flyTo (arc).
+ * - Entering spotlight or changing the spotlighted building (a sidebar card or
+ *   marker click) → the shared cinematic fly (adaptive duration, default zoom),
+ *   with the hero offset so the marker lands in the opposite quadrant.
  * - Changing the photo corner → easeTo (smooth pan to the new offset).
  * - Resizing → instant recompose.
  *
- * On entry it picks a building-level zoom: the deepest of the current zoom, an
- * explicit URL `zoom`, and DEFAULT_SPOTLIGHT_ZOOM. After that the user's manual
- * zoom is preserved across side/selection changes.
+ * On entry the target zoom is the deepest of the current zoom, an explicit URL
+ * `zoom`, and DEFAULT_SPOTLIGHT_ZOOM; otherwise clicks floor at the default.
+ * The user's manual zoom above the floor is preserved.
  *
  * No-op outside spotlight — the overview viewport is owned by useMapUrlState.
  */
@@ -81,24 +81,32 @@ export function useSpotlightFraming(
 
     const apply = (m: FrameMode) => {
       const canvas = map.getCanvas()
-      let zoom = map.getZoom()
-      if (justEntered) {
-        const urlZoom = parseMapParams(window.location.search).zoom
-        zoom = Math.max(zoom, urlZoom ?? -Infinity, DEFAULT_SPOTLIGHT_ZOOM)
-      }
+      // Entry honors an explicit URL zoom (deep-links); clicks floor at the
+      // default. flyToArchCinematic/easeTo/jumpTo never zoom out below the
+      // current zoom, so a deeper manual zoom is preserved.
+      const targetZoom = justEntered
+        ? Math.max(
+            map.getZoom(),
+            parseMapParams(window.location.search).zoom ?? -Infinity,
+            DEFAULT_SPOTLIGHT_ZOOM
+          )
+        : DEFAULT_SPOTLIGHT_ZOOM
       // The pan vector shifts the camera toward the photo corner; negating it
       // as an `offset` lands the building centered in the opposite quadrant.
       const [dx, dy] = spotlightPanVector(side, canvas.width, canvas.height)
       const center = [building.coordinates.lng, building.coordinates.lat] as [number, number]
       const offset = [-dx, -dy] as [number, number]
       if (m === "fly") {
-        map.flyTo({ center, zoom, offset, duration: FLY_DURATION, essential: true })
+        // Shared cinematic fly (adaptive duration + default zoom), carrying the
+        // hero offset so the marker lands opposite the photo. This is the path
+        // taken on entry and on any sidebar-card or marker click.
+        flyToArchCinematic(map, center[0], center[1], targetZoom, offset)
       } else if (m === "ease") {
-        map.easeTo({ center, zoom, offset, duration: EASE_DURATION })
+        map.easeTo({ center, zoom: map.getZoom(), offset, duration: EASE_DURATION })
       } else {
         // jumpTo has no `offset` (only flyTo/easeTo do), so center first, then
         // shift by the same pixel offset, instantly.
-        map.jumpTo({ center, zoom })
+        map.jumpTo({ center, zoom: map.getZoom() })
         map.panBy(offset, { duration: 0 })
       }
     }

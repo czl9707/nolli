@@ -8,6 +8,7 @@ export function flyToArchCinematic(
   lng: number,
   lat: number,
   zoom: number = DEFALT_MAP_ZOOM_LEVEL,
+  offset?: [number, number],
 ): void {
   const zoomDest = Math.max(map.getZoom(), zoom);
   const zoomDelta = zoomDest - map.getZoom();
@@ -24,6 +25,7 @@ export function flyToArchCinematic(
   map.flyTo({
     center: [lng, lat],
     zoom: Math.max(map.getZoom(), zoom),
+    offset,
     duration: duration,
     curve: 1.2,
     speed: 1.0,
