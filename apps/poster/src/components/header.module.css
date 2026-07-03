@@ -22,7 +22,7 @@
   user-select: none;
 }
 
-.sidebarButton {
+.left {
   flex: 1;
   display: flex;
   align-items: center;

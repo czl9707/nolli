@@ -1,35 +1,27 @@
 import { useUiStore } from "@/stores/ui"
 import { Button, H6 } from "@nolli/ui"
-import { PanelLeftClose, PanelLeftOpen } from "lucide-react"
 import { ThemeToggle } from "./theme-toggle"
-import { CaptureToggle } from "./capture-toggle"
+import { PreviewToggle } from "./preview-toggle"
+import { ScreenshotButton } from "./screenshot-button"
 import styles from "./header.module.css"
 
 /**
- * Desktop-only top bar, copy-adapted from nolli's Header. Holds the sidebar
- * toggle (wired to the poster's useUiStore), the brand, and on the right the
- * capture toggle + theme toggle. Stays visible in capture mode so the capture
- * toggle remains reachable to exit.
+ * Desktop-only top bar. The left slot holds the screenshot button — present
+ * only in preview mode, since that's the screenshot-ready frame. The brand sits
+ * in the center; preview + theme toggles on the right. Marked
+ * `data-no-screenshot` so the capture excludes it from the downloaded image.
  */
 export function Header() {
-  const sidebarOpen = useUiStore((s) => s.sidebarOpen)
-  const setSidebarOpen = useUiStore((s) => s.setSidebarOpen)
+  const previewMode = useUiStore((s) => s.previewMode)
 
   return (
-    <header className={styles.header}>
-      <div className={styles.sidebarButton}>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
-        >
-          {sidebarOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
-        </Button>
+    <header className={styles.header} data-no-screenshot>
+      <div className={styles.left}>
+        {previewMode && <ScreenshotButton />}
       </div>
       <H6 className={styles.title}>Nolli</H6>
       <div className={styles.right}>
-        <CaptureToggle />
+        <PreviewToggle />
         <ThemeToggle />
       </div>
     </header>

@@ -164,6 +164,9 @@ importers:
       framer-motion:
         specifier: ^12.40.0
         version: 12.42.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      html-to-image:
+        specifier: ^1.11.13
+        version: 1.11.13
       lucide-react:
         specifier: ^1.16.0
         version: 1.22.0(react@19.2.7)
@@ -2525,6 +2528,9 @@ packages:
   globals@14.0.0:
     resolution: {integrity: sha512-oahGvuMGQlPw/ivIYBjVSrWAfWLBeku5tpPE2fOPLi+WHffIWbuh2tCjhyQhTBPMf5E9jDEH4FOmTYgYwbKwtQ==}
     engines: {node: '>=18'}
+
+  html-to-image@1.11.13:
+    resolution: {integrity: sha512-cuOPoI7WApyhBElTTb9oqsawRvZ0rHhaHwghRLlTuffoD1B2aDemlCruLeZrUIIdvG7gs9xeELEPm6PhuASqrg==}
 
   ieee754@1.2.1:
     resolution: {integrity: sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==}
@@ -5337,6 +5343,8 @@ snapshots:
       is-glob: 4.0.3
 
   globals@14.0.0: {}
+
+  html-to-image@1.11.13: {}
 
   ieee754@1.2.1: {}
 

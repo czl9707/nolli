@@ -36,8 +36,8 @@ export function PosterShell({
 
   return (
     <div className={styles.shell}>
-      {/* Sidebar stays mounted in both routes; capture mode hides it via
-          `sidebarOpen`. Every block is a SidebarSection so padding + labels
+      {/* Sidebar stays mounted in both routes; preview mode hides it via
+          `previewMode`. Every block is a SidebarSection so padding + labels
           stay uniform; the list section grows to fill the remaining height. */}
       <SelectionSidebar>
         <SidebarSection>
@@ -62,7 +62,7 @@ export function PosterShell({
       {/* `.inset` is relative + flex:1; the map is absolute-fill inside it
           (full-bleed), the header floats on top, and the spotlight hero anchors
           to `.inset`. The map stays mounted across the route switch. */}
-      <div className={styles.inset}>
+      <div className={styles.inset} data-poster-frame>
         <Header />
         <PosterMap buildings={buildings} spotlight={isSpotlight} />
         {isSpotlight && <SpotlightOverlay buildings={buildings} />}

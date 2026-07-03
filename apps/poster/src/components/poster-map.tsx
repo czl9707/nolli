@@ -3,6 +3,7 @@ import { ArchMap } from "@nolli/map"
 import type { MapRef } from "@nolli/map"
 import { useUiStore } from "@/stores/ui"
 import { useMapInstanceStore } from "@/stores/map-instance"
+import { useSelectionStore } from "@/stores/selection"
 import { PhotoMarkers } from "./photo-markers"
 import type { PosterBuilding } from "@/types"
 import styles from "./poster-map.module.css"
@@ -14,9 +15,13 @@ import styles from "./poster-map.module.css"
  * and forwards <ArchMap>'s map instance into the shared store so the sidebar's
  * viewport filter can read map bounds.
  *
- * Capture mode passes an empty architectures array so <ArchMap> renders no
- * plain markers — leaving a clean map + photos frame. The map is always
- * "ready" here because App early-returns while the snapshot is loading.
+ * `capture` is always on so the WebGL canvas can be read back into a PNG
+ * (preserveDrawingBuffer); the perf cost is poster-only — nolli doesn't pay it.
+ *
+ * Preview mode framing differs by route: overview hides everything for a clean
+ * tiles-only frame; spotlight hides only the controls so the marker (and the
+ * hero photo tied to it) stay visible. The map is always "ready" here because
+ * App early-returns while the snapshot is loading.
  */
 export function PosterMap({
   buildings,
@@ -25,8 +30,18 @@ export function PosterMap({
   buildings: PosterBuilding[]
   spotlight: boolean
 }) {
-  const captureMode = useUiStore((s) => s.captureMode)
+  const previewMode = useUiStore((s) => s.previewMode)
   const setMapInstance = useMapInstanceStore((s) => s.setMap)
+  // The single selected building's slug — passed through to <ArchMap> so its
+  // plain pin renders in the shared `data-selected` (larger) state. Applies in
+  // both modes: in overview the same building also gets a photo card, in
+  // spotlight the hero overlay floats off the map and this pin is the only
+  // marker, so highlighting it ties the photo to its location.
+  const selectedSlug = useSelectionStore((s) =>
+    s.selected.size === 0 ? undefined : Array.from(s.selected)[0]
+  )
+  // Overview preview = tiles only; spotlight preview keeps the marker.
+  const hideMarkers = previewMode && !spotlight
 
   const handleRef = useCallback(
     (m: MapRef | null) => {
@@ -42,9 +57,11 @@ export function PosterMap({
     <div className={styles.container}>
       <ArchMap
         ref={handleRef}
-        architectures={captureMode ? [] : buildings}
+        architectures={hideMarkers ? [] : buildings}
+        selectedSlug={selectedSlug}
+        capture
         ready
-        showControls={!captureMode}
+        showControls={!previewMode}
       >
         {!spotlight && <PhotoMarkers buildings={buildings} />}
       </ArchMap>

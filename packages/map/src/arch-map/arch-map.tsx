@@ -24,6 +24,14 @@ export type ArchMapProps = {
   ready: boolean
   /** Show zoom/locate/fullscreen controls. Default true. */
   showControls?: boolean
+  /**
+   * Opt into client-side screenshot capture (e.g. html-to-image). Sets
+   * MapLibre's `preserveDrawingBuffer: true` so the WebGL canvas can be read
+   * back into an image; otherwise the captured map tiles are blank. Off by
+   * default — it disables a GPU compositing optimization, so only the app that
+   * actually screenshots (poster) should enable it.
+   */
+  capture?: boolean
   /** Extra content rendered inside <Map> (after the marker layer) — e.g. overlays. */
   children?: ReactNode
 }
@@ -44,6 +52,7 @@ export const ArchMap = forwardRef<MapRef, ArchMapProps>(function ArchMap(
     onArchClick,
     ready,
     showControls = true,
+    capture = false,
     children,
   },
   ref
@@ -72,7 +81,12 @@ export const ArchMap = forwardRef<MapRef, ArchMapProps>(function ArchMap(
 
   return (
     <div className={styles.container}>
-      <Map ref={handleRef} styles={mapStyles} loading={isLoading}>
+      <Map
+        ref={handleRef}
+        styles={mapStyles}
+        loading={isLoading}
+        canvasContextAttributes={capture ? { preserveDrawingBuffer: true } : undefined}
+      >
         {showControls && <MapControls showZoom showLocate showFullscreen />}
         <ArchMarkers
           architectures={architectures}

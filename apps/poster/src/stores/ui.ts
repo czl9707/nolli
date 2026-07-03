@@ -1,19 +1,18 @@
 import { create } from "zustand"
 
 type UiState = {
-  /** Left sidebar open (selection list visible). Closed by capture mode. */
-  sidebarOpen: boolean
-  setSidebarOpen: (open: boolean) => void
-  /** Capture mode: hides plain markers, controls, and sidebar for a clean frame. */
-  captureMode: boolean
-  toggleCapture: () => void
+  /**
+   * Preview mode: a clean, screenshot-ready map frame. Hides the map controls;
+   * in overview it also hides the markers, in spotlight the marker stays so the
+   * hero photo stays tied to its location. The sidebar stays open (the
+   * screenshot targets `.inset`, not it). The screenshot button lives in the
+   * header only while preview is on.
+   */
+  previewMode: boolean
+  togglePreview: () => void
 }
 
 export const useUiStore = create<UiState>((set) => ({
-  sidebarOpen: true,
-  setSidebarOpen: (open) => set({ sidebarOpen: open }),
-  captureMode: false,
-  // Entering capture closes the sidebar; exiting restores it.
-  toggleCapture: () =>
-    set((s) => ({ captureMode: !s.captureMode, sidebarOpen: s.captureMode })),
+  previewMode: false,
+  togglePreview: () => set((s) => ({ previewMode: !s.previewMode })),
 }))
