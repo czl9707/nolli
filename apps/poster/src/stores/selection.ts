@@ -5,6 +5,8 @@ type SelectionState = {
   selected: Set<string>
   toggle: (slug: string) => void
   isSelected: (slug: string) => boolean
+  /** Replace the entire selection (used to hydrate from the URL). */
+  setAll: (slugs: Set<string>) => void
   clear: () => void
 }
 
@@ -18,5 +20,6 @@ export const useSelectionStore = create<SelectionState>((set, get) => ({
       return { selected: next }
     }),
   isSelected: (slug) => get().selected.has(slug),
+  setAll: (slugs) => set({ selected: new Set(slugs) }),
   clear: () => set({ selected: new Set() }),
 }))

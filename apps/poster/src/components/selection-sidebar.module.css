@@ -17,5 +17,5 @@
   flex-direction: column;
   /* Horizontal padding lives on the header label and the list (so the list can
      reserve a right gutter for the scrollbar). */
-  padding: 1rem 0;
+  padding: var(--spacing-paragraph) 0;
 }

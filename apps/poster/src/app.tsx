@@ -1,5 +1,6 @@
 import { useBuildings } from "@/data/use-buildings"
 import { useVisibleArchs } from "@/hooks/use-visible-archs"
+import { useMapUrlState } from "@/hooks/use-map-url-state"
 import { useMapInstanceStore } from "@/stores/map-instance"
 import { PosterMap } from "@/components/poster-map"
 import { Header } from "@/components/header"
@@ -7,12 +8,23 @@ import { SelectionSidebar } from "@/components/selection-sidebar"
 import { VisibleArchList } from "@/components/visible-arch-list"
 import type { PosterBuilding } from "@/types"
 import styles from "./app.module.css"
+import { Body2, Skeleton } from "@nolli/ui"
 
 export function App() {
   const snap = useBuildings()
+  const buildingsReady = snap.status === "ready"
 
-  if (snap.status === "loading") return <div style={{ padding: "2rem" }}>Loading…</div>
-  if (snap.status === "error") return <div style={{ padding: "2rem" }}>Error: {snap.error.message}</div>
+  useMapUrlState(buildingsReady)
+
+  if (snap.status === "loading")
+    return (
+      <div style={{ padding: "var(--spacing-component)", display: "grid", gap: "var(--spacing-paragraph)" }}>
+        <Skeleton height="var(--size-header-height)" />
+        <Skeleton height="2rem" />
+        <Skeleton height="2rem" />
+      </div>
+    )
+  if (snap.status === "error") return <div style={{ padding: "var(--spacing-component)" }}>Error: {snap.error.message}</div>
 
   return (
     <div className={styles.shell}>
@@ -34,7 +46,9 @@ function VisibleArchListBridge({ buildings }: { buildings: PosterBuilding[] }) {
   return (
     <>
       <div className={styles.sidebarHeader}>
-        In view · {visible.length}
+        <Body2>
+          In view · {visible.length}
+        </Body2>
       </div>
       <VisibleArchList buildings={visible} />
     </>

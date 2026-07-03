@@ -1,6 +1,4 @@
 .sun {
-    width: 1rem;
-    height: 1rem;
     transform: scale(1) rotate(0deg);
     transition: all var(--transition-short);
 
@@ -11,8 +9,6 @@
 
 .moon {
     position: absolute;
-    width: 1rem;
-    height: 1rem;
     transform: scale(0) rotate(90deg);
     transition: all var(--transition-short);
 

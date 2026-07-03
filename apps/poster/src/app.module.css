@@ -16,10 +16,8 @@
 
 .sidebarHeader {
   flex-shrink: 0;
-  font-size: 0.8rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: rgb(var(--color-secondary-foreground));
-  margin-bottom: 0.75rem;
-  padding: 0 0.75rem;
+  margin-bottom: var(--spacing-paragraph);
+  padding: 0 var(--spacing-component);
+  opacity: 0.7;
 }

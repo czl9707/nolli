@@ -3,7 +3,7 @@ import { MapMarker, MarkerContent } from "@nolli/map"
 import type { PosterBuilding } from "@/types"
 import { hashId, jitter } from "./paper-clip"
 import styles from "./photo-marker.module.css"
-import { Body1, Body2 } from "@nolli/ui"
+import { Body2, Body3 } from "@nolli/ui"
 
 // Cap the cover image so oversized photos don't dominate the poster — both
 // dimensions are bounded, fitting the intrinsic aspect ratio inside the box.
@@ -51,7 +51,7 @@ export function PhotoMarker({ building }: { building: PosterBuilding }) {
             />
             <figcaption className={styles.caption} style={{ width }}>
               <Body2 className={styles.name}>{building.name}</Body2>
-              <Body2 className={styles.architect}>{building.architect}</Body2>
+              <Body3 className={styles.architect}>{building.architect}</Body3>
             </figcaption>
           </div>
           <img
