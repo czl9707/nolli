@@ -1,0 +1,27 @@
+.wrap {
+  position: absolute;
+  top: calc(var(--size-header-height) + var(--spacing-component));
+  right: var(--spacing-component);
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: rgb(var(--color-primary-background));
+  padding: 4px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.2);
+}
+.btn {
+  border: none;
+  background: transparent;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  text-transform: capitalize;
+  color: rgb(var(--color-primary-foreground));
+}
+.active {
+  background: rgb(var(--color-primary-foreground));
+  color: rgb(var(--color-primary-background));
+}
