@@ -1,23 +1,24 @@
-import { useEffect, useRef } from "react"
+import { useEffect } from "react"
 import { useRouteStore } from "@/stores/route"
-import { parseMapParams, serializeMapParams } from "@/lib/url-state"
-import { useSelectionStore } from "@/stores/selection"
+import type { Side } from "@/lib/url-state"
+import { mergeQuery } from "@/lib/url-state"
 
 /** The spotlight path. Anything else is treated as the overview. */
 const SPOTLIGHT_PATH = "/spotlight"
 
-function routeFromPath(pathname: string) {
-  return pathname === SPOTLIGHT_PATH ? "spotlight" : "overview"
-}
+const SIDES: Side[] = ["left", "right", "top", "bottom"]
 
 /**
  * Keeps the route (pathname) and `side` (query) in sync with the URL and the
  * route store. Mounted once from <PosterShell>.
  *
- * - On mount: hydrate store from pathname + ?side.
- * - On store change: write pathname (pushState on route change so the back
- *   button works; replaceState on side change — composition, not navigation).
- * - On popstate: re-hydrate from the URL.
+ * Initial values come from the store's lazy initializer (which reads the URL at
+ * creation), so there's no mount-time hydrate that could race with the map
+ * hook's URL writes. Browser back/forward re-hydrates via popstate.
+ *
+ * - Route changes are navigation: pushState a new pathname, preserving query.
+ * - Side changes are composition: replaceState, merging into existing query
+ *   (so center/zoom/selection owned by use-map-url-state are preserved).
  */
 export function useRouteSync() {
   const route = useRouteStore((s) => s.route)
@@ -25,34 +26,27 @@ export function useRouteSync() {
   const setRoute = useRouteStore((s) => s.setRoute)
   const setSide = useRouteStore((s) => s.setSide)
 
-  // Hydrate once on mount + on browser navigation.
+  // Re-hydrate from the URL on browser navigation (back/forward).
   useEffect(() => {
-    const hydrate = () => {
-      setRoute(routeFromPath(window.location.pathname))
-      const parsed = parseMapParams(window.location.search)
-      setSide(parsed.side ?? "right")
+    const onPop = () => {
+      setRoute(window.location.pathname === SPOTLIGHT_PATH ? "spotlight" : "overview")
+      const raw = new URLSearchParams(window.location.search).get("side")
+      setSide(raw !== null && SIDES.includes(raw as Side) ? (raw as Side) : "right")
     }
-    hydrate()
-    window.addEventListener("popstate", hydrate)
-    return () => window.removeEventListener("popstate", hydrate)
+    window.addEventListener("popstate", onPop)
+    return () => window.removeEventListener("popstate", onPop)
   }, [setRoute, setSide])
 
-  // Persist route + side to the URL whenever they change. Route changes are
-  // navigation (pushState — back button returns to the other layout); side
-  // changes are composition (replaceState — no back-button flooding).
-  const prevRouteRef = useRef(route)
+  // Route → push a new pathname, preserving the current query string.
   useEffect(() => {
     const pathname = route === "spotlight" ? SPOTLIGHT_PATH : "/"
-    const selection = useSelectionStore.getState().selected
-    const query = serializeMapParams({ selection, side })
-    const search = query ? `?${query}` : ""
-    const next = `${pathname}${search}`
-    // Skip when the URL text is already identical.
-    if (`${window.location.pathname}${window.location.search}` === next) return
-    const isNavigation = prevRouteRef.current !== route
-    prevRouteRef.current = route
-    const method = isNavigation ? "pushState" : "replaceState"
-    window.history[method](null, "", next)
+    if (window.location.pathname === pathname) return
+    window.history.pushState(null, "", `${pathname}${window.location.search}`)
+  }, [route])
+
+  // Side → merge into the existing query (default "right" omits the key).
+  useEffect(() => {
+    mergeQuery({ side: side !== "right" ? side : undefined })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [route, side])
+  }, [side])
 }

@@ -62,7 +62,7 @@ function parseSide(raw: string | null): Side | undefined {
   return SIDES.includes(raw as Side) ? (raw as Side) : undefined
 }
 
-function round(value: number, places: number): number {
+export function round(value: number, places: number): number {
   const factor = 10 ** places
   return Math.round(value * factor) / factor
 }
@@ -88,4 +88,24 @@ export function serializeMapParams(state: MapParamState): string {
   }
 
   return parts.join("&")
+}
+
+/**
+ * Merge partial query-param updates into the current URL, preserving any params
+ * the caller did not touch. `undefined` or "" deletes the key. Uses
+ * replaceState (composition, not navigation) and keeps the current pathname.
+ *
+ * This lets independent hooks each own their own subset of params — the map
+ * hook writes center/zoom/selection, the route hook writes side — without one
+ * clobbering the others, because each only edits its own keys.
+ */
+export function mergeQuery(updates: Record<string, string | undefined>) {
+  const params = new URLSearchParams(window.location.search)
+  for (const [key, value] of Object.entries(updates)) {
+    if (value === undefined || value === "") params.delete(key)
+    else params.set(key, value)
+  }
+  const search = params.toString()
+  const next = `${window.location.pathname}${search ? `?${search}` : ""}`
+  window.history.replaceState(null, "", next)
 }

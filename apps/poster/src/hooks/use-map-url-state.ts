@@ -3,7 +3,7 @@ import type MapLibreGL from "maplibre-gl"
 import { useMapInstanceStore } from "@/stores/map-instance"
 import { useRouteStore } from "@/stores/route"
 import { useSelectionStore } from "@/stores/selection"
-import { parseMapParams, serializeMapParams } from "@/lib/url-state"
+import { mergeQuery, parseMapParams, round } from "@/lib/url-state"
 
 /**
  * Keeps the map's center, zoom, and the current selection synchronized with the
@@ -82,13 +82,12 @@ export function useMapUrlState(buildingsReady: boolean) {
 function writeUrl(map: MapLibreGL.Map) {
   const selected = useSelectionStore.getState().selected
   const c = map.getCenter()
-  const center: [number, number] = [c.lng, c.lat]
   const zoom = map.getZoom()
 
-  const query = serializeMapParams({ center, zoom, selection: selected })
-  const nextUrl = query
-    ? `${window.location.pathname}?${query}`
-    : window.location.pathname
-
-  window.history.replaceState(null, "", nextUrl)
+  // Merge only the map-owned keys; preserve `side` (owned by use-route-sync).
+  mergeQuery({
+    center: `${round(c.lng, 5)},${round(c.lat, 5)}`,
+    zoom: String(round(zoom, 2)),
+    selection: selected.size > 0 ? Array.from(selected).join(",") : undefined,
+  })
 }
