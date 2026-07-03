@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "pnpm run generate:patterns && vite build",
     "generate:patterns": "tsx --tsconfig tsconfig.vite.json ../../packages/map/scripts/generate-patterns.ts",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc -p tsconfig.vite.json --noEmit",
     "lint": "eslint",
     "test": "vitest run"
   },

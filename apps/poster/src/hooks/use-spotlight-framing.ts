@@ -96,7 +96,10 @@ export function useSpotlightFraming(
       } else if (m === "ease") {
         map.easeTo({ center, zoom, offset, duration: EASE_DURATION })
       } else {
-        map.jumpTo({ center, zoom, offset })
+        // jumpTo has no `offset` (only flyTo/easeTo do), so center first, then
+        // shift by the same pixel offset, instantly.
+        map.jumpTo({ center, zoom })
+        map.panBy(offset, { duration: 0 })
       }
     }
     apply(mode)
@@ -107,23 +110,4 @@ export function useSpotlightFraming(
     // per slug — a data refresh must not trigger a re-frame, so it's excluded.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, route, side, slug, buildingsReady])
-}
-
-function spotlightPanVector(
-  side: Side,
-  width: number,
-  height: number
-): [number, number] {
-  const qx = Math.round(width * 0.1)
-  const qy = Math.round(height * 0.1)
-  switch (side) {
-    case "top-right":
-      return [qx, -qy]
-    case "top-left":
-      return [-qx, -qy]
-    case "bottom-right":
-      return [qx, qy]
-    case "bottom-left":
-      return [-qx, qy]
-  }
 }
