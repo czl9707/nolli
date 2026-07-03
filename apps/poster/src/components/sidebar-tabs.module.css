@@ -1,28 +1,12 @@
-/* Two-tab layout switcher pinned to the top of the sidebar. */
-.wrap {
+/* Stretch the shared <Tabs> to fill the sidebar column. The component defaults
+   to fit-content width; here we want the tab group full-width. Overrides target
+   the unhashed data-slot attributes so they win over the package's own classes. */
+.tabs {
+  width: 100%;
   flex-shrink: 0;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.25rem;
   padding: 0 var(--spacing-paragraph) var(--spacing-paragraph);
 }
 
-.tab {
-  border: 1px solid rgb(var(--color-primary-foreground) / 0.15);
-  background: transparent;
-  padding: 0.5rem;
-  border-radius: var(--size-border-radius);
-  cursor: pointer;
-  font-size: 0.85rem;
-  color: rgb(var(--color-primary-foreground));
-}
-
-.tab:hover {
-  background: rgb(var(--color-primary-foreground) / 0.08);
-}
-
-.active {
-  background: rgb(var(--color-primary-foreground));
-  color: rgb(var(--color-primary-background));
-  border-color: transparent;
+.tabs :global([data-slot="tabs-list"]) {
+  width: 100%;
 }
