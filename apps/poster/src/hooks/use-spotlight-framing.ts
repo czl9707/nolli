@@ -6,6 +6,7 @@ import type { Side } from "@/lib/url-state"
 import { useSelectionStore } from "@/stores/selection"
 import { spotlightPanVector } from "@/lib/spotlight-framing"
 import { parseMapParams } from "@/lib/url-state"
+import { MAP_TRANSITION_LONG, MAP_TRANSITION_SHORT } from "@nolli/ui"
 import type { PosterBuilding } from "@/types"
 
 /** Minimum zoom when entering spotlight, so a single building reads as the
@@ -13,14 +14,14 @@ import type { PosterBuilding } from "@/types"
  *  preserved; only zoomed-out entries are bumped up. */
 const DEFAULT_SPOTLIGHT_ZOOM = 14
 
-/** Fly duration (ms) when traveling to a different building or entering
- *  spotlight. */
-const FLY_DURATION = 1200
+/** Fly duration (ms) — entry / building change. Uses the shared long map
+ *  transition (seconds → ms), the same scale as @nolli/map's long flights. */
+const FLY_DURATION = MAP_TRANSITION_LONG * 1000
 
-/** Ease duration (ms) when only the photo corner changes — a smooth pan to the
- *  new offset, no fly arc. Kept in sync with the hero card's layout animation
- *  (~0.6s) so the map and photo move together. */
-const EASE_DURATION = 600
+/** Ease duration (ms) — a corner-only change, a smooth pan to the new offset
+ *  with no fly arc. Uses the shared short map transition; matches the hero
+ *  card's framer-motion layout duration so the map and photo travel together. */
+const EASE_DURATION = MAP_TRANSITION_SHORT * 1000
 
 /** How the camera reaches the target frame. */
 type FrameMode = "fly" | "ease" | "instant"
