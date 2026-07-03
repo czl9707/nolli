@@ -11,5 +11,5 @@ export function App() {
   if (snap.status === "error")
     return <div style={{ padding: "var(--spacing-component)" }}>Error: {snap.error.message}</div>
 
-  return <PosterShell buildings={snap.buildings} />
+  return <PosterShell buildings={snap.buildings} buildingsReady />
 }

@@ -8,6 +8,7 @@ import { useRouteStore } from "@/stores/route"
 import { useMapInstanceStore } from "@/stores/map-instance"
 import { useVisibleArchs } from "@/hooks/use-visible-archs"
 import { useRouteSync } from "@/hooks/use-route-sync"
+import { useSpotlightFraming } from "@/hooks/use-spotlight-framing"
 import { Body2, Skeleton } from "@nolli/ui"
 import type { PosterBuilding } from "@/types"
 import styles from "../app.module.css"
@@ -17,10 +18,17 @@ import styles from "../app.module.css"
  * overview ↔ spotlight switch — only the overlay region changes. This keeps
  * tiles, view state, and cluster animations alive.
  */
-export function PosterShell({ buildings }: { buildings: PosterBuilding[] }) {
+export function PosterShell({
+  buildings,
+  buildingsReady,
+}: {
+  buildings: PosterBuilding[]
+  buildingsReady: boolean
+}) {
   const route = useRouteStore((s) => s.route)
   const isSpotlight = route === "spotlight"
   useRouteSync()
+  useSpotlightFraming(buildings, buildingsReady)
 
   return (
     <div className={styles.shell}>
