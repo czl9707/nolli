@@ -37,6 +37,12 @@ describe("parseMapParams", () => {
     const r = parseMapParams("?selection=,,a,,")
     expect(r.selection).toEqual(new Set(["a"]))
   })
+
+  it("drops out-of-range center coordinates", () => {
+    expect(parseMapParams("?center=999,999").center).toBeUndefined()
+    expect(parseMapParams("?center=2.33,91").center).toBeUndefined()
+    expect(parseMapParams("?center=2.33,48.86").center).toEqual([2.33, 48.86])
+  })
 })
 
 describe("serializeMapParams", () => {
