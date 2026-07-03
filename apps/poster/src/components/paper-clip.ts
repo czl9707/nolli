@@ -15,3 +15,18 @@ export function hashId(id: string): number {
   }
   return h
 }
+
+/**
+ * Deterministic, slightly-irregular quadrilateral clip — the torn-paper edge
+ * shared with @nolli/board. Keyed by id so a given building always gets the
+ * same shape. Keep in sync with packages/board/src/paper-clip.ts.
+ */
+export function paperClipPath(id: string): string {
+  const s = hashId(id)
+  const j = 5
+  const tl = `${jitter(s, j)}px ${jitter(s + 1, j)}px`
+  const tr = `calc(100% - ${jitter(s + 2, j)}px) ${jitter(s + 3, j)}px`
+  const br = `calc(100% - ${jitter(s + 4, j)}px) calc(100% - ${jitter(s + 5, j)}px)`
+  const bl = `${jitter(s + 6, j)}px calc(100% - ${jitter(s + 7, j)}px)`
+  return `polygon(${tl}, ${tr}, ${br}, ${bl})`
+}

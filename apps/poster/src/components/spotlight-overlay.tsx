@@ -3,6 +3,7 @@ import { useRouteStore } from "@/stores/route"
 import { useSelectionStore } from "@/stores/selection"
 import { Body1, Body3 } from "@nolli/ui"
 import type { PosterBuilding } from "@/types"
+import { paperClipPath } from "./paper-clip"
 import styles from "./spotlight-overlay.module.css"
 
 export function SpotlightOverlay({ buildings }: { buildings: PosterBuilding[] }) {
@@ -14,6 +15,13 @@ export function SpotlightOverlay({ buildings }: { buildings: PosterBuilding[] })
     return buildings.find((b) => b.slug === slug) ?? null
   }, [selected, buildings])
 
+  // Deterministic torn-paper edge per building, same helper as the overview
+  // photo markers and @nolli/board.
+  const clipPath = useMemo(
+    () => (building ? paperClipPath(building.slug) : undefined),
+    [building]
+  )
+
   if (!building) return null
 
   const ratio = building.cover.width / building.cover.height
@@ -21,7 +29,7 @@ export function SpotlightOverlay({ buildings }: { buildings: PosterBuilding[] })
   return (
     <figure
       className={`${styles.hero} ${styles[side]}`}
-      style={{ "--ratio": ratio } as React.CSSProperties}
+      style={{ "--ratio": ratio, clipPath } as React.CSSProperties}
     >
       <img className={styles.photo} src={building.cover.image} alt={building.name} />
       <figcaption className={styles.caption}>

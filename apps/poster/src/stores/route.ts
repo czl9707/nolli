@@ -15,7 +15,7 @@ function initialRoute(): Route {
 }
 
 function initialSide(): Side {
-  return (typeof window !== "undefined" && parseMapParams(window.location.search).side) || "right"
+  return (typeof window !== "undefined" && parseMapParams(window.location.search).side) || "top-right"
 }
 
 type RouteState = {

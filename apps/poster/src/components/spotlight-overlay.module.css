@@ -1,32 +1,41 @@
+/* Hero photo card. Mirrors the overview <PhotoMarker> card — a white mat with
+   the photo on top and the name + architect caption along the bottom — minus
+   the pin. The torn-paper edge comes from an inline clip-path (per building),
+   so the shadow must follow the clipped outline: a drop-shadow filter on the
+   wrapper rather than a box-shadow on the card (which would shadow the plain
+   rectangle). `margin` gives breathing space on every edge. */
 .hero {
   position: absolute;
   z-index: 5;
-  margin: var(--spacing-component); /* breathing space on every edge */
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-paragraph);
-  /* ~40% of the canvas short edge */
+  margin: var(--spacing-component);
   width: min(40vmin, 360px);
+  box-sizing: border-box;
+  background: #fff;
+  padding: var(--spacing-component);
+  filter: drop-shadow(0 8px 18px rgb(0 0 0 / 0.35));
   pointer-events: none;
 }
 
-/* Side anchoring. Top/bottom span the cross-axis; left/right stack vertically. */
-.right { top: 50%; right: 0; transform: translateY(-50%); }
-.left  { top: 50%; left: 0;  transform: translateY(-50%); }
-.top   { left: 50%; top: 0;  transform: translateX(-50%); flex-direction: row; align-items: center; }
-.bottom{ left: 50%; bottom: 0; transform: translateX(-50%); flex-direction: row-reverse; align-items: center; }
+/* Corner anchoring. The two offsets pin one corner; no transform needed.
+   Top corners clear the floating header (--size-header-height) so the card
+   never sits under it; the section margin still adds breathing space. */
+.top-left     { top: var(--size-header-height); left: 0;  }
+.top-right    { top: var(--size-header-height); right: 0; }
+.bottom-left  { bottom: 0; left: 0;  }
+.bottom-right { bottom: 0; right: 0; }
 
 .photo {
+  display: block;
   width: 100%;
   aspect-ratio: var(--ratio);
   object-fit: cover;
-  border-radius: 8px;
-  box-shadow: 0 8px 30px rgb(0 0 0 / 0.35);
 }
 
 .caption {
   display: flex;
   flex-direction: column;
+  margin-top: var(--spacing-paragraph);
+  color: rgb(var(--color-paper-foreground));
 }
 
 .name { font-weight: 600; }

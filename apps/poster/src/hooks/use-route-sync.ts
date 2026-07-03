@@ -6,7 +6,7 @@ import { mergeQuery } from "@/lib/url-state"
 /** The spotlight path. Anything else is treated as the overview. */
 const SPOTLIGHT_PATH = "/spotlight"
 
-const SIDES: Side[] = ["left", "right", "top", "bottom"]
+const SIDES: Side[] = ["top-left", "top-right", "bottom-left", "bottom-right"]
 
 /**
  * Keeps the route (pathname) and `side` (query) in sync with the URL and the
@@ -31,7 +31,7 @@ export function useRouteSync() {
     const onPop = () => {
       setRoute(window.location.pathname === SPOTLIGHT_PATH ? "spotlight" : "overview")
       const raw = new URLSearchParams(window.location.search).get("side")
-      setSide(raw !== null && SIDES.includes(raw as Side) ? (raw as Side) : "right")
+      setSide(raw !== null && SIDES.includes(raw as Side) ? (raw as Side) : "top-right")
     }
     window.addEventListener("popstate", onPop)
     return () => window.removeEventListener("popstate", onPop)
@@ -44,9 +44,9 @@ export function useRouteSync() {
     window.history.pushState(null, "", `${pathname}${window.location.search}`)
   }, [route])
 
-  // Side → merge into the existing query (default "right" omits the key).
+  // Side → merge into the existing query (default "top-right" omits the key).
   useEffect(() => {
-    mergeQuery({ side: side !== "right" ? side : undefined })
+    mergeQuery({ side: side !== "top-right" ? side : undefined })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [side])
 }

@@ -1,9 +1,9 @@
 export type LngLat = [number, number]
 
-export type Side = "left" | "right" | "top" | "bottom"
+export type Side = "top-left" | "top-right" | "bottom-left" | "bottom-right"
 
-const DEFAULT_SIDE: Side = "right"
-const SIDES: Side[] = ["left", "right", "top", "bottom"]
+const DEFAULT_SIDE: Side = "top-right"
+const SIDES: Side[] = ["top-left", "top-right", "bottom-left", "bottom-right"]
 
 export type MapParamState = {
   center?: LngLat
