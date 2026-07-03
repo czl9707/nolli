@@ -19,7 +19,10 @@ export function Header() {
       <div className={styles.left}>
         {previewMode && <ScreenshotButton />}
       </div>
-      <H6 className={styles.title}>Nolli</H6>
+      <H6 className={styles.title}>
+        <img src="/favicon.svg" alt="" className={styles.icon} />
+        Nolli
+      </H6>
       <div className={styles.right}>
         <PreviewToggle />
         <ThemeToggle />
