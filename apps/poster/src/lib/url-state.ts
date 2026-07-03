@@ -91,6 +91,24 @@ export function serializeMapParams(state: MapParamState): string {
 }
 
 /**
+ * Pure core of {@link mergeQuery}: merge partial updates into a search string,
+ * preserving untouched keys. `undefined` or "" deletes the key. Returns the new
+ * search string (with a leading "?" when non-empty, "" otherwise).
+ */
+export function mergedQuery(
+  currentSearch: string,
+  updates: Record<string, string | undefined>
+): string {
+  const params = new URLSearchParams(currentSearch)
+  for (const [key, value] of Object.entries(updates)) {
+    if (value === undefined || value === "") params.delete(key)
+    else params.set(key, value)
+  }
+  const search = params.toString()
+  return search ? `?${search}` : ""
+}
+
+/**
  * Merge partial query-param updates into the current URL, preserving any params
  * the caller did not touch. `undefined` or "" deletes the key. Uses
  * replaceState (composition, not navigation) and keeps the current pathname.
@@ -100,12 +118,6 @@ export function serializeMapParams(state: MapParamState): string {
  * clobbering the others, because each only edits its own keys.
  */
 export function mergeQuery(updates: Record<string, string | undefined>) {
-  const params = new URLSearchParams(window.location.search)
-  for (const [key, value] of Object.entries(updates)) {
-    if (value === undefined || value === "") params.delete(key)
-    else params.set(key, value)
-  }
-  const search = params.toString()
-  const next = `${window.location.pathname}${search ? `?${search}` : ""}`
+  const next = `${window.location.pathname}${mergedQuery(window.location.search, updates)}`
   window.history.replaceState(null, "", next)
 }

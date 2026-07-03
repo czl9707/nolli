@@ -30,7 +30,10 @@ export function useSpotlightFraming(
   const map = useMapInstanceStore((s) => s.map)
   const route = useRouteStore((s) => s.route)
   const side = useRouteStore((s) => s.side)
-  const selected = useSelectionStore((s) => s.selected)
+  // Select only the first selected slug so the effect re-runs when the
+  // spotlighted building changes, NOT on every selection toggle or buildings
+  // array identity change (which would needlessly re-center/pan).
+  const slug = useSelectionStore((s) => (s.selected.size === 0 ? null : Array.from(s.selected)[0]))
 
   // undefined so the first spotlight run (incl. a fresh deep-link that boots
   // straight into /spotlight) counts as an entry and applies the entry zoom.
@@ -41,12 +44,10 @@ export function useSpotlightFraming(
       prevRouteRef.current = route // record that we left spotlight
       return
     }
-    if (!map || !buildingsReady) return // wait; don't mark as entered yet
+    if (!map || !buildingsReady || !slug) return // wait; don't mark as entered yet
     const justEntered = prevRouteRef.current !== "spotlight"
     prevRouteRef.current = route
 
-    const slug = Array.from(selected)[0]
-    if (!slug) return
     const building = buildings.find((b) => b.slug === slug)
     if (!building) return
 
@@ -68,5 +69,8 @@ export function useSpotlightFraming(
     const onResize = () => apply()
     window.addEventListener("resize", onResize)
     return () => window.removeEventListener("resize", onResize)
-  }, [map, route, side, selected, buildings, buildingsReady])
+    // `buildings` is read only to resolve the slug's coordinate, which is stable
+    // per slug — a data refresh must not trigger a re-frame, so it's excluded.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, route, side, slug, buildingsReady])
 }
