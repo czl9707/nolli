@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react"
-import { ChevronDown, ChevronUp } from "lucide-react"
 import { useDbStore, useFilterStore } from "@nolli/data"
 import type { FilterOptions } from "@nolli/data"
 import {
@@ -7,13 +6,7 @@ import {
   SearchInput,
   type FilterItem,
 } from "@nolli/ui/composition"
-import {
-  Body2,
-  Button,
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@nolli/ui"
+import { Body2 } from "@nolli/ui"
 
 function toArchitectItems(
   opts: FilterOptions,
@@ -75,12 +68,11 @@ function toLocationItems(
 }
 
 /**
- * Poster's filter + search controls. Renders the shared SearchInput and a
- * collapsible pair of FilterInputs (architect / location). The results list
+ * Poster's filter + search controls. Renders the shared SearchInput and an
+ * always-visible pair of FilterInputs (architect / location). The results list
  * is NOT rendered here — it lives in the sidebar's list section, which swaps
- * to global filter results when a filter is active. Owns its own filtersOpen
- * state and FilterOptions load; surfaces the shared store's fetch errors
- * inline.
+ * to global filter results when a filter is active. Loads FilterOptions from
+ * the shared DataSource and surfaces the filter store's fetch errors inline.
  */
 export function OperationPanel() {
   const dataSource = useDbStore((s) => s.dataSource)
@@ -99,8 +91,6 @@ export function OperationPanel() {
   const filterError = useFilterStore((s) => s.error)
 
   const [opts, setOpts] = useState<FilterOptions | null>(null)
-  const [filtersOpen, setFiltersOpen] = useState(false)
-  const activeFilterCount = architectIds.length + cityIds.length
 
   const cityIdsByCountry = useMemo(() => {
     if (!opts) return new Map<string, number[]>()
@@ -130,46 +120,34 @@ export function OperationPanel() {
         onClear={() => setSearchQuery("")}
         placeholder="Search by name or architect"
       />
-      <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
-        <CollapsibleTrigger asChild>
-          <Button variant="link" size="xs">
-            {filtersOpen
-              ? "Hide filters"
-              : `Show filters${activeFilterCount ? ` (${activeFilterCount})` : ""}`}
-            {filtersOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-          </Button>
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          {opts ? (
-            <>
-              <FilterInput
-                label="Filter by Architect"
-                placeholder={dbError != null ? "Error" : "None"}
-                items={toArchitectItems(opts, architectIds).items}
-                selected={toArchitectItems(opts, architectIds).selected}
-                onToggle={(item) => toggleArchitect(Number(item.key))}
-                onClear={clearArchitects}
-              />
-              <FilterInput
-                label="Filter by Location"
-                placeholder={dbError != null ? "Error" : "None"}
-                items={toLocationItems(opts, cityIds).items}
-                selected={toLocationItems(opts, cityIds).selected}
-                onToggle={(item) => {
-                  if (item.key.startsWith("country:")) {
-                    const code = item.key.replace("country:", "")
-                    const ids = cityIdsByCountry.get(code)
-                    if (ids) toggleCountry(ids)
-                  } else {
-                    toggleCity(Number(item.key.replace("city:", "")))
-                  }
-                }}
-                onClear={clearCities}
-              />
-            </>
-          ) : null}
-        </CollapsibleContent>
-      </Collapsible>
+      {opts ? (
+        <>
+          <FilterInput
+            label="Filter by Architect"
+            placeholder={dbError != null ? "Error" : "None"}
+            items={toArchitectItems(opts, architectIds).items}
+            selected={toArchitectItems(opts, architectIds).selected}
+            onToggle={(item) => toggleArchitect(Number(item.key))}
+            onClear={clearArchitects}
+          />
+          <FilterInput
+            label="Filter by Location"
+            placeholder={dbError != null ? "Error" : "None"}
+            items={toLocationItems(opts, cityIds).items}
+            selected={toLocationItems(opts, cityIds).selected}
+            onToggle={(item) => {
+              if (item.key.startsWith("country:")) {
+                const code = item.key.replace("country:", "")
+                const ids = cityIdsByCountry.get(code)
+                if (ids) toggleCountry(ids)
+              } else {
+                toggleCity(Number(item.key.replace("city:", "")))
+              }
+            }}
+            onClear={clearCities}
+          />
+        </>
+      ) : null}
       {filterError && (
         <Body2 style={{ opacity: 0.7 }}>
           Failed to get data. Try refreshing the page.
