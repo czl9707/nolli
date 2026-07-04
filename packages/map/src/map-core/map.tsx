@@ -659,6 +659,10 @@ function MapControls({
 }: MapControlsProps) {
   const { map } = useMap()
   const [waitingForLocation, setWaitingForLocation] = useState(false)
+  const [location, setLocation] = useState<{
+    longitude: number
+    latitude: number
+  } | null>(null)
 
   const handleZoomIn = useCallback(() => {
     map?.zoomTo(map.getZoom() + 1, { duration: 300 })
@@ -686,6 +690,7 @@ function MapControls({
             zoom: 14,
             duration: 1500,
           })
+          setLocation(coords)
           onLocate?.(coords)
           setWaitingForLocation(false)
         },
@@ -710,9 +715,27 @@ function MapControls({
   }, [map])
 
   return (
-    <div
-      className={`${controlStyles.controls}${className ? ` ${className}` : ""}`}
-    >
+    <>
+      {showLocate && location && (
+        <MapMarker
+          longitude={location.longitude}
+          latitude={location.latitude}
+          // GPS dots stack above every architecture pin / cluster.
+          style={{ zIndex: 999, pointerEvents: "none" }}
+        >
+          <MarkerContent className={markerStyles.locationMarker}>
+            <span className={markerStyles.locationHalo} aria-hidden="true" />
+            <span
+              className={markerStyles.locationDot}
+              role="img"
+              aria-label="Your current location"
+            />
+          </MarkerContent>
+        </MapMarker>
+      )}
+      <div
+        className={`${controlStyles.controls}${className ? ` ${className}` : ""}`}
+      >
       {showZoom && (
         <ControlGroup>
           <Button
@@ -767,7 +790,8 @@ function MapControls({
           </Button>
         </ControlGroup>
       )}
-    </div>
+      </div>
+    </>
   )
 }
 

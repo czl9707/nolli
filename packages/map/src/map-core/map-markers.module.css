@@ -3,6 +3,57 @@
     cursor: pointer;
 }
 
+/* "You are here" indicator — a fixed blue dot (GPS convention), drawn above
+   all architecture pins/clusters via a high z-index on its MapMarker. */
+.locationMarker {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    pointer-events: none;
+}
+
+.locationHalo {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background-color: rgba(26, 115, 232, 0.25);
+    animation: locationPulse 2.4s ease-out infinite;
+}
+
+.locationDot {
+    position: relative;
+    width: 0.875rem;
+    height: 0.875rem;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    background-color: #1a73e8;
+    box-shadow: 0 0 0 1px rgba(26, 115, 232, 0.4),
+        var(--shadow-md);
+}
+
+@keyframes locationPulse {
+    0% {
+        transform: scale(0.6);
+        opacity: 0.9;
+    }
+    70% {
+        transform: scale(1.6);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1.6);
+        opacity: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .locationHalo {
+        animation: none;
+    }
+}
+
 .defaultMarker {
     position: relative;
     width: 1rem;
