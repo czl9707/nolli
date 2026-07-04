@@ -5,23 +5,12 @@ import { useRouteStore } from "@/stores/route"
 import type { Route } from "@/stores/route"
 import type { Side } from "@/lib/url-state"
 import { useSelectionStore } from "@/stores/selection"
-import { spotlightPanVector } from "@/lib/spotlight-framing"
 import { parseMapParams } from "@/lib/url-state"
 import { MAP_TRANSITION_SHORT } from "@nolli/ui"
 import type { ArchSummary } from "@nolli/data"
 
-/** Minimum zoom for the spotlighted building, so a single building reads as the
- *  subject rather than a dot on a world map. Used as the floor for the cinematic
- *  fly — a deeper current (or, on entry, URL) zoom is preserved. Matches the
- *  default in @nolli/map's flyToArchCinematic. */
 const DEFAULT_SPOTLIGHT_ZOOM = 14
-
-/** Ease duration (ms) — a corner-only change, a smooth pan to the new offset
- *  with no fly arc. Uses the shared short map transition; matches the hero
- *  card's framer-motion layout duration so the map and photo travel together. */
 const EASE_DURATION = MAP_TRANSITION_SHORT * 1000
-
-/** How the camera reaches the target frame. */
 type FrameMode = "fly" | "ease"
 
 /**
@@ -55,8 +44,6 @@ export function useSpotlightFraming(
   // array identity change.
   const slug = useSelectionStore((s) => (s.selected.size === 0 ? null : Array.from(s.selected)[0]))
 
-  // undefined so the first spotlight run (incl. a fresh deep-link that boots
-  // straight into /spotlight) counts as an entry and applies the entry zoom.
   const prevRouteRef = useRef<Route | undefined>(undefined)
   const prevSlugRef = useRef<string | null>(undefined)
   const prevSideRef = useRef<Side | undefined>(undefined)
@@ -101,15 +88,28 @@ export function useSpotlightFraming(
     const center = [building.coordinates.lng, building.coordinates.lat] as [number, number]
     const offset = [-dx, -dy] as [number, number]
     if (mode === "fly") {
-      // Shared cinematic fly (adaptive duration + default zoom), carrying the
-      // hero offset so the marker lands opposite the photo. This is the path
-      // taken on entry and on any sidebar-card or marker click.
       flyToArchCinematic(map, center[0], center[1], targetZoom, offset)
     } else {
       map.easeTo({ center, zoom: map.getZoom(), offset, duration: EASE_DURATION })
     }
-    // `buildings` is read only to resolve the slug's coordinate, which is stable
-    // per slug — a data refresh must not trigger a re-frame, so it's excluded.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, route, side, slug, buildingsReady])
+}
+
+export function spotlightPanVector(
+  side: Side,
+  width: number,
+  height: number
+): [number, number] {
+  const qx = Math.round(width * 0.1)
+  const qy = Math.round(height * 0.1)
+  switch (side) {
+    case "top-right":
+      return [qx, -qy]
+    case "top-left":
+      return [-qx, -qy]
+    case "bottom-right":
+      return [qx, qy]
+    case "bottom-left":
+      return [-qx, qy]
+  }
 }

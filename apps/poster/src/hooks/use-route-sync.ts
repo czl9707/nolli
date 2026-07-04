@@ -8,18 +8,6 @@ const SPOTLIGHT_PATH = "/spotlight"
 
 const SIDES: Side[] = ["top-left", "top-right", "bottom-left", "bottom-right"]
 
-/**
- * Keeps the route (pathname) and `side` (query) in sync with the URL and the
- * route store. Mounted once from <PosterShell>.
- *
- * Initial values come from the store's lazy initializer (which reads the URL at
- * creation), so there's no mount-time hydrate that could race with the map
- * hook's URL writes. Browser back/forward re-hydrates via popstate.
- *
- * - Route changes are navigation: pushState a new pathname, preserving query.
- * - Side changes are composition: replaceState, merging into existing query
- *   (so center/zoom/selection owned by use-map-url-state are preserved).
- */
 export function useRouteSync() {
   const route = useRouteStore((s) => s.route)
   const side = useRouteStore((s) => s.side)
@@ -44,9 +32,7 @@ export function useRouteSync() {
     window.history.pushState(null, "", `${pathname}${window.location.search}`)
   }, [route])
 
-  // Side → merge into the existing query (default "top-right" omits the key).
   useEffect(() => {
-    mergeQuery({ side: side !== "top-right" ? side : undefined })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    mergeQuery({ side })
   }, [side])
 }

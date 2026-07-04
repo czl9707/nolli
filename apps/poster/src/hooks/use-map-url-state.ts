@@ -85,9 +85,10 @@ function writeUrl(map: MapLibreGL.Map) {
   const zoom = map.getZoom()
 
   // Merge only the map-owned keys; preserve `side` (owned by use-route-sync).
+  // An empty selection joins to "", which mergeQuery deletes from the URL.
   mergeQuery({
     center: `${round(c.lng, 5)},${round(c.lat, 5)}`,
     zoom: String(round(zoom, 2)),
-    selection: selected.size > 0 ? Array.from(selected).join(",") : undefined,
+    selection: Array.from(selected).join(","),
   })
 }

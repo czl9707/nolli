@@ -11,7 +11,7 @@ import { useMapInstanceStore } from "@/stores/map-instance"
 import { useVisibleArchs } from "@/hooks/use-visible-archs"
 import { useRouteSync } from "@/hooks/use-route-sync"
 import { useSpotlightFraming } from "@/hooks/use-spotlight-framing"
-import { Skeleton, Tabs, TabsList, TabsTrigger } from "@nolli/ui"
+import { Body3, Skeleton, Tabs, TabsList, TabsTrigger } from "@nolli/ui"
 import { useMemo } from "react"
 import type { ReactNode } from "react"
 import { useFilterStore } from "@nolli/data"
@@ -89,7 +89,7 @@ function SidebarSection({
     <section
       className={`${styles.sidebarSection} ${grow ? styles.sidebarSectionGrow : ""}`}
     >
-      {label && <span className={styles.sectionLabel}>{label}</span>}
+      {label && <Body3 className={styles.sectionLabel}>{label}</Body3>}
       {children}
     </section>
   )
