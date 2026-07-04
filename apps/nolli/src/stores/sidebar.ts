@@ -19,8 +19,6 @@ type SidebarState = {
   sheetY: number
   setSheetY: (y: number) => void
 
-  // Operation-panel filters collapsible. Lives in the store so it survives
-  // unmount/remount when navigating into an arch and back.
   filtersOpen: boolean
   setFiltersOpen: (open: boolean) => void
 }

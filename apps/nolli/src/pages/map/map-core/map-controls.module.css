@@ -1,7 +1,5 @@
 /* Overrides the shared `.controls` bottom so the cluster can track the mobile
-   bottom sheet via a CSS var set on an ancestor (the viewport, by PinBoard).
-   Doubled class bumps specificity so it reliably beats the base
-   `.controls { bottom: 0.5rem }` regardless of stylesheet order. */
+   bottom sheet via a CSS var set on an ancestor */
 .sheetAwareControls {
   bottom: var(--map-controls-bottom) !important;
 }

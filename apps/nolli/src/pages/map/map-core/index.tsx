@@ -123,14 +123,7 @@ export function MapCore() {
 }
 
 /**
- * Injects a <style> that floats the map controls just above the mobile bottom
- * sheet. Isolated from MapCore so the per-frame sheetY updates re-render only
- * this tiny component — <ArchMap> and its marker subtree stay untouched, which
- * is what keeps the drag tracking smooth (no 60fps map re-renders).
- *
- * sheetY is the sheet's top edge measured from the viewport bottom (its visible
- * height), so the controls' `bottom` is sheetY + gap, clamped so they never
- * slide under the header.
+ * Injects a <style> that floats the map controls just above the mobile bottom sheet. 
  */
 function MapControlsOffset() {
   const sheetY = useSidebarStore((s) => s.sheetY)
