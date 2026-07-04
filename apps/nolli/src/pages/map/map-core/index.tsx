@@ -1,7 +1,12 @@
 import { useEffect } from "react"
 import { useNavigate } from "react-router"
 import { ArchMap } from "@nolli/map"
-import { useMap, flyToArchCinematic } from "@nolli/map"
+import {
+  flyToArchCinematic,
+  MapMarker,
+  MarkerContent,
+  useMap,
+} from "@nolli/map"
 import { TRANSITION_SHORT } from "@nolli/ui"
 import { useArchDetailStore } from "@/stores/arch-detail"
 import { useLayout } from "@/hooks/use-layout"
@@ -9,6 +14,8 @@ import { useDbStore } from "@/stores/db"
 import { useFilterStore } from "@nolli/data"
 import { useSidebarStore } from "@/stores/sidebar"
 import { useArchNavigate } from "@/hooks/use-arch-navigate"
+import { useUserLocation } from "./use-user-location"
+import userLocationStyles from "./user-location.module.css"
 
 /**
  * Flies the map to the selected building. Rendered as a child of <ArchMap>
@@ -55,6 +62,7 @@ export function MapCore() {
   const { isMap } = useLayout()
   const loading = useDbStore((s) => s.loading)
   const error = useDbStore((s) => s.error)
+  const userLocation = useUserLocation()
 
   useEffect(() => {
     if (error != null) {
@@ -74,6 +82,28 @@ export function MapCore() {
       showControls={isMap}
     >
       <MapFlyNavigator />
+      {userLocation && (
+        <MapMarker
+          longitude={userLocation.longitude}
+          latitude={userLocation.latitude}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          // GPS dot stacks above every architecture pin/cluster and never
+          // captures pointer events, so the map stays fully interactive.
+          style={{ zIndex: 999, pointerEvents: "none" }}
+        >
+          <MarkerContent className={userLocationStyles.locationMarker}>
+            <span
+              className={userLocationStyles.locationHalo}
+              aria-hidden="true"
+            />
+            <span
+              className={userLocationStyles.locationDot}
+              role="img"
+              aria-label="Your current location"
+            />
+          </MarkerContent>
+        </MapMarker>
+      )}
     </ArchMap>
   )
 }
