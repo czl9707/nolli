@@ -48,6 +48,7 @@ export function PhotoMarker({ building }: { building: PosterBuilding }) {
               alt={building.name}
               width={width}
               height={height}
+              crossOrigin="anonymous"
             />
             <figcaption className={styles.caption} style={{ width }}>
               <Body2 className={styles.name}>{building.name}</Body2>
