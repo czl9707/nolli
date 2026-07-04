@@ -267,7 +267,7 @@ export function useMapClustering(
   useEffect(() => {
     indexRef.current = new Supercluster<ArchProperties, ClusterProperties>({
       radius: 50,
-      maxZoom: 14,
+      maxZoom: 12,
     })
 
     const points: GeoJSON.Feature<GeoJSON.Point, ArchProperties>[] =

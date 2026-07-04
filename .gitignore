@@ -47,9 +47,18 @@ apps/nolli/scripts/_data/
 # bake output
 nolli-map.db
 apps/nolli/nolli-map.db
+# SQLite WAL/SHM sidecars (regenerated whenever the db is opened)
+*.db-shm
+*.db-wal
+
+# generated schema dump
+apps/nolli/scripts/_schema.mjs
 
 # wrangler files
 .wrangler
 .dev.vars*
 !.dev.vars.example
 !.env.example
+
+# playwright mcp artifacts
+.playwright-mcp
