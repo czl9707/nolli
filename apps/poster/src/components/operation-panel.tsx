@@ -67,13 +67,6 @@ function toLocationItems(
   return { items, selected }
 }
 
-/**
- * Poster's filter + search controls. Renders the shared SearchInput and an
- * always-visible pair of FilterInputs (architect / location). The results list
- * is NOT rendered here — it lives in the sidebar's list section, which swaps
- * to global filter results when a filter is active. Loads FilterOptions from
- * the shared DataSource and surfaces the filter store's fetch errors inline.
- */
 export function OperationPanel() {
   const dataSource = useDbStore((s) => s.dataSource)
   const dataLoading = useDbStore((s) => s.loading)
@@ -115,9 +108,8 @@ export function OperationPanel() {
   return (
     <>
       <SearchInput
-        value={searchQuery}
+        defaultValue={searchQuery}
         onValueChange={setSearchQuery}
-        onClear={() => setSearchQuery("")}
         placeholder="Search by name or architect"
       />
       {opts ? (

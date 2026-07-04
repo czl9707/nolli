@@ -11,31 +11,25 @@ import styles from "./search-input.module.css"
 const DEBOUNCE_MS = 250
 
 /**
- * Controlled, debounced text search. Owns a local draft so typing stays
+ * Uncontrolled, debounced text search. Owns its draft so typing stays
  * responsive across the consumer's round-trip; calls `onValueChange` on the
- * trailing edge of typing and `onClear` immediately. The first mount is
- * skipped so we don't echo the seeded value back. The draft syncs to `value`
- * when the prop changes externally (e.g. the parent clears).
+ * trailing edge of typing and immediately on clear (bypassing the debounce).
+ * The first mount is skipped so the seeded value isn't echoed back. Seeds
+ * from `defaultValue` once on mount, so the input survives unmount/remount
+ * (e.g. navigating away and back) by re-reading the consumer's current value.
  */
 export function SearchInput({
-    value,
+    defaultValue = "",
     onValueChange,
-    onClear,
     placeholder = "Search",
 }: {
-    value: string
+    defaultValue?: string
     onValueChange: (v: string) => void
-    onClear: () => void
     placeholder?: string
 }) {
-    const [draft, setDraft] = useState(value)
+    const [draft, setDraft] = useState(defaultValue)
     const timer = useRef<number | null>(null)
     const first = useRef(true)
-
-    // Sync draft when the parent's value changes from elsewhere.
-    useEffect(() => {
-        setDraft((d) => (d === value ? d : value))
-    }, [value])
 
     useEffect(() => {
         if (first.current) {
@@ -53,7 +47,7 @@ export function SearchInput({
     function handleClear() {
         if (timer.current !== null) clearTimeout(timer.current)
         setDraft("")
-        onClear()
+        onValueChange("")
     }
 
     return (

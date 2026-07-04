@@ -155,9 +155,8 @@ export function OperationPanel() {
       <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen} asChild>
         <SidebarCard className={styles.filterCard}>
           <SearchInput
-            value={searchQuery}
+            defaultValue={searchQuery}
             onValueChange={setSearchQuery}
-            onClear={() => setSearchQuery("")}
             placeholder="Search by name or architect"
           />
           <div className={styles.filtersToggleWrapper}>
