@@ -6,10 +6,10 @@ import type { Side } from "@/lib/url-state"
 const SIDES: { id: Side; Icon: typeof ArrowDownRight; label: string }[] = [
   // Arrow points from the corner toward the center, matching the photo's
   // position in that corner.
-  { id: "top-left", Icon: ArrowDownRight, label: "Top left" },
-  { id: "top-right", Icon: ArrowDownLeft, label: "Top right" },
-  { id: "bottom-left", Icon: ArrowUpRight, label: "Bottom left" },
-  { id: "bottom-right", Icon: ArrowUpLeft, label: "Bottom right" },
+  { id: "top-left", Icon: ArrowUpLeft, label: "Top left" },
+  { id: "top-right", Icon: ArrowUpRight, label: "Top right" },
+  { id: "bottom-left", Icon: ArrowDownLeft, label: "Bottom left" },
+  { id: "bottom-right", Icon: ArrowDownRight, label: "Bottom right" },
 ]
 
 /**

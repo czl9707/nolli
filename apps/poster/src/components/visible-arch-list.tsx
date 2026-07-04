@@ -1,8 +1,14 @@
 import { useSelectionStore } from "@/stores/selection"
-import { Body2, Body3, Checkbox, ScrollArea } from "@nolli/ui"
+import { Checkbox } from "@nolli/ui"
 import type { ArchSummary } from "@nolli/data"
-import styles from "./visible-arch-list.module.css"
+import { ArchList, ArchListItemBody } from "./arch-list"
+import styles from "./arch-list.module.css"
 
+/**
+ * Overview-mode building list: multi-select. Each row is a <label> wrapping a
+ * <Checkbox>, so the whole surface toggles membership in the selection set.
+ * List chrome + row body are shared via <ArchList> / <ArchListItemBody>.
+ */
 export function VisibleArchList({
   buildings,
 }: {
@@ -12,26 +18,18 @@ export function VisibleArchList({
   const toggle = useSelectionStore((s) => s.toggle)
 
   return (
-    <ScrollArea className={styles.scroll}>
-      <div className={styles.list}>
-        {buildings.map((b) => {
-          const isSel = selected.has(b.slug)
-          return (
-            <label key={b.slug} className={styles.row}>
-              <Checkbox
-                checked={isSel}
-                onCheckedChange={() => toggle(b.slug)}
-                aria-label={b.name}
-              />
-              <img className={styles.thumb} src={b.cover.image} alt="" crossOrigin="anonymous" />
-              <span className={styles.text}>
-                <Body2 className={styles.name}>{b.name}</Body2>
-                <Body3 className={styles.architect}>{b.architect}</Body3>
-              </span>
-            </label>
-          )
-        })}
-      </div>
-    </ScrollArea>
+    <ArchList
+      buildings={buildings}
+      renderItem={(b) => (
+        <label className={styles.row}>
+          <Checkbox
+            checked={selected.has(b.slug)}
+            onCheckedChange={() => toggle(b.slug)}
+            aria-label={b.name}
+          />
+          <ArchListItemBody building={b} />
+        </label>
+      )}
+    />
   )
 }

@@ -3,8 +3,11 @@
   min-height: 0;
 }
 
-/* Same radix viewport fix as visible-arch-list: force the inner wrapper to fill
-   the viewport so long names ellipsis instead of blowing out the width. */
+/* radix-ui wraps the viewport's children in a `display:table; min-width:100%`
+   div (inline styles) that shrink-to-fits to the rows' preferred (nowrap)
+   width — blowing past the viewport so long names get hard-clipped at the
+   sidebar edge instead of ellipsising. Force it back to a block that fills the
+   viewport, so rows stretch to the width and `.text { min-width:0 }` clamps. */
 .scroll :global([data-slot="scroll-area-viewport"] > div) {
   display: block !important;
   width: 100% !important;
@@ -19,18 +22,27 @@
   padding: 0;
 }
 
+/* Shared interactive row surface. The overview list renders it as a <label>
+   (multi-select, checkbox-led); the spotlight list renders it as a design-
+   system <Button variant="ghost"> (single action). Because <Button> is
+   opinionated — fixed height per [data-size], centered inline-flex, and the
+   playful display font — the contested layout props are pinned here (!important)
+   so the row reads identically regardless of the underlying element. */
 .row {
-  display: flex;
+  display: flex !important;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem;
+  justify-content: flex-start !important;
+  gap: 0.5rem !important;
+  width: 100%;
+  height: auto !important;
+  padding: 0.5rem !important;
   border: none;
   background: transparent;
   border-radius: var(--size-border-radius);
   cursor: pointer;
   color: rgb(var(--color-primary-foreground));
   text-align: left;
-  width: 100%;
+  font: inherit !important;
 }
 
 .row:hover {

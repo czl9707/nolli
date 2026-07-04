@@ -18,6 +18,7 @@
   width: 100%;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
   height: 2rem;
   padding: 3px;
   border-radius: var(--size-border-radius);

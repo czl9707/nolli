@@ -8,21 +8,7 @@ import { PhotoMarkers } from "./photo-markers"
 import type { ArchSummary } from "@nolli/data"
 import styles from "./poster-map.module.css"
 
-/**
- * Figure-ground map for the poster. Delegates the MapLibre setup, the clustered
- * plain-marker layer (with split/merge animations), and the controls to the
- * shared <ArchMap>. The poster contributes only its photo overlay (children)
- * and forwards <ArchMap>'s map instance into the shared store so the sidebar's
- * viewport filter can read map bounds.
- *
- * `capture` is always on so the WebGL canvas can be read back into a PNG
- * (preserveDrawingBuffer); the perf cost is poster-only — nolli doesn't pay it.
- *
- * Preview mode framing differs by route: overview hides everything for a clean
- * tiles-only frame; spotlight hides only the controls so the marker (and the
- * hero photo tied to it) stay visible. The map is always "ready" here because
- * App early-returns while the snapshot is loading.
- */
+
 export function PosterMap({
   buildings,
   spotlight,
@@ -45,9 +31,7 @@ export function PosterMap({
   // Overview preview = tiles only; spotlight preview keeps the marker.
   const hideMarkers = previewMode && !spotlight
 
-  // Clicking a marker mirrors the sidebar card for the active route: overview
-  // toggles the pin (multi-select), spotlight makes it the single spotlighted
-  // building (which the framing hook then flies to).
+  // Clicking a marker mirrors the sidebar card for the active route.
   const handleArchClick = useCallback(
     (slug: string) => {
       if (spotlight) setAll(new Set([slug]))
@@ -58,8 +42,6 @@ export function PosterMap({
 
   const handleRef = useCallback(
     (m: MapRef | null) => {
-      // <ArchMap> owns pattern init internally; the poster only needs the
-      // instance for the sidebar's bounds filter.
       if (!m) return
       setMapInstance(m)
     },

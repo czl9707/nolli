@@ -8,7 +8,7 @@ export function flyToArchCinematic(
   lng: number,
   lat: number,
   zoom: number = DEFALT_MAP_ZOOM_LEVEL,
-  offset?: [number, number],
+  offset: [number, number] = [0, 0],
 ): void {
   const zoomDest = Math.max(map.getZoom(), zoom);
   const zoomDelta = zoomDest - map.getZoom();
