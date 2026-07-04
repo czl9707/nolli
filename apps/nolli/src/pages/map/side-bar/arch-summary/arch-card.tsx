@@ -28,7 +28,7 @@ export function ArchCard({ arch, mode }: { arch: ArchSummary; mode: NavMode }) {
       </span>
       <img
         className={`${styles.thumbnail} ${styles.image}`}
-        src={arch.cover.image!}
+        src={arch.cover.image}
         alt={arch.name}
         loading="lazy"
       />

@@ -15,10 +15,9 @@ import { Skeleton, Tabs, TabsList, TabsTrigger } from "@nolli/ui"
 import { useMemo } from "react"
 import type { ReactNode } from "react"
 import { useFilterStore } from "@nolli/data"
+import type { ArchSummary } from "@nolli/data"
 import { OperationPanel } from "@/components/operation-panel"
-import { toPosterBuilding } from "@/lib/to-poster-building"
-import type { PosterBuilding } from "@/types"
-import styles from "../app.module.css"
+import styles from "./app.module.css"
 
 /**
  * Always-mounted shell. <ArchMap> (via <PosterMap>) never unmounts across the
@@ -29,7 +28,7 @@ export function PosterShell({
   buildings,
   buildingsReady,
 }: {
-  buildings: PosterBuilding[]
+  buildings: ArchSummary[]
   buildingsReady: boolean
 }) {
   const route = useRouteStore((s) => s.route)
@@ -98,13 +97,13 @@ function SidebarSection({
 
 /** Viewport-visible buildings, headed by a count, rendered as either the
  *  multi-select overview list or the click-to-fly spotlight list. When a
- *  filter/search is active the source swaps to global filter results
- *  (cover-filtered to PosterBuilding) instead of viewport visibility. */
+ *  filter/search is active the source swaps to global filter results instead
+ *  of viewport visibility. */
 function VisibleSection({
   buildings,
   spotlight = false,
 }: {
-  buildings: PosterBuilding[]
+  buildings: ArchSummary[]
   spotlight?: boolean
 }) {
   const map = useMapInstanceStore((s) => s.map)
@@ -121,8 +120,6 @@ function VisibleSection({
   const list = useMemo(() => {
     if (!hasFilters || filterLoading) return visible
     return filteredArchs
-      .map(toPosterBuilding)
-      .filter((b): b is PosterBuilding => b !== null)
   }, [hasFilters, filterLoading, filteredArchs, visible])
 
   const label = !hasFilters

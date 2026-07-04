@@ -1,12 +1,12 @@
 import { useSelectionStore } from "@/stores/selection"
 import { Body2, Body3, Checkbox, ScrollArea } from "@nolli/ui"
-import type { PosterBuilding } from "@/types"
+import type { ArchSummary } from "@nolli/data"
 import styles from "./visible-arch-list.module.css"
 
 export function VisibleArchList({
   buildings,
 }: {
-  buildings: PosterBuilding[]
+  buildings: ArchSummary[]
 }) {
   const selected = useSelectionStore((s) => s.selected)
   const toggle = useSelectionStore((s) => s.toggle)

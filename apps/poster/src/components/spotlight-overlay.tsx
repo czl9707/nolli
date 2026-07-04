@@ -3,11 +3,11 @@ import { motion } from "framer-motion"
 import { useRouteStore } from "@/stores/route"
 import { useSelectionStore } from "@/stores/selection"
 import { Body1, Body2, MAP_TRANSITION_SHORT } from "@nolli/ui"
-import type { PosterBuilding } from "@/types"
+import type { ArchSummary } from "@nolli/data"
 import { paperClipPath } from "./paper-clip"
 import styles from "./spotlight-overlay.module.css"
 
-export function SpotlightOverlay({ buildings }: { buildings: PosterBuilding[] }) {
+export function SpotlightOverlay({ buildings }: { buildings: ArchSummary[] }) {
   const side = useRouteStore((s) => s.side)
   const selected = useSelectionStore((s) => s.selected)
 

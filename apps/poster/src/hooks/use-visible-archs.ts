@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import type MapLibreGL from "maplibre-gl"
-import type { PosterBuilding } from "@/types"
+import type { ArchSummary } from "@nolli/data"
 
 type Bounds = { west: number; south: number; east: number; north: number }
 
@@ -31,9 +31,9 @@ function readBounds(map: MapLibreGL.Map): Bounds {
 /** Buildings currently inside the map viewport. Recomputed on pan/zoom. */
 export function useVisibleArchs(
   map: MapLibreGL.Map | null,
-  buildings: PosterBuilding[]
-): PosterBuilding[] {
-  const [visible, setVisible] = useState<PosterBuilding[]>([])
+  buildings: ArchSummary[]
+): ArchSummary[] {
+  const [visible, setVisible] = useState<ArchSummary[]>([])
 
   useEffect(() => {
     if (!map) return

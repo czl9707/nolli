@@ -45,9 +45,9 @@ function mapSummaryRow(row: Row): ArchSummary {
       lng: row.longitude as number,
     },
     cover: {
-      image: row.cover_image as string | null,
-      width: (row.cover_width as number | null) ?? null,
-      height: (row.cover_height as number | null) ?? null,
+      image: row.cover_image as string,
+      width: row.cover_width as number,
+      height: row.cover_height as number,
     },
   }
 }
@@ -138,10 +138,10 @@ function handleGetArchBySlug(slug: string): Arch | null {
   const row = rows[0]
 
   const photoRows = query(SQL_GET_PHOTOS, [archId])
-  let cover: { image: string | null; width: number | null; height: number | null } = {
-    image: null,
-    width: null,
-    height: null,
+  let cover: { image: string; width: number; height: number } = {
+    image: "",
+    width: 0,
+    height: 0,
   }
   const photos: ArchPhoto[] = photoRows.map((pr) => {
     if (pr.is_cover) {

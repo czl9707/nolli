@@ -1,6 +1,6 @@
 import { useSelectionStore } from "@/stores/selection"
 import { Body2, Body3, ScrollArea } from "@nolli/ui"
-import type { PosterBuilding } from "@/types"
+import type { ArchSummary } from "@nolli/data"
 import styles from "./spotlight-list.module.css"
 
 /**
@@ -12,7 +12,7 @@ import styles from "./spotlight-list.module.css"
 export function SpotlightList({
   buildings,
 }: {
-  buildings: PosterBuilding[]
+  buildings: ArchSummary[]
 }) {
   const selected = useSelectionStore((s) => s.selected)
   const setAll = useSelectionStore((s) => s.setAll)

@@ -8,7 +8,7 @@ import { useSelectionStore } from "@/stores/selection"
 import { spotlightPanVector } from "@/lib/spotlight-framing"
 import { parseMapParams } from "@/lib/url-state"
 import { MAP_TRANSITION_SHORT } from "@nolli/ui"
-import type { PosterBuilding } from "@/types"
+import type { ArchSummary } from "@nolli/data"
 
 /** Minimum zoom for the spotlighted building, so a single building reads as the
  *  subject rather than a dot on a world map. Used as the floor for the cinematic
@@ -44,7 +44,7 @@ type FrameMode = "fly" | "ease"
  * No-op outside spotlight — the overview viewport is owned by useMapUrlState.
  */
 export function useSpotlightFraming(
-  buildings: PosterBuilding[],
+  buildings: ArchSummary[],
   buildingsReady: boolean
 ) {
   const map = useMapInstanceStore((s) => s.map)

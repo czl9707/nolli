@@ -36,9 +36,9 @@ export const archLinksSchema = z.object({
 export type ArchLinks = z.infer<typeof archLinksSchema>
 
 export const coverSummarySchema = z.object({
-  image: z.string().nullable(),
-  width: z.number().nullable(),
-  height: z.number().nullable(),
+  image: z.string(),
+  width: z.number(),
+  height: z.number(),
 })
 export type CoverSummary = z.infer<typeof coverSummarySchema>
 

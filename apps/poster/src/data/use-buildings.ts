@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react"
 import { useDbStore } from "@nolli/data"
-import type { PosterBuilding } from "@/types"
-import { toPosterBuilding } from "@/lib/to-poster-building"
+import type { ArchSummary } from "@nolli/data"
 
 export type BuildingsState =
   | { status: "loading" }
   | { status: "error"; error: Error }
-  | { status: "ready"; buildings: PosterBuilding[] }
+  | { status: "ready"; buildings: ArchSummary[] }
 
 export function useBuildings(): BuildingsState {
   const dataSource = useDbStore((s) => s.dataSource)
@@ -25,10 +24,7 @@ export function useBuildings(): BuildingsState {
       .getAllArchitectures()
       .then((archs) => {
         if (cancelled) return
-        const buildings = archs
-          .map(toPosterBuilding)
-          .filter((b): b is PosterBuilding => b !== null)
-        setState({ status: "ready", buildings })
+        setState({ status: "ready", buildings: archs })
       })
       .catch((error: Error) => {
         if (!cancelled) setState({ status: "error", error })

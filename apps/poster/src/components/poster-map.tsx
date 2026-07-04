@@ -5,7 +5,7 @@ import { useUiStore } from "@/stores/ui"
 import { useMapInstanceStore } from "@/stores/map-instance"
 import { useSelectionStore } from "@/stores/selection"
 import { PhotoMarkers } from "./photo-markers"
-import type { PosterBuilding } from "@/types"
+import type { ArchSummary } from "@nolli/data"
 import styles from "./poster-map.module.css"
 
 /**
@@ -27,7 +27,7 @@ export function PosterMap({
   buildings,
   spotlight,
 }: {
-  buildings: PosterBuilding[]
+  buildings: ArchSummary[]
   spotlight: boolean
 }) {
   const previewMode = useUiStore((s) => s.previewMode)
