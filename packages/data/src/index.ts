@@ -1,6 +1,7 @@
 export * from "./architectures.type"
 export * from "./data-source.type"
 export * from "./db-store"
+export * from "./filter-store"
 export * from "./sqlite-queries"
 export * from "./sqlite-source"
 export * from "./worker-protocol.type"
