@@ -23,7 +23,7 @@ export function VisibleArchList({
                 onCheckedChange={() => toggle(b.slug)}
                 aria-label={b.name}
               />
-              <img className={styles.thumb} src={b.cover.image} alt="" />
+              <img className={styles.thumb} src={b.cover.image} alt="" crossOrigin="anonymous" />
               <span className={styles.text}>
                 <Body2 className={styles.name}>{b.name}</Body2>
                 <Body3 className={styles.architect}>{b.architect}</Body3>
