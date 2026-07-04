@@ -12,7 +12,11 @@ import { useVisibleArchs } from "@/hooks/use-visible-archs"
 import { useRouteSync } from "@/hooks/use-route-sync"
 import { useSpotlightFraming } from "@/hooks/use-spotlight-framing"
 import { Skeleton, Tabs, TabsList, TabsTrigger } from "@nolli/ui"
+import { useMemo } from "react"
 import type { ReactNode } from "react"
+import { useFilterStore } from "@nolli/data"
+import { OperationPanel } from "./operation-panel"
+import { toPosterBuilding } from "@/lib/to-poster-building"
 import type { PosterBuilding } from "@/types"
 import styles from "../app.module.css"
 
@@ -47,6 +51,9 @@ export function PosterShell({
               <TabsTrigger value="spotlight">Spotlight</TabsTrigger>
             </TabsList>
           </Tabs>
+        </SidebarSection>
+        <SidebarSection>
+          <OperationPanel />
         </SidebarSection>
         {isSpotlight ? (
           <>
@@ -93,7 +100,9 @@ function SidebarSection({
 }
 
 /** Viewport-visible buildings, headed by a count, rendered as either the
- *  multi-select overview list or the click-to-fly spotlight list. */
+ *  multi-select overview list or the click-to-fly spotlight list. When a
+ *  filter/search is active the source swaps to global filter results
+ *  (cover-filtered to PosterBuilding) instead of viewport visibility. */
 function VisibleSection({
   buildings,
   spotlight = false,
@@ -103,12 +112,34 @@ function VisibleSection({
 }) {
   const map = useMapInstanceStore((s) => s.map)
   const visible = useVisibleArchs(map, buildings)
+
+  const architectIds = useFilterStore((s) => s.architectIds)
+  const cityIds = useFilterStore((s) => s.cityIds)
+  const searchQuery = useFilterStore((s) => s.searchQuery)
+  const filteredArchs = useFilterStore((s) => s.filteredArchs)
+  const filterLoading = useFilterStore((s) => s.loading)
+  const hasFilters =
+    architectIds.length > 0 || cityIds.length > 0 || searchQuery.trim() !== ""
+
+  const list = useMemo(() => {
+    if (!hasFilters || filterLoading) return visible
+    return filteredArchs
+      .map(toPosterBuilding)
+      .filter((b): b is PosterBuilding => b !== null)
+  }, [hasFilters, filterLoading, filteredArchs, visible])
+
+  const label = !hasFilters
+    ? `In view · ${visible.length}`
+    : filterLoading
+      ? "Searching…"
+      : `Results · ${list.length}`
+
   return (
-    <SidebarSection grow label={`In view · ${visible.length}`}>
+    <SidebarSection grow label={label}>
       {spotlight ? (
-        <SpotlightList buildings={visible} />
+        <SpotlightList buildings={list} />
       ) : (
-        <VisibleArchList buildings={visible} />
+        <VisibleArchList buildings={list} />
       )}
     </SidebarSection>
   )
