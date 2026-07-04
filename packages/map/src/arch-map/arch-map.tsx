@@ -25,11 +25,8 @@ export type ArchMapProps = {
   /** Show zoom/locate/fullscreen controls. Default true. */
   showControls?: boolean
   /**
-   * Opt into client-side screenshot capture (e.g. html-to-image). Sets
-   * MapLibre's `preserveDrawingBuffer: true` so the WebGL canvas can be read
-   * back into an image; otherwise the captured map tiles are blank. Off by
-   * default — it disables a GPU compositing optimization, so only the app that
-   * actually screenshots (poster) should enable it.
+   * Sets MapLibre's `preserveDrawingBuffer: true` so the WebGL canvas can be read
+   * back into an image; otherwise the captured map tiles are blank. 
    */
   capture?: boolean
   /** Extra content rendered inside <Map> (after the marker layer) — e.g. overlays. */

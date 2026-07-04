@@ -1,9 +1,9 @@
 export type LngLat = [number, number]
 
-export type Side = "top-left" | "top-right" | "bottom-left" | "bottom-right"
 
 const DEFAULT_SIDE: Side = "top-right"
-const SIDES: Side[] = ["top-left", "top-right", "bottom-left", "bottom-right"]
+const SIDES = ["top-left", "top-right", "bottom-left", "bottom-right"] as const;
+export type Side = (typeof SIDES)[number];
 
 export type MapParamState = {
   center?: LngLat
@@ -112,10 +112,6 @@ export function mergedQuery(
  * Merge partial query-param updates into the current URL, preserving any params
  * the caller did not touch. `undefined` or "" deletes the key. Uses
  * replaceState (composition, not navigation) and keeps the current pathname.
- *
- * This lets independent hooks each own their own subset of params — the map
- * hook writes center/zoom/selection, the route hook writes side — without one
- * clobbering the others, because each only edits its own keys.
  */
 export function mergeQuery(updates: Record<string, string | undefined>) {
   const next = `${window.location.pathname}${mergedQuery(window.location.search, updates)}`

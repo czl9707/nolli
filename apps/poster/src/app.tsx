@@ -1,5 +1,5 @@
 import { useBuildings } from "@/data/use-buildings"
-import { PosterShell, PosterShellSkeleton } from "@/components/poster-shell"
+import { PosterShell, PosterShellSkeleton } from "@/poster-shell"
 import { useMapUrlState } from "@/hooks/use-map-url-state"
 
 export function App() {

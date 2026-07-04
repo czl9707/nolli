@@ -1,10 +1,10 @@
-import { PosterMap } from "./poster-map"
-import { Header } from "./header"
-import { SelectionSidebar } from "./selection-sidebar"
-import { VisibleArchList } from "./visible-arch-list"
-import { SpotlightList } from "./spotlight-list"
-import { SpotlightOverlay } from "./spotlight-overlay"
-import { SideFlipControl } from "./side-flip-control"
+import { PosterMap } from "@/components/poster-map"
+import { Header } from "@/components/header"
+import { SelectionSidebar } from "@/components/selection-sidebar"
+import { VisibleArchList } from "@/components/visible-arch-list"
+import { SpotlightList } from "@/components/spotlight-list"
+import { SpotlightOverlay } from "@/components/spotlight-overlay"
+import { SideFlipControl } from "@/components/side-flip-control"
 import { useRouteStore } from "@/stores/route"
 import type { Route } from "@/stores/route"
 import { useMapInstanceStore } from "@/stores/map-instance"
@@ -15,7 +15,7 @@ import { Skeleton, Tabs, TabsList, TabsTrigger } from "@nolli/ui"
 import { useMemo } from "react"
 import type { ReactNode } from "react"
 import { useFilterStore } from "@nolli/data"
-import { OperationPanel } from "./operation-panel"
+import { OperationPanel } from "@/components/operation-panel"
 import { toPosterBuilding } from "@/lib/to-poster-building"
 import type { PosterBuilding } from "@/types"
 import styles from "../app.module.css"
@@ -66,9 +66,6 @@ export function PosterShell({
           <VisibleSection buildings={buildings} />
         )}
       </SelectionSidebar>
-      {/* `.inset` is relative + flex:1; the map is absolute-fill inside it
-          (full-bleed), the header floats on top, and the spotlight hero anchors
-          to `.inset`. The map stays mounted across the route switch. */}
       <div className={styles.inset} data-poster-frame>
         <Header />
         <PosterMap buildings={buildings} spotlight={isSpotlight} />
