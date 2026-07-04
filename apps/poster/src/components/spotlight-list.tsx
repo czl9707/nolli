@@ -29,7 +29,7 @@ export function SpotlightList({
             aria-label={`Spotlight ${b.name}`}
             aria-pressed={activeSlug === b.slug}
           >
-            <img className={styles.thumb} src={b.cover.image} alt="" crossOrigin="anonymous" />
+            <img className={styles.thumb} src={b.cover.image} alt="" />
             <span className={styles.text}>
               <Body2 className={styles.name}>{b.name}</Body2>
               <Body3 className={styles.architect}>{b.architect}</Body3>

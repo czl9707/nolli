@@ -41,7 +41,6 @@ export function SpotlightOverlay({ buildings }: { buildings: PosterBuilding[] })
           className={styles.photo}
           src={building.cover.image}
           alt={building.name}
-          crossOrigin="anonymous"
         />
         <figcaption className={styles.caption}>
           <Body1 className={styles.name}>{building.name}</Body1>
