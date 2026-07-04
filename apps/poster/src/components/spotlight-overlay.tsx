@@ -37,12 +37,7 @@ export function SpotlightOverlay({ buildings }: { buildings: PosterBuilding[] })
         className={styles.hero}
         style={{ "--ratio": ratio, clipPath } as React.CSSProperties}
       >
-        <img
-          className={styles.photo}
-          src={building.cover.image}
-          alt={building.name}
-          crossOrigin="anonymous"
-        />
+        <img className={styles.photo} src={building.cover.image} alt={building.name} />
         <figcaption className={styles.caption}>
           <Body1 className={styles.name}>{building.name}</Body1>
           <Body2 className={styles.architect}>{building.architect}</Body2>
