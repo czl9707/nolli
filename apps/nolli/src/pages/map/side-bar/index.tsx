@@ -1,7 +1,14 @@
-import type { ReactNode } from "react"
+import { useEffect, type ReactNode } from "react"
 import { useSidebarStore } from "@/stores/sidebar"
 import { useLayout } from "@/hooks/use-layout"
-import { motion, type PanInfo, AnimatePresence } from "framer-motion"
+import {
+  motion,
+  useMotionValue,
+  animate,
+  useMotionValueEvent,
+  type PanInfo,
+  AnimatePresence,
+} from "framer-motion"
 import { useIsMobile } from "@/hooks/use-is-mobile"
 import { TRANSITION_SHORT, TRANSITION_INSTANT } from "@nolli/ui"
 import styles from "./index.module.css"
@@ -77,13 +84,34 @@ function getNearestSnap(topPx: number): SheetSnap {
 function MobileSheet({ children }: { children: ReactNode }) {
   const sheetState = useSidebarStore((s) => s.mobileSheetState)
   const setSheetState = useSidebarStore((s) => s.setMobileSheetState)
+  const setSheetY = useSidebarStore((s) => s.setSheetY)
   const { isBoard } = useLayout()
+
+  const offsets = getSnapOffsets()
+
+  // Single source of truth for the sheet's vertical position. Bound via
+  // `style` so both the drag and the snap animation flow through it — and we
+  // can read its exact rendered value every frame.
+  const y = useMotionValue(offsets[sheetState])
+
+  // Publish the sheet's visible height (vh - translateY) so the map controls
+  // can sit just above it. Fires every frame during drag AND the snap settle.
+  useMotionValueEvent(y, "change", (v) => {
+    setSheetY(window.innerHeight - v)
+  })
+
+  // Animate to the snap target whenever sheetState changes (programmatic open
+  // via the handle, or the nearest-snap settle after a drag).
+  useEffect(() => {
+    const controls = animate(y, getSnapOffsets()[sheetState], {
+      duration: TRANSITION_INSTANT,
+      ease: "easeInOut",
+    })
+    return () => controls.stop()
+  }, [sheetState, y])
 
   // Don't render on board view
   if (isBoard) return null
-
-  const offsets = getSnapOffsets()
-  const currentOffset = offsets[sheetState]
 
   function handleDragEnd(
     _event: MouseEvent | TouchEvent | PointerEvent,
@@ -105,8 +133,7 @@ function MobileSheet({ children }: { children: ReactNode }) {
   return (
     <motion.div
       className={styles.sheetWrapper}
-      animate={{ y: currentOffset }}
-      transition={{ duration: TRANSITION_INSTANT, ease: "easeInOut" }}
+      style={{ y }}
       drag="y"
       dragConstraints={{ top: offsets.full, bottom: offsets.peek }}
       dragElastic={0.1}

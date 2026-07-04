@@ -3,6 +3,7 @@ import { useNavigate } from "react-router"
 import { ArchMap } from "@nolli/map"
 import {
   flyToArchCinematic,
+  MapControls,
   MapMarker,
   MarkerContent,
   useMap,
@@ -16,6 +17,8 @@ import { useSidebarStore } from "@/stores/sidebar"
 import { useArchNavigate } from "@/hooks/use-arch-navigate"
 import { useUserLocation } from "./use-user-location"
 import userLocationStyles from "./user-location.module.css"
+import controlsStyles from "./map-controls.module.css"
+import { useIsMobile } from "@/hooks/use-is-mobile"
 
 /**
  * Flies the map to the selected building. Rendered as a child of <ArchMap>
@@ -71,17 +74,27 @@ export function MapCore() {
   }, [error, navigate])
 
   return (
-    <ArchMap
-      architectures={filteredArchs}
-      selectedSlug={selected?.slug}
-      onArchClick={(slug) => {
-        setOpen(true)
-        navigateArch(slug, false, "replace")
-      }}
-      ready={!loading}
-      showControls={isMap}
-    >
-      <MapFlyNavigator />
+    <>
+      <MapControlsOffset />
+      <ArchMap
+        architectures={filteredArchs}
+        selectedSlug={selected?.slug}
+        onArchClick={(slug) => {
+          setOpen(true)
+          navigateArch(slug, false, "replace")
+        }}
+        ready={!loading}
+        showControls={false}
+      >
+        {isMap && (
+          <MapControls
+            showZoom
+            showLocate
+            showFullscreen
+            className={controlsStyles.sheetAwareControls}
+          />
+        )}
+        <MapFlyNavigator />
       {userLocation && (
         <MapMarker
           longitude={userLocation.longitude}
@@ -104,6 +117,33 @@ export function MapCore() {
           </MarkerContent>
         </MapMarker>
       )}
-    </ArchMap>
+      </ArchMap>
+    </>
+  )
+}
+
+/**
+ * Injects a <style> that floats the map controls just above the mobile bottom
+ * sheet. Isolated from MapCore so the per-frame sheetY updates re-render only
+ * this tiny component — <ArchMap> and its marker subtree stay untouched, which
+ * is what keeps the drag tracking smooth (no 60fps map re-renders).
+ *
+ * sheetY is the sheet's top edge measured from the viewport bottom (its visible
+ * height), so the controls' `bottom` is sheetY + gap, clamped so they never
+ * slide under the header.
+ */
+function MapControlsOffset() {
+  const sheetY = useSidebarStore((s) => s.sheetY)
+  const isMobile = useIsMobile()
+  if (!isMobile) return null
+
+  const gap = "0.5rem"
+  const controlsHeight = 144 // ~4 icon buttons; only consulted at the clamp
+  return (
+    <style>
+      {`.${controlsStyles.sheetAwareControls}{
+--map-controls-bottom:min(${sheetY}px + ${gap},100vh - var(--size-header-height) - ${controlsHeight}px);
+}`}
+    </style>
   )
 }
