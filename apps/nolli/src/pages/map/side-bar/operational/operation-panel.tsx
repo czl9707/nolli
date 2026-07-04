@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { ChevronDown, ChevronUp } from "lucide-react"
 import { SidebarCard } from "../arch-summary/sidebar-card"
-import { FilterInput, type FilterItem } from "./filter-input"
+import { FilterInput, type FilterItem } from "@nolli/ui/composition"
 import { Skeleton } from "@nolli/ui"
 import { Button } from "@nolli/ui"
 import {
@@ -9,13 +9,14 @@ import {
   CollapsibleTrigger,
   CollapsibleContent,
 } from "@nolli/ui"
-import { useFilterStore } from "@/stores/filter"
+import { useFilterStore } from "@nolli/data"
 import { useSidebarStore } from "@/stores/sidebar"
 import { useDbStore } from "@/stores/db"
 import type { FilterOptions } from "@nolli/data"
 import { ArchScrollList } from "../arch-summary/arch-card-list"
-import { SearchInput } from "./search-input"
+import { SearchInput } from "@nolli/ui/composition"
 import { Body2 } from "@nolli/ui"
+import { toast } from "sonner"
 import styles from "./operation-panel.module.css"
 
 function toArchitectItems(
@@ -109,10 +110,20 @@ export function OperationPanel() {
   const toggleCity = useFilterStore((s) => s.toggleCity)
   const clearCities = useFilterStore((s) => s.clearCity)
   const toggleCountry = useFilterStore((s) => s.toggleCountry)
+  const searchQuery = useFilterStore((s) => s.searchQuery)
+  const setSearchQuery = useFilterStore((s) => s.setSearchQuery)
   const [opts, setOpts] = useState<FilterOptions | null>(null)
   const filtersOpen = useSidebarStore((s) => s.filtersOpen)
   const setFiltersOpen = useSidebarStore((s) => s.setFiltersOpen)
   const activeFilterCount = architectIds.length + cityIds.length
+
+  const filterError = useFilterStore((s) => s.error)
+
+  useEffect(() => {
+    if (filterError) {
+      toast.error("Failed to get data. Try refreshing the page.")
+    }
+  }, [filterError])
 
   const cityIdsByCountry = useMemo(() => {
     if (!opts) return new Map<string, number[]>()
@@ -143,7 +154,11 @@ export function OperationPanel() {
       {/* <H5>Home</H5> */}
       <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen} asChild>
         <SidebarCard className={styles.filterCard}>
-          <SearchInput />
+          <SearchInput
+            defaultValue={searchQuery}
+            onValueChange={setSearchQuery}
+            placeholder="Search by name or architect"
+          />
           <div className={styles.filtersToggleWrapper}>
             <CollapsibleTrigger asChild>
               <Button variant="link" size="xs" className={styles.filtersToggle}>

@@ -47,7 +47,7 @@ export function ArchSummary() {
             <div className={styles.favoriteButton}>
               <FavoriteToggle id={current.id} />
             </div>
-            <img className={styles.cover} src={cover ?? ""} alt={current.name} />
+            <img className={styles.cover} src={cover} alt={current.name} />
             <div className={styles.coverOverlay} />
             <H4 className={styles.title}>{current.name}</H4>
           </div>

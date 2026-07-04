@@ -1,8 +1,9 @@
 import { useEffect, useRef } from "react"
 import type MapLibreGL from "maplibre-gl"
 import { useMapInstanceStore } from "@/stores/map-instance"
+import { useRouteStore } from "@/stores/route"
 import { useSelectionStore } from "@/stores/selection"
-import { parseMapParams, serializeMapParams } from "@/lib/url-state"
+import { mergeQuery, parseMapParams, round } from "@/lib/url-state"
 
 /**
  * Keeps the map's center, zoom, and the current selection synchronized with the
@@ -21,6 +22,7 @@ import { parseMapParams, serializeMapParams } from "@/lib/url-state"
  */
 export function useMapUrlState(buildingsReady: boolean) {
   const map = useMapInstanceStore((s) => s.map)
+  const route = useRouteStore((s) => s.route)
 
   // Parse once on mount; subsequent reads use this ref, immune to URL rewrites.
   const initialParamsRef = useRef(parseMapParams(window.location.search))
@@ -39,12 +41,17 @@ export function useMapUrlState(buildingsReady: boolean) {
   useEffect(() => {
     if (didSnapRef.current) return
     if (!map || !buildingsReady) return
+    if (route === "spotlight") {
+      // Spotlight owns the viewport (useSpotlightFraming); still flip the gate.
+      didSnapRef.current = true
+      return
+    }
     const { center, zoom } = initialParamsRef.current
     if (center && zoom !== undefined) {
       map.jumpTo({ center, zoom })
     }
     didSnapRef.current = true
-  }, [map, buildingsReady])
+  }, [map, buildingsReady, route])
 
   // Write the URL only after the shared view has been applied — otherwise
   // pre-snap movements (e.g. <ArchMap>'s init) overwrite the incoming params.
@@ -75,13 +82,13 @@ export function useMapUrlState(buildingsReady: boolean) {
 function writeUrl(map: MapLibreGL.Map) {
   const selected = useSelectionStore.getState().selected
   const c = map.getCenter()
-  const center: [number, number] = [c.lng, c.lat]
   const zoom = map.getZoom()
 
-  const query = serializeMapParams({ center, zoom, selection: selected })
-  const nextUrl = query
-    ? `${window.location.pathname}?${query}`
-    : window.location.pathname
-
-  window.history.replaceState(null, "", nextUrl)
+  // Merge only the map-owned keys; preserve `side` (owned by use-route-sync).
+  // An empty selection joins to "", which mergeQuery deletes from the URL.
+  mergeQuery({
+    center: `${round(c.lng, 5)},${round(c.lat, 5)}`,
+    zoom: String(round(zoom, 2)),
+    selection: Array.from(selected).join(","),
+  })
 }

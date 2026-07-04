@@ -1,16 +1,16 @@
 import { create } from "zustand"
 import { subscribeWithSelector } from "zustand/middleware"
-import type { ArchFilter } from "@nolli/data"
-import type { ArchSummary } from "@nolli/data"
-import type { DataSource } from "@nolli/data"
-import { useDbStore } from "@/stores/db"
-import { toast } from "sonner"
+import type { ArchFilter } from "./data-source.type"
+import type { ArchSummary } from "./architectures.type"
+import type { DataSource } from "./data-source.type"
+import { useDbStore } from "./db-store"
 
 type FilterState = {
   architectIds: number[]
   cityIds: number[]
   searchQuery: string
   filteredArchs: ArchSummary[]
+  error: Error | null
   getArchFilter: () => ArchFilter | undefined
   toggleArchitect: (id: number) => void
   toggleCity: (id: number) => void
@@ -27,6 +27,7 @@ export const useFilterStore = create(
     cityIds: [],
     searchQuery: "",
     filteredArchs: [],
+    error: null,
     loading: false,
 
     getArchFilter: () => {
@@ -96,10 +97,9 @@ function startFilterSync(dataSource: DataSource) {
     () => {
       const filter = useFilterStore.getState().getArchFilter()
       dataSource.getAllArchitectures(filter).then((archs) => {
-        useFilterStore.setState({ filteredArchs: archs, loading: false })
-      }).catch(() => {
-        toast.error("Failed to get data. Try refreshing the page.")
-        useFilterStore.setState({ loading: false })
+        useFilterStore.setState({ filteredArchs: archs, loading: false, error: null })
+      }).catch((error: Error) => {
+        useFilterStore.setState({ loading: false, error })
       })
     },
     { equalityFn: (a, b) => a[0] === b[0] && a[1] === b[1] && a[2] === b[2] },
@@ -107,10 +107,9 @@ function startFilterSync(dataSource: DataSource) {
 
   dataSource
     .getAllArchitectures(undefined)
-    .then((archs) => useFilterStore.setState({ filteredArchs: archs, loading: false }))
-    .catch(() => {
-      toast.error("Failed to get data. Try refreshing the page.")
-      useFilterStore.setState({ loading: false })
+    .then((archs) => useFilterStore.setState({ filteredArchs: archs, loading: false, error: null }))
+    .catch((error: Error) => {
+      useFilterStore.setState({ loading: false, error })
     })
 }
 

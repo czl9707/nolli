@@ -1,0 +1,29 @@
+/* Spinner shown in the button while the PNG is being rendered. */
+.spin {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Brief flash applied to the captured poster frame after the PNG resolves,
+   to signal the screenshot was taken. Applied via classList on the
+   [data-poster-frame] node from the click handler. */
+.flash {
+  animation: flash 320ms;
+}
+
+@keyframes flash {
+  0% {
+    filter: brightness(10);
+  }
+  40% {
+    filter: brightness(2);
+  }
+  100% {
+    filter: brightness(1);
+  }
+}

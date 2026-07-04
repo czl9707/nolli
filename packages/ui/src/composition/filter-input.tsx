@@ -61,7 +61,7 @@ function FilterInput({
             <Caption asChild>
                 <label className={styles.label}>{label}</label>
             </Caption>
-            <Cmd label={label}>                
+            <Cmd label={label}>
                 <Popover open={open} onOpenChange={setOpen}>
                     <PopoverTrigger
                         asChild
@@ -141,7 +141,7 @@ function FilterInput({
                         <Cmd.List className={styles.list}>
                             {hasGroups
                                 ? Array.from(grouped.entries()).map(
-                                    ([group, groupItems], i) => (
+                                    ([group, groupItems]) => (
                                         <React.Fragment key={group}>
                                             <Cmd.Group
                                                 heading={group}

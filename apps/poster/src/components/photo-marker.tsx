@@ -1,6 +1,6 @@
 import { useMemo } from "react"
 import { MapMarker, MarkerContent } from "@nolli/map"
-import type { PosterBuilding } from "@/types"
+import type { ArchSummary } from "@nolli/data"
 import { hashId, jitter } from "./paper-clip"
 import styles from "./photo-marker.module.css"
 import { Body2, Body3 } from "@nolli/ui"
@@ -10,7 +10,7 @@ import { Body2, Body3 } from "@nolli/ui"
 const MAX_PHOTO_W = 160
 const MAX_PHOTO_H = 175
 
-export function PhotoMarker({ building }: { building: PosterBuilding }) {
+export function PhotoMarker({ building }: { building: ArchSummary }) {
   const { lng, lat } = building.coordinates
 
   const { rotate, width, height } = useMemo(() => {
@@ -48,6 +48,7 @@ export function PhotoMarker({ building }: { building: PosterBuilding }) {
               alt={building.name}
               width={width}
               height={height}
+              crossOrigin="anonymous"
             />
             <figcaption className={styles.caption} style={{ width }}>
               <Body2 className={styles.name}>{building.name}</Body2>

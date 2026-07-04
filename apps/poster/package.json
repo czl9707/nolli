@@ -7,8 +7,9 @@
     "dev": "vite",
     "build": "pnpm run generate:patterns && vite build",
     "generate:patterns": "tsx --tsconfig tsconfig.vite.json ../../packages/map/scripts/generate-patterns.ts",
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint"
+    "typecheck": "tsc -p tsconfig.vite.json --noEmit",
+    "lint": "eslint",
+    "test": "vitest run"
   },
   "dependencies": {
     "@nolli/data": "workspace:*",
@@ -16,6 +17,7 @@
     "@nolli/ui": "workspace:*",
     "@sqlite.org/sqlite-wasm": "^3.53.0-build1",
     "framer-motion": "^12.40.0",
+    "html-to-image": "^1.11.13",
     "lucide-react": "^1.16.0",
     "maplibre-gl": "^5.24.0",
     "react": "^19.2.4",
@@ -36,6 +38,7 @@
     "postcss-custom-properties": "^15.0.1",
     "tsx": "^4.22.3",
     "typescript": "^5.9.3",
-    "vite": "^8.0.13"
+    "vite": "^8.0.13",
+    "vitest": "^2.1.9"
   }
 }

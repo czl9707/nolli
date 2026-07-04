@@ -1,23 +1,11 @@
 import { useEffect, useState } from "react"
 import { useDbStore } from "@nolli/data"
 import type { ArchSummary } from "@nolli/data"
-import type { PosterBuilding } from "@/types"
 
 export type BuildingsState =
   | { status: "loading" }
   | { status: "error"; error: Error }
-  | { status: "ready"; buildings: PosterBuilding[] }
-
-/**
- * Loads every architecture once the shared db store has a ready DataSource,
- * then maps to PosterBuilding[] — dropping any without a usable cover photo
- * (no image / unknown dimensions), matching the old build-snapshot behaviour.
- */
-function toPoster(a: ArchSummary): PosterBuilding | null {
-  const { image, width, height } = a.cover
-  if (!image || !width || !height) return null
-  return { ...a, cover: { image, width, height } }
-}
+  | { status: "ready"; buildings: ArchSummary[] }
 
 export function useBuildings(): BuildingsState {
   const dataSource = useDbStore((s) => s.dataSource)
@@ -36,10 +24,7 @@ export function useBuildings(): BuildingsState {
       .getAllArchitectures()
       .then((archs) => {
         if (cancelled) return
-        const buildings = archs
-          .map(toPoster)
-          .filter((b): b is PosterBuilding => b !== null)
-        setState({ status: "ready", buildings })
+        setState({ status: "ready", buildings: archs })
       })
       .catch((error: Error) => {
         if (!cancelled) setState({ status: "error", error })
