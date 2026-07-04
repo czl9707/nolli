@@ -6,7 +6,7 @@ import { TRANSITION_SHORT } from "@nolli/ui"
 import { useArchDetailStore } from "@/stores/arch-detail"
 import { useLayout } from "@/hooks/use-layout"
 import { useDbStore } from "@/stores/db"
-import { useFilterStore } from "@/stores/filter"
+import { useFilterStore } from "@nolli/data"
 import { useSidebarStore } from "@/stores/sidebar"
 import { useArchNavigate } from "@/hooks/use-arch-navigate"
 
