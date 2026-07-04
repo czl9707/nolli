@@ -5,17 +5,8 @@ export type UserLocation = {
   latitude: number
 }
 
-/** Milliseconds between position refreshes. */
 const POLL_INTERVAL = 10_000
 
-/**
- * Returns the user's current geographic location, refreshed on a 10s interval.
- *
- * Polls `navigator.geolocation.getCurrentPosition` (a first fix is requested
- * immediately, then every `POLL_INTERVAL`). On a transient failure the last
- * known position is kept so the marker doesn't blink. Returns `null` until the
- * first successful fix or if geolocation is unavailable/denied.
- */
 export function useUserLocation(): UserLocation | null {
   const [location, setLocation] = useState<UserLocation | null>(null)
 
