@@ -15,7 +15,7 @@ export function Header() {
   const previewMode = useUiStore((s) => s.previewMode)
 
   return (
-    <header className={styles.header}>
+    <header data-poster-header className={styles.header}>
       <div className={styles.left}>
         {previewMode && <ScreenshotButton />}
       </div>

@@ -3,14 +3,16 @@ import { Header } from "@/components/header"
 import { SelectionSidebar } from "@/components/selection-sidebar"
 import { VisibleArchList } from "@/components/visible-arch-list"
 import { SpotlightList } from "@/components/spotlight-list"
-import { SpotlightOverlay } from "@/components/spotlight-overlay"
-import { SideFlipControl } from "@/components/side-flip-control"
+import { SpotlightImageStrip } from "@/components/spotlight-image-strip"
+import { SpotlightCaption } from "@/components/spotlight-caption"
+import { SpotlightControls } from "@/components/spotlight-controls"
 import { useRouteStore } from "@/stores/route"
 import type { Route } from "@/stores/route"
 import { useMapInstanceStore } from "@/stores/map-instance"
 import { useVisibleArchs } from "@/hooks/use-visible-archs"
 import { useRouteSync } from "@/hooks/use-route-sync"
 import { useSpotlightFraming } from "@/hooks/use-spotlight-framing"
+import { useSpotlightUrlSync } from "@/hooks/use-spotlight-url-sync"
 import { Body3, Skeleton, Tabs, TabsList, TabsTrigger } from "@nolli/ui"
 import { useMemo } from "react"
 import type { ReactNode } from "react"
@@ -36,6 +38,7 @@ export function PosterShell({
   const isSpotlight = route === "spotlight"
   useRouteSync()
   useSpotlightFraming(buildings, buildingsReady)
+  useSpotlightUrlSync()
 
   return (
     <div className={styles.shell}>
@@ -56,8 +59,8 @@ export function PosterShell({
         </SidebarSection>
         {isSpotlight ? (
           <>
-            <SidebarSection label="Photo">
-              <SideFlipControl />
+            <SidebarSection label="Layout">
+              <SpotlightControls buildings={buildings} />
             </SidebarSection>
             <VisibleSection buildings={buildings} spotlight />
           </>
@@ -68,7 +71,12 @@ export function PosterShell({
       <div className={styles.inset} data-poster-frame>
         <Header />
         <PosterMap buildings={buildings} spotlight={isSpotlight} />
-        {isSpotlight && <SpotlightOverlay buildings={buildings} />}
+        {isSpotlight && (
+          <>
+            <SpotlightImageStrip buildings={buildings} />
+            <SpotlightCaption buildings={buildings} />
+          </>
+        )}
       </div>
     </div>
   )

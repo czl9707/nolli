@@ -1,17 +1,17 @@
+/* apps/poster/src/components/spotlight-image-strip.module.css */
 .wrap {
   position: absolute;
   z-index: 5;
   margin: var(--spacing-component);
-  max-width: max(45vmin, 360px);
-  max-height: max(70vmin, 360px);
   filter: drop-shadow(4px 4px 4px rgb(var(--color-paper-foreground) / 0.2));
   pointer-events: none;
 }
 
-.top-left     { top: var(--size-header-height); left: 0;  }
-.top-right    { top: var(--size-header-height); right: 0; }
-.bottom-left  { bottom: 0; left: 0;  }
-.bottom-right { bottom: 0; right: 0; }
+/* Dock to an edge; center along it. */
+.top    { top: var(--size-header-height); left: 0; right: 0; margin-left: auto; margin-right: auto; width: max-content; }
+.bottom { bottom: 0; left: 0; right: 0; margin-left: auto; margin-right: auto; width: max-content; }
+.left   { top: var(--size-header-height); bottom: 0; left: 0; margin-top: auto; margin-bottom: auto; height: max-content; }
+.right  { top: var(--size-header-height); bottom: 0; right: 0; margin-top: auto; margin-bottom: auto; height: max-content; }
 
 .hero {
   margin: 0;
@@ -39,18 +39,10 @@ body[data-theme="dark"] .hero::before {
   position: relative;
   z-index: 1;
   display: block;
-  width: 100%;
+  width: auto;
+  height: auto;
+  max-width: var(--max-w);
+  max-height: var(--max-h);
   aspect-ratio: var(--ratio);
-  object-fit: cover;
+  object-fit: contain;
 }
-
-.caption {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  margin-top: var(--spacing-paragraph);
-  color: rgb(var(--color-paper-foreground));
-}
-
-.architect { opacity: 0.7; }

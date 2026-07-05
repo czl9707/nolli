@@ -2,6 +2,7 @@
     height: 2rem;
     width: 100%;
     min-width: 0;
+    box-sizing: border-box;
     border-radius: var(--size-border-radius);
     border: var(--border);
     background-color: transparent;

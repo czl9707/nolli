@@ -1,0 +1,45 @@
+/* apps/poster/src/components/spotlight-caption.module.css */
+.wrap {
+  position: absolute;
+  z-index: 6;
+  margin: var(--spacing-component);
+  pointer-events: none;
+  color: rgb(var(--color-primary-foreground));
+  font-family: var(--font-default); /* Inter Variable, NOT the playful scale */
+  text-shadow: 0 1px 3px rgb(0 0 0 / 0.35), 0 0 1px rgb(0 0 0 / 0.4);
+}
+
+/* Dock to the resolved corner. */
+.top-left     { top: var(--size-header-height); left: 0; }
+.top-right    { top: var(--size-header-height); right: 0; }
+.bottom-left  { bottom: 0; left: 0; }
+.bottom-right { bottom: 0; right: 0; }
+
+.block {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+/* Right-docked corners: flush both lines to the right (horizontal & rotated). */
+.alignRight .block { align-items: flex-end; text-align: right; }
+
+.name { font-weight: 600; }
+.architect { font-weight: 400; opacity: 0.85; margin-top: 0.15em; }
+
+/*
+ * Rotated: spin the block −90° around the corner it is docked to, so it reads
+ * bottom-to-top with name on the left and architect on its right. The block's
+ * unrotated width (→ visual height once spun) is bounded inline by the caption
+ * component, and wrapping is allowed so a long name folds instead of running
+ * off-frame.
+ */
+.rotated .block {
+  overflow-wrap: anywhere;
+}
+/* translate values derived so each corner's rotated block extends *inward*
+ * from its docked corner (verified per-corner against the rotation math). */
+.rotated.top-left     .block { transform-origin: top left;     transform: rotate(-90deg) translate(-100%, 0); }
+.rotated.top-right    .block { transform-origin: top right;    transform: rotate(-90deg) translate(0, -100%); }
+.rotated.bottom-left  .block { transform-origin: bottom left;  transform: rotate(-90deg) translate(0, 100%); }
+.rotated.bottom-right .block { transform-origin: bottom right; transform: rotate(-90deg) translate(100%, 0); }

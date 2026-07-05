@@ -3,7 +3,7 @@ import type MapLibreGL from "maplibre-gl"
 import { useMapInstanceStore } from "@/stores/map-instance"
 import { useRouteStore } from "@/stores/route"
 import { useSelectionStore } from "@/stores/selection"
-import { mergeQuery, parseMapParams, round } from "@/lib/url-state"
+import { parseMapParams, setParams } from "@/lib/url-state"
 
 /**
  * Keeps the map's center, zoom, and the current selection synchronized with the
@@ -83,12 +83,12 @@ function writeUrl(map: MapLibreGL.Map) {
   const selected = useSelectionStore.getState().selected
   const c = map.getCenter()
   const zoom = map.getZoom()
-
-  // Merge only the map-owned keys; preserve `side` (owned by use-route-sync).
-  // An empty selection joins to "", which mergeQuery deletes from the URL.
-  mergeQuery({
-    center: `${round(c.lng, 5)},${round(c.lat, 5)}`,
-    zoom: String(round(zoom, 2)),
-    selection: Array.from(selected).join(","),
+  // Merge only the map-owned keys; preserve spotlight settings (owned by
+  // use-spotlight-url-sync). An empty selection serializes to "" which the
+  // schema deletes from the URL.
+  setParams({
+    center: [c.lng, c.lat],
+    zoom,
+    selection: selected,
   })
 }
