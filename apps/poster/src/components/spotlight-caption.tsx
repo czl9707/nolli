@@ -44,7 +44,7 @@ export function SpotlightCaption({ buildings }: { buildings: ArchSummary[] }) {
   const dockEdge = OPPOSITE_EDGE[imageEdge]
   const name = customName.trim() || building.name
   const architect = customArchitect.trim() || building.architect
-  const boxSize = Math.min(frame.width, (frame.height - frame.headerHeight )) - MARGIN * 2;
+  const boxSize = Math.min(frame.width, (frame.height - frame.headerHeight )) * 0.75 - MARGIN * 2;
   const cls = [styles.wrap]
   cls.push(vertical ? styles.vert : styles.horiz, styles[dockEdge], styles[corner])
   

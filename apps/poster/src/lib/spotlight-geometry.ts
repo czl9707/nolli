@@ -1,15 +1,17 @@
 // apps/poster/src/lib/spotlight-geometry.ts
 import type { ImageEdge } from "./spotlight-types"
 
-/** Cross-axis fraction the camera pans so the marker clears the strip. */
-const EDGE_PAN_FRACTION = 0.2
+/** Cross-axis fraction the camera shifts the marker off viewport center, so it
+ *  sits centered in the half opposite the image strip. ~15% of that axis. */
+const EDGE_PAN_FRACTION = 0.15
 /** Cross-axis width cap for the image strip (fraction of that axis). */
 const STRIP_CAP_FRACTION = 0.45
 
 /**
- * Pixel offset for MapLibre flyTo/easeTo so the building marker lands in the
- * area opposite the image strip. Sign convention matches the framing hook:
- * this is the pan vector; the hook negates it to an `offset`.
+ * Pixel offset (MapLibre flyTo/easeTo `offset`, screen coords: +x right, +y
+ * down) that shifts the building marker into the half opposite the image
+ * strip — away from the edge the strip occupies. Returned directly; no
+ * negation needed at the call site.
  */
 export function spotlightEdgeOffset(
   edge: ImageEdge,

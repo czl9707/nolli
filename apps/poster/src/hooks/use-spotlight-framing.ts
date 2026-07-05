@@ -12,7 +12,7 @@ import { parseMapParams } from "@/lib/url-state"
 import { MAP_TRANSITION_SHORT } from "@nolli/ui"
 import type { ArchSummary } from "@nolli/data"
 
-const DEFAULT_SPOTLIGHT_ZOOM = 14
+const DEFAULT_SPOTLIGHT_ZOOM = 16
 const EASE_DURATION = MAP_TRANSITION_SHORT * 1000
 type FrameMode = "fly" | "ease"
 
@@ -74,8 +74,9 @@ export function useSpotlightFraming(
       : DEFAULT_SPOTLIGHT_ZOOM
     const [dx, dy] = spotlightEdgeOffset(imageEdge, canvas.width, canvas.height)
     const center = [building.coordinates.lng, building.coordinates.lat] as [number, number]
-    // Negate the pan vector to land the marker opposite the strip.
-    const offset = [-dx, -dy] as [number, number]
+    // spotlightEdgeOffset already returns the offset that lands the marker in
+    // the half opposite the strip — apply it directly.
+    const offset = [dx, dy] as [number, number]
     if (mode === "fly") {
       flyToArchCinematic(map, center[0], center[1], targetZoom, offset)
     } else {
