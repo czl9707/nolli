@@ -21,7 +21,7 @@ export function useSpotlightUrlSync() {
       // are ephemeral, so carry the current values through.
       s.replace({
         imageEdge: p.imageEdge,
-        captionCorner: p.captionCorner,
+        imageCorner: p.imageCorner,
         nameSize: p.nameSize,
         architectSize: p.architectSize,
         customName: s.customName,
@@ -34,16 +34,16 @@ export function useSpotlightUrlSync() {
 
   // Write each URL-backed setting to the URL when it changes.
   const imageEdge = useSpotlightStore((s) => s.imageEdge)
-  const captionCorner = useSpotlightStore((s) => s.captionCorner)
+  const imageCorner = useSpotlightStore((s) => s.imageCorner)
   const nameSize = useSpotlightStore((s) => s.nameSize)
   const architectSize = useSpotlightStore((s) => s.architectSize)
 
   useEffect(() => {
     setParams({
       imageEdge,
-      captionCorner,
+      imageCorner,
       nameSize,
       architectSize,
     })
-  }, [imageEdge, captionCorner, nameSize, architectSize])
+  }, [imageEdge, imageCorner, nameSize, architectSize])
 }

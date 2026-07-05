@@ -10,7 +10,7 @@ function initial(): SpotlightSettings {
   const p = parseMapParams(window.location.search)
   return {
     imageEdge: p.imageEdge,
-    captionCorner: p.captionCorner,
+    imageCorner: p.imageCorner,
     nameSize: p.nameSize,
     architectSize: p.architectSize,
     customName: DEFAULT_SPOTLIGHT.customName,
@@ -20,7 +20,7 @@ function initial(): SpotlightSettings {
 
 type SpotlightState = SpotlightSettings & {
   setImageEdge: (v: SpotlightSettings["imageEdge"]) => void
-  setCaptionCorner: (v: SpotlightSettings["captionCorner"]) => void
+  setImageCorner: (v: SpotlightSettings["imageCorner"]) => void
   setNameSize: (v: number) => void
   setArchitectSize: (v: number) => void
   setCustomName: (v: string) => void
@@ -32,7 +32,7 @@ type SpotlightState = SpotlightSettings & {
 export const useSpotlightStore = create<SpotlightState>((set) => ({
   ...initial(),
   setImageEdge: (imageEdge) => set({ imageEdge }),
-  setCaptionCorner: (captionCorner) => set({ captionCorner }),
+  setImageCorner: (imageCorner) => set({ imageCorner }),
   setNameSize: (nameSize) => set({ nameSize }),
   setArchitectSize: (architectSize) => set({ architectSize }),
   setCustomName: (customName) => set({ customName }),

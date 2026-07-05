@@ -21,6 +21,7 @@ const PADDING = 16 // --spacing-paragraph (the .hero padding)
  */
 export function SpotlightImageStrip({ buildings }: { buildings: ArchSummary[] }) {
   const imageEdge = useSpotlightStore((s) => s.imageEdge)
+  const imageCorner = useSpotlightStore((s) => s.imageCorner)
   const selected = useSelectionStore((s) => s.selected)
   const frame = useFrameSize()
 
@@ -42,23 +43,27 @@ export function SpotlightImageStrip({ buildings }: { buildings: ArchSummary[] })
       ? spotlightImageBounds(imageEdge, frame.width, frame.height, frame.headerHeight, MARGIN, PADDING)
       : { maxWidth: 0, maxHeight: 0 }
 
+  let renderW = 0
+  let renderH = 0
+  if (maxWidth && maxHeight) {
+    renderW = maxWidth
+    renderH = renderW / ratio
+    if (renderH > maxHeight) {
+      renderH = maxHeight
+      renderW = renderH * ratio
+    }
+  }
+
   return (
     <motion.div
       layout="position"
       transition={{ duration: MAP_TRANSITION_SHORT, ease: "easeInOut" }}
-      className={`${styles.wrap} ${styles[imageEdge]}`}
+      className={`${styles.wrap} ${styles[imageEdge]} ${styles[imageCorner]}`}
     >
-      <figure
-        className={styles.hero}
-        style={{
-          "--ratio": ratio,
-          "--max-w": `${maxWidth}px`,
-          "--max-h": `${maxHeight}px`,
-          clipPath,
-        } as React.CSSProperties}
-      >
+      <figure className={styles.img} style={{ clipPath }}>
         <img
           className={styles.photo}
+          style={{ width: renderW, height: renderH }}
           src={building.cover.image}
           alt={building.name}
           crossOrigin="anonymous"

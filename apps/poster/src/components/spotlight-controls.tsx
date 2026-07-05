@@ -26,13 +26,13 @@ const MAX_SIZE = 120
  */
 export function SpotlightControls({ buildings }: { buildings: ArchSummary[] }) {
   const imageEdge = useSpotlightStore((s) => s.imageEdge)
-  const captionCorner = useSpotlightStore((s) => s.captionCorner)
+  const imageCorner = useSpotlightStore((s) => s.imageCorner)
   const nameSize = useSpotlightStore((s) => s.nameSize)
   const architectSize = useSpotlightStore((s) => s.architectSize)
   const customName = useSpotlightStore((s) => s.customName)
   const customArchitect = useSpotlightStore((s) => s.customArchitect)
   const setImageEdge = useSpotlightStore((s) => s.setImageEdge)
-  const setCaptionCorner = useSpotlightStore((s) => s.setCaptionCorner)
+  const setImageCorner = useSpotlightStore((s) => s.setImageCorner)
   const setNameSize = useSpotlightStore((s) => s.setNameSize)
   const setArchitectSize = useSpotlightStore((s) => s.setArchitectSize)
   const setCustomName = useSpotlightStore((s) => s.setCustomName)
@@ -56,8 +56,8 @@ export function SpotlightControls({ buildings }: { buildings: ArchSummary[] }) {
         </Tabs>
       </Field>
 
-      <Field label="Caption corner">
-        <Tabs value={captionCorner} onValueChange={(v) => setCaptionCorner(v as (typeof CORNERS)[number])}>
+      <Field label="Image corner">
+        <Tabs value={imageCorner} onValueChange={(v) => setImageCorner(v as (typeof CORNERS)[number])}>
           <TabsList>
             <TabsTrigger value={CORNERS[0]}>Start</TabsTrigger>
             <TabsTrigger value={CORNERS[1]}>End</TabsTrigger>

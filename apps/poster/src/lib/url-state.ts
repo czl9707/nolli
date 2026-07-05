@@ -4,7 +4,7 @@ import {
   CORNERS,
   DEFAULT_SPOTLIGHT,
   type ImageEdge,
-  type CaptionCorner,
+  type Corner,
 } from "./spotlight-types"
 
 export type LngLat = [number, number]
@@ -14,7 +14,7 @@ export type MapParamState = {
   zoom?: number
   selection: Set<string>
   imageEdge: ImageEdge
-  captionCorner: CaptionCorner
+  imageCorner: Corner
   nameSize: number
   architectSize: number
 }
@@ -101,7 +101,7 @@ const SPECS: {
   zoom: { key: "zoom", parse: parseZoom, serialize: serializeZoom, default: undefined },
   selection: { key: "selection", parse: parseSelection, serialize: serializeSelection, default: new Set<string>() },
   imageEdge: { key: "edge", parse: parseEdge, serialize: String, default: DEFAULT_SPOTLIGHT.imageEdge },
-  captionCorner: { key: "cap", parse: parseCorner, serialize: String, default: DEFAULT_SPOTLIGHT.captionCorner },
+  imageCorner: { key: "corner", parse: parseCorner, serialize: String, default: DEFAULT_SPOTLIGHT.imageCorner },
   nameSize: { key: "name", parse: parseSize, serialize: String, default: DEFAULT_SPOTLIGHT.nameSize },
   architectSize: { key: "arch", parse: parseSize, serialize: String, default: DEFAULT_SPOTLIGHT.architectSize },
 }

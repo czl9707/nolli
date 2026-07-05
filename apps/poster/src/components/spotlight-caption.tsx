@@ -3,7 +3,7 @@ import { useMemo } from "react"
 import { useSelectionStore } from "@/stores/selection"
 import { useSpotlightStore } from "@/stores/spotlight"
 import { useFrameSize } from "@/hooks/use-frame-size"
-import { OPPOSITE_EDGE } from "@/lib/spotlight-types"
+import { OPPOSITE_EDGE, OPPOSITE_CORNER } from "@/lib/spotlight-types"
 import type { ArchSummary } from "@nolli/data"
 import styles from "./spotlight-caption.module.css"
 
@@ -24,7 +24,9 @@ const MARGIN = 32
  * edge space so a long name wraps instead of overflowing.
  */
 export function SpotlightCaption({ buildings }: { buildings: ArchSummary[] }) {
-  const corner = useSpotlightStore((s) => s.captionCorner)
+  const imageCorner = useSpotlightStore((s) => s.imageCorner)
+  // The caption corner is inferred: opposite of the image corner.
+  const corner = OPPOSITE_CORNER[imageCorner]
   const nameSize = useSpotlightStore((s) => s.nameSize)
   const architectSize = useSpotlightStore((s) => s.architectSize)
   const customName = useSpotlightStore((s) => s.customName)

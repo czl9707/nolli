@@ -53,13 +53,15 @@ export function spotlightImageBounds(
 ): { maxWidth: number; maxHeight: number } {
   const chrome = 2 * (margin + padding)
   if (edge === "left" || edge === "right") {
+    console.log("spotlightImageBounds left/right", { edge, width, height, headerHeight, margin, padding, chrome })
+    console.log("spotlightImageBounds left/right", { maxWidth: Math.max(0, STRIP_CAP_FRACTION * (width - chrome)), maxHeight: Math.max(0, height - headerHeight - chrome) })
     return {
-      maxWidth: Math.max(0, STRIP_CAP_FRACTION * width - chrome),
+      maxWidth: Math.max(0, STRIP_CAP_FRACTION * (width - chrome)),
       maxHeight: Math.max(0, height - headerHeight - chrome),
     }
   }
   return {
     maxWidth: Math.max(0, width - chrome),
-    maxHeight: Math.max(0, STRIP_CAP_FRACTION * height - chrome),
+    maxHeight: Math.max(0, STRIP_CAP_FRACTION * (height - chrome)),
   }
 }

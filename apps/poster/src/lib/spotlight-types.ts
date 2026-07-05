@@ -4,7 +4,7 @@ export const EDGES = ["top", "right", "bottom", "left"] as const
 export type ImageEdge = (typeof EDGES)[number]
 
 export const CORNERS = ["start", "end"] as const
-export type CaptionCorner = (typeof CORNERS)[number]
+export type Corner = (typeof CORNERS)[number]
 
 /** The caption docks to the edge opposite the image strip. */
 export const OPPOSITE_EDGE: Record<ImageEdge, ImageEdge> = {
@@ -14,9 +14,15 @@ export const OPPOSITE_EDGE: Record<ImageEdge, ImageEdge> = {
   right: "left",
 }
 
+/** The caption corner is the image corner flipped (image start → caption end). */
+export const OPPOSITE_CORNER: Record<Corner, Corner> = {
+  start: "end",
+  end: "start",
+}
+
 export type SpotlightSettings = {
   imageEdge: ImageEdge
-  captionCorner: CaptionCorner
+  imageCorner: Corner
   nameSize: number
   architectSize: number
   customName: string
@@ -25,7 +31,7 @@ export type SpotlightSettings = {
 
 export const DEFAULT_SPOTLIGHT: SpotlightSettings = {
   imageEdge: "top",
-  captionCorner: "start",
+  imageCorner: "start",
   nameSize: 48,
   architectSize: 20,
   customName: "",
