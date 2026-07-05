@@ -31,6 +31,40 @@
   opacity: 0.7;
 }
 
+/* Collapsible section trigger: a full-width row whose label sits left and a
+ * small triangle sits right. The triangle points right when closed and rotates
+ * to point down when open. */
+.sectionTrigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sectionTriangle {
+  flex-shrink: 0;
+  width: 0;
+  height: 0;
+  border-left: 5px solid currentColor;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  opacity: 0.7;
+  transition: transform 0.15s ease;
+}
+
+.sectionTriangleOpen {
+  transform: rotate(90deg);
+}
+
 /* Skeleton mirror of the shell. Same flex row + sidebar width + inset as the
    real shell, so hydrating from <PosterShellSkeleton> to <PosterShell> causes
    no layout shift. The sidebar reuses <SidebarSection> (identical padding,

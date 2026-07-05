@@ -1,0 +1,45 @@
+/* apps/poster/src/components/spotlight-controls.module.css */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.fieldLabel {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+/* Two equal columns for a (Name, Architect) pair of inputs. Grid 1fr/1fr is
+ * used deliberately so each cell is exactly half the row and never overlaps,
+ * regardless of the input's intrinsic min-content width. */
+.twoCol {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+/* Stacked single-column variant (one input per row). */
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.cellLabel {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}

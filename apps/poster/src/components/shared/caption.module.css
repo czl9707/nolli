@@ -1,0 +1,57 @@
+/* apps/poster/src/components/spotlight-caption.module.css */
+.wrap {
+  position: absolute;
+  z-index: 6;
+  margin: var(--spacing-component);
+  pointer-events: none;
+  color: rgb(var(--color-primary-foreground));
+  font-family: var(--font-default);
+  text-shadow: var(--shadow-sm);
+}
+
+.top.start { top: var(--size-header-height); left: 0; }
+.top.end { top: var(--size-header-height); right: 0; }
+.bottom.start { bottom: 0; left: 0; }
+.bottom.end { bottom: 0; right: 0; }
+.right.start { bottom: 0; right: 0; }
+.right.end { top: var(--size-header-height); right: 0; }
+.left.start { bottom: 0; left: 0; }
+.left.end { top: var(--size-header-height); left: 0; }
+
+.start .block { align-items: flex-start; }
+.end .block { align-items: flex-end; }
+
+.horiz.top { top: var(--size-header-height); }
+.horiz.bottom { bottom: 0; }
+.vert.left { left: 0; }
+.vert.right { right: 0; }
+
+.block {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+  overflow-wrap: anywhere;
+}
+
+.horiz.bottom .block {
+  justify-content: flex-end;
+}
+
+.vert.left .block {
+  transform-origin: top left;
+  transform: rotate(-90deg) translate(-100%, 0);
+}
+
+.vert.right .block {
+  justify-content: flex-end;
+  transform-origin: bottom left;
+  transform: rotate(-90deg) translate(0, 100%);
+}
+
+
+.end span {
+  text-align: right;
+}
+
+.primary { font-weight: 600; }
+.secondary { font-weight: 400; opacity: 0.85; margin-top: 0.75em; }

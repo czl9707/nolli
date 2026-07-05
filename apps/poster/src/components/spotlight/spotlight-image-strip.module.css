@@ -1,0 +1,47 @@
+.wrap {
+  position: absolute;
+  z-index: 5;
+  margin: var(--spacing-component);
+  filter: drop-shadow(4px 4px 4px rgb(var(--color-paper-foreground) / 0.2));
+  pointer-events: none;
+}
+
+.top    { top: var(--size-header-height); left: 0; right: 0; width: max-content; }
+.bottom { bottom: 0; left: 0; right: 0; width: max-content; }
+.left   { top: var(--size-header-height); bottom: 0; left: 0; height: max-content; }
+.right  { top: var(--size-header-height); bottom: 0; right: 0; height: max-content; }
+
+.top.start, .bottom.start { margin-left: var(--spacing-component); margin-right: auto; }
+.top.end, .bottom.end { margin-left: auto; margin-right: var(--spacing-component); }
+.left.start, .right.start { margin-top: auto; margin-bottom: var(--spacing-component); }
+.left.end, .right.end { margin-top: var(--spacing-component); margin-bottom: auto; }
+
+.img {
+  margin: 0;
+  position: relative;
+  box-sizing: border-box;
+  background: rgb(var(--color-paper-background));
+  padding: var(--spacing-paragraph);
+}
+
+.img::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: url("/patterns/light/grass.png");
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+body[data-theme="dark"] .hero::before {
+  background-image: url("/patterns/dark/grass.png");
+}
+
+/* Size is set explicitly (fitted px) on the element via inline style, which
+ * also lets it upscale past the source's intrinsic pixels. */
+.photo {
+  position: relative;
+  z-index: 1;
+  display: block;
+}

@@ -15,17 +15,28 @@ export function Header() {
   const previewMode = useUiStore((s) => s.previewMode)
 
   return (
-    <header className={styles.header}>
+    <header data-poster-header className={styles.header}>
+      {/* The icon slots are kept (flex:1 spacers, center the brand); only the
+          buttons inside are marked for exclusion at screenshot time so the
+          downloaded poster shows the header bar + "Nolli" but no action icons. */}
       <div className={styles.left}>
-        {previewMode && <ScreenshotButton />}
+        {previewMode && (
+          <span data-poster-exclude>
+            <ScreenshotButton />
+          </span>
+        )}
       </div>
       <H6 className={styles.title}>
         <img src="/favicon.svg" alt="" className={styles.icon} />
         Nolli
       </H6>
       <div className={styles.right}>
-        <PreviewToggle />
-        <ThemeToggle />
+        <span data-poster-exclude>
+          <PreviewToggle />
+        </span>
+        <span data-poster-exclude>
+          <ThemeToggle />
+        </span>
       </div>
     </header>
   )

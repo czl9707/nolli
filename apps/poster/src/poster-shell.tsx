@@ -1,22 +1,33 @@
-import { PosterMap } from "@/components/poster-map"
-import { Header } from "@/components/header"
-import { SelectionSidebar } from "@/components/selection-sidebar"
-import { VisibleArchList } from "@/components/visible-arch-list"
-import { SpotlightList } from "@/components/spotlight-list"
-import { SpotlightOverlay } from "@/components/spotlight-overlay"
-import { SideFlipControl } from "@/components/side-flip-control"
+import { PosterMap } from "@/components/shared/poster-map"
+import { Header } from "@/components/shared/header"
+import { SelectionSidebar } from "@/components/shared/selection-sidebar"
+import { VisibleArchList } from "@/components/overview/visible-arch-list"
+import { SpotlightList } from "@/components/spotlight/spotlight-list"
+import { SpotlightImageStrip } from "@/components/spotlight/spotlight-image-strip"
+import { Caption } from "@/components/shared/caption"
+import { CaptionOptions } from "@/components/shared/caption-options"
 import { useRouteStore } from "@/stores/route"
 import type { Route } from "@/stores/route"
 import { useMapInstanceStore } from "@/stores/map-instance"
 import { useVisibleArchs } from "@/hooks/use-visible-archs"
 import { useRouteSync } from "@/hooks/use-route-sync"
-import { useSpotlightFraming } from "@/hooks/use-spotlight-framing"
-import { Body3, Skeleton, Tabs, TabsList, TabsTrigger } from "@nolli/ui"
-import { useMemo } from "react"
+import { useSpotlightFraming } from "@/hooks/spotlight/use-spotlight-framing"
+import { useSpotlightUrlSync } from "@/hooks/spotlight/use-spotlight-url-sync"
+import {
+  Body3,
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+  Skeleton,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+} from "@nolli/ui"
+import { useMemo, useState } from "react"
 import type { ReactNode } from "react"
 import { useFilterStore } from "@nolli/data"
 import type { ArchSummary } from "@nolli/data"
-import { OperationPanel } from "@/components/operation-panel"
+import { OperationPanel } from "@/components/shared/operation-panel"
 import styles from "./app.module.css"
 
 /**
@@ -36,6 +47,7 @@ export function PosterShell({
   const isSpotlight = route === "spotlight"
   useRouteSync()
   useSpotlightFraming(buildings, buildingsReady)
+  useSpotlightUrlSync()
 
   return (
     <div className={styles.shell}>
@@ -55,43 +67,81 @@ export function PosterShell({
           <OperationPanel />
         </SidebarSection>
         {isSpotlight ? (
-          <>
-            <SidebarSection label="Photo">
-              <SideFlipControl />
-            </SidebarSection>
-            <VisibleSection buildings={buildings} spotlight />
-          </>
+          <VisibleSection buildings={buildings} spotlight />
         ) : (
           <VisibleSection buildings={buildings} />
         )}
+        <SidebarSection label="Caption options" collapsible defaultOpen={false}>
+          {isSpotlight ? (
+            <CaptionOptions buildings={buildings} />
+          ) : (
+            <CaptionOptions placeholder={{ primary: "Add primary text", secondary: "Add secondary text" }} />
+          )}
+        </SidebarSection>
       </SelectionSidebar>
       <div className={styles.inset} data-poster-frame>
         <Header />
         <PosterMap buildings={buildings} spotlight={isSpotlight} />
-        {isSpotlight && <SpotlightOverlay buildings={buildings} />}
+        {isSpotlight && <SpotlightImageStrip buildings={buildings} />}
+        {/* Caption is shared by both routes. Spotlight resolves text from the
+            selected building (custom overrides win); overview is freeform —
+            custom text only, omitted entirely when both fields are empty. */}
+        <Caption buildings={isSpotlight ? buildings : undefined} />
       </div>
     </div>
   )
 }
 
 /** A uniform sidebar block: consistent padding, optional label, flex column.
- *  `grow` fills the sidebar's remaining height (the building list uses it). */
+ *  `grow` fills the sidebar's remaining height (the building list uses it).
+ *  `collapsible` turns the label into a trigger (with a right-side triangle)
+ *  that shows/hides the children — used by the spotlight Layout/Caption
+ *  options, which are collapsed by default. */
 function SidebarSection({
   label,
   grow = false,
+  collapsible = false,
+  defaultOpen = true,
   children,
 }: {
   label?: string
   grow?: boolean
+  collapsible?: boolean
+  defaultOpen?: boolean
   children: ReactNode
 }) {
+  const [open, setOpen] = useState(defaultOpen)
+
+  if (!collapsible) {
+    return (
+      <section
+        className={`${styles.sidebarSection} ${grow ? styles.sidebarSectionGrow : ""}`}
+      >
+        {label && <Body3 className={styles.sectionLabel}>{label}</Body3>}
+        {children}
+      </section>
+    )
+  }
+
   return (
-    <section
-      className={`${styles.sidebarSection} ${grow ? styles.sidebarSectionGrow : ""}`}
-    >
-      {label && <Body3 className={styles.sectionLabel}>{label}</Body3>}
-      {children}
-    </section>
+    <Collapsible open={open} onOpenChange={setOpen} asChild>
+      <section
+        className={`${styles.sidebarSection} ${grow ? styles.sidebarSectionGrow : ""}`}
+      >
+        {label && (
+          <CollapsibleTrigger asChild>
+            <button type="button" className={styles.sectionTrigger}>
+              <Body3 className={styles.sectionLabel}>{label}</Body3>
+              <span
+                className={`${styles.sectionTriangle} ${open ? styles.sectionTriangleOpen : ""}`}
+                aria-hidden
+              />
+            </button>
+          </CollapsibleTrigger>
+        )}
+        <CollapsibleContent>{children}</CollapsibleContent>
+      </section>
+    </Collapsible>
   )
 }
 
