@@ -2,11 +2,9 @@
 import {
   EDGES,
   CORNERS,
-  DIRS,
   DEFAULT_SPOTLIGHT,
   type ImageEdge,
   type CaptionCorner,
-  type CaptionDir,
 } from "./spotlight-types"
 
 export type LngLat = [number, number]
@@ -17,11 +15,8 @@ export type MapParamState = {
   selection: Set<string>
   imageEdge: ImageEdge
   captionCorner: CaptionCorner
-  captionDirection: CaptionDir
   nameSize: number
   architectSize: number
-  customName: string
-  customArchitect: string
 }
 
 // --- leaf parsers / serializers -------------------------------------------
@@ -86,11 +81,6 @@ function parseIntClamped(min: number, max: number) {
   }
 }
 
-/** Plain string; null/absent → def. */
-function parseString(raw: string | null, def: string): string {
-  return raw ?? def
-}
-
 // --- schema ----------------------------------------------------------------
 
 type Spec<T> = {
@@ -102,7 +92,6 @@ type Spec<T> = {
 
 const parseEdge = parseEnum(EDGES)
 const parseCorner = parseEnum(CORNERS)
-const parseDir = parseEnum(DIRS)
 const parseSize = parseIntClamped(8, 120)
 
 const SPECS: {
@@ -113,11 +102,8 @@ const SPECS: {
   selection: { key: "selection", parse: parseSelection, serialize: serializeSelection, default: new Set<string>() },
   imageEdge: { key: "edge", parse: parseEdge, serialize: String, default: DEFAULT_SPOTLIGHT.imageEdge },
   captionCorner: { key: "cap", parse: parseCorner, serialize: String, default: DEFAULT_SPOTLIGHT.captionCorner },
-  captionDirection: { key: "dir", parse: parseDir, serialize: String, default: DEFAULT_SPOTLIGHT.captionDirection },
   nameSize: { key: "name", parse: parseSize, serialize: String, default: DEFAULT_SPOTLIGHT.nameSize },
   architectSize: { key: "arch", parse: parseSize, serialize: String, default: DEFAULT_SPOTLIGHT.architectSize },
-  customName: { key: "oname", parse: parseString, serialize: String, default: DEFAULT_SPOTLIGHT.customName },
-  customArchitect: { key: "oarch", parse: parseString, serialize: String, default: DEFAULT_SPOTLIGHT.customArchitect },
 }
 
 // --- parse -----------------------------------------------------------------

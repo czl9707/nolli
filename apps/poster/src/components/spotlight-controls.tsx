@@ -3,7 +3,7 @@ import { useMemo } from "react"
 import { Tabs, TabsList, TabsTrigger, Input } from "@nolli/ui"
 import { useSpotlightStore } from "@/stores/spotlight"
 import { useSelectionStore } from "@/stores/selection"
-import { EDGES, CORNERS, DIRS } from "@/lib/spotlight-types"
+import { EDGES, CORNERS } from "@/lib/spotlight-types"
 import type { ArchSummary } from "@nolli/data"
 import styles from "./spotlight-controls.module.css"
 
@@ -19,20 +19,20 @@ const MAX_SIZE = 120
 
 /**
  * Sidebar panel for the spotlight layout knobs, built on the shared <Tabs>
- * (edge / corner / direction) and the shared <Input> for the two font sizes
- * and the two caption-text overrides, each pair laid out as two equal columns.
+ * (edge / corner) and the shared <Input> for the two font sizes and the two
+ * caption-text overrides, each pair laid out as two equal columns. Caption
+ * direction is not a knob here — it's derived from the edge (left/right →
+ * vertical, top/bottom → horizontal) in <SpotlightCaption>.
  */
 export function SpotlightControls({ buildings }: { buildings: ArchSummary[] }) {
   const imageEdge = useSpotlightStore((s) => s.imageEdge)
   const captionCorner = useSpotlightStore((s) => s.captionCorner)
-  const captionDirection = useSpotlightStore((s) => s.captionDirection)
   const nameSize = useSpotlightStore((s) => s.nameSize)
   const architectSize = useSpotlightStore((s) => s.architectSize)
   const customName = useSpotlightStore((s) => s.customName)
   const customArchitect = useSpotlightStore((s) => s.customArchitect)
   const setImageEdge = useSpotlightStore((s) => s.setImageEdge)
   const setCaptionCorner = useSpotlightStore((s) => s.setCaptionCorner)
-  const setCaptionDirection = useSpotlightStore((s) => s.setCaptionDirection)
   const setNameSize = useSpotlightStore((s) => s.setNameSize)
   const setArchitectSize = useSpotlightStore((s) => s.setArchitectSize)
   const setCustomName = useSpotlightStore((s) => s.setCustomName)
@@ -61,15 +61,6 @@ export function SpotlightControls({ buildings }: { buildings: ArchSummary[] }) {
           <TabsList>
             <TabsTrigger value={CORNERS[0]}>Start</TabsTrigger>
             <TabsTrigger value={CORNERS[1]}>End</TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </Field>
-
-      <Field label="Caption direction">
-        <Tabs value={captionDirection} onValueChange={(v) => setCaptionDirection(v as (typeof DIRS)[number])}>
-          <TabsList>
-            <TabsTrigger value="horizontal">Horizontal</TabsTrigger>
-            <TabsTrigger value="rotated">Vertical</TabsTrigger>
           </TabsList>
         </Tabs>
       </Field>

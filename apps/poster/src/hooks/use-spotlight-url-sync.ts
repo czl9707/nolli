@@ -8,44 +8,42 @@ import { parseMapParams, setParams } from "@/lib/url-state"
  * - store → URL: any setting change is serialized via `setParams`.
  * - URL → store: on `popstate` (back/forward), re-parse and bulk-replace.
  *
- * Parallels use-route-sync / use-map-url-state. Mounted once by <PosterShell>.
+ * Caption-text overrides (customName / customArchitect) are deliberately NOT
+ * synced — they're ephemeral, in-memory only. Parallels use-route-sync /
+ * use-map-url-state. Mounted once by <PosterShell>.
  */
 export function useSpotlightUrlSync() {
   useEffect(() => {
     const onPop = () => {
       const p = parseMapParams(window.location.search)
-      useSpotlightStore.getState().replace({
+      const s = useSpotlightStore.getState()
+      // Only the URL-backed fields change on popstate; customName/customArchitect
+      // are ephemeral, so carry the current values through.
+      s.replace({
         imageEdge: p.imageEdge,
         captionCorner: p.captionCorner,
-        captionDirection: p.captionDirection,
         nameSize: p.nameSize,
         architectSize: p.architectSize,
-        customName: p.customName,
-        customArchitect: p.customArchitect,
+        customName: s.customName,
+        customArchitect: s.customArchitect,
       })
     }
     window.addEventListener("popstate", onPop)
     return () => window.removeEventListener("popstate", onPop)
   }, [])
 
-  // Write each setting to the URL when it changes.
+  // Write each URL-backed setting to the URL when it changes.
   const imageEdge = useSpotlightStore((s) => s.imageEdge)
   const captionCorner = useSpotlightStore((s) => s.captionCorner)
-  const captionDirection = useSpotlightStore((s) => s.captionDirection)
   const nameSize = useSpotlightStore((s) => s.nameSize)
   const architectSize = useSpotlightStore((s) => s.architectSize)
-  const customName = useSpotlightStore((s) => s.customName)
-  const customArchitect = useSpotlightStore((s) => s.customArchitect)
 
   useEffect(() => {
     setParams({
       imageEdge,
       captionCorner,
-      captionDirection,
       nameSize,
       architectSize,
-      customName,
-      customArchitect,
     })
-  }, [imageEdge, captionCorner, captionDirection, nameSize, architectSize, customName, customArchitect])
+  }, [imageEdge, captionCorner, nameSize, architectSize])
 }

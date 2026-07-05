@@ -3,7 +3,7 @@ import { useMemo } from "react"
 import { useSelectionStore } from "@/stores/selection"
 import { useSpotlightStore } from "@/stores/spotlight"
 import { useFrameSize } from "@/hooks/use-frame-size"
-import { resolveCaptionCorner } from "@/lib/spotlight-types"
+import { OPPOSITE_EDGE } from "@/lib/spotlight-types"
 import type { ArchSummary } from "@nolli/data"
 import styles from "./spotlight-caption.module.css"
 
@@ -12,18 +12,19 @@ const MARGIN = 32
 
 /**
  * Typographic caption overlaid directly on the map: Inter (not the playful
- * Body scale) with a text-shadow for legibility. Always docked to a corner on
- * the edge opposite the image strip. `customName` / `customArchitect`, when
- * non-empty, override the building's real values. Vertical mode spins the
- * block −90° (reads vertically); in vertical mode the architect is ordered
- * flush to the docked corner — above the name at top corners, below it at
- * bottom corners. Right-docked corners right-align both lines. Vertical mode
- * also bounds the block's unrotated width to the available height so a long
- * name wraps instead of overflowing.
+ * Body scale) with a text-shadow for legibility. Docked to the edge OPPOSITE
+ * the image strip. `customName` / `customArchitect`, when non-empty, override
+ * the building's real values. Direction is derived from the image edge —
+ * left/right → vertical, top/bottom → horizontal — so it is not a knob.
+ *
+ * start/end is along the docked edge (horizontal: start=left/end=right;
+ * vertical: start=bottom/end=top). Horizontal uses flexbox; vertical takes the
+ * block out of flow (absolute) because writing-mode + flexbox misrenders glyphs
+ * and edge alignment. Vertical mode bounds the block's length to the available
+ * edge space so a long name wraps instead of overflowing.
  */
 export function SpotlightCaption({ buildings }: { buildings: ArchSummary[] }) {
   const corner = useSpotlightStore((s) => s.captionCorner)
-  const direction = useSpotlightStore((s) => s.captionDirection)
   const nameSize = useSpotlightStore((s) => s.nameSize)
   const architectSize = useSpotlightStore((s) => s.architectSize)
   const customName = useSpotlightStore((s) => s.customName)
@@ -39,44 +40,24 @@ export function SpotlightCaption({ buildings }: { buildings: ArchSummary[] }) {
 
   if (!building) return null
 
-  const frameCorner = resolveCaptionCorner(imageEdge, corner)
-  const rotated = direction === "rotated"
-  const alignRight = frameCorner.endsWith("right")
+  const vertical = imageEdge === "left" || imageEdge === "right"
+  const dockEdge = OPPOSITE_EDGE[imageEdge]
   const name = customName.trim() || building.name
   const architect = customArchitect.trim() || building.architect
-  // Vertical: architect flush to the docked corner — top corners → architect
-  // first (up), bottom corners → architect second (down).
-  const architectFirst = rotated && frameCorner.startsWith("top")
-  // Bound the rotated block's unrotated width (= its visual height once spun)
-  // to the available vertical space so long names wrap instead of overflowing.
-  const rotatedMaxWidth =
-    frame.height && frame.headerHeight
-      ? Math.max(0, frame.height - frame.headerHeight - 2 * MARGIN)
-      : undefined
-
-  const cls = [styles.wrap, styles[frameCorner]]
-  if (rotated) cls.push(styles.rotated)
-  if (alignRight) cls.push(styles.alignRight)
-
-  const nameEl = <span className={styles.name}>{name}</span>
-  const architectEl = (
-    <span className={styles.architect} style={{ fontSize: architectSize }}>
-      {architect}
-    </span>
-  )
+  const boxSize = Math.min(frame.width, (frame.height - frame.headerHeight )) - MARGIN * 2;
+  const cls = [styles.wrap]
+  cls.push(vertical ? styles.vert : styles.horiz, styles[dockEdge], styles[corner])
+  
 
   return (
     <div className={cls.join(" ")}>
-      <div
-        className={styles.block}
-        style={{
-          fontSize: nameSize,
-          ...(rotated && rotatedMaxWidth !== undefined
-            ? { maxWidth: rotatedMaxWidth }
-            : {}),
-        }}
-      >
-        {architectFirst ? <>{architectEl}{nameEl}</> : <>{nameEl}{architectEl}</>}
+      <div className={styles.block} style={{ width: boxSize, height: boxSize }}>
+        <span className={styles.name} style={{ fontSize: nameSize }}>
+          {name}
+        </span>
+        <span className={styles.architect} style={{ fontSize: architectSize }}>
+          {architect}
+        </span>
       </div>
     </div>
   )
