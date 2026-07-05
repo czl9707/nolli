@@ -5,7 +5,7 @@ import { VisibleArchList } from "@/components/visible-arch-list"
 import { SpotlightList } from "@/components/spotlight-list"
 import { SpotlightImageStrip } from "@/components/spotlight-image-strip"
 import { SpotlightCaption } from "@/components/spotlight-caption"
-import { SpotlightControls } from "@/components/spotlight-controls"
+import { SpotlightLayoutOptions, SpotlightCaptionOptions } from "@/components/spotlight-controls"
 import { useRouteStore } from "@/stores/route"
 import type { Route } from "@/stores/route"
 import { useMapInstanceStore } from "@/stores/map-instance"
@@ -13,8 +13,17 @@ import { useVisibleArchs } from "@/hooks/use-visible-archs"
 import { useRouteSync } from "@/hooks/use-route-sync"
 import { useSpotlightFraming } from "@/hooks/use-spotlight-framing"
 import { useSpotlightUrlSync } from "@/hooks/use-spotlight-url-sync"
-import { Body3, Skeleton, Tabs, TabsList, TabsTrigger } from "@nolli/ui"
-import { useMemo } from "react"
+import {
+  Body3,
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+  Skeleton,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+} from "@nolli/ui"
+import { useMemo, useState } from "react"
 import type { ReactNode } from "react"
 import { useFilterStore } from "@nolli/data"
 import type { ArchSummary } from "@nolli/data"
@@ -59,10 +68,13 @@ export function PosterShell({
         </SidebarSection>
         {isSpotlight ? (
           <>
-            <SidebarSection label="Layout">
-              <SpotlightControls buildings={buildings} />
-            </SidebarSection>
             <VisibleSection buildings={buildings} spotlight />
+            <SidebarSection label="Layout options" collapsible defaultOpen={false}>
+              <SpotlightLayoutOptions />
+            </SidebarSection>
+            <SidebarSection label="Caption options" collapsible defaultOpen={false}>
+              <SpotlightCaptionOptions buildings={buildings} />
+            </SidebarSection>
           </>
         ) : (
           <VisibleSection buildings={buildings} />
@@ -83,23 +95,55 @@ export function PosterShell({
 }
 
 /** A uniform sidebar block: consistent padding, optional label, flex column.
- *  `grow` fills the sidebar's remaining height (the building list uses it). */
+ *  `grow` fills the sidebar's remaining height (the building list uses it).
+ *  `collapsible` turns the label into a trigger (with a right-side triangle)
+ *  that shows/hides the children — used by the spotlight Layout/Caption
+ *  options, which are collapsed by default. */
 function SidebarSection({
   label,
   grow = false,
+  collapsible = false,
+  defaultOpen = true,
   children,
 }: {
   label?: string
   grow?: boolean
+  collapsible?: boolean
+  defaultOpen?: boolean
   children: ReactNode
 }) {
+  const [open, setOpen] = useState(defaultOpen)
+
+  if (!collapsible) {
+    return (
+      <section
+        className={`${styles.sidebarSection} ${grow ? styles.sidebarSectionGrow : ""}`}
+      >
+        {label && <Body3 className={styles.sectionLabel}>{label}</Body3>}
+        {children}
+      </section>
+    )
+  }
+
   return (
-    <section
-      className={`${styles.sidebarSection} ${grow ? styles.sidebarSectionGrow : ""}`}
-    >
-      {label && <Body3 className={styles.sectionLabel}>{label}</Body3>}
-      {children}
-    </section>
+    <Collapsible open={open} onOpenChange={setOpen} asChild>
+      <section
+        className={`${styles.sidebarSection} ${grow ? styles.sidebarSectionGrow : ""}`}
+      >
+        {label && (
+          <CollapsibleTrigger asChild>
+            <button type="button" className={styles.sectionTrigger}>
+              <Body3 className={styles.sectionLabel}>{label}</Body3>
+              <span
+                className={`${styles.sectionTriangle} ${open ? styles.sectionTriangleOpen : ""}`}
+                aria-hidden
+              />
+            </button>
+          </CollapsibleTrigger>
+        )}
+        <CollapsibleContent>{children}</CollapsibleContent>
+      </section>
+    </Collapsible>
   )
 }
 

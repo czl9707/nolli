@@ -18,31 +18,17 @@ const MIN_SIZE = 8
 const MAX_SIZE = 120
 
 /**
- * Sidebar panel for the spotlight layout knobs, built on the shared <Tabs>
- * (edge / corner) and the shared <Input> for the two font sizes and the two
- * caption-text overrides, each pair laid out as two equal columns. Caption
- * direction is not a knob here — it's derived from the edge (left/right →
- * vertical, top/bottom → horizontal) in <SpotlightCaption>.
+ * Layout knobs for the spotlight overlay: which edge the image docks to and
+ * which corner it hugs. Caption direction is not a knob here — it's derived
+ * from the edge (left/right → vertical, top/bottom → horizontal) in
+ * <SpotlightCaption>, and the caption corner is inferred as the opposite of
+ * the image corner.
  */
-export function SpotlightControls({ buildings }: { buildings: ArchSummary[] }) {
+export function SpotlightLayoutOptions() {
   const imageEdge = useSpotlightStore((s) => s.imageEdge)
   const imageCorner = useSpotlightStore((s) => s.imageCorner)
-  const nameSize = useSpotlightStore((s) => s.nameSize)
-  const architectSize = useSpotlightStore((s) => s.architectSize)
-  const customName = useSpotlightStore((s) => s.customName)
-  const customArchitect = useSpotlightStore((s) => s.customArchitect)
   const setImageEdge = useSpotlightStore((s) => s.setImageEdge)
   const setImageCorner = useSpotlightStore((s) => s.setImageCorner)
-  const setNameSize = useSpotlightStore((s) => s.setNameSize)
-  const setArchitectSize = useSpotlightStore((s) => s.setArchitectSize)
-  const setCustomName = useSpotlightStore((s) => s.setCustomName)
-  const setCustomArchitect = useSpotlightStore((s) => s.setCustomArchitect)
-  const selected = useSelectionStore((s) => s.selected)
-
-  const building = useMemo(() => {
-    const slug = Array.from(selected)[0]
-    return buildings.find((b) => b.slug === slug) ?? null
-  }, [selected, buildings])
 
   return (
     <div className={styles.stack}>
@@ -64,7 +50,33 @@ export function SpotlightControls({ buildings }: { buildings: ArchSummary[] }) {
           </TabsList>
         </Tabs>
       </Field>
+    </div>
+  )
+}
 
+/**
+ * Caption knobs: the two font sizes and the two caption-text overrides, each
+ * pair laid out as two equal columns. `customName` / `customArchitect`, when
+ * non-empty, override the building's real values (ephemeral — not in the URL).
+ */
+export function SpotlightCaptionOptions({ buildings }: { buildings: ArchSummary[] }) {
+  const nameSize = useSpotlightStore((s) => s.nameSize)
+  const architectSize = useSpotlightStore((s) => s.architectSize)
+  const customName = useSpotlightStore((s) => s.customName)
+  const customArchitect = useSpotlightStore((s) => s.customArchitect)
+  const setNameSize = useSpotlightStore((s) => s.setNameSize)
+  const setArchitectSize = useSpotlightStore((s) => s.setArchitectSize)
+  const setCustomName = useSpotlightStore((s) => s.setCustomName)
+  const setCustomArchitect = useSpotlightStore((s) => s.setCustomArchitect)
+  const selected = useSelectionStore((s) => s.selected)
+
+  const building = useMemo(() => {
+    const slug = Array.from(selected)[0]
+    return buildings.find((b) => b.slug === slug) ?? null
+  }, [selected, buildings])
+
+  return (
+    <div className={styles.stack}>
       <Field label="Caption text">
         <div className={styles.col}>
           <LabeledText
