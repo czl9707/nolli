@@ -20,7 +20,19 @@ export function ScreenshotButton() {
     if (!node || busy) return
     setBusy(true)
     try {
-      const dataUrl = await toPng(node)
+      const dataUrl = await toPng(node, {
+        // Drop the header action icons (screenshot/preview/theme) from the
+        // poster. They're wrapped in [data-poster-exclude] spans inside the
+        // icon slots; the slots themselves are kept (flex:1 spacers) so the
+        // "Nolli" brand stays centered. Returning false removes the node and
+        // its subtree from the clone entirely — more reliable than hiding via
+        // CSS/inline visibility, which html-to-image can drop in its off-DOM
+        // render.
+        filter: (n) => {
+          if (!(n instanceof HTMLElement)) return true
+          return !n.closest("[data-poster-exclude]")
+        },
+      })
       const a = document.createElement("a")
       a.href = dataUrl
       a.download = "nolli-poster.png"
