@@ -1,8 +1,8 @@
 import { useSelectionStore } from "@/stores/selection"
 import { Button } from "@nolli/ui"
 import type { ArchSummary } from "@nolli/data"
-import { ArchList, ArchListItemBody } from "./arch-list"
-import styles from "./arch-list.module.css"
+import { ArchList, ArchListItemBody } from "../shared/arch-list"
+import styles from "../shared/arch-list.module.css"
 
 /**
  * Spotlight-mode building list: single-select. Each row is a design-system

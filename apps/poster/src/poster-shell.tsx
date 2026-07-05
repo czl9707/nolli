@@ -1,18 +1,18 @@
-import { PosterMap } from "@/components/poster-map"
-import { Header } from "@/components/header"
-import { SelectionSidebar } from "@/components/selection-sidebar"
-import { VisibleArchList } from "@/components/visible-arch-list"
-import { SpotlightList } from "@/components/spotlight-list"
-import { SpotlightImageStrip } from "@/components/spotlight-image-strip"
-import { SpotlightCaption } from "@/components/spotlight-caption"
-import { SpotlightCaptionOptions } from "@/components/spotlight-controls"
+import { PosterMap } from "@/components/shared/poster-map"
+import { Header } from "@/components/shared/header"
+import { SelectionSidebar } from "@/components/shared/selection-sidebar"
+import { VisibleArchList } from "@/components/overview/visible-arch-list"
+import { SpotlightList } from "@/components/spotlight/spotlight-list"
+import { SpotlightImageStrip } from "@/components/spotlight/spotlight-image-strip"
+import { Caption } from "@/components/shared/caption"
+import { CaptionOptions } from "@/components/shared/caption-options"
 import { useRouteStore } from "@/stores/route"
 import type { Route } from "@/stores/route"
 import { useMapInstanceStore } from "@/stores/map-instance"
 import { useVisibleArchs } from "@/hooks/use-visible-archs"
 import { useRouteSync } from "@/hooks/use-route-sync"
-import { useSpotlightFraming } from "@/hooks/use-spotlight-framing"
-import { useSpotlightUrlSync } from "@/hooks/use-spotlight-url-sync"
+import { useSpotlightFraming } from "@/hooks/spotlight/use-spotlight-framing"
+import { useSpotlightUrlSync } from "@/hooks/spotlight/use-spotlight-url-sync"
 import {
   Body3,
   Collapsible,
@@ -27,7 +27,7 @@ import { useMemo, useState } from "react"
 import type { ReactNode } from "react"
 import { useFilterStore } from "@nolli/data"
 import type { ArchSummary } from "@nolli/data"
-import { OperationPanel } from "@/components/operation-panel"
+import { OperationPanel } from "@/components/shared/operation-panel"
 import styles from "./app.module.css"
 
 /**
@@ -73,9 +73,9 @@ export function PosterShell({
         )}
         <SidebarSection label="Caption options" collapsible defaultOpen={false}>
           {isSpotlight ? (
-            <SpotlightCaptionOptions buildings={buildings} />
+            <CaptionOptions buildings={buildings} />
           ) : (
-            <SpotlightCaptionOptions placeholder={{ primary: "Add primary text", secondary: "Add secondary text" }} />
+            <CaptionOptions placeholder={{ primary: "Add primary text", secondary: "Add secondary text" }} />
           )}
         </SidebarSection>
       </SelectionSidebar>
@@ -86,7 +86,7 @@ export function PosterShell({
         {/* Caption is shared by both routes. Spotlight resolves text from the
             selected building (custom overrides win); overview is freeform —
             custom text only, omitted entirely when both fields are empty. */}
-        <SpotlightCaption buildings={isSpotlight ? buildings : undefined} />
+        <Caption buildings={isSpotlight ? buildings : undefined} />
       </div>
     </div>
   )

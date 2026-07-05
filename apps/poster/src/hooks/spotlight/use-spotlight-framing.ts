@@ -12,7 +12,7 @@ import { parseMapParams } from "@/lib/url-state"
 import { MAP_TRANSITION_SHORT } from "@nolli/ui"
 import type { ArchSummary } from "@nolli/data"
 
-const DEFAULT_SPOTLIGHT_ZOOM = 16
+const DEFAULT_SPOTLIGHT_ZOOM = 15
 const EASE_DURATION = MAP_TRANSITION_SHORT * 1000
 type FrameMode = "fly" | "ease"
 

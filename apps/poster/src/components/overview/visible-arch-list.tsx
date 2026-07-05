@@ -1,8 +1,8 @@
 import { useSelectionStore } from "@/stores/selection"
 import { Checkbox } from "@nolli/ui"
 import type { ArchSummary } from "@nolli/data"
-import { ArchList, ArchListItemBody } from "./arch-list"
-import styles from "./arch-list.module.css"
+import { ArchList, ArchListItemBody } from "../shared/arch-list"
+import styles from "../shared/arch-list.module.css"
 
 /**
  * Overview-mode building list: multi-select. Each row is a <label> wrapping a

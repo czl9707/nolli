@@ -1,11 +1,11 @@
-// apps/poster/src/components/spotlight-controls.tsx
+// apps/poster/src/components/shared/caption-options.tsx
 import { useMemo } from "react"
 import { Tabs, TabsList, TabsTrigger, Input } from "@nolli/ui"
 import { useSpotlightStore } from "@/stores/spotlight"
 import { useSelectionStore } from "@/stores/selection"
 import { EDGES, CORNERS } from "@/lib/spotlight-types"
 import type { ArchSummary } from "@nolli/data"
-import styles from "./spotlight-controls.module.css"
+import styles from "./caption-options.module.css"
 
 const EDGE_LABELS: Record<(typeof EDGES)[number], string> = {
   top: "Top",
@@ -24,13 +24,13 @@ const MAX_SIZE = 120
  * overrides (primary + secondary lines).
  *
  * Caption direction is not a knob — it's derived from the edge (left/right →
- * vertical, top/bottom → horizontal) in <SpotlightCaption>.
+ * vertical, top/bottom → horizontal) in <Caption>.
  *
  * In spotlight (`buildings` passed) the text inputs preview against the
  * selected building's name/architect. In overview (`placeholder` passed
  * instead) there is no building, so a generic hint is shown.
  */
-export function SpotlightCaptionOptions({
+export function CaptionOptions({
   buildings,
   placeholder,
 }: {

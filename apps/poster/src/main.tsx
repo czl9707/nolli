@@ -2,7 +2,7 @@ import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 import "@/styles/global.css"
 import { App } from "./app"
-import { ThemeSync } from "./components/theme-sync"
+import { ThemeSync } from "./components/shared/theme-sync"
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

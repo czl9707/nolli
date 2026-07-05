@@ -1,4 +1,4 @@
-// apps/poster/src/components/spotlight-image-strip.tsx
+// apps/poster/src/components/spotlight/spotlight-image-strip.tsx
 import { useMemo } from "react"
 import { motion } from "framer-motion"
 import { useSelectionStore } from "@/stores/selection"
@@ -8,7 +8,7 @@ import { OPPOSITE_EDGE, OPPOSITE_CORNER } from "@/lib/spotlight-types"
 import { spotlightImageBounds } from "@/lib/spotlight-geometry"
 import { MAP_TRANSITION_SHORT } from "@nolli/ui"
 import type { ArchSummary } from "@nolli/data"
-import { paperClipPath } from "./paper-clip"
+import { paperClipPath } from "../shared/paper-clip"
 import styles from "./spotlight-image-strip.module.css"
 
 /** Wrap margin + polaroid padding, matching the CSS vars on .wrap/.hero. */

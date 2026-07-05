@@ -1,10 +1,10 @@
-// apps/poster/src/components/spotlight-caption.tsx
+// apps/poster/src/components/shared/caption.tsx
 import { useMemo } from "react"
 import { useSelectionStore } from "@/stores/selection"
 import { useSpotlightStore } from "@/stores/spotlight"
 import { useFrameSize } from "@/hooks/use-frame-size"
 import type { ArchSummary } from "@nolli/data"
-import styles from "./spotlight-caption.module.css"
+import styles from "./caption.module.css"
 
 /** Wrap margin around the caption, matching the CSS --spacing-component. */
 const MARGIN = 32
@@ -30,7 +30,7 @@ const MARGIN = 32
  * and edge alignment. Vertical mode bounds the block's length to the available
  * edge space so a long name wraps instead of overflowing.
  */
-export function SpotlightCaption({ buildings }: { buildings?: ArchSummary[] }) {
+export function Caption({ buildings }: { buildings?: ArchSummary[] }) {
   const dockEdge = useSpotlightStore((s) => s.captionEdge)
   const corner = useSpotlightStore((s) => s.captionCorner)
   const primarySize = useSpotlightStore((s) => s.primarySize)

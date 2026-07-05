@@ -1,7 +1,7 @@
 import { useMemo } from "react"
 import { MapMarker, MarkerContent } from "@nolli/map"
 import type { ArchSummary } from "@nolli/data"
-import { hashId, jitter } from "./paper-clip"
+import { hashId, jitter } from "../shared/paper-clip"
 import styles from "./photo-marker.module.css"
 import { Body2, Body3 } from "@nolli/ui"
 
