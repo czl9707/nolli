@@ -66,6 +66,7 @@ export function MapCore() {
   const loading = useDbStore((s) => s.loading)
   const error = useDbStore((s) => s.error)
   const userLocation = useUserLocation()
+  const isMobile = useIsMobile()
 
   useEffect(() => {
     if (error != null) {
@@ -91,7 +92,9 @@ export function MapCore() {
             showZoom
             showLocate
             showFullscreen
-            className={controlsStyles.sheetAwareControls}
+            className={
+              isMobile ? controlsStyles.sheetAwareControls : undefined
+            }
           />
         )}
         <MapFlyNavigator />
