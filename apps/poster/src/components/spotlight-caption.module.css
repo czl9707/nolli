@@ -53,5 +53,5 @@
   text-align: right;
 }
 
-.name { font-weight: 600; }
-.architect { font-weight: 400; opacity: 0.85; margin-top: 0.75em; }
+.primary { font-weight: 600; }
+.secondary { font-weight: 400; opacity: 0.85; margin-top: 0.75em; }

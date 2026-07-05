@@ -4,6 +4,7 @@ import { motion } from "framer-motion"
 import { useSelectionStore } from "@/stores/selection"
 import { useSpotlightStore } from "@/stores/spotlight"
 import { useFrameSize } from "@/hooks/use-frame-size"
+import { OPPOSITE_EDGE, OPPOSITE_CORNER } from "@/lib/spotlight-types"
 import { spotlightImageBounds } from "@/lib/spotlight-geometry"
 import { MAP_TRANSITION_SHORT } from "@nolli/ui"
 import type { ArchSummary } from "@nolli/data"
@@ -20,8 +21,11 @@ const PADDING = 16 // --spacing-paragraph (the .hero padding)
  * backing are unchanged from the prior overlay; the in-card caption is gone.
  */
 export function SpotlightImageStrip({ buildings }: { buildings: ArchSummary[] }) {
-  const imageEdge = useSpotlightStore((s) => s.imageEdge)
-  const imageCorner = useSpotlightStore((s) => s.imageCorner)
+  // The image docks opposite the caption; its edge/corner are derived.
+  const captionEdge = useSpotlightStore((s) => s.captionEdge)
+  const captionCorner = useSpotlightStore((s) => s.captionCorner)
+  const imageEdge = OPPOSITE_EDGE[captionEdge]
+  const imageCorner = OPPOSITE_CORNER[captionCorner]
   const selected = useSelectionStore((s) => s.selected)
   const frame = useFrameSize()
 

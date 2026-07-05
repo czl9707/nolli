@@ -18,22 +18,52 @@ const MIN_SIZE = 8
 const MAX_SIZE = 120
 
 /**
- * Layout knobs for the spotlight overlay: which edge the image docks to and
- * which corner it hugs. Caption direction is not a knob here — it's derived
- * from the edge (left/right → vertical, top/bottom → horizontal) in
- * <SpotlightCaption>, and the caption corner is inferred as the opposite of
- * the image corner.
+ * Caption knobs, shared by both routes: position (which edge + corner the
+ * caption docks to — also the source of truth the spotlight image is derived
+ * from, by docking opposite), the two font sizes, and the two caption-text
+ * overrides (primary + secondary lines).
+ *
+ * Caption direction is not a knob — it's derived from the edge (left/right →
+ * vertical, top/bottom → horizontal) in <SpotlightCaption>.
+ *
+ * In spotlight (`buildings` passed) the text inputs preview against the
+ * selected building's name/architect. In overview (`placeholder` passed
+ * instead) there is no building, so a generic hint is shown.
  */
-export function SpotlightLayoutOptions() {
-  const imageEdge = useSpotlightStore((s) => s.imageEdge)
-  const imageCorner = useSpotlightStore((s) => s.imageCorner)
-  const setImageEdge = useSpotlightStore((s) => s.setImageEdge)
-  const setImageCorner = useSpotlightStore((s) => s.setImageCorner)
+export function SpotlightCaptionOptions({
+  buildings,
+  placeholder,
+}: {
+  buildings?: ArchSummary[]
+  placeholder?: { primary?: string; secondary?: string }
+}) {
+  const captionEdge = useSpotlightStore((s) => s.captionEdge)
+  const captionCorner = useSpotlightStore((s) => s.captionCorner)
+  const primarySize = useSpotlightStore((s) => s.primarySize)
+  const secondarySize = useSpotlightStore((s) => s.secondarySize)
+  const customPrimary = useSpotlightStore((s) => s.customPrimary)
+  const customSecondary = useSpotlightStore((s) => s.customSecondary)
+  const setCaptionEdge = useSpotlightStore((s) => s.setCaptionEdge)
+  const setCaptionCorner = useSpotlightStore((s) => s.setCaptionCorner)
+  const setPrimarySize = useSpotlightStore((s) => s.setPrimarySize)
+  const setSecondarySize = useSpotlightStore((s) => s.setSecondarySize)
+  const setCustomPrimary = useSpotlightStore((s) => s.setCustomPrimary)
+  const setCustomSecondary = useSpotlightStore((s) => s.setCustomSecondary)
+  const selected = useSelectionStore((s) => s.selected)
+
+  const building = useMemo(() => {
+    if (!buildings) return null
+    const slug = Array.from(selected)[0]
+    return buildings.find((b) => b.slug === slug) ?? null
+  }, [selected, buildings])
+
+  const primaryPlaceholder = placeholder?.primary ?? building?.name
+  const secondaryPlaceholder = placeholder?.secondary ?? building?.architect
 
   return (
     <div className={styles.stack}>
-      <Field label="Image edge">
-        <Tabs value={imageEdge} onValueChange={(v) => setImageEdge(v as (typeof EDGES)[number])}>
+      <Field label="Caption edge">
+        <Tabs value={captionEdge} onValueChange={(v) => setCaptionEdge(v as (typeof EDGES)[number])}>
           <TabsList>
             {EDGES.map((e) => (
               <TabsTrigger key={e} value={e}>{EDGE_LABELS[e]}</TabsTrigger>
@@ -42,62 +72,36 @@ export function SpotlightLayoutOptions() {
         </Tabs>
       </Field>
 
-      <Field label="Image corner">
-        <Tabs value={imageCorner} onValueChange={(v) => setImageCorner(v as (typeof CORNERS)[number])}>
+      <Field label="Caption corner">
+        <Tabs value={captionCorner} onValueChange={(v) => setCaptionCorner(v as (typeof CORNERS)[number])}>
           <TabsList>
             <TabsTrigger value={CORNERS[0]}>Start</TabsTrigger>
             <TabsTrigger value={CORNERS[1]}>End</TabsTrigger>
           </TabsList>
         </Tabs>
       </Field>
-    </div>
-  )
-}
 
-/**
- * Caption knobs: the two font sizes and the two caption-text overrides, each
- * pair laid out as two equal columns. `customName` / `customArchitect`, when
- * non-empty, override the building's real values (ephemeral — not in the URL).
- */
-export function SpotlightCaptionOptions({ buildings }: { buildings: ArchSummary[] }) {
-  const nameSize = useSpotlightStore((s) => s.nameSize)
-  const architectSize = useSpotlightStore((s) => s.architectSize)
-  const customName = useSpotlightStore((s) => s.customName)
-  const customArchitect = useSpotlightStore((s) => s.customArchitect)
-  const setNameSize = useSpotlightStore((s) => s.setNameSize)
-  const setArchitectSize = useSpotlightStore((s) => s.setArchitectSize)
-  const setCustomName = useSpotlightStore((s) => s.setCustomName)
-  const setCustomArchitect = useSpotlightStore((s) => s.setCustomArchitect)
-  const selected = useSelectionStore((s) => s.selected)
-
-  const building = useMemo(() => {
-    const slug = Array.from(selected)[0]
-    return buildings.find((b) => b.slug === slug) ?? null
-  }, [selected, buildings])
-
-  return (
-    <div className={styles.stack}>
       <Field label="Caption text">
         <div className={styles.col}>
           <LabeledText
-            label="Name"
-            value={customName}
-            placeholder={building?.name}
-            onChange={setCustomName}
+            label="Primary"
+            value={customPrimary}
+            placeholder={primaryPlaceholder}
+            onChange={setCustomPrimary}
           />
           <LabeledText
-            label="Architect"
-            value={customArchitect}
-            placeholder={building?.architect}
-            onChange={setCustomArchitect}
+            label="Secondary"
+            value={customSecondary}
+            placeholder={secondaryPlaceholder}
+            onChange={setCustomSecondary}
           />
         </div>
       </Field>
 
       <Field label="Font size">
         <div className={styles.twoCol}>
-          <LabeledNumber label="Name" value={nameSize} onChange={setNameSize} />
-          <LabeledNumber label="Architect" value={architectSize} onChange={setArchitectSize} />
+          <LabeledNumber label="Primary" value={primarySize} onChange={setPrimarySize} />
+          <LabeledNumber label="Secondary" value={secondarySize} onChange={setSecondarySize} />
         </div>
       </Field>
     </div>

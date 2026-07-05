@@ -1,5 +1,5 @@
 // apps/poster/src/lib/spotlight-geometry.ts
-import type { ImageEdge } from "./spotlight-types"
+import type { Edge } from "./spotlight-types"
 
 /** Cross-axis fraction the camera shifts the marker off viewport center, so it
  *  sits centered in the half opposite the image strip. ~15% of that axis. */
@@ -14,7 +14,7 @@ const STRIP_CAP_FRACTION = 0.45
  * negation needed at the call site.
  */
 export function spotlightEdgeOffset(
-  edge: ImageEdge,
+  edge: Edge,
   width: number,
   height: number
 ): [number, number] {
@@ -44,7 +44,7 @@ export function spotlightEdgeOffset(
  * - top/bottom: fill width (minus chrome), height capped at 45%.
  */
 export function spotlightImageBounds(
-  edge: ImageEdge,
+  edge: Edge,
   width: number,
   height: number,
   headerHeight: number,

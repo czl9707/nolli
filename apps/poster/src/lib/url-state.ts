@@ -3,7 +3,7 @@ import {
   EDGES,
   CORNERS,
   DEFAULT_SPOTLIGHT,
-  type ImageEdge,
+  type Edge,
   type Corner,
 } from "./spotlight-types"
 
@@ -13,10 +13,10 @@ export type MapParamState = {
   center?: LngLat
   zoom?: number
   selection: Set<string>
-  imageEdge: ImageEdge
-  imageCorner: Corner
-  nameSize: number
-  architectSize: number
+  captionEdge: Edge
+  captionCorner: Corner
+  primarySize: number
+  secondarySize: number
 }
 
 // --- leaf parsers / serializers -------------------------------------------
@@ -100,10 +100,10 @@ const SPECS: {
   center: { key: "center", parse: parseCenter, serialize: serializeCenter, default: undefined },
   zoom: { key: "zoom", parse: parseZoom, serialize: serializeZoom, default: undefined },
   selection: { key: "selection", parse: parseSelection, serialize: serializeSelection, default: new Set<string>() },
-  imageEdge: { key: "edge", parse: parseEdge, serialize: String, default: DEFAULT_SPOTLIGHT.imageEdge },
-  imageCorner: { key: "corner", parse: parseCorner, serialize: String, default: DEFAULT_SPOTLIGHT.imageCorner },
-  nameSize: { key: "name", parse: parseSize, serialize: String, default: DEFAULT_SPOTLIGHT.nameSize },
-  architectSize: { key: "arch", parse: parseSize, serialize: String, default: DEFAULT_SPOTLIGHT.architectSize },
+  captionEdge: { key: "edge", parse: parseEdge, serialize: String, default: DEFAULT_SPOTLIGHT.captionEdge },
+  captionCorner: { key: "corner", parse: parseCorner, serialize: String, default: DEFAULT_SPOTLIGHT.captionCorner },
+  primarySize: { key: "primary", parse: parseSize, serialize: String, default: DEFAULT_SPOTLIGHT.primarySize },
+  secondarySize: { key: "secondary", parse: parseSize, serialize: String, default: DEFAULT_SPOTLIGHT.secondarySize },
 }
 
 // --- parse -----------------------------------------------------------------

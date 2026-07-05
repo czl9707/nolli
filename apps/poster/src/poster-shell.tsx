@@ -5,7 +5,7 @@ import { VisibleArchList } from "@/components/visible-arch-list"
 import { SpotlightList } from "@/components/spotlight-list"
 import { SpotlightImageStrip } from "@/components/spotlight-image-strip"
 import { SpotlightCaption } from "@/components/spotlight-caption"
-import { SpotlightLayoutOptions, SpotlightCaptionOptions } from "@/components/spotlight-controls"
+import { SpotlightCaptionOptions } from "@/components/spotlight-controls"
 import { useRouteStore } from "@/stores/route"
 import type { Route } from "@/stores/route"
 import { useMapInstanceStore } from "@/stores/map-instance"
@@ -67,28 +67,26 @@ export function PosterShell({
           <OperationPanel />
         </SidebarSection>
         {isSpotlight ? (
-          <>
-            <VisibleSection buildings={buildings} spotlight />
-            <SidebarSection label="Layout options" collapsible defaultOpen={false}>
-              <SpotlightLayoutOptions />
-            </SidebarSection>
-            <SidebarSection label="Caption options" collapsible defaultOpen={false}>
-              <SpotlightCaptionOptions buildings={buildings} />
-            </SidebarSection>
-          </>
+          <VisibleSection buildings={buildings} spotlight />
         ) : (
           <VisibleSection buildings={buildings} />
         )}
+        <SidebarSection label="Caption options" collapsible defaultOpen={false}>
+          {isSpotlight ? (
+            <SpotlightCaptionOptions buildings={buildings} />
+          ) : (
+            <SpotlightCaptionOptions placeholder={{ primary: "Add primary text", secondary: "Add secondary text" }} />
+          )}
+        </SidebarSection>
       </SelectionSidebar>
       <div className={styles.inset} data-poster-frame>
         <Header />
         <PosterMap buildings={buildings} spotlight={isSpotlight} />
-        {isSpotlight && (
-          <>
-            <SpotlightImageStrip buildings={buildings} />
-            <SpotlightCaption buildings={buildings} />
-          </>
-        )}
+        {isSpotlight && <SpotlightImageStrip buildings={buildings} />}
+        {/* Caption is shared by both routes. Spotlight resolves text from the
+            selected building (custom overrides win); overview is freeform —
+            custom text only, omitted entirely when both fields are empty. */}
+        <SpotlightCaption buildings={isSpotlight ? buildings : undefined} />
       </div>
     </div>
   )

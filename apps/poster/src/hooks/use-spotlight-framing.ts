@@ -5,7 +5,7 @@ import { useMapInstanceStore } from "@/stores/map-instance"
 import { useRouteStore } from "@/stores/route"
 import type { Route } from "@/stores/route"
 import { useSpotlightStore } from "@/stores/spotlight"
-import type { ImageEdge } from "@/lib/spotlight-types"
+import { OPPOSITE_EDGE, type Edge } from "@/lib/spotlight-types"
 import { spotlightEdgeOffset } from "@/lib/spotlight-geometry"
 import { useSelectionStore } from "@/stores/selection"
 import { parseMapParams } from "@/lib/url-state"
@@ -22,7 +22,8 @@ type FrameMode = "fly" | "ease"
  *
  * - Entering spotlight or changing the spotlighted building → cinematic fly
  *   (adaptive duration, default zoom) with the strip offset applied.
- * - Changing the image edge → easeTo (smooth pan to the new offset).
+ * - Changing the caption edge → easeTo (smooth pan to the new offset). The
+ *   image docks opposite the caption, so the image edge is derived here.
  *
  * Entry honors the deeper of current zoom, an explicit URL `zoom`, and the
  * default; clicks floor at the default. Manual zoom above the floor is kept.
@@ -34,14 +35,14 @@ export function useSpotlightFraming(
 ) {
   const map = useMapInstanceStore((s) => s.map)
   const route = useRouteStore((s) => s.route)
-  const imageEdge = useSpotlightStore((s) => s.imageEdge)
+  const captionEdge = useSpotlightStore((s) => s.captionEdge)
   const slug = useSelectionStore((s) =>
     s.selected.size === 0 ? null : Array.from(s.selected)[0]
   )
 
   const prevRouteRef = useRef<Route | undefined>(undefined)
   const prevSlugRef = useRef<string | null>(undefined)
-  const prevEdgeRef = useRef<ImageEdge | undefined>(undefined)
+  const prevEdgeRef = useRef<Edge | undefined>(undefined)
 
   useEffect(() => {
     if (route !== "spotlight") {
@@ -52,10 +53,10 @@ export function useSpotlightFraming(
 
     const justEntered = prevRouteRef.current !== "spotlight"
     const slugChanged = prevSlugRef.current !== slug
-    const edgeChanged = prevEdgeRef.current !== imageEdge
+    const edgeChanged = prevEdgeRef.current !== captionEdge
     prevRouteRef.current = route
     prevSlugRef.current = slug
-    prevEdgeRef.current = imageEdge
+    prevEdgeRef.current = captionEdge
 
     const mode: FrameMode | null =
       justEntered || slugChanged ? "fly" : edgeChanged ? "ease" : null
@@ -72,15 +73,17 @@ export function useSpotlightFraming(
           DEFAULT_SPOTLIGHT_ZOOM
         )
       : DEFAULT_SPOTLIGHT_ZOOM
+    // The image docks opposite the caption; spotlightEdgeOffset shifts the
+    // marker into the half opposite the (image) edge it's given, i.e. toward
+    // the caption. Pass the derived image edge.
+    const imageEdge = OPPOSITE_EDGE[captionEdge]
     const [dx, dy] = spotlightEdgeOffset(imageEdge, canvas.width, canvas.height)
     const center = [building.coordinates.lng, building.coordinates.lat] as [number, number]
-    // spotlightEdgeOffset already returns the offset that lands the marker in
-    // the half opposite the strip — apply it directly.
     const offset = [dx, dy] as [number, number]
     if (mode === "fly") {
       flyToArchCinematic(map, center[0], center[1], targetZoom, offset)
     } else {
       map.easeTo({ center, zoom: map.getZoom(), offset, duration: EASE_DURATION })
     }
-  }, [map, route, imageEdge, slug, buildingsReady])
+  }, [map, route, captionEdge, slug, buildingsReady])
 }
