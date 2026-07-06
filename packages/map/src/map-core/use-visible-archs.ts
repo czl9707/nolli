@@ -1,8 +1,6 @@
-import { useEffect, useState } from "react"
-import type MapLibreGL from "maplibre-gl"
+import { useMemo } from "react"
 import type { ArchSummary } from "@nolli/data"
-
-type Bounds = { west: number; south: number; east: number; north: number }
+import { useMapViewportStore, type Bounds } from "./map-viewport-store"
 
 /** Pure: true if [lng,lat] falls inside the bounds. */
 export function withinBounds(
@@ -18,45 +16,22 @@ export function withinBounds(
   )
 }
 
-function readBounds(map: MapLibreGL.Map): Bounds {
-  const b = map.getBounds()
-  return {
-    west: b.getWest(),
-    south: b.getSouth(),
-    east: b.getEast(),
-    north: b.getNorth(),
-  }
-}
-
 /**
- * Architectures currently inside the map viewport. Recomputed on pan/zoom.
+ * Architectures currently inside the map viewport. Derives from the shared
+ * `useMapViewportStore.bounds`, which a single map-side component keeps in sync
+ * with the live map (see poster's `<MapUrlSync/>`). No map instance needed —
+ * this is pure derivation off the viewport store.
  */
-export function useVisibleArchs(
-  map: MapLibreGL.Map | null,
-  archs: ArchSummary[],
-): ArchSummary[] {
-  const [visible, setVisible] = useState<ArchSummary[]>([])
+export function useVisibleArchs(archs: ArchSummary[]): ArchSummary[] {
+  const bounds = useMapViewportStore((s) => s.bounds)
 
-  useEffect(() => {
-    if (!map) return
-
-    const update = () => {
-      const bounds = readBounds(map)
-      setVisible(
-        archs.filter((a) =>
-          withinBounds(bounds, a.coordinates.lng, a.coordinates.lat),
-        ),
-      )
-    }
-
-    update()
-    map.on("moveend", update)
-    map.on("zoomend", update)
-    return () => {
-      map.off("moveend", update)
-      map.off("zoomend", update)
-    }
-  }, [map, archs])
-
-  return visible
+  return useMemo(
+    () =>
+      bounds
+        ? archs.filter((a) =>
+            withinBounds(bounds, a.coordinates.lng, a.coordinates.lat),
+          )
+        : [],
+    [archs, bounds],
+  )
 }

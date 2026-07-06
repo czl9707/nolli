@@ -1,7 +1,5 @@
-// apps/poster/src/hooks/use-spotlight-framing.ts
 import { useEffect, useRef } from "react"
-import { flyToArchCinematic } from "@nolli/map"
-import { useMapInstanceStore } from "@/stores/map-instance"
+import { flyToArchCinematic, useMap } from "@nolli/map"
 import { useRouteStore } from "@/stores/route"
 import type { Route } from "@/stores/route"
 import { useCaptionStore } from "@/stores/caption"
@@ -27,9 +25,11 @@ type FrameMode = "fly" | "ease"
  * Entry honors the deeper of current zoom, an explicit URL `zoom`, and the
  * default; clicks floor at the default. Manual zoom above the floor is kept.
  * Resize is left to MapLibre (trackResize). No-op outside spotlight.
+ *
+ * Child of `<ArchMap>` — reads the map via `useMap()` (no app-local store).
  */
-export function useSpotlightFraming() {
-  const map = useMapInstanceStore((s) => s.map)
+export function SpotlightFraming() {
+  const { map } = useMap()
   const route = useRouteStore((s) => s.route)
   const captionEdge = useCaptionStore((s) => s.captionEdge)
   const slug = useSelectionStore((s) =>
@@ -38,9 +38,7 @@ export function useSpotlightFraming() {
   // Resolve the spotlighted building's summary on demand by slug (held in the
   // selection store). The effect re-runs when `building` arrives, so the fly
   // fires once the coordinates land.
-  const arch = useSelectionStore((s) =>
-    slug ? s.summaries[slug] : undefined
-  )
+  const arch = useSelectionStore((s) => (slug ? s.summaries[slug] : undefined))
 
   const prevRouteRef = useRef<Route | undefined>(undefined)
   const prevSlugRef = useRef<string | null>(undefined)
@@ -87,4 +85,6 @@ export function useSpotlightFraming() {
       map.easeTo({ center, zoom: map.getZoom(), offset, duration: EASE_DURATION })
     }
   }, [map, route, captionEdge, slug, arch])
+
+  return null
 }

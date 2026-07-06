@@ -317,6 +317,9 @@ importers:
       supercluster:
         specifier: '*'
         version: 8.0.1
+      zustand:
+        specifier: '*'
+        version: 5.0.14(@types/react@19.2.17)(react@19.2.7)
     devDependencies:
       '@types/geojson':
         specifier: '*'

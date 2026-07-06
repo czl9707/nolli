@@ -8,11 +8,10 @@ import { Caption } from "@/components/shared/caption"
 import { CaptionOptions } from "@/components/shared/caption-options"
 import { useRouteStore } from "@/stores/route"
 import type { Route } from "@/stores/route"
-import { useMapInstanceStore } from "@/stores/map-instance"
 import { useVisibleArchs } from "@nolli/map"
 import { useRouteSync } from "@/hooks/use-route-sync"
-import { useSpotlightFraming } from "@/hooks/spotlight/use-spotlight-framing"
 import { useCaptionUrlSync } from "@/hooks/use-caption-url-sync"
+import { useSelectionUrlSync } from "@/hooks/use-selection-url-sync"
 import {
   Body3,
   Collapsible,
@@ -46,12 +45,11 @@ export function PosterShell() {
   const route = useRouteStore((s) => s.route)
   const setRoute = useRouteStore((s) => s.setRoute)
   const isSpotlight = route === "spotlight"
-  const map = useMapInstanceStore((s) => s.map)
   const filteredArchs = useFilterStore((s) => s.filteredArchs)
-  const visible = useVisibleArchs(map, filteredArchs)
+  const visible = useVisibleArchs(filteredArchs)
   useRouteSync()
-  useSpotlightFraming()
   useCaptionUrlSync()
+  useSelectionUrlSync()
 
   return (
     <div className={styles.shell}>
