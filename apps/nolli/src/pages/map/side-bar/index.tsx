@@ -95,8 +95,6 @@ function MobileSheet({ children }: { children: ReactNode }) {
     setSheetY(window.innerHeight - v)
   })
 
-  // useMotionValueEvent only fires on change, so publish the initial position
-  // on mount — otherwise sheetY stays 0 until the first drag.
   useEffect(() => {
     setSheetY(window.innerHeight - y.get())
   }, [y, setSheetY])
