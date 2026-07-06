@@ -23,9 +23,18 @@ type SidebarState = {
   setFiltersOpen: (open: boolean) => void
 }
 
-export const useSidebarStore = create<SidebarState>((set) => ({
+export const useSidebarStore = create<SidebarState>((set, get) => ({
   sidebarOpen: true,
-  setOpen: (open) => set({ sidebarOpen: open }),
+  setOpen: (open) => {
+    let { mobileSheetState } = get();
+    if (open && mobileSheetState === "peek") {
+      set({ mobileSheetState: "expanded" })
+    }
+    else if (!open && mobileSheetState !== "peek") {
+      set({ mobileSheetState: "peek" })
+    }
+    set({ sidebarOpen: open })
+  },
   toggle: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
 
   mobileDrawerOpen: false,

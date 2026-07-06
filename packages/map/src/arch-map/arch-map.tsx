@@ -22,8 +22,6 @@ export type ArchMapProps = {
   onArchClick?: (slug: string) => void
   /** Whether the underlying data is loaded. Drives the loading overlay. */
   ready: boolean
-  /** Show zoom/locate/fullscreen controls. Default true. */
-  showControls?: boolean
   /**
    * Sets MapLibre's `preserveDrawingBuffer: true` so the WebGL canvas can be read
    * back into an image; otherwise the captured map tiles are blank. 
@@ -48,7 +46,6 @@ export const ArchMap = forwardRef<MapRef, ArchMapProps>(function ArchMap(
     selectedSlug,
     onArchClick,
     ready,
-    showControls = true,
     capture = false,
     children,
   },
@@ -84,7 +81,6 @@ export const ArchMap = forwardRef<MapRef, ArchMapProps>(function ArchMap(
         loading={isLoading}
         canvasContextAttributes={capture ? { preserveDrawingBuffer: true } : undefined}
       >
-        {showControls && <MapControls showZoom showLocate showFullscreen />}
         <ArchMarkers
           architectures={architectures}
           selectedSlug={selectedSlug}

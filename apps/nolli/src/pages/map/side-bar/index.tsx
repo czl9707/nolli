@@ -12,6 +12,7 @@ import {
 import { useIsMobile } from "@/hooks/use-is-mobile"
 import { TRANSITION_SHORT, TRANSITION_INSTANT } from "@nolli/ui"
 import styles from "./index.module.css"
+import { useLocation } from "react-router"
 
 // ── Desktop: animated side panel ──
 
@@ -150,6 +151,14 @@ function MobileSheet({ children }: { children: ReactNode }) {
  *  Accepts children — the consumer controls what's rendered inside. */
 export function SideBar({ children }: { children: ReactNode }) {
   const isMobile = useIsMobile()
+  const { pathname } = useLocation();
+  const setSidebarOpen = useSidebarStore((s) => s.setOpen);
+
+  useEffect(() => {
+    if (pathname === "/favorite" || pathname.startsWith("/arch/")) {
+      setSidebarOpen(true)
+    }
+  }, [pathname])
 
   if (isMobile) return <MobileSheet>{children}</MobileSheet>
   return <DesktopPanel>{children}</DesktopPanel>

@@ -60,7 +60,6 @@ export function MapCore() {
   const navigate = useNavigate()
   const filteredArchs = useFilterStore((s) => s.filteredArchs)
   const selected = useArchDetailStore((s) => s.selected)
-  const setOpen = useSidebarStore((s) => s.setOpen)
   const navigateArch = useArchNavigate()
   const { isMap } = useLayout()
   const loading = useDbStore((s) => s.loading)
@@ -81,11 +80,9 @@ export function MapCore() {
         architectures={filteredArchs}
         selectedSlug={selected?.slug}
         onArchClick={(slug) => {
-          setOpen(true)
           navigateArch(slug, false, "replace")
         }}
         ready={!loading}
-        showControls={false}
       >
         {isMap && (
           <MapControls

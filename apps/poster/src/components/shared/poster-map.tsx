@@ -1,5 +1,5 @@
 import { useCallback } from "react"
-import { ArchMap } from "@nolli/map"
+import { ArchMap, MapControls } from "@nolli/map"
 import type { MapRef } from "@nolli/map"
 import { useUiStore } from "@/stores/ui"
 import { useMapInstanceStore } from "@/stores/map-instance"
@@ -57,8 +57,8 @@ export function PosterMap({
         onArchClick={handleArchClick}
         capture
         ready
-        showControls={!previewMode}
       >
+        {!previewMode && <MapControls showZoom showLocate showFullscreen />}
         {!spotlight && <PhotoMarkers buildings={buildings} />}
       </ArchMap>
     </div>
