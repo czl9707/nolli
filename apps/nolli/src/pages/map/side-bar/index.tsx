@@ -94,6 +94,11 @@ function MobileSheet({ children }: { children: ReactNode }) {
   useMotionValueEvent(y, "change", (v) => {
     setSheetY(window.innerHeight - v)
   })
+
+  useEffect(() => {
+    setSheetY(window.innerHeight - y.get())
+  }, [y, setSheetY])
+
   useEffect(() => {
     const controls = animate(y, getSnapOffsets()[sheetState], {
       duration: TRANSITION_INSTANT,
