@@ -10,10 +10,10 @@ import styles from "./poster-map.module.css"
 
 
 export function PosterMap({
-  buildings,
+  architectures,
   spotlight,
 }: {
-  buildings: ArchSummary[]
+  architectures: ArchSummary[]
   spotlight: boolean
 }) {
   const previewMode = useUiStore((s) => s.previewMode)
@@ -52,14 +52,14 @@ export function PosterMap({
     <div className={styles.container}>
       <ArchMap
         ref={handleRef}
-        architectures={hideMarkers ? [] : buildings}
+        architectures={hideMarkers ? [] : architectures}
         selectedSlug={selectedSlug}
         onArchClick={handleArchClick}
         capture
         ready
       >
         {!previewMode && <MapControls showZoom showLocate showFullscreen />}
-        {!spotlight && <PhotoMarkers buildings={buildings} />}
+        {!spotlight && <PhotoMarkers />}
       </ArchMap>
     </div>
   )

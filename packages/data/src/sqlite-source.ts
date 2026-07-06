@@ -122,6 +122,14 @@ export class SqliteDataSource implements DataSource {
       })
   }
 
+  getArchSummariesBySlugs(slugs: string[]): Promise<ArchSummary[]> {
+    return this.send({ type: "getArchSummariesBySlugs", slugs })
+      .then((res) => {
+        if (res.type === "getArchSummariesBySlugs") return res.data
+        throw new Error(`Unexpected response: ${res.type}`)
+      })
+  }
+
   getFilterOptions(): Promise<FilterOptions> {
     return this.send({ type: "getFilterOptions" })
       .then((res) => {

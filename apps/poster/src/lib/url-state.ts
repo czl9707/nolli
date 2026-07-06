@@ -2,10 +2,10 @@
 import {
   EDGES,
   CORNERS,
-  DEFAULT_SPOTLIGHT,
+  DEFAULT_CAPTION,
   type Edge,
   type Corner,
-} from "./spotlight-types"
+} from "./caption-types"
 
 export type LngLat = [number, number]
 
@@ -100,10 +100,10 @@ const SPECS: {
   center: { key: "center", parse: parseCenter, serialize: serializeCenter, default: undefined },
   zoom: { key: "zoom", parse: parseZoom, serialize: serializeZoom, default: undefined },
   selection: { key: "selection", parse: parseSelection, serialize: serializeSelection, default: new Set<string>() },
-  captionEdge: { key: "edge", parse: parseEdge, serialize: String, default: DEFAULT_SPOTLIGHT.captionEdge },
-  captionCorner: { key: "corner", parse: parseCorner, serialize: String, default: DEFAULT_SPOTLIGHT.captionCorner },
-  primarySize: { key: "primary", parse: parseSize, serialize: String, default: DEFAULT_SPOTLIGHT.primarySize },
-  secondarySize: { key: "secondary", parse: parseSize, serialize: String, default: DEFAULT_SPOTLIGHT.secondarySize },
+  captionEdge: { key: "edge", parse: parseEdge, serialize: String, default: DEFAULT_CAPTION.captionEdge },
+  captionCorner: { key: "corner", parse: parseCorner, serialize: String, default: DEFAULT_CAPTION.captionCorner },
+  primarySize: { key: "primary", parse: parseSize, serialize: String, default: DEFAULT_CAPTION.primarySize },
+  secondarySize: { key: "secondary", parse: parseSize, serialize: String, default: DEFAULT_CAPTION.secondarySize },
 }
 
 // --- parse -----------------------------------------------------------------

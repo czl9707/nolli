@@ -8,6 +8,7 @@ import {
   SQL_GET_ARCHITECTS,
   SQL_GET_ARCHITECTURE_ID_BY_SLUG,
   SQL_GET_ARCHITECTURES_BY_IDS,
+  SQL_GET_ARCHITECTURES_BY_SLUGS,
   SQL_GET_ARCH_BY_SLUG,
   SQL_GET_CITIES,
   SQL_GET_COUNTRIES,
@@ -212,6 +213,13 @@ function handleGetArchSummariesByIds(ids: number[]): ArchSummary[] {
   return query(sql, ids).map(mapSummaryRow)
 }
 
+function handleGetArchSummariesBySlugs(slugs: string[]): ArchSummary[] {
+  if (slugs.length === 0) return []
+  const placeholders = slugs.map(() => "?").join(", ")
+  const sql = SQL_GET_ARCHITECTURES_BY_SLUGS.replace("__SLUGS__", placeholders)
+  return query(sql, slugs).map(mapSummaryRow)
+}
+
 function handleGetFilterOptions(): FilterOptions {
   const architects = query(SQL_GET_ARCHITECTS).map((r) => ({
     id: r.id as number,
@@ -245,6 +253,9 @@ self.onmessage = async (e: MessageEvent<WorkerInbound>) => {
         break
       case "getArchSummariesByIds":
         post({ type: "getArchSummariesByIds", msgId, data: handleGetArchSummariesByIds(e.data.ids) })
+        break
+      case "getArchSummariesBySlugs":
+        post({ type: "getArchSummariesBySlugs", msgId, data: handleGetArchSummariesBySlugs(e.data.slugs) })
         break
       case "getFilterOptions":
         post({ type: "getFilterOptions", msgId, data: handleGetFilterOptions() })

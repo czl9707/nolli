@@ -28,7 +28,7 @@ export const OPPOSITE_CORNER: Record<Corner, Corner> = {
  * secondary; `customPrimary` / `customSecondary` override the resolved text
  * when non-empty (spotlight only; ephemeral).
  */
-export type SpotlightSettings = {
+export type CaptionSettings = {
   captionEdge: Edge
   captionCorner: Corner
   primarySize: number
@@ -38,7 +38,7 @@ export type SpotlightSettings = {
 }
 
 /** Defaults preserve the prior visual: image top-start, caption bottom-end. */
-export const DEFAULT_SPOTLIGHT: SpotlightSettings = {
+export const DEFAULT_CAPTION: CaptionSettings = {
   captionEdge: "bottom",
   captionCorner: "end",
   primarySize: 48,

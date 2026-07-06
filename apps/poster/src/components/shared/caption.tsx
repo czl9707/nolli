@@ -1,9 +1,7 @@
 // apps/poster/src/components/shared/caption.tsx
-import { useMemo } from "react"
 import { useSelectionStore } from "@/stores/selection"
-import { useSpotlightStore } from "@/stores/spotlight"
+import { useCaptionStore } from "@/stores/caption"
 import { useFrameSize } from "@/hooks/use-frame-size"
-import type { ArchSummary } from "@nolli/data"
 import styles from "./caption.module.css"
 
 /** Wrap margin around the caption, matching the CSS --spacing-component. */
@@ -17,12 +15,13 @@ const MARGIN = 32
  * the caption edge — left/right → vertical, top/bottom → horizontal — so it is
  * not a knob.
  *
- * In spotlight (`buildings` passed), `customPrimary` / `customSecondary`, when
- * non-empty, override the selected building's name/architect; otherwise the
- * building's real values are used. In overview (`buildings` omitted) it is
- * pure freeform text — only the custom values are shown. A line whose resolved
- * text is empty is skipped; if both are empty, nothing renders (e.g. overview
- * before the user has typed anything).
+ * In spotlight, `customPrimary` / `customSecondary`, when non-empty, override
+ * the selected building's name/architect; otherwise the building's real values
+ * are used. In overview it is pure freeform text — only the custom values are
+ * shown. A line whose resolved text is empty is skipped; if both are empty,
+ * nothing renders (e.g. overview before the user has typed anything). The
+ * selected building is resolved on demand by slug (held in the selection store)
+ * so it still resolves when the current viewport or filter excludes it.
  *
  * start/end is along the docked edge (horizontal: start=left/end=right;
  * vertical: start=bottom/end=top). Horizontal uses flexbox; vertical takes the
@@ -30,25 +29,23 @@ const MARGIN = 32
  * and edge alignment. Vertical mode bounds the block's length to the available
  * edge space so a long name wraps instead of overflowing.
  */
-export function Caption({ buildings }: { buildings?: ArchSummary[] }) {
-  const dockEdge = useSpotlightStore((s) => s.captionEdge)
-  const corner = useSpotlightStore((s) => s.captionCorner)
-  const primarySize = useSpotlightStore((s) => s.primarySize)
-  const secondarySize = useSpotlightStore((s) => s.secondarySize)
-  const customPrimary = useSpotlightStore((s) => s.customPrimary)
-  const customSecondary = useSpotlightStore((s) => s.customSecondary)
+export function Caption({ spotlight }: { spotlight: boolean }) {
+  const dockEdge = useCaptionStore((s) => s.captionEdge)
+  const corner = useCaptionStore((s) => s.captionCorner)
+  const primarySize = useCaptionStore((s) => s.primarySize)
+  const secondarySize = useCaptionStore((s) => s.secondarySize)
+  const customPrimary = useCaptionStore((s) => s.customPrimary)
+  const customSecondary = useCaptionStore((s) => s.customSecondary)
   const selected = useSelectionStore((s) => s.selected)
+  const summaries = useSelectionStore((s) => s.summaries)
+  const slug = spotlight ? Array.from(selected)[0] : undefined
   const frame = useFrameSize()
 
-  const building = useMemo(() => {
-    if (!buildings) return null
-    const slug = Array.from(selected)[0]
-    return buildings.find((b) => b.slug === slug) ?? null
-  }, [selected, buildings])
+  const arch = slug ? summaries[slug] ?? null : null
 
   const vertical = dockEdge === "left" || dockEdge === "right"
-  const primary = building ? (customPrimary.trim() || building.name) : customPrimary.trim()
-  const secondary = building ? (customSecondary.trim() || building.architect) : customSecondary.trim()
+  const primary = arch ? (customPrimary.trim() || arch.name) : customPrimary.trim()
+  const secondary = arch ? (customSecondary.trim() || arch.architect) : customSecondary.trim()
 
   if (!primary && !secondary) return null
 

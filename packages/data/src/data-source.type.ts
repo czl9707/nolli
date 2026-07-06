@@ -17,5 +17,6 @@ export interface DataSource {
   getAllArchitectures(filter?: ArchFilter): Promise<ArchSummary[]>
   getArchBySlug(slug: string): Promise<Arch | null>
   getArchSummariesByIds(ids: number[]): Promise<ArchSummary[]>
+  getArchSummariesBySlugs(slugs: string[]): Promise<ArchSummary[]>
   getFilterOptions(): Promise<FilterOptions>
 }

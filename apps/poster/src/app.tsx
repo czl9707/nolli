@@ -1,15 +1,22 @@
-import { useBuildings } from "@/data/use-buildings"
 import { PosterShell, PosterShellSkeleton } from "@/poster-shell"
+import { useDbStore, useFilterStore } from "@nolli/data"
 import { useMapUrlState } from "@/hooks/use-map-url-state"
 
 export function App() {
-  const snap = useBuildings()
-  const buildingsReady = snap.status === "ready"
-  useMapUrlState(buildingsReady)
+  // App readiness now flows from the shared filter store (one-shot
+  // `initialized` after the first getAllArchitectures load) + the db bootstrap
+  // error — no app-local buildings cache.
+  const loading = useFilterStore((s) => s.loading)
+  const dbError = useDbStore((s) => s.error)
+  useMapUrlState(!loading)
 
-  if (snap.status === "loading") return <PosterShellSkeleton />
-  if (snap.status === "error")
-    return <div style={{ padding: "var(--spacing-component)" }}>Error: {snap.error.message}</div>
+  if (dbError)
+    return (
+      <div style={{ padding: "var(--spacing-component)" }}>
+        Error: {dbError.message}
+      </div>
+    )
+  if (loading) return <PosterShellSkeleton />
 
-  return <PosterShell buildings={snap.buildings} buildingsReady />
+  return <PosterShell />
 }

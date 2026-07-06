@@ -8,7 +8,7 @@ type Bounds = { west: number; south: number; east: number; north: number }
 export function withinBounds(
   bounds: Bounds,
   lng: number,
-  lat: number
+  lat: number,
 ): boolean {
   return (
     lng >= bounds.west &&
@@ -28,10 +28,12 @@ function readBounds(map: MapLibreGL.Map): Bounds {
   }
 }
 
-/** Buildings currently inside the map viewport. Recomputed on pan/zoom. */
+/**
+ * Architectures currently inside the map viewport. Recomputed on pan/zoom.
+ */
 export function useVisibleArchs(
   map: MapLibreGL.Map | null,
-  buildings: ArchSummary[]
+  archs: ArchSummary[],
 ): ArchSummary[] {
   const [visible, setVisible] = useState<ArchSummary[]>([])
 
@@ -41,9 +43,9 @@ export function useVisibleArchs(
     const update = () => {
       const bounds = readBounds(map)
       setVisible(
-        buildings.filter((b) =>
-          withinBounds(bounds, b.coordinates.lng, b.coordinates.lat)
-        )
+        archs.filter((a) =>
+          withinBounds(bounds, a.coordinates.lng, a.coordinates.lat),
+        ),
       )
     }
 
@@ -54,7 +56,7 @@ export function useVisibleArchs(
       map.off("moveend", update)
       map.off("zoomend", update)
     }
-  }, [map, buildings])
+  }, [map, archs])
 
   return visible
 }
