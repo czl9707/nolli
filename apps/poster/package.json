@@ -16,9 +16,9 @@
     "@nolli/map": "workspace:*",
     "@nolli/ui": "workspace:*",
     "@sqlite.org/sqlite-wasm": "^3.53.0-build1",
-    "framer-motion": "^12.40.0",
+    "framer-motion": "^12.42.2",
     "html-to-image": "^1.11.13",
-    "lucide-react": "^1.16.0",
+    "lucide-react": "^1.23.0",
     "maplibre-gl": "^5.24.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
@@ -37,9 +37,9 @@
     "postcss": "^8",
     "postcss-custom-media": "^12.0.1",
     "postcss-custom-properties": "^15.0.1",
-    "tsx": "^4.22.3",
+    "tsx": "^4.23.0",
     "typescript": "^5.9.3",
-    "vite": "^8.0.13",
+    "vite": "^8.1.3",
     "vitest": "^2.1.9"
   }
 }
