@@ -15,16 +15,7 @@ import { parseMapParams, setParams } from "@/lib/url-state"
  *    `center`/`zoom`/`bounds` into the shared `useMapViewportStore`. That store
  *    is what `useVisibleArchs` filters by, so the viewport feeds the sidebar
  *    list without anyone holding the raw `MapLibreGL.Map` handle.
- * 3. **URL sync** — write `center`/`zoom` back to the query string (preserving
- *    the caption keys owned by `use-caption-url-sync` and `selection` owned by
- *    `use-selection-url-sync`).
- *
- * The `didSnap` gate is preserved from the prior hook: `<ArchMap>`'s own init
- * emits a spurious `moveend`; reading the incoming params from a ref (not the
- * live URL) and refusing to write until after the snap stops that init movement
- * from clobbering a shared `center`/`zoom`. No `ready` prop: as an `<ArchMap>`
- * child the map is guaranteed present, and data readiness is guaranteed by
- * `app.tsx` gating the shell on `useFilterStore.loading`.
+ * 3. **URL sync** — write `center`/`zoom` back to the query string.
  */
 export function MapUrlSync() {
   const { map } = useMap()

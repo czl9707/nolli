@@ -17,7 +17,6 @@ import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-  Skeleton,
   Tabs,
   TabsList,
   TabsTrigger,
@@ -142,38 +141,5 @@ function SidebarSection({
         <CollapsibleContent>{children}</CollapsibleContent>
       </section>
     </Collapsible>
-  )
-}
-
-/**
- * Loading skeleton that mirrors <PosterShell>'s layout: the same flex row,
- * sidebar width, and inset, with the sidebar reusing <SidebarSection> so
- * padding/label/grow match exactly. This keeps the hydrate from skeleton to
- * shell layout-shift-free. Sidebar sections approximate the real ones — tabs,
- * the operation panel (search + two filters), and the building list.
- */
-export function PosterShellSkeleton() {
-  return (
-    <div className={styles.shell}>
-      <div className={styles.sidebarSkeleton}>
-        <SidebarSection>
-          <Skeleton height="2rem" width="100%" />
-        </SidebarSection>
-        <SidebarSection>
-          <Skeleton height="2.25rem" width="100%" />
-          <Skeleton height="2.25rem" width="100%" />
-          <Skeleton height="2.25rem" width="100%" />
-        </SidebarSection>
-        <SidebarSection grow>
-          <Skeleton height="2.5rem" width="100%" />
-          <Skeleton height="2.5rem" width="100%" />
-          <Skeleton height="2.5rem" width="100%" />
-        </SidebarSection>
-      </div>
-      <div className={styles.inset}>
-        <Skeleton className={styles.skeletonHeader} width="100%" />
-        <Skeleton className={styles.skeletonMap} width="100%" />
-      </div>
-    </div>
   )
 }

@@ -1,5 +1,6 @@
 import { useCallback } from "react"
 import { ArchMap, MapControls } from "@nolli/map"
+import { useDbStore } from "@nolli/data"
 import { useUiStore } from "@/stores/ui"
 import { useSelectionStore } from "@/stores/selection"
 import { PhotoMarkers } from "../overview/photo-markers"
@@ -17,6 +18,7 @@ export function PosterMap({
   spotlight: boolean
 }) {
   const previewMode = useUiStore((s) => s.previewMode)
+  const loading = useDbStore((s) => s.loading)
   const toggle = useSelectionStore((s) => s.toggle)
   const setAll = useSelectionStore((s) => s.setAll)
   // The single selected building's slug — passed through to <ArchMap> so its
@@ -46,7 +48,7 @@ export function PosterMap({
         selectedSlug={selectedSlug}
         onArchClick={handleArchClick}
         capture
-        ready
+        ready={!loading}
       >
         {!previewMode && <MapControls showZoom showLocate showFullscreen />}
         {!spotlight && <PhotoMarkers />}
