@@ -1,10 +1,9 @@
 // apps/poster/src/components/shared/caption-options.tsx
-import { useMemo } from "react"
 import { Tabs, TabsList, TabsTrigger, Input } from "@nolli/ui"
-import { useSpotlightStore } from "@/stores/spotlight"
+import { useCaptionStore } from "@/stores/caption"
 import { useSelectionStore } from "@/stores/selection"
-import { EDGES, CORNERS } from "@/lib/spotlight-types"
-import type { ArchSummary } from "@nolli/data"
+import { useRouteStore } from "@/stores/route"
+import { EDGES, CORNERS } from "@/lib/caption-types"
 import styles from "./caption-options.module.css"
 
 const EDGE_LABELS: Record<(typeof EDGES)[number], string> = {
@@ -17,6 +16,12 @@ const EDGE_LABELS: Record<(typeof EDGES)[number], string> = {
 const MIN_SIZE = 8
 const MAX_SIZE = 120
 
+/** Freeform hint shown in overview, where there is no selected building. */
+const OVERVIEW_PLACEHOLDER = {
+  primary: "Add primary text",
+  secondary: "Add secondary text",
+}
+
 /**
  * Caption knobs, shared by both routes: position (which edge + corner the
  * caption docks to — also the source of truth the spotlight image is derived
@@ -26,39 +31,33 @@ const MAX_SIZE = 120
  * Caption direction is not a knob — it's derived from the edge (left/right →
  * vertical, top/bottom → horizontal) in <Caption>.
  *
- * In spotlight (`buildings` passed) the text inputs preview against the
- * selected building's name/architect. In overview (`placeholder` passed
- * instead) there is no building, so a generic hint is shown.
+ * In spotlight the text inputs preview against the selected building's
+ * name/architect (resolved on demand by slug via the selection store, so it
+ * still resolves when the viewport or filter excludes it). In overview there
+ * is no building, so the generic `OVERVIEW_PLACEHOLDER` hint is shown.
  */
-export function CaptionOptions({
-  buildings,
-  placeholder,
-}: {
-  buildings?: ArchSummary[]
-  placeholder?: { primary?: string; secondary?: string }
-}) {
-  const captionEdge = useSpotlightStore((s) => s.captionEdge)
-  const captionCorner = useSpotlightStore((s) => s.captionCorner)
-  const primarySize = useSpotlightStore((s) => s.primarySize)
-  const secondarySize = useSpotlightStore((s) => s.secondarySize)
-  const customPrimary = useSpotlightStore((s) => s.customPrimary)
-  const customSecondary = useSpotlightStore((s) => s.customSecondary)
-  const setCaptionEdge = useSpotlightStore((s) => s.setCaptionEdge)
-  const setCaptionCorner = useSpotlightStore((s) => s.setCaptionCorner)
-  const setPrimarySize = useSpotlightStore((s) => s.setPrimarySize)
-  const setSecondarySize = useSpotlightStore((s) => s.setSecondarySize)
-  const setCustomPrimary = useSpotlightStore((s) => s.setCustomPrimary)
-  const setCustomSecondary = useSpotlightStore((s) => s.setCustomSecondary)
+export function CaptionOptions() {
+  const route = useRouteStore((s) => s.route)
+  const spotlight = route === "spotlight"
+  const captionEdge = useCaptionStore((s) => s.captionEdge)
+  const captionCorner = useCaptionStore((s) => s.captionCorner)
+  const primarySize = useCaptionStore((s) => s.primarySize)
+  const secondarySize = useCaptionStore((s) => s.secondarySize)
+  const customPrimary = useCaptionStore((s) => s.customPrimary)
+  const customSecondary = useCaptionStore((s) => s.customSecondary)
+  const setCaptionEdge = useCaptionStore((s) => s.setCaptionEdge)
+  const setCaptionCorner = useCaptionStore((s) => s.setCaptionCorner)
+  const setPrimarySize = useCaptionStore((s) => s.setPrimarySize)
+  const setSecondarySize = useCaptionStore((s) => s.setSecondarySize)
+  const setCustomPrimary = useCaptionStore((s) => s.setCustomPrimary)
+  const setCustomSecondary = useCaptionStore((s) => s.setCustomSecondary)
   const selected = useSelectionStore((s) => s.selected)
+  const summaries = useSelectionStore((s) => s.summaries)
+  const slug = spotlight ? Array.from(selected)[0] : undefined
+  const building = slug ? summaries[slug] ?? null : null
 
-  const building = useMemo(() => {
-    if (!buildings) return null
-    const slug = Array.from(selected)[0]
-    return buildings.find((b) => b.slug === slug) ?? null
-  }, [selected, buildings])
-
-  const primaryPlaceholder = placeholder?.primary ?? building?.name
-  const secondaryPlaceholder = placeholder?.secondary ?? building?.architect
+  const primaryPlaceholder = spotlight ? building?.name : OVERVIEW_PLACEHOLDER.primary
+  const secondaryPlaceholder = spotlight ? building?.architect : OVERVIEW_PLACEHOLDER.secondary
 
   return (
     <div className={styles.stack}>

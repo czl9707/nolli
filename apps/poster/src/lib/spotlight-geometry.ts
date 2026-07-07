@@ -1,5 +1,5 @@
 // apps/poster/src/lib/spotlight-geometry.ts
-import type { Edge } from "./spotlight-types"
+import type { Edge } from "./caption-types"
 
 /** Cross-axis fraction the camera shifts the marker off viewport center, so it
  *  sits centered in the half opposite the image strip. ~15% of that axis. */

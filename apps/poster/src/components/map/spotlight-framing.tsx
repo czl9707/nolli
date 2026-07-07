@@ -1,16 +1,13 @@
-// apps/poster/src/hooks/use-spotlight-framing.ts
 import { useEffect, useRef } from "react"
-import { flyToArchCinematic } from "@nolli/map"
-import { useMapInstanceStore } from "@/stores/map-instance"
+import { flyToArchCinematic, useMap } from "@nolli/map"
 import { useRouteStore } from "@/stores/route"
 import type { Route } from "@/stores/route"
-import { useSpotlightStore } from "@/stores/spotlight"
-import { OPPOSITE_EDGE, type Edge } from "@/lib/spotlight-types"
+import { useCaptionStore } from "@/stores/caption"
+import { OPPOSITE_EDGE, type Edge } from "@/lib/caption-types"
 import { spotlightEdgeOffset } from "@/lib/spotlight-geometry"
 import { useSelectionStore } from "@/stores/selection"
 import { parseMapParams } from "@/lib/url-state"
 import { MAP_TRANSITION_SHORT } from "@nolli/ui"
-import type { ArchSummary } from "@nolli/data"
 
 const DEFAULT_SPOTLIGHT_ZOOM = 15
 const EASE_DURATION = MAP_TRANSITION_SHORT * 1000
@@ -28,17 +25,20 @@ type FrameMode = "fly" | "ease"
  * Entry honors the deeper of current zoom, an explicit URL `zoom`, and the
  * default; clicks floor at the default. Manual zoom above the floor is kept.
  * Resize is left to MapLibre (trackResize). No-op outside spotlight.
+ *
+ * Child of `<ArchMap>` — reads the map via `useMap()` (no app-local store).
  */
-export function useSpotlightFraming(
-  buildings: ArchSummary[],
-  buildingsReady: boolean
-) {
-  const map = useMapInstanceStore((s) => s.map)
+export function SpotlightFraming() {
+  const { map } = useMap()
   const route = useRouteStore((s) => s.route)
-  const captionEdge = useSpotlightStore((s) => s.captionEdge)
+  const captionEdge = useCaptionStore((s) => s.captionEdge)
   const slug = useSelectionStore((s) =>
     s.selected.size === 0 ? null : Array.from(s.selected)[0]
   )
+  // Resolve the spotlighted building's summary on demand by slug (held in the
+  // selection store). The effect re-runs when `building` arrives, so the fly
+  // fires once the coordinates land.
+  const arch = useSelectionStore((s) => (slug ? s.summaries[slug] : undefined))
 
   const prevRouteRef = useRef<Route | undefined>(undefined)
   const prevSlugRef = useRef<string | null>(undefined)
@@ -49,7 +49,7 @@ export function useSpotlightFraming(
       prevRouteRef.current = route
       return
     }
-    if (!map || !buildingsReady || !slug) return
+    if (!map || !slug) return
 
     const justEntered = prevRouteRef.current !== "spotlight"
     const slugChanged = prevSlugRef.current !== slug
@@ -62,8 +62,7 @@ export function useSpotlightFraming(
       justEntered || slugChanged ? "fly" : edgeChanged ? "ease" : null
     if (!mode) return
 
-    const building = buildings.find((b) => b.slug === slug)
-    if (!building) return
+    if (!arch) return
 
     const canvas = map.getCanvas()
     const targetZoom = justEntered
@@ -78,12 +77,14 @@ export function useSpotlightFraming(
     // the caption. Pass the derived image edge.
     const imageEdge = OPPOSITE_EDGE[captionEdge]
     const [dx, dy] = spotlightEdgeOffset(imageEdge, canvas.width, canvas.height)
-    const center = [building.coordinates.lng, building.coordinates.lat] as [number, number]
+    const center = [arch.coordinates.lng, arch.coordinates.lat] as [number, number]
     const offset = [dx, dy] as [number, number]
     if (mode === "fly") {
       flyToArchCinematic(map, center[0], center[1], targetZoom, offset)
     } else {
       map.easeTo({ center, zoom: map.getZoom(), offset, duration: EASE_DURATION })
     }
-  }, [map, route, captionEdge, slug, buildingsReady])
+  }, [map, route, captionEdge, slug, arch])
+
+  return null
 }

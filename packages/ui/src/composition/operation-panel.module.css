@@ -1,0 +1,29 @@
+.collapsibleWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-paragraph);
+  width: 100%;
+}
+
+.toggleWrapper {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 0.25rem;
+  margin-bottom: -0.5rem;
+}
+
+.toggle {
+  opacity: 0.75;
+}
+
+.skeletonGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.skeletonLabel {
+  margin-bottom: 0.25rem;
+}

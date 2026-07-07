@@ -11,6 +11,7 @@
     "lucide-react": "*",
     "sonner": "*",
     "supercluster": "*",
+    "zustand": "*",
     "@nolli/ui": "workspace:*",
     "@nolli/data": "workspace:*"
   },

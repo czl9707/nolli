@@ -11,7 +11,11 @@
     "zustand": "*"
   },
   "devDependencies": {
+    "@types/react": "*",
     "typescript": "*",
     "vite": "*"
+  },
+  "peerDependencies": {
+    "react": "*"
   }
 }

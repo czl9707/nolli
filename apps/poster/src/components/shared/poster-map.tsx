@@ -1,23 +1,24 @@
 import { useCallback } from "react"
 import { ArchMap, MapControls } from "@nolli/map"
-import type { MapRef } from "@nolli/map"
+import { useDbStore } from "@nolli/data"
 import { useUiStore } from "@/stores/ui"
-import { useMapInstanceStore } from "@/stores/map-instance"
 import { useSelectionStore } from "@/stores/selection"
 import { PhotoMarkers } from "../overview/photo-markers"
+import { MapUrlSync } from "../map/map-url-sync"
+import { SpotlightFraming } from "../map/spotlight-framing"
 import type { ArchSummary } from "@nolli/data"
 import styles from "./poster-map.module.css"
 
 
 export function PosterMap({
-  buildings,
+  architectures,
   spotlight,
 }: {
-  buildings: ArchSummary[]
+  architectures: ArchSummary[]
   spotlight: boolean
 }) {
   const previewMode = useUiStore((s) => s.previewMode)
-  const setMapInstance = useMapInstanceStore((s) => s.setMap)
+  const loading = useDbStore((s) => s.loading)
   const toggle = useSelectionStore((s) => s.toggle)
   const setAll = useSelectionStore((s) => s.setAll)
   // The single selected building's slug — passed through to <ArchMap> so its
@@ -40,26 +41,23 @@ export function PosterMap({
     [spotlight, setAll, toggle]
   )
 
-  const handleRef = useCallback(
-    (m: MapRef | null) => {
-      if (!m) return
-      setMapInstance(m)
-    },
-    [setMapInstance]
-  )
-
   return (
     <div className={styles.container}>
       <ArchMap
-        ref={handleRef}
-        architectures={hideMarkers ? [] : buildings}
+        architectures={hideMarkers ? [] : architectures}
         selectedSlug={selectedSlug}
         onArchClick={handleArchClick}
         capture
-        ready
+        ready={!loading}
       >
         {!previewMode && <MapControls showZoom showLocate showFullscreen />}
-        {!spotlight && <PhotoMarkers buildings={buildings} />}
+        {!spotlight && <PhotoMarkers />}
+        {/* Map-side controllers — children of <ArchMap> so they reach the map
+            via useMap() context, never an app-local instance store. MapUrlSync
+            mirrors the viewport into the shared store + owns URL↔map; in
+            spotlight, SpotlightFraming takes over the viewport. */}
+        <MapUrlSync />
+        { spotlight && <SpotlightFraming /> }
       </ArchMap>
     </div>
   )

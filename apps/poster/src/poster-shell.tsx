@@ -8,22 +8,20 @@ import { Caption } from "@/components/shared/caption"
 import { CaptionOptions } from "@/components/shared/caption-options"
 import { useRouteStore } from "@/stores/route"
 import type { Route } from "@/stores/route"
-import { useMapInstanceStore } from "@/stores/map-instance"
-import { useVisibleArchs } from "@/hooks/use-visible-archs"
+import { useVisibleArchs } from "@nolli/map"
 import { useRouteSync } from "@/hooks/use-route-sync"
-import { useSpotlightFraming } from "@/hooks/spotlight/use-spotlight-framing"
-import { useSpotlightUrlSync } from "@/hooks/spotlight/use-spotlight-url-sync"
+import { useCaptionUrlSync } from "@/hooks/use-caption-url-sync"
+import { useSelectionUrlSync } from "@/hooks/use-selection-url-sync"
 import {
   Body3,
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-  Skeleton,
   Tabs,
   TabsList,
   TabsTrigger,
 } from "@nolli/ui"
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import type { ReactNode } from "react"
 import { useFilterStore } from "@nolli/data"
 import type { ArchSummary } from "@nolli/data"
@@ -34,20 +32,23 @@ import styles from "./app.module.css"
  * Always-mounted shell. <ArchMap> (via <PosterMap>) never unmounts across the
  * overview ↔ spotlight switch — only the sidebar's list region and the map
  * overlay change. This keeps tiles, view state, and cluster animations alive.
+ *
+ * Data flow mirrors nolli: the display set is `filteredArchs` from the shared
+ * filter store, then narrowed to the viewport via `useVisibleArchs`. That
+ * single `visible` set feeds both the map markers and the sidebar list — no
+ * prop-drilled `buildings` array, no app-local full-set cache. Slug-lookup
+ * components (caption, strip, framing) resolve the selected building on demand
+ * by slug via the selection store, exactly like nolli's `useArchDetailStore`.
  */
-export function PosterShell({
-  buildings,
-  buildingsReady,
-}: {
-  buildings: ArchSummary[]
-  buildingsReady: boolean
-}) {
+export function PosterShell() {
   const route = useRouteStore((s) => s.route)
   const setRoute = useRouteStore((s) => s.setRoute)
   const isSpotlight = route === "spotlight"
+  const filteredArchs = useFilterStore((s) => s.filteredArchs)
+  const visible = useVisibleArchs(filteredArchs)
   useRouteSync()
-  useSpotlightFraming(buildings, buildingsReady)
-  useSpotlightUrlSync()
+  useCaptionUrlSync()
+  useSelectionUrlSync()
 
   return (
     <div className={styles.shell}>
@@ -66,27 +67,25 @@ export function PosterShell({
         <SidebarSection>
           <OperationPanel />
         </SidebarSection>
-        {isSpotlight ? (
-          <VisibleSection buildings={buildings} spotlight />
-        ) : (
-          <VisibleSection buildings={buildings} />
-        )}
-        <SidebarSection label="Caption options" collapsible defaultOpen={false}>
+        <SidebarSection grow label={`In view · ${visible.length}`}>
           {isSpotlight ? (
-            <CaptionOptions buildings={buildings} />
+            <SpotlightList buildings={visible} />
           ) : (
-            <CaptionOptions placeholder={{ primary: "Add primary text", secondary: "Add secondary text" }} />
+            <VisibleArchList buildings={visible} />
           )}
+        </SidebarSection>
+        <SidebarSection label="Caption options" collapsible defaultOpen={false}>
+          <CaptionOptions />
         </SidebarSection>
       </SelectionSidebar>
       <div className={styles.inset} data-poster-frame>
         <Header />
-        <PosterMap buildings={buildings} spotlight={isSpotlight} />
-        {isSpotlight && <SpotlightImageStrip buildings={buildings} />}
+        <PosterMap architectures={visible} spotlight={isSpotlight} />
+        {isSpotlight && <SpotlightImageStrip />}
         {/* Caption is shared by both routes. Spotlight resolves text from the
             selected building (custom overrides win); overview is freeform —
             custom text only, omitted entirely when both fields are empty. */}
-        <Caption buildings={isSpotlight ? buildings : undefined} />
+        <Caption spotlight={isSpotlight} />
       </div>
     </div>
   )
@@ -142,82 +141,5 @@ function SidebarSection({
         <CollapsibleContent>{children}</CollapsibleContent>
       </section>
     </Collapsible>
-  )
-}
-
-/** Viewport-visible buildings, headed by a count, rendered as either the
- *  multi-select overview list or the click-to-fly spotlight list. When a
- *  filter/search is active the source swaps to global filter results instead
- *  of viewport visibility. */
-function VisibleSection({
-  buildings,
-  spotlight = false,
-}: {
-  buildings: ArchSummary[]
-  spotlight?: boolean
-}) {
-  const map = useMapInstanceStore((s) => s.map)
-  const visible = useVisibleArchs(map, buildings)
-
-  const architectIds = useFilterStore((s) => s.architectIds)
-  const cityIds = useFilterStore((s) => s.cityIds)
-  const searchQuery = useFilterStore((s) => s.searchQuery)
-  const filteredArchs = useFilterStore((s) => s.filteredArchs)
-  const filterLoading = useFilterStore((s) => s.loading)
-  const hasFilters =
-    architectIds.length > 0 || cityIds.length > 0 || searchQuery.trim() !== ""
-
-  const list = useMemo(() => {
-    if (!hasFilters || filterLoading) return visible
-    return filteredArchs
-  }, [hasFilters, filterLoading, filteredArchs, visible])
-
-  const label = !hasFilters
-    ? `In view · ${visible.length}`
-    : filterLoading
-      ? "Searching…"
-      : `Results · ${list.length}`
-
-  return (
-    <SidebarSection grow label={label}>
-      {spotlight ? (
-        <SpotlightList buildings={list} />
-      ) : (
-        <VisibleArchList buildings={list} />
-      )}
-    </SidebarSection>
-  )
-}
-
-/**
- * Loading skeleton that mirrors <PosterShell>'s layout: the same flex row,
- * sidebar width, and inset, with the sidebar reusing <SidebarSection> so
- * padding/label/grow match exactly. This keeps the hydrate from skeleton to
- * shell layout-shift-free. Sidebar sections approximate the real ones — tabs,
- * the operation panel (search + two filters), and the building list.
- */
-export function PosterShellSkeleton() {
-  return (
-    <div className={styles.shell}>
-      <div className={styles.sidebarSkeleton}>
-        <SidebarSection>
-          <Skeleton height="2rem" width="100%" />
-        </SidebarSection>
-        <SidebarSection>
-          <Skeleton height="2.25rem" width="100%" />
-          <Skeleton height="2.25rem" width="100%" />
-          <Skeleton height="2.25rem" width="100%" />
-        </SidebarSection>
-        <SidebarSection grow>
-          <Skeleton height="2.5rem" width="100%" />
-          <Skeleton height="2.5rem" width="100%" />
-          <Skeleton height="2.5rem" width="100%" />
-        </SidebarSection>
-      </div>
-      <div className={styles.inset}>
-        <Skeleton className={styles.skeletonHeader} width="100%" />
-        <Skeleton className={styles.skeletonMap} width="100%" />
-      </div>
-    </div>
   )
 }

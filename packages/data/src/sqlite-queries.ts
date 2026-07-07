@@ -56,6 +56,18 @@ LEFT JOIN architecture_photos p ON p.architecture_id = a.id AND p.is_cover = 1
 WHERE a.id IN (__IDS__)
 `
 
+export const SQL_GET_ARCHITECTURES_BY_SLUGS = `
+SELECT a.id, a.slug, a.name, a.year, a.latitude, a.longitude,
+       arch.name AS architect,
+       p.image AS cover_image,
+       p.width AS cover_width,
+       p.height AS cover_height
+FROM architectures a
+JOIN architects arch ON a.architect_id = arch.id
+LEFT JOIN architecture_photos p ON p.architecture_id = a.id AND p.is_cover = 1
+WHERE a.slug IN (__SLUGS__)
+`
+
 export const SQL_GET_ARCHITECTS = `
 SELECT id, name FROM architects ORDER BY name
 `

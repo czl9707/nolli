@@ -2,12 +2,11 @@
 import { useMemo } from "react"
 import { motion } from "framer-motion"
 import { useSelectionStore } from "@/stores/selection"
-import { useSpotlightStore } from "@/stores/spotlight"
+import { useCaptionStore } from "@/stores/caption"
 import { useFrameSize } from "@/hooks/use-frame-size"
-import { OPPOSITE_EDGE, OPPOSITE_CORNER } from "@/lib/spotlight-types"
+import { OPPOSITE_EDGE, OPPOSITE_CORNER } from "@/lib/caption-types"
 import { spotlightImageBounds } from "@/lib/spotlight-geometry"
 import { MAP_TRANSITION_SHORT } from "@nolli/ui"
-import type { ArchSummary } from "@nolli/data"
 import { paperClipPath } from "../shared/paper-clip"
 import styles from "./spotlight-image-strip.module.css"
 
@@ -20,28 +19,27 @@ const PADDING = 16 // --spacing-paragraph (the .hero padding)
  * axis (45%), sized live from the poster frame. Torn-paper clip + grass-paper
  * backing are unchanged from the prior overlay; the in-card caption is gone.
  */
-export function SpotlightImageStrip({ buildings }: { buildings: ArchSummary[] }) {
+export function SpotlightImageStrip() {
   // The image docks opposite the caption; its edge/corner are derived.
-  const captionEdge = useSpotlightStore((s) => s.captionEdge)
-  const captionCorner = useSpotlightStore((s) => s.captionCorner)
+  const captionEdge = useCaptionStore((s) => s.captionEdge)
+  const captionCorner = useCaptionStore((s) => s.captionCorner)
   const imageEdge = OPPOSITE_EDGE[captionEdge]
   const imageCorner = OPPOSITE_CORNER[captionCorner]
   const selected = useSelectionStore((s) => s.selected)
+  const summaries = useSelectionStore((s) => s.summaries)
+  const slug = Array.from(selected)[0]
   const frame = useFrameSize()
 
-  const building = useMemo(() => {
-    const slug = Array.from(selected)[0]
-    return buildings.find((b) => b.slug === slug) ?? null
-  }, [selected, buildings])
+  const arch = slug ? summaries[slug] ?? null : null
 
   const clipPath = useMemo(
-    () => (building ? paperClipPath(building.slug) : undefined),
-    [building]
+    () => (arch ? paperClipPath(arch.slug) : undefined),
+    [arch]
   )
 
-  if (!building) return null
+  if (!arch) return null
 
-  const ratio = building.cover.width / building.cover.height
+  const ratio = arch.cover.width / arch.cover.height
   const { maxWidth, maxHeight } =
     frame.width && frame.height
       ? spotlightImageBounds(imageEdge, frame.width, frame.height, frame.headerHeight, MARGIN, PADDING)
@@ -68,8 +66,8 @@ export function SpotlightImageStrip({ buildings }: { buildings: ArchSummary[] })
         <img
           className={styles.photo}
           style={{ width: renderW, height: renderH }}
-          src={building.cover.image}
-          alt={building.name}
+          src={arch.cover.image}
+          alt={arch.name}
           crossOrigin="anonymous"
         />
       </figure>

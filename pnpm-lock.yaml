@@ -179,6 +179,9 @@ importers:
       react-dom:
         specifier: ^19.2.4
         version: 19.2.7(react@19.2.7)
+      sonner:
+        specifier: ^2.0.7
+        version: 2.0.7(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       zod:
         specifier: ^4.4.3
         version: 4.4.3
@@ -268,6 +271,9 @@ importers:
       '@sqlite.org/sqlite-wasm':
         specifier: '*'
         version: 3.53.0-build1
+      react:
+        specifier: '*'
+        version: 19.2.7
       zod:
         specifier: '*'
         version: 4.4.3
@@ -275,6 +281,9 @@ importers:
         specifier: '*'
         version: 5.0.14(@types/react@19.2.17)(react@19.2.7)
     devDependencies:
+      '@types/react':
+        specifier: '*'
+        version: 19.2.17
       typescript:
         specifier: '*'
         version: 5.9.3
@@ -311,6 +320,9 @@ importers:
       supercluster:
         specifier: '*'
         version: 8.0.1
+      zustand:
+        specifier: '*'
+        version: 5.0.14(@types/react@19.2.17)(react@19.2.7)
     devDependencies:
       '@types/geojson':
         specifier: '*'
@@ -342,6 +354,9 @@ importers:
       '@fontsource/architects-daughter':
         specifier: ^5.2.7
         version: 5.2.7
+      '@nolli/data':
+        specifier: workspace:*
+        version: link:../data
       cmdk:
         specifier: ^1.1.1
         version: 1.1.1(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
