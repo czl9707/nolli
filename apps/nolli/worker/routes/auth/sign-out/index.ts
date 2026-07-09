@@ -1,17 +1,17 @@
 import type { RouteHandler } from "@worker/routes/route.type"
-import { connect } from "@worker/lib/db"
-import { json } from "@worker/lib/http"
+import { connect } from "@worker/lib/data/db"
+import { methodNotAllowed } from "@worker/lib/data/http"
 import {
   deleteSession,
   sessionCookieClear,
   presenceCookieClear,
-} from "@worker/lib/sessions"
-import { appendSetCookie } from "@worker/lib/cookies"
+} from "@worker/lib/auth/sessions"
+import { appendSetCookie } from "@worker/lib/data/cookies"
 
 export default {
   async fetch(request, url, env) {
     if (request.method !== "POST") {
-      return json({ error: "method not allowed" }, 405)
+      return methodNotAllowed()
     }
 
     await using sql = connect(env.DATABASE_URL)

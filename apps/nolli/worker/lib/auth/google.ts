@@ -1,5 +1,5 @@
 import { Google, generateState, generateCodeVerifier } from "arctic"
-import { clearCookie, getCookie, setCookie } from "@worker/lib/cookies"
+import { clearCookie, getCookie, setCookie } from "@worker/lib/data/cookies"
 import type { GoogleProfile } from "@worker/lib/users"
 
 const STATE_COOKIE = "nolli_oauth_state"

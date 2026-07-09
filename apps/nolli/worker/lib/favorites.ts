@@ -1,4 +1,4 @@
-import { type Sql } from "@worker/lib/db"
+import { type Sql } from "@worker/lib/data/db"
 
 export type Favorite = {
   architecture_id: number

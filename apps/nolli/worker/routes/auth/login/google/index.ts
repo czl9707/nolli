@@ -1,5 +1,5 @@
 import type { RouteHandler } from "@worker/routes/route.type"
-import { startOAuth } from "@worker/lib/google"
+import { startOAuth } from "@worker/lib/auth/google"
 
 export default {
   fetch(_request, _url, env) {

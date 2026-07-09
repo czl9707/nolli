@@ -1,7 +1,7 @@
 import type { RouteHandler } from "@worker/routes/route.type"
-import { connect } from "@worker/lib/db"
-import { json } from "@worker/lib/http"
-import { getAuthenticatedUser } from "@worker/lib/sessions"
+import { connect } from "@worker/lib/data/db"
+import { json, unauthorized, badRequest, methodNotAllowed } from "@worker/lib/data/http"
+import { getAuthenticatedUser } from "@worker/lib/auth/sessions"
 import {
   listFavorites,
   addFavorite,
@@ -12,7 +12,7 @@ export default {
   async fetch(request, url, env) {
     await using sql = connect(env.DATABASE_URL)
     const user = await getAuthenticatedUser(sql, request)
-    if (!user) return json({ error: "unauthorized" }, 401)
+    if (!user) return unauthorized()
 
     const method = request.method
     const tail = url.pathname.replace("/api/favorites", "").replace(/^\//, "")
@@ -28,7 +28,7 @@ export default {
       } | null
       const architectureId = Number(body?.architectureId)
       if (!architectureId) {
-        return json({ error: "architectureId required" }, 400)
+        return badRequest("architectureId required")
       }
       await addFavorite(sql, user.id, architectureId)
       return json({ ok: true }, 201)
@@ -37,12 +37,12 @@ export default {
     if (method === "DELETE") {
       const architectureId = Number(tail)
       if (!architectureId) {
-        return json({ error: "architectureId required" }, 400)
+        return badRequest("architectureId required")
       }
       await removeFavorite(sql, user.id, architectureId)
       return json({ ok: true })
     }
 
-    return json({ error: "method not allowed" }, 405)
+    return methodNotAllowed()
   },
 } satisfies RouteHandler

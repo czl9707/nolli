@@ -1,13 +1,13 @@
 import type { RouteHandler } from "@worker/routes/route.type"
-import { connect } from "@worker/lib/db"
+import { connect } from "@worker/lib/data/db"
 import {
   getStoredState,
   getStoredCodeVerifier,
   clearOAuthCookies,
   validateCallback,
-} from "@worker/lib/google"
+} from "@worker/lib/auth/google"
 import { findOrCreateUser } from "@worker/lib/users"
-import { createSession } from "@worker/lib/sessions"
+import { createSession } from "@worker/lib/auth/sessions"
 
 export default {
   async fetch(request, url, env) {

@@ -1,16 +1,18 @@
 # Nolli — Marketing Strategy
 
-> Last updated: May 26, 2026
+> Last updated: July 7, 2026
 
 ---
 
 ## 1. The Pitch
 
-**"The first map built for how architects actually think."**
+**"A map for architects."**
 
-Architects think in two modes: spatial (where things are, figure-ground) and project-specific (drawings, photos, context). No existing tool does both. Google Maps does spatial but treats every building as a dot. ArchDaily has info but no geography. Nolli combines the Noli map (for cities) and the pin-up board (for buildings) — the two tools every architect already uses.
+ArchDaily has the photos but no geography. Google Maps has the pins but no curation. Nolli is both — the depth of ArchDaily laid onto the geography of Google Maps.
 
-The real pain point: **architects walk past masterpieces without knowing they're there.** ArchDaily has the photos, no geography. Google Maps has the pins, no curation. Nobody connects "what's worth seeing" with "where it is relative to you right now."
+The real pain point: **architects walk past masterpieces without knowing they're there.** Nobody connects "what's worth seeing" with "where it is relative to you right now." Nolli does.
+
+*(The figure-ground map and the pin-up board are Nolli's visual language — how it looks, not the point of it.)*
 
 ### Positioning
 
@@ -23,43 +25,53 @@ BUT: **"I'm an architect who learned to code. This is what I made."** (insider w
 
 ## 2. Platform Strategy
 
+Nolli runs its own accounts. Zane runs his own. They cross-post where it fits, but Nolli's accounts carry their own architect content — they don't lean on Zane's personal feed.
+
 | Platform | Role | Account | Voice |
 |----------|------|---------|-------|
-| **Instagram** | PRIMARY for Nolli | Dedicated product account | Pure architect. No dev. Daily posts. |
+| **Instagram** | Co-primary for Nolli | Nolli account | Pure architect. No dev. Daily posts. |
+| **Threads** | Co-primary for Nolli | Nolli account | Pure architect. Carousels. Daily posts. |
+| **Threads** | Personal | @zane___chen | Dev / build-in-public. Cross-posts Nolli's best. |
 | **Reddit** | Discovery | Personal | r/architecture, polished posts only |
-| **Threads** | Personal cross-post | @zane___chen | Personality-driven, whatever Zane is into |
 | **X** | NOT for Nolli | @chenzeling4 | Dev bot mode, automated crons only |
 
-### Why Instagram, Not Threads
+### Why Instagram and Threads (both)
 
-- Architecture is THE visual discipline. Instagram was built for this.
-- Hashtags actually work for architecture: #architecture #archdaily #miesvanderrohe #figureground #urbanism
+- Architecture is THE visual discipline; both platforms are built for it.
+- Hashtags work for architecture on IG (#architecture #archdaily #miesvanderrohe #figureground #urbanism); Threads carries the conversation and the carousel dwell-time algorithms love.
 - Every architecture firm has IG. Every architecture student scrolls IG for inspiration.
-- A product account posting daily "Hidden masterpiece in Barcelona" feels like content. A personal account posting that daily feels like spam.
-- Algorithm trains on one audience: every post tells IG "show this to architects."
+- A dedicated product account posting daily feels like content. The algorithm trains on one audience — every post says "show this to architects."
+
+### Why a separate Nolli Threads
+
+The earlier call to keep Nolli on a single personal Threads was wrong. A personal feed mixing daily architecture posts with dev / build-in-public content trains the algorithm on two audiences and dilutes both. Nolli's own Threads stays pure-architect; Zane's personal Threads (@zane___chen) stays dev-first and cross-posts Nolli's winners.
 
 ### Why NOT X
 
 X bio is "Open source. Dev Tool. AI. Web Tool. The stuff worth your time." The audience is devs. Architecture content in architect voice would land in the wrong room.
 
-### Why NOT Two Threads Accounts
-
-183 followers is small enough to pivot naturally. The bio already says "Engineer Who Design | Ex-Architect Who Code" — that's a bridge identity, not a dev account. The "centering a div" joke that went viral (18.6K views) is designer humor, not dev humor.
-
 ---
 
-## 3. Content Format
+## 3. Content Strategy
 
-**One-liner + visual. Always.**
+Everything Nolli posts is one of two cadences. **Nothing else.**
 
-Every viral post followed this format:
-- 18,617 views: "Hot take. Centering a div worth 1M bucks." + image
-- 12,707 views: "48 Agents are thinking... on web!" + video
-- 8,619 views: "48 agents thinking in one window" + video
+- **Everyday posts** — **the rotation** between two series:
+  1. **City Series** — "architecture in [city]"
+  2. **Architect Spotlight** — "architecture by [architect]"
+- **Ad hoc posts** — occasional, sprinkled between series:
+  - **Product updates** — what just shipped, written in human voice (never dev voice).
+  - **Product statements** — manifesto / positioning posts that re-state why Nolli exists.
 
-The visual does 90% of the work. The caption is the punchline. Maximum 1–2 lines.
+Everyday posts carry the map. Ad hoc posts carry the product. Both speak architect, never dev.
 
-### Media Performance (from Threads data)
+### The visual: one grammar, generated by the app
+
+Every post is a **carousel** that zooms: a **macro map** first, then **handpicked drill-down macro maps / polaroids**. Threads supports up to 20 slides.
+
+The in-app poster engine generates these in seconds — that's why a daily cadence is sustainable and why the caption angles below stay plug-and-play.
+
+### Media performance (from Threads data)
 
 | Type | Avg Views | Avg Likes |
 |------|-----------|-----------|
@@ -67,45 +79,62 @@ The visual does 90% of the work. The caption is the punchline. Maximum 1–2 lin
 | TEXT | 896 | 1.5 |
 | IMAGE | 288 | 3.9 |
 
-**Video gets 2x views and 14x likes vs text.** Use video whenever possible.
+**Video gets 2x views and 14x likes vs text.** Use video (a map zoom / poster build) whenever possible; otherwise the carousel of stills.
 
 ---
 
-## 4. Content Angles
+## 4. Everyday Posts & Captions
 
-**Type A — "You walked past this"** (bread and butter)
+Two series, rotated freely. Each ships as **one all-in-one carousel** with the same grammar: `[overview map] → [N building drill-downs]`.
 
-Pick one building near something famous. Show how close it is. The map reveals what people miss.
-> Everyone visits the Sagrada Família. 4 blocks away, Moneo built this. Nobody stops.
+- **City Series** — `[city overview map] → drill-downs`. Eight buildings, one city. Locals realise they're blind to their own streets; tourists save it for a trip.
+- **Architect Spotlight** — `[one architect across a region / the world] → drill-downs`. One mind's evolution across places. ~50 well-known architects ≈ months of content.
 
-Infinite content because every city has hidden masterpieces near famous ones. Architects LOVE being the person who knows about the hidden gem — you're giving them social currency.
+### The voice: write from inside the experience
 
-**Type B — "Hidden in plain sight"**
+A caption is written by **a person walking through it, feeling something** — not an omniscient narrator cataloguing facts from outside. The facts stay, but they become *texture inside the experience*, not the whole thing.
 
-A building thousands of people walk past daily without knowing it's significant.
-> 10,000 people walk past this every day. It's a [architect] masterpiece.
+| ✅ Inside (a person experiencing) | ❌ Outside (a narrator cataloguing) |
+|---|---|
+| "New York might be the best place on earth to walk if you love buildings." | "New York is a living study in architectural contrast." |
+| "You go from Mies' glass to Zaha's curves in ten minutes." | "Strict glass and fluid steel sit four blocks apart." |
+| "Standing in front of all of them in one afternoon is something else entirely." | "Eight masterworks mapped across the city grid." |
 
-**Type C — "Before this, I had to..."**
+What's missing from catalogue-copy is a **human**: a desire ("worth the trip"), the body ("turning a corner," "before dinner"), a felt opinion ("the best part," "something else entirely"). Add one of those. The specifics stay concrete.
 
-Show the clunky old workflow vs Nolli doing it in one view.
-> Planning an architecture trip used to take 3 tabs. Now it takes one map.
+### Words to avoid
+
+These are the AI-marketing fingerprints. Don't use them.
+
+*masterclass · breakthrough · icon · masterpiece · masterwork · radical · weightless · a living study in · rewrote the rules · makes the impossible · curated · hidden gem · redefining · …*
+
+Test: if a line could appear, word-for-word, in a LinkedIn post about SaaS, cut it.
+
+### Ten ways to open the same carousel
+
+Same `[overview map → drill-downs]`, ten different reasons a person stops. Rotate so the cadence never feels templated. ≤2 sentences each; NY example.
+
+1. **The blind spot.** You can live in New York for a decade and stop noticing half of these. Eight buildings worth slowing down for on a walk you've done a hundred times.
+2. **The walk.** Start at the Seagram, end at Zaha, and let the city do the rest. Eight buildings, one long afternoon — the kind you only get here.
+3. **The density.** There's no better city to be an architect in. Eight of the buildings you memorized in school, all within a fifteen-minute stroll.
+4. **The clash.** New York might be the best place on earth to walk if you love buildings. Mies' glass to Zaha's curves in ten minutes, no cab needed.
+5. **The roster.** Every architect you've admired left a mark here. Mies, Nouvel, Hadid, Foster — and you can stand in front of all of them before dinner.
+6. **The quiz.** Try naming the architect before you swipe. Eight buildings, one city — even people who studied this for years get caught out.
+7. **The timeline.** Six decades of architecture on a single street, and you can walk all of it. Nowhere else lets you feel a discipline's whole history in an afternoon.
+8. **The standoff.** Some of these stare at each other across the street, and that's the best part. Walk between them and you feel two egos that never agreed.
+9. **The missing ninth.** Eight buildings we'd detour for, on one map. We left one off on purpose — argue with us about it.
+10. **Slides to street.** You spent years looking at these projected on a wall. Standing in front of all of them in one afternoon is something else entirely.
+
+**Rotation rule of thumb:** mix across the families so no two posts in a row open the same way — discovery/density (#1, #3, #10), observation (#4, #7, #8), name-recognition & engagement (#5, #6, #9), practical/itinerary (#2).
+
+### Ad hoc captions (product updates / product statements)
+
+- **Product updates** — what just shipped, in human/architect voice. Always call it a *map*, never an app. No tech stack, no jargon. Frame the feature as what it unlocks for the person walking the city, not how it's built.
+- **Product statements** — manifesto voice. Lead with the credential and the discovery pain (see the "Why This Exists" drafts in §7).
 
 ---
 
-## 5. Content Calendar
-
-Each city is a content arc:
-
-- **Week 1: Barcelona** — "Hidden masterpieces in Barcelona" = 5 posts, one per building
-- **Week 2: Tokyo** — Ando, SANAA, Ito, buildings tourists miss
-- **Week 3: Berlin** — Cold war modernism, hidden gems
-- **Week 4: Chicago** — The Chicago School, lesser-known Sullivan buildings
-
-The map grows with the content. The content drives people back to the map.
-
----
-
-## 6. What NOT to Post
+## 5. What NOT to Post
 
 - ❌ Dev updates ("Day 04 building map shrink/grow animation")
 - ❌ Tech stack mentions ("Next.js isn't quite fit")
@@ -116,7 +145,7 @@ The map grows with the content. The content drives people back to the map.
 
 ---
 
-## 7. Key Principles
+## 6. Key Principles
 
 1. **One-liner + visual.** This is not a suggestion — it's the format.
 2. **Speak architect, not dev.** Your audience studied buildings for years, not code.
@@ -128,10 +157,13 @@ The map grows with the content. The content drives people back to the map.
 8. **Never say "app."** Call it a map. Always.
 9. **Post in the right room.** Dev content to devs. Architect content to architects. Don't mix audiences.
 10. **The pain point is discovery, not rendering.** "I walked past incredible buildings and didn't know" is stronger than "standard maps don't render buildings beautifully."
+11. **Labels fail, narratives win.** "Architecture in New York" is a textbook index. "You can live here a decade and stop noticing half of these" is a story. Always the second.
+12. **Carousel grammar: overview map → drill-down.** Open wide to establish place, then zoom into the handpicked buildings. The caption matches that zoom.
+13. **Write from inside the experience, not outside it.** A caption is a person walking through it, feeling something — desire, the body, a felt opinion — not a narrator cataloguing facts. Facts become texture inside the experience, not the whole thing.
 
 ---
 
-## 8. Post Drafts
+## 7. Post Drafts
 
 ### Why This Exists
 
@@ -171,24 +203,6 @@ The map grows with the content. The content drives people back to the map.
 > His map didn't just show Rome. It made you understand Rome.
 > I wanted a map that does that for architecture everywhere.
 
-### The Pin-Up
-
-> [VIDEO: click building → pin-up animation unfolds]
->
-> Every building has its own board.
-
----
-
-> [VIDEO: same animation]
->
-> Put it on the wall.
-
----
-
-> The best part of architecture school wasn't the lectures. It was the pin-up.
-> Your project on the wall. Plans, sections, model photos, sketchy notes from midnight. Everything pinned together. That board told the whole story.
-> I built a map that does that for every building.
-
 ### Discovery (The Pain Point)
 
 > Architecture is the only art form where you have to already know where the good stuff is to find it.
@@ -206,10 +220,26 @@ The map grows with the content. The content drives people back to the map.
 > Because no map tells you what's architecturally significant nearby.
 > Until now.
 
----
+### City Series — New York (The clash, #4)
 
-## 9. Future Growth
+> [CAROUSEL: NYC overview map → 8 drill-downs: Seagram, Nouvel, Hadid, Foster…]
+>
+> New York might be the best place on earth to walk if you love buildings. Mies' glass to Zaha's curves in ten minutes, no cab needed.
+>
+> Which city should we map next?
 
-1. **Now** — Discovery. Every post = one missed masterpiece, revealed. Map shows it. Pin-up tells its story.
-2. **Next** — City guides. Walking routes. "3 hours in Barcelona: from Gaudí to Moneo to RCR." Shareable, natural partnerships with architecture schools.
-3. **Later** — Community. Architects add buildings, pin up their own discoveries. Build this only when people are asking "can I add this building?"
+### Architect Spotlight — SANAA (Slides to street, #10)
+
+> [CAROUSEL: SANAA across the world → drill-downs: Rolex Learning Center, 21st Century Museum, Grace Farms…]
+>
+> You spent years looking at these projected on a wall. Rolex has no flat floor, Grace Farms never touches the ground — and seeing them in person is something else entirely.
+>
+> Whose work should we spotlight next?
+
+### Architect Spotlight — Le Corbusier, EU (The timeline, #7)
+
+> [CAROUSEL: EU overview → 8 drill-downs: Villa Savoye, Unité d'Habitation, Notre-Dame du Haut…]
+>
+> The '20s: white boxes. The '50s: raw concrete. Same man — walk his work across Europe and you feel a whole career turn in front of you.
+>
+> Which architect's catalog next?
