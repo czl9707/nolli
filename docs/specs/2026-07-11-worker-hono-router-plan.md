@@ -316,8 +316,6 @@ import {
 import {
   ValidationError,
   NotFoundOrLocked,
-  UnknownCountryError,
-  DuplicateSlugError,
   listQueue,
   listMine,
   getSubmission,
@@ -326,6 +324,7 @@ import {
   approveSubmission,
   rejectSubmission,
 } from "@worker/lib/submissions"
+import { UnknownCountryError, DuplicateSlugError } from "@worker/lib/apply-submissions"
 
 export const submissions = new Hono<AppEnv>()
 
