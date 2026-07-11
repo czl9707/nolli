@@ -1,7 +1,7 @@
 import type { MiddlewareHandler } from "hono"
 import { createMiddleware } from "hono/factory"
 import { getAuthenticatedUser } from "@worker/lib/auth/sessions"
-import { roleRank } from "@worker/lib/auth/authz"
+import { roleRank } from "@worker/lib/users"
 import { unauthorized, forbidden } from "@worker/lib/data/http"
 import type { Role } from "@worker/lib/users"
 import type { AppEnv } from "@worker/lib/app-env"

@@ -2,6 +2,13 @@ import { type Sql, isUniqueViolation } from "@worker/lib/data/db"
 import { type Role } from "@nolli/data/server"
 export type { Role }
 
+// Ordering of roles by privilege; higher = more powerful. Shared by the
+// requireRole() middleware guard and in-handler role checks (owner-or-moderator).
+const ROLE_RANK: Record<Role, number> = { user: 0, moderator: 1, admin: 2 }
+export function roleRank(role: Role): number {
+  return ROLE_RANK[role]
+}
+
 export type User = {
   id: number
   email: string

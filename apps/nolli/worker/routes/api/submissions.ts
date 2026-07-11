@@ -1,7 +1,7 @@
 import { Hono } from "hono"
 import type { AppEnv } from "@worker/lib/app-env"
 import { requireAuth, requireRole } from "@worker/middleware"
-import { roleRank } from "@worker/lib/auth/authz"
+import { roleRank } from "@worker/lib/users"
 import {
   json,
   badRequest,
