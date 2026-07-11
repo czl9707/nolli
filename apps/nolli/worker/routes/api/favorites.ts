@@ -1,7 +1,7 @@
 import { Hono } from "hono"
 import type { AppEnv } from "@worker/lib/app-env"
 import { requireAuth } from "@worker/middleware"
-import { json, badRequest, parseJsonBody } from "@worker/lib/data/http"
+import { json, badRequest, methodNotAllowed, parseJsonBody } from "@worker/lib/data/http"
 import { listFavorites, addFavorite, removeFavorite } from "@worker/lib/favorites"
 
 export const favorites = new Hono<AppEnv>()
@@ -27,3 +27,7 @@ favorites.delete("/:id", requireAuth, async (c) => {
   await removeFavorite(c.get("sql"), c.get("user")!.id, architectureId)
   return json({ ok: true })
 })
+
+// Any other method/path under /api/favorites → 405 (matches the old handler's
+// trailing methodNotAllowed, so wrong-method requests don't fall through to SPA).
+favorites.all("*", () => methodNotAllowed())

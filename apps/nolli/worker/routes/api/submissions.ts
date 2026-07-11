@@ -7,6 +7,7 @@ import {
   badRequest,
   notFound,
   forbidden,
+  methodNotAllowed,
   parseJsonBody,
 } from "@worker/lib/data/http"
 import {
@@ -68,8 +69,10 @@ submissions.post("/uploads", requireAuth, async (c) => {
   return json({ staging_key: key }, 201)
 })
 
-// POST /:id/decision — approve or reject (moderator+)
-submissions.post("/:id/decision", requireRole("moderator"), async (c) => {
+// POST /:id/decision — approve or reject (moderator+). Body is validated before
+// the role check so a malformed decision returns 400 (not 403), matching the
+// original handler's ordering.
+submissions.post("/:id/decision", requireAuth, async (c) => {
   const id = Number(c.req.param("id"))
   const body = (await parseJsonBody(c.req.raw)) as {
     decision?: unknown
@@ -78,13 +81,15 @@ submissions.post("/:id/decision", requireRole("moderator"), async (c) => {
   if (body?.decision !== "approve" && body?.decision !== "reject") {
     return badRequest("decision must be 'approve' or 'reject'")
   }
+  const user = c.get("user")!
+  if (roleRank(user.role) < roleRank("moderator")) return forbidden()
   if (!id) return badRequest("invalid id")
   const note = typeof body.note === "string" ? body.note : null
   try {
     if (body.decision === "approve") {
-      await approveSubmission(c.get("sql"), c.env, id, c.get("user")!.id, note)
+      await approveSubmission(c.get("sql"), c.env, id, user.id, note)
     } else {
-      await rejectSubmission(c.get("sql"), c.env, id, c.get("user")!.id, note)
+      await rejectSubmission(c.get("sql"), c.env, id, user.id, note)
     }
     return json({ ok: true })
   } catch (err) {
@@ -123,3 +128,7 @@ submissions.patch("/:id", requireAuth, async (c) => {
     throw err
   }
 })
+
+// Any other method/path under /api/submissions → 405 (matches the old handler's
+// trailing methodNotAllowed, so wrong-method requests don't fall through to SPA).
+submissions.all("*", () => methodNotAllowed())
