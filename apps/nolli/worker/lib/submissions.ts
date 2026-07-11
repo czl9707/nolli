@@ -4,7 +4,7 @@ import {
   type SubmissionPayload,
   type SubmissionStatus,
   slugify,
-} from "@nolli/data"
+} from "@nolli/data/server"
 import { applySubmissionPayload } from "@worker/lib/apply-submissions"
 import { copyToProd, deleteStaging, deleteProd, newProdKey } from "@worker/lib/data/r2"
 

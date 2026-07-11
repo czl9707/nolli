@@ -3,7 +3,7 @@ import {
   type SubmissionPayload,
   slugify,
   buildGoogleMapsUrl,
-} from "@nolli/data"
+} from "@nolli/data/server"
 
 export class UnknownCountryError extends Error {
   constructor(public country: string) {

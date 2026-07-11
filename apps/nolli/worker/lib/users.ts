@@ -1,5 +1,5 @@
 import { type Sql, isUniqueViolation } from "@worker/lib/data/db"
-import { type Role } from "@nolli/data"
+import { type Role } from "@nolli/data/server"
 export type { Role }
 
 export type User = {
