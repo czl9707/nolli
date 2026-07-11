@@ -1,33 +1,20 @@
-import type { RouteHandler } from "./routes/route.type"
+import { Hono } from "hono"
+import type { AppEnv } from "@worker/lib/app-env"
+import { app as apiApp } from "@worker/routes/api"
+import { app as authApp } from "@worker/routes/auth"
 
-const modules = import.meta.glob<{ default: RouteHandler }>(
-  "./routes/**/index.ts",
-  {
-    eager: true,
-  }
-)
+const app = new Hono<AppEnv>()
+app.route("/api", apiApp)
+app.route("/auth", authApp)
 
-function matchRoute(pathname: string): RouteHandler | null {
-  let best: { handler: RouteHandler; length: number } | null = null
-  for (const [file, mod] of Object.entries(modules)) {
-    const prefix = file.replace("./routes/", "").replace("/index.ts", "")
-    const path = `/${prefix}`
-    if (pathname === path || pathname.startsWith(`${path}/`)) {
-      if (!best || path.length > best.length) {
-        best = { handler: mod.default, length: path.length }
-      }
-    }
-  }
-  return best?.handler ?? null
-}
+// No route matched → delegate to the static-asset / SPA handler (preserves the
+// original fallthrough behavior: unmatched paths serve assets, never 404 JSON).
+app.notFound((c) => c.env.ASSETS.fetch(c.req.raw))
+app.onError((err, c) => {
+  console.error(err)
+  return c.json({ error: "internal server error" }, 500)
+})
 
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
-    const url = new URL(request.url)
-    const handler = matchRoute(url.pathname)
-
-    if (handler) return handler.fetch(request, url, env)
-
-    return env.ASSETS.fetch(request)
-  },
-} satisfies { fetch: (request: Request, env: Env) => Promise<Response> }
+  fetch: (req, env, ctx) => app.fetch(req, env, ctx),
+} satisfies ExportedHandler<Env>
