@@ -1,12 +1,9 @@
-import { type Role, type User } from "@worker/lib/users"
-import { unauthorized, forbidden } from "@worker/lib/data/http"
+import { type Role } from "@worker/lib/users"
 
 const ROLE_RANK: Record<Role, number> = { user: 0, moderator: 1, admin: 2 }
 
-export function requireRole(user: User | null, min: Role): Response | null {
-  if (!user) return unauthorized()
-  if (ROLE_RANK[user.role] < ROLE_RANK[min]) {
-    return forbidden()
-  }
-  return null
+// Numeric ranking shared by the requireRole() middleware factory and any
+// in-handler role check (e.g. owner-or-moderator). Higher rank = more privileged.
+export function roleRank(role: Role): number {
+  return ROLE_RANK[role]
 }
