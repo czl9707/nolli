@@ -742,7 +742,7 @@ app.onError((err, c) => {
 
 export default {
   fetch: (req, env, ctx) => app.fetch(req, env, ctx),
-}
+} satisfies ExportedHandler<Env>
 ```
 
 - [ ] **Step 2: Delete the old router and old route files**
