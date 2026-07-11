@@ -44,7 +44,7 @@
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.43.0",
-    "@cloudflare/workers-types": "^4.20260608.1",
+    "@cloudflare/workers-types": "^5.20260711.1",
     "@csstools/postcss-global-data": "^4.0.0",
     "@eslint/eslintrc": "^3",
     "@types/better-sqlite3": "^7.6.13",
