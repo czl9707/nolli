@@ -1,10 +1,12 @@
 import { create } from "zustand"
+import { type Role } from "@nolli/data"
 
 export type AuthUser = {
   id: number
   name: string
   email: string
   avatar: string
+  role: Role
 }
 
 type MeResponse = {
@@ -13,6 +15,7 @@ type MeResponse = {
     email: string
     display_name: string | null
     avatar_url: string | null
+    role: Role
   } | null
 }
 
@@ -26,12 +29,13 @@ type AuthState = {
 }
 
 function mapUser(u: MeResponse["user"]): AuthUser {
-  if (!u) return { id: 0, name: "", email: "", avatar: "" }
+  if (!u) return { id: 0, name: "", email: "", avatar: "", role: "user" }
   return {
     id: u.id,
     name: u.display_name ?? "",
     email: u.email,
     avatar: u.avatar_url ?? "",
+    role: u.role,
   }
 }
 

@@ -1,6 +1,7 @@
-import { getCookie, setCookie, clearCookie } from "@worker/lib/cookies"
-import { randomToken, sha256Hex } from "@worker/lib/crypto"
-import { type Sql, type User } from "@worker/lib/db"
+import { getCookie, setCookie, clearCookie } from "@worker/lib/data/cookies"
+import { randomToken, sha256Hex } from "@worker/lib/auth/crypto"
+import { type Sql } from "@worker/lib/data/db"
+import { type User } from "@worker/lib/users"
 
 export const SESSION_COOKIE = "nolli_session"
 // Non-httpOnly flag set/cleared alongside the session cookie so the client can

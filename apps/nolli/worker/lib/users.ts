@@ -1,20 +1,20 @@
-import { type Sql, type User } from "@worker/lib/db"
+import { type Sql, isUniqueViolation } from "@worker/lib/data/db"
+import { type Role } from "@nolli/data/server"
+export type { Role }
+
+export type User = {
+  id: number
+  email: string
+  display_name: string | null
+  avatar_url: string | null
+  role: Role
+}
 
 export type GoogleProfile = {
   sub: string
   email: string
   name?: string
   picture?: string
-}
-
-// Postgres SQLSTATE for unique_violation.
-function isUniqueViolation(err: unknown): boolean {
-  return (
-    typeof err === "object" &&
-    err !== null &&
-    "code" in err &&
-    (err as { code: unknown }).code === "23505"
-  )
 }
 
 // Find user by (provider, provider_sub), or create both a users row and a

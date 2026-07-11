@@ -18,6 +18,10 @@
     "nodejs_compat"
   ],
   "vars": {
-    "OAUTH_REDIRECT_URI": "https://nolli-map.com/auth/callback/google"
+    "OAUTH_REDIRECT_URI": "https://nolli-map.com/auth/callback/google",
+    "R2_BUCKET_IMAGES": "nolli-map-images",
+    "R2_BUCKET_STAGING": "nolli-map-images-staging",
+    "R2_PUBLIC_IMAGES_URL": "https://images.nolli-map.com",
+    "R2_PUBLIC_STAGING_URL": "https://images-staging.nolli-map.com"
   }
 }

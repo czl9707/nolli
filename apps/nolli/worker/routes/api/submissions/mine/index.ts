@@ -1,8 +1,10 @@
 import type { RouteHandler } from "@worker/routes/route.type"
 import { connect } from "@worker/lib/data/db"
-import { json, methodNotAllowed } from "@worker/lib/data/http"
+import { json, unauthorized, methodNotAllowed } from "@worker/lib/data/http"
 import { getAuthenticatedUser } from "@worker/lib/auth/sessions"
+import { listMine } from "@worker/lib/submissions"
 
+// GET /api/submissions/mine — list the authenticated user's own submissions across all statuses
 export default {
   async fetch(request, _url, env) {
     if (request.method !== "GET") {
@@ -10,16 +12,7 @@ export default {
     }
     await using sql = connect(env.DATABASE_URL)
     const user = await getAuthenticatedUser(sql, request)
-    if (!user) return json({ user: null }, 401)
-    // role is exposed so the SPA can gate /moderate.
-    return json({
-      user: {
-        id: user.id,
-        email: user.email,
-        display_name: user.display_name,
-        avatar_url: user.avatar_url,
-        role: user.role,
-      },
-    })
+    if (!user) return unauthorized()
+    return json({ submissions: await listMine(sql, user.id) })
   },
 } satisfies RouteHandler

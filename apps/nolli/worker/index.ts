@@ -8,11 +8,17 @@ const modules = import.meta.glob<{ default: RouteHandler }>(
 )
 
 function matchRoute(pathname: string): RouteHandler | null {
+  let best: { handler: RouteHandler; length: number } | null = null
   for (const [file, mod] of Object.entries(modules)) {
     const prefix = file.replace("./routes/", "").replace("/index.ts", "")
-    if (pathname.startsWith(`/${prefix}`)) return mod.default
+    const path = `/${prefix}`
+    if (pathname === path || pathname.startsWith(`${path}/`)) {
+      if (!best || path.length > best.length) {
+        best = { handler: mod.default, length: path.length }
+      }
+    }
   }
-  return null
+  return best?.handler ?? null
 }
 
 export default {

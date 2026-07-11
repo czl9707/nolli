@@ -1,16 +1,7 @@
 import postgres from "postgres"
 
-export type Role = "user" | "moderator" | "admin"
-
-export type User = {
-  id: number
-  email: string
-  display_name: string | null
-  avatar_url: string | null
-  role: Role
-}
-
 export type Sql = ReturnType<typeof postgres>
+export type Tx = postgres.TransactionSql<{}>
 
 // One client per request. The caller owns it via `await using sql = connect(...)`;
 // lib functions receive `sql` as a param so a request never opens more than one.
@@ -27,4 +18,14 @@ export function connect(connectionString: string): Sql & AsyncDisposable {
       await sql.end({ timeout: 5 })
     },
   })
+}
+
+// Postgres SQLSTATE for unique_violation.
+export function isUniqueViolation(err: unknown): boolean {
+  return (
+    typeof err === "object" &&
+    err !== null &&
+    "code" in err &&
+    (err as { code: unknown }).code === "23505"
+  )
 }
