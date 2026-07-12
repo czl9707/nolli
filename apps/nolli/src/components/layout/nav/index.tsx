@@ -1,5 +1,5 @@
 import { Link } from "react-router"
-import { Home, Star, Plus, Info } from "lucide-react"
+import { Home, Star, Plus, Info, Shield } from "lucide-react"
 import { NavUser } from "./nav-user"
 import {
   Tooltip,
@@ -9,6 +9,7 @@ import {
 } from "@nolli/ui"
 import { Dialog as RadixDialog } from "radix-ui"
 import { useSidebarStore } from "@/stores/sidebar"
+import { useAuthStore } from "@/stores/auth"
 import { useIsMobile } from "@/hooks/use-is-mobile"
 import { useLayout } from "@/hooks/use-layout"
 import { motion, AnimatePresence } from "framer-motion"
@@ -24,16 +25,19 @@ type NavItem = {
   disabled: boolean
 }
 
-const navItems: NavItem[] = [
-  { icon: Home, label: "Map", path: "/", disabled: false },
-  { icon: Star, label: "Favorites", path: "/favorite", disabled: false },
-  { icon: Plus, label: "Submit (Coming Soon)", path: "/submit", disabled: true },
-  { icon: Info, label: "About", path: "/about", disabled: false },
-]
-
 /** Desktop: icon rail */
 function Rail() {
   const { isActive } = useLayout()
+  const user = useAuthStore((s) => s.user)
+  const items: NavItem[] = [
+    { icon: Home, label: "Map", path: "/", disabled: false },
+    { icon: Star, label: "Favorites", path: "/favorite", disabled: false },
+    ...(user ? [{ icon: Plus, label: "Submit", path: "/submit", disabled: false }] : []),
+    ...((user?.role === "moderator" || user?.role === "admin")
+      ? [{ icon: Shield, label: "Moderate", path: "/moderate", disabled: false }]
+      : []),
+    { icon: Info, label: "About", path: "/about", disabled: false },
+  ]
 
   return (
     <TooltipProvider>
@@ -44,7 +48,7 @@ function Rail() {
           </Link>
         </div>
         <div className={styles.navItems}>
-          {navItems.map((item) => {
+          {items.map((item) => {
             const active = isActive(item.path)
             return (
               <Tooltip key={item.label}>
@@ -91,6 +95,16 @@ function Rail() {
 /** Mobile: slide-in drawer via Radix Dialog portal */
 function Drawer() {
   const { isActive } = useLayout()
+  const user = useAuthStore((s) => s.user)
+  const items: NavItem[] = [
+    { icon: Home, label: "Map", path: "/", disabled: false },
+    { icon: Star, label: "Favorites", path: "/favorite", disabled: false },
+    ...(user ? [{ icon: Plus, label: "Submit", path: "/submit", disabled: false }] : []),
+    ...((user?.role === "moderator" || user?.role === "admin")
+      ? [{ icon: Shield, label: "Moderate", path: "/moderate", disabled: false }]
+      : []),
+    { icon: Info, label: "About", path: "/about", disabled: false },
+  ]
   const open = useSidebarStore((s) => s.mobileDrawerOpen)
   const setOpen = useSidebarStore((s) => s.setMobileDrawerOpen)
 
@@ -127,7 +141,7 @@ function Drawer() {
                   </Link>
                   <div className={styles.divider} />
                   <nav className={styles.navList}>
-                    {navItems.map((item) => {
+                    {items.map((item) => {
                       const active = isActive(item.path)
                       if (item.disabled) {
                         return (

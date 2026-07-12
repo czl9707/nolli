@@ -65,7 +65,7 @@ submissions.post("/uploads", requireAuth, async (c) => {
   }
   const user = c.get("user")!
   const key = await newStagingKey(user.id, extFor(contentType), body)
-  await putStaging(c.env, key, body, contentType)
+  await putStaging(c.get("r2"), key, body, contentType)
   return json({ staging_key: key }, 201)
 })
 
@@ -87,9 +87,9 @@ submissions.post("/:id/decision", requireAuth, async (c) => {
   const note = typeof body.note === "string" ? body.note : null
   try {
     if (body.decision === "approve") {
-      await approveSubmission(c.get("sql"), c.env, id, user.id, note)
+      await approveSubmission(c.get("sql"), c.get("r2"), id, user.id, note)
     } else {
-      await rejectSubmission(c.get("sql"), c.env, id, user.id, note)
+      await rejectSubmission(c.get("sql"), c.get("r2"), id, user.id, note)
     }
     return json({ ok: true })
   } catch (err) {

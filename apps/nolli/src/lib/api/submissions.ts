@@ -42,6 +42,23 @@ export async function listMine(): Promise<{
   return unwrap(resp)
 }
 
+export type SubmissionRow = {
+  id: number
+  architecture_id: string | null
+  submitter_id: number
+  status: SubmissionStatus
+  payload: SubmissionPayload
+  created_at: string
+  reviewed_at: string | null
+  submitter_name: string | null
+}
+
+/** GET /api/submissions/:id — one submission (moderator+, or the owner). */
+export async function getSubmission(id: number): Promise<{ submission: SubmissionRow }> {
+  const resp = await fetch(`/api/submissions/${id}`, { credentials: "same-origin" })
+  return unwrap(resp)
+}
+
 /** PATCH /api/submissions/:id — edit a still-pending submission. */
 export async function patchSubmission(id: number, payload: SubmissionPayload): Promise<void> {
   const resp = await fetch(`/api/submissions/${id}`, {
@@ -53,8 +70,17 @@ export async function patchSubmission(id: number, payload: SubmissionPayload): P
   await unwrap(resp)
 }
 
-/** GET /api/submissions — moderator queue. */
-export async function listQueue(): Promise<{ submissions: unknown[] }> {
+export type QueueEntry = {
+  id: number
+  name: string
+  architect: string
+  city: string
+  submitter_name: string | null
+  created_at: string
+}
+
+/** GET /api/submissions — moderator queue (pending only). */
+export async function listQueue(): Promise<{ submissions: QueueEntry[] }> {
   const resp = await fetch("/api/submissions", { credentials: "same-origin" })
   return unwrap(resp)
 }

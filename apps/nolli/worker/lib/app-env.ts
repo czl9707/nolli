@@ -1,4 +1,5 @@
 import type { Sql } from "@worker/lib/data/db"
+import type { R2Context } from "@worker/lib/data/r2"
 import type { User } from "@worker/lib/users"
 
 // Hono context shape. `Bindings` is the Cloudflare `Env` (ambient global in
@@ -9,6 +10,7 @@ export type AppEnv = {
   Bindings: Env
   Variables: {
     sql: Sql
+    r2: R2Context
     user: User | null
   }
 }
