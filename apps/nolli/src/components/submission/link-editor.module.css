@@ -1,0 +1,15 @@
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.linksRow {
+  display: grid;
+  grid-template-columns: 1fr 2fr auto;
+  gap: 0.5rem;
+  align-items: start;
+}
+.labelLocked {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

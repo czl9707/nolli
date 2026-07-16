@@ -10,6 +10,7 @@ import { Badge } from "@nolli/ui"
 import { Button } from "@nolli/ui"
 import { Caption } from "@nolli/ui"
 import styles from "./filter-input.module.css"
+import inputStyles from "../input.module.css"
 
 type FilterItem = {
     key: string
@@ -75,7 +76,7 @@ function FilterInput({
                             aria-label={label}
                             tabIndex={0}
                             data-state={open ? "open" : "closed"}
-                            className={styles.trigger}
+                            className={`${styles.trigger} ${inputStyles.input}`}
                         >
                             <div className={styles.badgeContainer}>
                                 {selected.map((s) => (

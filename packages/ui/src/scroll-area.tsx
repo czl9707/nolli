@@ -5,8 +5,11 @@ import styles from "./scroll-area.module.css"
 function ScrollArea({
   className,
   children,
+  scrollbars = "vertical",
   ...props
-}: React.ComponentProps<typeof SA.Root>) {
+}: React.ComponentProps<typeof SA.Root> & {
+  scrollbars?: "vertical" | "horizontal" | "both"
+}) {
   return (
     <SA.Root
       data-slot="scroll-area"
@@ -19,7 +22,10 @@ function ScrollArea({
       >
         {children}
       </SA.Viewport>
-      <ScrollBar />
+      {(scrollbars === "vertical" || scrollbars === "both") && <ScrollBar />}
+      {(scrollbars === "horizontal" || scrollbars === "both") && (
+        <ScrollBar orientation="horizontal" />
+      )}
       <SA.Corner />
     </SA.Root>
   )

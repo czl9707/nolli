@@ -5,27 +5,24 @@ export type Layout = "map" | "board" | "static"
 
 /**
  * Single source of truth for "which layout are we in", derived from the URL.
+ * Map is opt-in: only the map-bearing prefixes are `"map"`; anything else
+ * (including new pages) falls through to `"static"` so map-only chrome like the
+ * sidebar toggle never appears by accident.
  *
- * - `"map"`    — `/` or `/arch/:slug`        (home map view; selection shown in the sidebar)
- * - `"board"`  — `/arch/:slug/board`         (pin-board view, MapCenter mounted in a slot)
- * - `"static"` — `/about`,`/privacy`,`/terms` (no map chrome)
- *
- * Selection and board are distinct URL axes: `/arch/:slug` selects an arch on
- * the home map; appending `/board` enters the pin-board for that arch.
+ * - `"map"`    — `/`, `/favorite`, `/arch/:slug`
+ * - `"board"`  — `/arch/:slug/board`  (pin-board view; takes precedence over map)
+ * - `"static"` — everything else (default)
  */
 export function useLayout() {
   const { pathname } = useLocation()
 
   return useMemo(() => {
     const isBoard = /^\/arch\/[^/]+\/board$/.test(pathname)
-    const layout: Layout =
-      pathname.startsWith("/about") ||
-      pathname.startsWith("/privacy") ||
-      pathname.startsWith("/terms")
-        ? "static"
-        : isBoard
-          ? "board"
-          : "map"
+    const isMap =
+      pathname === "/" ||
+      pathname.startsWith("/arch") ||
+      pathname.startsWith("/favorite")
+    const layout: Layout = isBoard ? "board" : isMap ? "map" : "static"
 
     const match = pathname.match(/^\/arch\/([^/]+)/)
 

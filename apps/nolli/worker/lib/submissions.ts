@@ -6,7 +6,7 @@ import {
   slugify,
 } from "@nolli/data/server"
 import { applySubmissionPayload } from "@worker/lib/apply-submissions"
-import { copyToProd, deleteStaging, deleteProd, newProdKey } from "@worker/lib/data/r2"
+import { copyToProd, deleteStaging, deleteProd, newProdKey, type R2Context } from "@worker/lib/data/r2"
 
 export type SubmissionRow = {
   id: number
@@ -131,14 +131,14 @@ async function requirePending(sql: Sql, id: number): Promise<SubmissionRow> {
 
 export async function rejectSubmission(
   sql: Sql,
-  env: Env,
+  r2: R2Context,
   id: number,
   moderatorId: number,
   note: string | null
 ): Promise<void> {
   const sub = await requirePending(sql, id)
   for (const p of sub.payload.photos) {
-    await deleteStaging(env, p.staging_key).catch(() => {})
+    await deleteStaging(r2, p.staging_key).catch(() => {})
   }
   await sql`
     update public.submissions
@@ -150,7 +150,7 @@ export async function rejectSubmission(
 
 export async function approveSubmission(
   sql: Sql,
-  env: Env,
+  r2: R2Context,
   id: number,
   moderatorId: number,
   note: string | null
@@ -161,9 +161,9 @@ export async function approveSubmission(
   const imageUrls = new Map<string, string>()
   for (const p of sub.payload.photos) {
     const prodKey = newProdKey(slug, p.staging_key)
-    await copyToProd(env, p.staging_key, prodKey)
+    await copyToProd(r2, p.staging_key, prodKey)
     prodKeys.push(prodKey)
-    imageUrls.set(p.staging_key, `${env.R2_PUBLIC_IMAGES_URL}/${prodKey}`)
+    imageUrls.set(p.staging_key, `${r2.publicImagesUrl}/${prodKey}`)
   }
 
   try {
@@ -178,11 +178,11 @@ export async function approveSubmission(
       `
     })
     for (const p of sub.payload.photos) {
-      await deleteStaging(env, p.staging_key).catch(() => {})
+      await deleteStaging(r2, p.staging_key).catch(() => {})
     }
   } catch (err) {
     for (const prodKey of prodKeys) {
-      await deleteProd(env, prodKey).catch(() => {})
+      await deleteProd(r2, prodKey).catch(() => {})
     }
     throw err
   }

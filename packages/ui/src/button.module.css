@@ -113,7 +113,7 @@ body[data-theme='dark'] .button[data-variant='ghost']:hover {
     padding-left: 0.5rem;
     padding-right: 0.5rem;
     font-size: 0.75rem;
-    border-radius: 10px;
+    border-radius: calc(var(--size-border-radius) - 2px);
 }
 
 .button[data-size='sm'] {
@@ -122,7 +122,7 @@ body[data-theme='dark'] .button[data-variant='ghost']:hover {
     padding-left: 0.625rem;
     padding-right: 0.625rem;
     font-size: 0.8rem;
-    border-radius: 12px;
+    border-radius: var(--size-border-radius);
 }
 
 .button[data-size='lg'] {
@@ -140,13 +140,13 @@ body[data-theme='dark'] .button[data-variant='ghost']:hover {
 .button[data-size='icon-xs'] {
     width: 1.5rem;
     height: 1.5rem;
-    border-radius: 10px;
+    border-radius: calc(var(--size-border-radius) - 2px);
 }
 
 .button[data-size='icon-sm'] {
     width: 1.75rem;
     height: 1.75rem;
-    border-radius: 12px;
+    border-radius: calc(var(--size-border-radius) - 2px);
 }
 
 .button[data-size='icon-lg'] {

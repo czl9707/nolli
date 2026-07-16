@@ -1,19 +1,12 @@
-import {
-  S3Client,
-  PutObjectCommand,
-  CopyObjectCommand,
-  DeleteObjectCommand,
-} from "@aws-sdk/client-s3"
-
-export function r2(env: Env): S3Client {
-  return new S3Client({
-    region: "auto",
-    endpoint: env.R2_ENDPOINT,
-    credentials: {
-      accessKeyId: env.R2_ACCESS_KEY_ID,
-      secretAccessKey: env.R2_SECRET_ACCESS_KEY,
-    },
-  })
+// Per-request R2 handle, built once in middleware from the live request env and
+// stashed on the Hono context (mirrors the `db` middleware's `sql`). The two
+// R2Bucket bindings are provided by the runtime from wrangler.jsonc — no client
+// construction, no credentials, no endpoint. Handlers read `c.get("r2")` and
+// never reach for `c.env` for bucket config.
+export type R2Context = {
+  staging: R2Bucket
+  images: R2Bucket
+  publicImagesUrl: string
 }
 
 const EXT_BY_TYPE: Record<string, string> = {
@@ -50,47 +43,31 @@ export function newProdKey(slug: string, stagingKey: string): string {
 }
 
 export async function putStaging(
-  env: Env,
+  ctx: R2Context,
   key: string,
   body: ArrayBuffer,
   contentType: string
 ): Promise<void> {
-  const client = r2(env)
-  await client.send(
-    new PutObjectCommand({
-      Bucket: env.R2_BUCKET_STAGING,
-      Key: key,
-      Body: new Uint8Array(body),
-      ContentType: contentType,
-    })
-  )
+  await ctx.staging.put(key, body, { httpMetadata: { contentType } })
 }
 
+// Cross-bucket copy via get→put: R2Bucket.copy() is same-bucket only, and the
+// two buckets are separate bindings. Streams through the worker, fine for
+// image-sized objects (≤ MAX_IMAGE_BYTES).
 export async function copyToProd(
-  env: Env,
+  ctx: R2Context,
   stagingKey: string,
   prodKey: string
 ): Promise<void> {
-  const client = r2(env)
-  await client.send(
-    new CopyObjectCommand({
-      Bucket: env.R2_BUCKET_IMAGES,
-      Key: prodKey,
-      CopySource: `${env.R2_BUCKET_STAGING}/${stagingKey}`,
-    })
-  )
+  const obj = await ctx.staging.get(stagingKey)
+  if (!obj) throw new Error(`staging object not found: ${stagingKey}`)
+  await ctx.images.put(prodKey, obj.body, { httpMetadata: obj.httpMetadata })
 }
 
-export async function deleteStaging(env: Env, key: string): Promise<void> {
-  const client = r2(env)
-  await client.send(
-    new DeleteObjectCommand({ Bucket: env.R2_BUCKET_STAGING, Key: key })
-  )
+export async function deleteStaging(ctx: R2Context, key: string): Promise<void> {
+  await ctx.staging.delete(key)
 }
 
-export async function deleteProd(env: Env, key: string): Promise<void> {
-  const client = r2(env)
-  await client.send(
-    new DeleteObjectCommand({ Bucket: env.R2_BUCKET_IMAGES, Key: key })
-  )
+export async function deleteProd(ctx: R2Context, key: string): Promise<void> {
+  await ctx.images.delete(key)
 }
