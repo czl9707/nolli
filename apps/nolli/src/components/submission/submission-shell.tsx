@@ -9,7 +9,6 @@ export function SubmissionShell({
   lead,
   ready = true,
   error,
-  onRetry,
   onSubmit,
   actions,
   children,
@@ -18,7 +17,6 @@ export function SubmissionShell({
   lead?: string
   ready?: boolean
   error?: ReactNode
-  onRetry?: () => void
   onSubmit?: (e: FormEvent<HTMLFormElement>) => void
   actions?: ReactNode
   children: ReactNode
@@ -57,11 +55,6 @@ export function SubmissionShell({
             <div className={styles.errorBody} role="alert">
               <CloudOff size={20} className={styles.errorIcon} />
               <Body2>{error}</Body2>
-              {onRetry && (
-                <Button variant="outline" size="sm" onClick={onRetry}>
-                  Retry
-                </Button>
-              )}
             </div>
           </div>
         )}

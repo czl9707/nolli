@@ -32,7 +32,12 @@ function Rail() {
   const items: NavItem[] = [
     { icon: Home, label: "Map", path: "/", disabled: false },
     { icon: Star, label: "Favorites", path: "/favorite", disabled: false },
-    ...(user ? [{ icon: Plus, label: "Submit", path: "/submit", disabled: false }] : []),
+    {
+      icon: Plus,
+      label: user ? "Submit" : "Submit (not logged in)",
+      path: "/submit",
+      disabled: !user,
+    },
     ...((user?.role === "moderator" || user?.role === "admin")
       ? [{ icon: Shield, label: "Moderate", path: "/moderate", disabled: false }]
       : []),
@@ -58,6 +63,7 @@ function Rail() {
                       variant="ghost"
                       size="icon-lg"
                       data-active={active}
+                      data-disabled={true}
                       className={styles.navItem}
                       aria-label={item.label}
                     >
@@ -99,7 +105,12 @@ function Drawer() {
   const items: NavItem[] = [
     { icon: Home, label: "Map", path: "/", disabled: false },
     { icon: Star, label: "Favorites", path: "/favorite", disabled: false },
-    ...(user ? [{ icon: Plus, label: "Submit", path: "/submit", disabled: false }] : []),
+    {
+      icon: Plus,
+      label: user ? "Submit" : "Submit (not logged in)",
+      path: "/submit",
+      disabled: !user,
+    },
     ...((user?.role === "moderator" || user?.role === "admin")
       ? [{ icon: Shield, label: "Moderate", path: "/moderate", disabled: false }]
       : []),
@@ -150,6 +161,7 @@ function Drawer() {
                             className={styles.drawerNavItem}
                             variant="ghost"
                             data-active={active}
+                            data-disabled={true}
                           >
                             <item.icon size={18} />
                             {item.label}

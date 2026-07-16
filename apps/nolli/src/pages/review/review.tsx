@@ -3,7 +3,6 @@ import { useNavigate, useParams } from "react-router"
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import {
-  Body2,
   Button,
   Dialog,
   DialogContent,
@@ -43,13 +42,12 @@ export function ReviewPage() {
 
   const [loadingReview, setLoadingReview] = useState(true)
   const [loadError, setLoadError] = useState(false)
-  const [retryKey, setRetryKey] = useState(0)
   const [deciding, setDeciding] = useState(false)
   const [rejectOpen, setRejectOpen] = useState(false)
   const [note, setNote] = useState("")
 
-  // Load the existing payload once authed. Gated on the same conditions as the
-  // early returns below so we never fetch before the user is signed in.
+  // Load the existing payload once authed. Gated so we never fetch before the
+  // user is signed in, and so invalid/non-mod ids short-circuit to an error.
   useEffect(() => {
     if (!initialized || !isMod || !Number.isInteger(id)) return
     let cancelled = false
@@ -64,10 +62,7 @@ export function ReviewPage() {
       .catch((err) => {
         if (cancelled) return
         if (err instanceof UnauthorizedError) void signIn()
-        else {
-          toast.error("Could not load this submission.")
-          setLoadError(true)
-        }
+        else setLoadError(true)
       })
       .finally(() => {
         if (!cancelled) setLoadingReview(false)
@@ -75,10 +70,15 @@ export function ReviewPage() {
     return () => {
       cancelled = true
     }
-  }, [initialized, isMod, id, retryKey]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [initialized, isMod, id]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (!Number.isInteger(id)) return <SubmissionShell title="Review"><Body2>Invalid submission.</Body2></SubmissionShell>
-  if (initialized && !isMod) return <SubmissionShell title="Review"><Body2>Not available.</Body2></SubmissionShell>
+  const error = !Number.isInteger(id)
+    ? "Invalid submission."
+    : initialized && !isMod
+      ? "Not available."
+      : loadError
+        ? "Could not load this submission."
+        : undefined
 
   async function onDecide(decision: "approve" | "reject", note: string) {
     setDeciding(true)
@@ -99,19 +99,15 @@ export function ReviewPage() {
       <SubmissionShell
         title="Review submission"
         lead="Edit, then approve or reject."
-        ready={initialized && !loadingReview}
-        error={loadError ? "Could not load this submission." : undefined}
-        onRetry={() => {
-          setLoadError(false)
-          setRetryKey((k) => k + 1)
-        }}
+        ready={!error && initialized && !loadingReview}
+        error={error}
         onSubmit={submit}
         actions={
           <div className={styles.decideBar}>
             <Button
               variant="outline"
               onClick={submit}
-              disabled={form.formState.isDirty || saving || !form.formState.isValid}
+              disabled={!form.formState.isDirty || saving || !form.formState.isValid}
             >
               {saving ? <Loader2 size={16} className={styles.spin} /> : "Save changes"}
             </Button>

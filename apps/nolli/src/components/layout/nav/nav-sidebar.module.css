@@ -49,6 +49,11 @@
   background: rgb(var(--color-secondary-background));
 }
 
+.navItem[data-disabled="true"] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .spacer {
   flex: 1;
 }
@@ -92,6 +97,11 @@
   width: 100%;
   box-sizing: border-box;
   justify-content: flex-start;
+}
+
+.drawerNavItem[data-disabled="true"] {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .divider {

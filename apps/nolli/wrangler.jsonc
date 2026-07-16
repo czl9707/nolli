@@ -23,7 +23,7 @@
     "R2_PUBLIC_STAGING_URL": "https://images-staging.nolli-map.com"
   },
   "r2_buckets": [
-    { "binding": "IMAGES", "bucket_name": "nolli-map-images" },
-    { "binding": "IMAGE_STAGING", "bucket_name": "nolli-map-images-staging" }
+    { "binding": "IMAGES", "bucket_name": "nolli-map-images", "remote" : true },
+    { "binding": "IMAGE_STAGING", "bucket_name": "nolli-map-images-staging", "remote" : true }
   ]
 }
