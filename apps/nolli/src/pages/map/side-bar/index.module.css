@@ -40,7 +40,9 @@
   left: 0;
   right: 0;
   height: 100vh;
+  height: 100dvh;
   padding-bottom: calc(10vh - var(--spacing-paragraph));
+  padding-bottom: calc(10dvh - var(--spacing-paragraph));
   box-sizing: border-box;
   z-index: 90;
   display: flex;
