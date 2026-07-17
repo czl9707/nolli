@@ -29,7 +29,7 @@
     "@sqlite.org/sqlite-wasm": "^3.53.0-build1",
     "arctic": "^3.7.0",
     "cmdk": "^1.1.1",
-    "cookie": "^1.1.1",
+    "cookie": "^2.0.1",
     "framer-motion": "^12.42.2",
     "hono": "^4.12.29",
     "lucide-react": "^1.23.0",
