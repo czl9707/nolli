@@ -200,6 +200,17 @@ function PhotoThumb({
       onDragStart={(e) => {
         // Hint that we're moving an element, not copying a file.
         e.dataTransfer.effectAllowed = "move"
+        // Live reorder moves this node around the DOM mid-drag, which blanks
+        // the native drag preview. Snapshot a detached clone so a figure
+        // stays under the cursor; drop it once the browser has captured it.
+        const ghost = e.currentTarget.cloneNode(true) as HTMLElement
+        ghost.style.position = "absolute"
+        ghost.style.top = "-9999px"
+        ghost.style.left = "-9999px"
+        document.body.appendChild(ghost)
+        const { width, height } = e.currentTarget.getBoundingClientRect()
+        e.dataTransfer.setDragImage(ghost, width / 2, height / 2)
+        requestAnimationFrame(() => ghost.remove())
         onDragStart(index)
       }}
       onDragEnter={(e) => e.preventDefault()}

@@ -1,16 +1,5 @@
-.archCard {
-  cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: background-color var(--transition-instant) ease,
-    box-shadow var(--transition-instant) ease;
-}
-
-.archCard:hover,
-.archCard[data-selected="true"] {
-  background-color: rgb(var(--color-primary-foreground) / 0.1);
-  box-shadow: var(--shadow-sm), var(--shadow-ring);
-}
-
+/* Hover/selected/cursor treatment is shared via MediaCard; this class is now
+   only the hook for the favorite-toggle reveal-on-hover behavior. */
 .toggleWrap {
   position: absolute;
   top: 0.25rem;

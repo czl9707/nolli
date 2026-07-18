@@ -1,10 +1,11 @@
 import { Fragment, type ReactNode } from "react"
 import { Link, useNavigate } from "react-router"
 import { Plus } from "lucide-react"
-import { Body2, Skeleton } from "@nolli/ui"
+import { Body1, Body2, Skeleton } from "@nolli/ui"
 import type { SubmissionPayload } from "@nolli/data"
 import { MediaCard } from "@/components/card/media-card"
 import styles from "./submission-list.module.css"
+import { SidebarCard } from "../card/sidebar-card"
 
 const STAGING_BASE = import.meta.env.VITE_R2_PUBLIC_STAGING_URL ?? ""
 
@@ -50,12 +51,11 @@ export function SubmissionRow({
  *  list loads or is empty. */
 export function NewSubmissionCard() {
   return (
-    <div className={styles.list}>
-      <Link to="/submissions/new" className={styles.newCard}>
-        <span className={styles.newIcon}><Plus size={20} /></span>
-        <span className={styles.newText}>New submission</span>
-      </Link>
-    </div>
+    <Link to="/submissions/new" >
+      <SidebarCard className={styles.newCard}>
+        <Body1 className={styles.newText}><Plus size={20}/> New submission</Body1>
+      </SidebarCard>
+    </Link>
   )
 }
 

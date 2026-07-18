@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from "react"
 import { useLocation, useNavigate, useParams } from "react-router"
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
-import { Body2, Button } from "@nolli/ui"
+import { Body2, Button, H5 } from "@nolli/ui"
 import { Seo } from "@/components/layout/seo"
 import { NewSubmissionCard, SubmissionList, SubmissionRow } from "@/components/submission/submission-list"
 import { SubmissionShell } from "@/components/submission/submission-shell"
@@ -63,13 +63,14 @@ export function SubmissionsPage() {
     )
   }
 
-  const list = user ? (
+  const list = (
     <>
+      <H5>My Submissions</H5>
       <NewSubmissionCard />
       <SubmissionList
         entries={entries ?? []}
         loading={loading}
-        error={fetchError}
+        error={fetchError || error}
         emptyText="No pending submissions."
         renderRow={(e) => (
           <SubmissionRow
@@ -80,7 +81,7 @@ export function SubmissionsPage() {
         )}
       />
     </>
-  ) : null
+  );
 
   return (
     <>

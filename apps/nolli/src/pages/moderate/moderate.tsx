@@ -11,6 +11,7 @@ import {
   DialogTitle,
   DialogFooter,
   Input,
+  H5,
 } from "@nolli/ui"
 import { Seo } from "@/components/layout/seo"
 import { SubmissionList, SubmissionRow } from "@/components/submission/submission-list"
@@ -60,7 +61,7 @@ export function ModeratePage() {
   const id = Number(params.id)
 
   const queue = useQueue(isMod, initialized)
-
+  
   let main: ReactNode
   if (!initialized) {
     main = <SubmissionShell title="Moderate" ready={false} />
@@ -75,23 +76,29 @@ export function ModeratePage() {
       </div>
     )
   }
+  
+  const error = !user ? "Not a Moderator" : queue.error;
+  const list = (
+    <>
+      <H5>Review Submissions</H5>
+      <SubmissionList
+        entries={queue.entries ?? []}
+        loading={queue.loading}
+        error={error}
+        emptyText="Nothing to review."
+        renderRow={(e) => (
+          <SubmissionRow
+            entry={e}
+            to={`/moderate/${e.id}`}
+            selected={e.id === id}
+            foot={`${e.submitter_name} · ${new Date(e.created_at).toLocaleDateString()}`}
+          />
+        )}
+        
+      />
+    </>
 
-  const list = isMod ? (
-    <SubmissionList
-      entries={queue.entries ?? []}
-      loading={queue.loading}
-      error={queue.error}
-      emptyText="Nothing to review."
-      renderRow={(e) => (
-        <SubmissionRow
-          entry={e}
-          to={`/moderate/${e.id}`}
-          selected={e.id === id}
-          foot={`${e.submitter_name ?? "anonymous"} · ${new Date(e.created_at).toLocaleDateString()}`}
-        />
-      )}
-    />
-  ) : null
+  )
 
   return (
     <>

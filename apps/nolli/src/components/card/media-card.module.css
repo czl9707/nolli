@@ -9,6 +9,18 @@
 
   --size-card-height: 6rem;
   height: var(--size-card-height);
+
+  /* Every MediaCard is an interactive, selectable row, so the hover/selected
+     treatment lives here once rather than in each consumer. */
+  cursor: pointer;
+  transition: background-color var(--transition-instant) ease,
+    box-shadow var(--transition-instant) ease;
+}
+
+.mediaCard:hover,
+.mediaCard[data-selected="true"] {
+  background-color: rgb(var(--color-primary-foreground) / 0.1);
+  box-shadow: var(--shadow-sm), var(--shadow-ring);
 }
 
 .thumbnail {
