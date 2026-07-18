@@ -34,10 +34,14 @@ export async function createSubmission(payload: SubmissionPayload): Promise<{ id
   return unwrap(resp)
 }
 
-/** GET /api/submissions/mine — the authed user's own submissions. */
-export async function listMine(): Promise<{
-  submissions: { id: number; status: SubmissionStatus; name: string; created_at: string }[]
-}> {
+export type MineEntry = {
+  id: number
+  payload: SubmissionPayload
+  created_at: string
+}
+
+/** GET /api/submissions/mine — the authed user's own pending submissions. */
+export async function listMine(): Promise<{ submissions: MineEntry[] }> {
   const resp = await fetch("/api/submissions/mine", { credentials: "same-origin" })
   return unwrap(resp)
 }
@@ -72,9 +76,7 @@ export async function patchSubmission(id: number, payload: SubmissionPayload): P
 
 export type QueueEntry = {
   id: number
-  name: string
-  architect: string
-  city: string
+  payload: SubmissionPayload
   submitter_name: string | null
   created_at: string
 }

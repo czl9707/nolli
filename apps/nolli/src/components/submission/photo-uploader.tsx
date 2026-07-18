@@ -43,27 +43,9 @@ export function PhotoUploader({ form }: { form: UseFormReturn<FormValues> }) {
     }
   }, [])
 
-  // Remap vertical wheel → horizontal scroll on the strip's viewport, so a
-  // normal mouse wheel pans the row sideways instead of scrolling the page.
-  const stripRef = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    const strip = stripRef.current
-    const viewport = strip?.closest(
-      '[data-slot="scroll-area-viewport"]',
-    ) as HTMLElement | null
-    if (!viewport) return
-    const onWheel = (e: WheelEvent) => {
-      if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return
-      viewport.scrollLeft += e.deltaY
-      e.preventDefault()
-    }
-    viewport.addEventListener("wheel", onWheel, { passive: false })
-    return () => viewport.removeEventListener("wheel", onWheel)
-  }, [])
-
   return (
     <ScrollArea scrollbars="horizontal" className={styles.scrollRoot}>
-      <div className={styles.strip} ref={stripRef}>
+      <div className={styles.strip}>
         <PhotoDropZone
           onAdd={(entries) =>
             entries.forEach((e) =>

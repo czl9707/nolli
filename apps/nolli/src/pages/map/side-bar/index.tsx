@@ -12,14 +12,13 @@ import {
 import { useIsMobile } from "@/hooks/use-is-mobile"
 import { TRANSITION_SHORT, TRANSITION_INSTANT } from "@nolli/ui"
 import styles from "./index.module.css"
-import { useLocation } from "react-router"
 
 // ── Desktop: animated side panel ──
 
 function DesktopPanel({ children }: { children: ReactNode }) {
   const sidebarOpen = useSidebarStore((s) => s.sidebarOpen)
-  const { isMap } = useLayout()
-  const isOpen = isMap && sidebarOpen
+  const mounted = useSidebarStore((s) => s.mounted)
+  const isOpen = mounted && sidebarOpen
 
   // AnimatePresence must stay mounted (no early return) so it can run the
   // exit animation. `initial={false}` skips the mount-time grow so the panel
@@ -151,14 +150,16 @@ function MobileSheet({ children }: { children: ReactNode }) {
  *  Accepts children — the consumer controls what's rendered inside. */
 export function SideBar({ children }: { children: ReactNode }) {
   const isMobile = useIsMobile()
-  const { pathname } = useLocation();
-  const setSidebarOpen = useSidebarStore((s) => s.setOpen);
+  const mount = useSidebarStore((s) => s.mount)
+  const unmount = useSidebarStore((s) => s.unmount)
 
+  // Register presence while mounted: this drives the header toggle and the
+  // desktop panel, and opens the sidebar by default when a panel page is
+  // entered. No URL matching — every page that renders a SideBar opts in.
   useEffect(() => {
-    if (pathname === "/favorite" || pathname.startsWith("/arch/")) {
-      setSidebarOpen(true)
-    }
-  }, [pathname])
+    mount()
+    return () => unmount()
+  }, [mount, unmount])
 
   if (isMobile) return <MobileSheet>{children}</MobileSheet>
   return <DesktopPanel>{children}</DesktopPanel>

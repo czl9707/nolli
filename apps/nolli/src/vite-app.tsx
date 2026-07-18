@@ -11,9 +11,8 @@ import { AboutPage } from "@/pages/about/about"
 import { PrivacyPage } from "@/pages/privacy/privacy"
 import { TermsPage } from "@/pages/terms/terms"
 import { MapPage } from "@/pages/map/map"
-import { SubmitPage } from "@/pages/submit/submit"
 import { ModeratePage } from "@/pages/moderate/moderate"
-import { ReviewPage } from "@/pages/review/review"
+import { SubmissionsPage } from "@/pages/submissions/submissions"
 import styles from "./vite-app.module.css"
 
 export function ViteApp() {
@@ -32,9 +31,11 @@ export function ViteApp() {
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/favorite" element={<MapPage />} />
-            <Route path="/submit" element={<SubmitPage />} />
             <Route path="/moderate" element={<ModeratePage />} />
-            <Route path="/moderate/:id" element={<ReviewPage />} />
+            <Route path="/moderate/:id" element={<ModeratePage />} />
+            <Route path="/submissions" element={<SubmissionsPage />} />
+            <Route path="/submissions/new" element={<SubmissionsPage />} />
+            <Route path="/submissions/:id" element={<SubmissionsPage />} />
             <Route path="/*" element={<MapPage />} />
           </Routes>
         </div>

@@ -4,12 +4,11 @@ import { Button } from "@nolli/ui"
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react"
 import { Link } from "react-router"
 import { useIsMobile } from "@/hooks/use-is-mobile"
-import { useLayout } from "@/hooks/use-layout"
 import styles from "./header.module.css"
 
 export function Header() {
   const isMobile = useIsMobile()
-  const { isMap } = useLayout()
+  const mounted = useSidebarStore((s) => s.mounted)
   const sidebarOpen = useSidebarStore((s) => s.sidebarOpen)
   const toggle = useSidebarStore((s) => s.toggle)
   const setMobileDrawerOpen = useSidebarStore((s) => s.setMobileDrawerOpen)
@@ -23,10 +22,9 @@ export function Header() {
   }
 
   const isOpen = isMobile ? false : sidebarOpen
-  // Show the SideBar toggle only on the map (board has no panel, static
-  // pages have no map); mobile keeps it even on static pages since it opens the
-  // nav drawer, which is real navigation.
-  const showSideBar = isMobile || isMap
+  // Desktop sidebar toggle only while a <SideBar> is mounted; mobile always
+  // shows it (opens the nav drawer, which is real navigation).
+  const showSideBar = isMobile || mounted
 
   return (
     <header className={styles.header}>
