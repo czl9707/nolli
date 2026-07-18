@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { SidebarCard } from "../arch-summary/sidebar-card"
+import { SidebarCard } from "@/components/card/sidebar-card"
 import { FilterPanel } from "@nolli/ui/composition"
 import { Body2 } from "@nolli/ui"
 import { useFilterOptions, useFilterStore } from "@nolli/data"

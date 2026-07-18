@@ -35,7 +35,7 @@ function Rail() {
     {
       icon: Plus,
       label: user ? "Submit" : "Submit (not logged in)",
-      path: "/submit",
+      path: "/submissions/new",
       disabled: !user,
     },
     ...((user?.role === "moderator" || user?.role === "admin")
@@ -108,7 +108,7 @@ function Drawer() {
     {
       icon: Plus,
       label: user ? "Submit" : "Submit (not logged in)",
-      path: "/submit",
+      path: "/submissions/new",
       disabled: !user,
     },
     ...((user?.role === "moderator" || user?.role === "admin")

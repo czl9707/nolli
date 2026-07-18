@@ -6,9 +6,15 @@
   flex-direction: column;
   padding-top: var(--size-header-height);
   padding-bottom: var(--size-footer-height);
-  padding-left: var(--spacing-component);
-  padding-right: var(--spacing-component);
   box-sizing: border-box;
+}
+
+@media(--smaller-than-md) {
+  .shell {
+    padding-left: var(--spacing-component);
+    padding-right: var(--spacing-component);
+    padding-bottom: 6rem;
+  }
 }
 
 .topbar {
@@ -102,6 +108,18 @@
 
 .errorIcon {
   color: rgb(var(--color-secondary-foreground));
+}
+
+.empty {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-component);
+  text-align: center;
+  opacity: 0.6;
+  box-sizing: border-box;
 }
 
 .spin {

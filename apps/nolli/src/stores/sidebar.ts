@@ -7,6 +7,12 @@ type SidebarState = {
   setOpen: (open: boolean) => void
   toggle: () => void
 
+  /** True while a <SideBar> is mounted somewhere. Drives the header toggle
+   *  and the desktop panel's presence, so neither has to pattern-match URLs. */
+  mounted: boolean
+  mount: () => void
+  unmount: () => void
+
   mobileDrawerOpen: boolean
   setMobileDrawerOpen: (open: boolean) => void
 
@@ -36,6 +42,10 @@ export const useSidebarStore = create<SidebarState>((set, get) => ({
     set({ sidebarOpen: open })
   },
   toggle: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
+
+  mounted: false,
+  mount: () => set({ mounted: true, sidebarOpen: true }),
+  unmount: () => set({ mounted: false }),
 
   mobileDrawerOpen: false,
   setMobileDrawerOpen: (open) => set({ mobileDrawerOpen: open }),

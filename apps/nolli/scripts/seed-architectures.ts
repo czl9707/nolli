@@ -54,7 +54,7 @@ interface Meta {
 }
 
 interface Stats {
-  countries: { created: number; skipped: number }
+  countries: { skipped: number; missing: number }
   cities: { created: number; skipped: number }
   architects: { created: number; skipped: number }
   architectures: { created: number; updated: number }
@@ -64,7 +64,7 @@ interface Stats {
 }
 
 const stats: Stats = {
-  countries: { created: 0, skipped: 0 },
+  countries: { skipped: 0, missing: 0 },
   cities: { created: 0, skipped: 0 },
   architects: { created: 0, skipped: 0 },
   architectures: { created: 0, updated: 0 },
@@ -81,11 +81,10 @@ function log(msg: string) {
 // inside a per-slug transaction). Helpers run on whichever is passed in.
 type Db = postgres.Sql
 
-async function getOrCreateCountry(
-  db: Db,
-  code: string,
-  name: string
-): Promise<number> {
+// Countries must already exist in the DB (seeded from supabase/seeds/countries.sql).
+// Look up by ISO `code`; never insert. A missing code is a data error we surface,
+// not silently paper over with a new row.
+async function getCountryId(db: Db, code: string): Promise<number> {
   const [row] = await db<{ id: number }>`
     SELECT id FROM countries WHERE code = ${code} LIMIT 1
   `
@@ -95,19 +94,10 @@ async function getOrCreateCountry(
     return row.id
   }
 
-  if (DRY_RUN) {
-    log(`Would create country: ${code} (${name})`)
-    stats.countries.created++
-    return -1
-  }
-
-  const [inserted] = await db<{ id: number }>`
-    INSERT INTO countries (code, name) VALUES (${code}, ${name}) RETURNING id
-  `
-
-  stats.countries.created++
-  log(`Created country: ${code} (${name})`)
-  return inserted.id
+  stats.countries.missing++
+  throw new Error(
+    `Country code not found in DB: ${code}. Add it to supabase/seeds/countries.sql before seeding.`
+  )
 }
 
 async function getOrCreateCity(
@@ -270,16 +260,12 @@ async function processSlug(slugDir: string) {
 
   // One transaction per slug: a slug either fully applies or fully rolls back.
   await sql.begin(async (tx) => {
-    const countryId = await getOrCreateCountry(tx, meta.country, meta.country)
+    const countryId = await getCountryId(tx, meta.country)
     const cityId = await getOrCreateCity(tx, meta.city, countryId)
 
     let architectCountryId = countryId
     if (meta.architectCountry && meta.architectCountry !== meta.country) {
-      architectCountryId = await getOrCreateCountry(
-        tx,
-        meta.architectCountry,
-        meta.architectCountry
-      )
+      architectCountryId = await getCountryId(tx, meta.architectCountry)
     }
     const architectId = await getOrCreateArchitect(
       tx,
@@ -430,7 +416,7 @@ async function main() {
 
   console.log("\n--- Summary ---")
   console.log(
-    `Countries:  ${stats.countries.created} created, ${stats.countries.skipped} existing`
+    `Countries:  ${stats.countries.skipped} existing, ${stats.countries.missing} missing`
   )
   console.log(
     `Cities:     ${stats.cities.created} created, ${stats.cities.skipped} existing`

@@ -3,8 +3,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
 import type { SubmissionPayload } from "@nolli/data"
-import { uploadImage, UnauthorizedError } from "@/lib/api/submissions"
-import { useAuthStore } from "@/stores/auth"
+import { uploadImage } from "@/lib/api/submissions"
 import {
   formValuesSchema,
   shapePayload,
@@ -22,13 +21,9 @@ export const EMPTY: FormValues = {
   links: [],
 }
 
-export function handleError(err: unknown, signIn: () => Promise<void>) {
-  if (err instanceof UnauthorizedError) {
-    toast.error("Session expired — signing in again.")
-    void signIn()
-  } else {
-    toast.error("Something went wrong. Please try again.")
-  }
+export function handleError(err: unknown) {
+  const reason = err instanceof Error ? err.message : String(err)
+  toast.error(`Something went wrong: ${reason}`)
 }
 
 export function useSubmissionForm({
@@ -36,7 +31,6 @@ export function useSubmissionForm({
 }: {
   onSubmit: (payload: SubmissionPayload, values: FormValues) => Promise<void>
 }) {
-  const signIn = useAuthStore((s) => s.signIn)
   const [saving, setSaving] = useState(false)
 
   const form = useForm<FormValues>({
@@ -52,7 +46,7 @@ export function useSubmissionForm({
       const payload = shapePayload({ ...values, photos })
       await onSubmit(payload, values)
     } catch (err) {
-      handleError(err, signIn)
+      handleError(err)
     } finally {
       setSaving(false)
     }

@@ -19,7 +19,7 @@ export function SubmissionShell({
   error?: ReactNode
   onSubmit?: (e: FormEvent<HTMLFormElement>) => void
   actions?: ReactNode
-  children: ReactNode
+  children?: ReactNode
 }) {
   return (
     <div className={styles.shell}>

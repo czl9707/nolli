@@ -33,9 +33,7 @@ export async function listQueue(
 ): Promise<
   {
     id: number
-    name: string
-    architect: string
-    city: string
+    payload: SubmissionPayload
     submitter_name: string | null
     created_at: string
   }[]
@@ -43,10 +41,8 @@ export async function listQueue(
   return sql`
     select
       s.id,
-      s.payload->'metadata'->>'name'      as name,
-      s.payload->'metadata'->>'architect' as architect,
-      s.payload->'metadata'->>'city'      as city,
-      u.display_name                       as submitter_name,
+      s.payload,
+      u.display_name as submitter_name,
       s.created_at
     from public.submissions s
     join public.users u on u.id = s.submitter_id
@@ -75,12 +71,16 @@ export async function listMine(
   sql: Sql,
   submitterId: number
 ): Promise<
-  { id: number; status: SubmissionStatus; name: string; created_at: string }[]
+  {
+    id: number
+    payload: SubmissionPayload
+    created_at: string
+  }[]
 > {
   return sql`
-    select id, status, payload->'metadata'->>'name' as name, created_at
+    select id, payload, created_at
     from public.submissions
-    where submitter_id = ${submitterId}
+    where submitter_id = ${submitterId} and status = 'pending'
     order by created_at desc
   `
 }
