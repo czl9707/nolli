@@ -54,10 +54,6 @@ function MapBindings({ form }: { form: UseFormReturn<FormValues> }) {
 
   // Coord change → decide whether to fly.
   useEffect(() => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current)
-      timerRef.current = null
-    }
     if (!map) return
 
     const recentClick =
@@ -79,14 +75,15 @@ function MapBindings({ form }: { form: UseFormReturn<FormValues> }) {
     }
     if (decision === "now") fly()
     else timerRef.current = setTimeout(fly, DEBOUNCE_MS)
-  }, [map, isLoaded, lat, lng])
 
-  // Clear any pending debounced fly on unmount.
-  useEffect(() => {
+    // Clears the stale timer before each re-run and the pending timer on unmount.
     return () => {
-      if (timerRef.current) clearTimeout(timerRef.current)
+      if (timerRef.current) {
+        clearTimeout(timerRef.current)
+        timerRef.current = null
+      }
     }
-  }, [])
+  }, [map, isLoaded, lat, lng])
 
   return null
 }
