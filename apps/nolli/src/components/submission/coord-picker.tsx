@@ -1,8 +1,7 @@
 import { useEffect, useRef } from "react"
 import MapLibreGL from "maplibre-gl"
 import { useWatch, type UseFormReturn } from "react-hook-form"
-import { ArchMap, ArchPinMarker, MapControls, useMap } from "@nolli/map"
-import { Caption } from "@nolli/ui"
+import { ArchMap, ArchPinMarker, MapControls, useMap, flyToArchCinematic } from "@nolli/map"
 import type { FormValues } from "./shape-payload"
 import styles from "./coord-picker.module.css"
 
@@ -48,8 +47,8 @@ function MapBindings({ form }: { form: UseFormReturn<FormValues> }) {
   useEffect(() => {
     if (!map || flewOnLoadRef.current || userPicked.current) return
     if (!isCoordValid(lat, lng)) return
-    flewOnLoadRef.current = true
-    map.flyTo({ center: [lng, lat], zoom: DEFAULT_ZOOM })
+    flewOnLoadRef.current = true;
+    flyToArchCinematic(map, lng, lat, DEFAULT_ZOOM)
   }, [map, lat, lng])
 
   return null
