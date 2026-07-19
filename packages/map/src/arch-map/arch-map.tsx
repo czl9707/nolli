@@ -5,7 +5,7 @@ import {
   useRef,
   type ReactNode,
 } from "react"
-import { Map, MapControls } from "../map-core/map"
+import { Map } from "../map-core/map"
 import type { MapRef } from "../map-core/map"
 import { getMapStyle } from "../map-style"
 import { useMapPatterns } from "../map-core/use-map-patterns"

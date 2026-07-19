@@ -9,7 +9,7 @@
   box-sizing: border-box;
 }
 
-@media(--smaller-than-md) {
+@media(--smaller-than-sm) {
   .shell {
     padding-left: var(--spacing-component);
     padding-right: var(--spacing-component);

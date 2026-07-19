@@ -5,15 +5,16 @@ import {
   type Control,
   type UseFormReturn,
 } from "react-hook-form"
-import { Input, Button, Caption, Body1, Body2, Body3, ScrollArea } from "@nolli/ui"
+import { Input, Button, Caption, Body1, Body2, Body3 } from "@nolli/ui"
 import { slugify, buildGoogleMapsUrl, useFilterOptions } from "@nolli/data"
 import { PhotoUploader } from "./photo-uploader"
 import { NoteEditor } from "./note-editor"
 import { LinkEditor } from "./link-editor"
+import { CoordPicker } from "./coord-picker"
 import { SubmissionCombobox, type ComboboxItem } from "./submission-combobox"
+import { Info } from 'lucide-react'
 import type { FormValues } from "./shape-payload"
 import styles from "./submission-fields.module.css"
-import { Info } from "lucide-react"
 
 function FieldError({ message }: { message?: string }) {
   if (!message) return null
@@ -67,144 +68,145 @@ export function SubmissionFields({ form }: { form: UseFormReturn<FormValues> }) 
   return (
     <div className={styles.columns}>
       <section className={styles.section}>
-        <Body1 className={styles.colTitle}>Details</Body1>
-        <label className={styles.field}>
-          <Caption>Name</Caption>
-          <Input {...form.register("metadata.name")} />
-          <FieldError message={form.formState.errors.metadata?.name?.message} />
-          {name && <Caption className={styles.slug}>slug: {slugify(name)}</Caption>}
-        </label>
-        <div className={styles.grid2}>
-          <label className={styles.field}>
-            <Caption>Architect</Caption>
-            <Controller
-              control={form.control}
-              name="metadata.architect"
-              render={({ field }) => (
-                <SubmissionCombobox
-                  mode="suggest"
-                  label="Architect"
-                  placeholder="Search architects"
-                  items={architectItems}
-                  value={field.value}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  disabled={listDisabled}
-                />
-              )}
-            />
-            <FieldError message={form.formState.errors.metadata?.architect?.message} />
-          </label>
-          <label className={styles.field}>
-            <Caption>Year</Caption>
-            <Input type="number" {...form.register("metadata.year", { valueAsNumber: true })} />
-            <FieldError message={form.formState.errors.metadata?.year?.message} />
-          </label>
-        </div>
-        <label className={styles.field}>
-          <Caption>Address</Caption>
-          <Input {...form.register("metadata.address")} />
-          <FieldError message={form.formState.errors.metadata?.address?.message} />
-        </label>
-        <div className={styles.grid2}>
-          <label className={styles.field}>
-            <Caption>City</Caption>
-            <Controller
-              control={form.control}
-              name="metadata.city"
-              render={({ field }) => (
-                <SubmissionCombobox
-                  mode="suggest"
-                  label="City"
-                  placeholder={dbError ? "Couldn't load cities" : "Search cities"}
-                  items={scopedCities}
-                  value={field.value}
-                  onChange={onCityChange}
-                  onBlur={field.onBlur}
-                  disabled={listDisabled}
-                />
-              )}
-            />
-            <FieldError message={form.formState.errors.metadata?.city?.message} />
-          </label>
-          <label className={styles.field}>
-            <Caption>Country</Caption>
-            <Controller
-              control={form.control}
-              name="metadata.country"
-              render={({ field }) => (
-                <SubmissionCombobox
-                  mode="strict"
-                  label="Country"
-                  placeholder={dbError ? "Couldn't load countries" : "Select country"}
-                  items={countryItems}
-                  value={field.value}
-                  onChange={onCountryChange}
-                  onBlur={field.onBlur}
-                  disabled={listDisabled}
-                />
-              )}
-            />
-            <FieldError message={form.formState.errors.metadata?.country?.message} />
-          </label>
-        </div>
-
-        <div className={styles.field}>
-          {/* <Caption>Coordinates</Caption> */}
-          <div className={styles.grid2}>
+        <Body1 className={styles.sectionTitle}>Details</Body1>
+        <div className={styles.section1Grid}>
+          <div className={styles.section1Fields}>
             <label className={styles.field}>
-              <Caption>Latitude</Caption>
-              <Input
-                type="number"
-                step="any"
-                placeholder="48.9242"
-                {...form.register("metadata.latitude", { valueAsNumber: true })}
-              />
-              <FieldError message={form.formState.errors.metadata?.latitude?.message} />
+              <Caption>Name</Caption>
+              <Input {...form.register("metadata.name")} />
+              <FieldError message={form.formState.errors.metadata?.name?.message} />
+              {name && <Caption className={styles.slug}>slug: {slugify(name)}</Caption>}
             </label>
+            <div className={styles.grid2}>
+              <label className={styles.field}>
+                <Caption>Architect</Caption>
+                <Controller
+                  control={form.control}
+                  name="metadata.architect"
+                  render={({ field }) => (
+                    <SubmissionCombobox
+                      mode="suggest"
+                      label="Architect"
+                      placeholder="Search architects"
+                      items={architectItems}
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      disabled={listDisabled}
+                    />
+                  )}
+                />
+                <FieldError message={form.formState.errors.metadata?.architect?.message} />
+              </label>
+              <label className={styles.field}>
+                <Caption>Year</Caption>
+                <Input type="number" {...form.register("metadata.year", { valueAsNumber: true })} />
+                <FieldError message={form.formState.errors.metadata?.year?.message} />
+              </label>
+            </div>
             <label className={styles.field}>
-              <Caption>Longitude</Caption>
-              <Input
-                type="number"
-                step="any"
-                placeholder="2.0301"
-                {...form.register("metadata.longitude", { valueAsNumber: true })}
-              />
-              <FieldError message={form.formState.errors.metadata?.longitude?.message} />
+              <Caption>Address</Caption>
+              <Input {...form.register("metadata.address")} />
+              <FieldError message={form.formState.errors.metadata?.address?.message} />
             </label>
-          </div>
-          <div className={styles.help}>
-            <Info size={14} />
-            <Caption>
-              Open Google Maps → right-click the exact spot → click the lat,lng that appears → paste each here.
-            </Caption>
-          </div>
+            <div className={styles.grid2}>
+              <label className={styles.field}>
+                <Caption>City</Caption>
+                <Controller
+                  control={form.control}
+                  name="metadata.city"
+                  render={({ field }) => (
+                    <SubmissionCombobox
+                      mode="suggest"
+                      label="City"
+                      placeholder={dbError ? "Couldn't load cities" : "Search cities"}
+                      items={scopedCities}
+                      value={field.value}
+                      onChange={onCityChange}
+                      onBlur={field.onBlur}
+                      disabled={listDisabled}
+                    />
+                  )}
+                />
+                <FieldError message={form.formState.errors.metadata?.city?.message} />
+              </label>
+              <label className={styles.field}>
+                <Caption>Country</Caption>
+                <Controller
+                  control={form.control}
+                  name="metadata.country"
+                  render={({ field }) => (
+                    <SubmissionCombobox
+                      mode="strict"
+                      label="Country"
+                      placeholder={dbError ? "Couldn't load countries" : "Select country"}
+                      items={countryItems}
+                      value={field.value}
+                      onChange={onCountryChange}
+                      onBlur={field.onBlur}
+                      disabled={listDisabled}
+                    />
+                  )}
+                />
+                <FieldError message={form.formState.errors.metadata?.country?.message} />
+              </label>
+            </div>
+            <label className={styles.field}>
+              <Caption>Google Maps URL</Caption>
+              <Input
+                placeholder={mapPlaceholder(name, mapCity, mapCountry)}
+                {...form.register("metadata.google_maps_url")}
+              />
+              <FieldError message={form.formState.errors.metadata?.google_maps_url?.message} />
+            </label>
+            <div className={styles.grid2}>
+              <label className={styles.field}>
+                <Caption>Latitude</Caption>
+                <Input
+                  type="number"
+                  step="any"
+                  placeholder="48.9242"
+                  {...form.register("metadata.latitude", { valueAsNumber: true })}
+                />
+                <FieldError message={form.formState.errors.metadata?.latitude?.message} />
+              </label>
+              <label className={styles.field}>
+                <Caption>Longitude</Caption>
+                <Input
+                  type="number"
+                  step="any"
+                  placeholder="2.0301"
+                  {...form.register("metadata.longitude", { valueAsNumber: true })}
+                />
+                <FieldError message={form.formState.errors.metadata?.longitude?.message} />
+              </label>
+            </div>
+            <div className={styles.help}>
+              <Info size={14} />
+              <Caption>
+                Use the map to locate the exact spot. <br />
+                Or right click the exact spot on Google Map, and paste the lat, lng here.
+              </Caption>
+            </div>
 
+          </div>
+          <CoordPicker form={form} />
         </div>
-
-        <label className={styles.field}>
-          <Caption>Google Maps URL</Caption>
-          <Input
-            placeholder={mapPlaceholder(name, mapCity, mapCountry)}
-            {...form.register("metadata.google_maps_url")}
-          />
-          <FieldError message={form.formState.errors.metadata?.google_maps_url?.message} />
-        </label>
       </section>
 
       <section className={styles.section}>
-        <Body1 className={styles.colTitle}>Photos</Body1>
+        <Body1 className={styles.sectionTitle}>Photos</Body1>
         <PhotoUploader form={form} />
       </section>
 
       <section className={styles.section}>
-        <Body1 className={styles.colTitle}>Notes</Body1>
+        <Body1 className={styles.sectionTitle}>Notes</Body1>
         {form.formState.errors.notes && <FieldError message="Each note must not be empty." />}
         <NoteEditor form={form} />
       </section>
 
       <section className={styles.section}>
-        <Body1 className={styles.colTitle}>Links</Body1>
+        <Body1 className={styles.sectionTitle}>Links</Body1>
         {form.formState.errors.links && <FieldError message="Each link needs a valid URL." />}
         <LinkEditor form={form} />
       </section>

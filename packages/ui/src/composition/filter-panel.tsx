@@ -131,8 +131,8 @@ export function FilterPanel({
   onClearCities,
   error = false,
 }: FilterPanelProps) {
-  const [open, setOpen] = useState(false)
   const activeFilterCount = architectIds.length + cityIds.length
+  const [open, setOpen] = useState(activeFilterCount > 0)
 
   const cityIdsByCountry = useMemo(() => {
     if (!options) return new Map<string, number[]>()
