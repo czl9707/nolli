@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useEffect, useMemo } from "react"
 import { useNavigate } from "react-router"
 import { ArchMap } from "@nolli/map"
 import {
@@ -60,6 +60,14 @@ export function MapCore() {
   const navigate = useNavigate()
   const filteredArchs = useFilterStore((s) => s.filteredArchs)
   const selected = useArchDetailStore((s) => s.selected)
+  // Lift the selected building onto the map even when a filter has excluded it,
+  // so picking a recommendation always leaves a pin to fly to. `Arch` is a
+  // superset of `ArchSummary`, so it satisfies the marker shape directly.
+  const architectures = useMemo(() => {
+    if (!selected) return filteredArchs
+    if (filteredArchs.some((a) => a.slug === selected.slug)) return filteredArchs
+    return [...filteredArchs, selected]
+  }, [filteredArchs, selected])
   const navigateArch = useArchNavigate()
   const { isMap } = useLayout()
   const loading = useDbStore((s) => s.loading)
@@ -77,7 +85,7 @@ export function MapCore() {
     <>
       <MapControlsOffset />
       <ArchMap
-        architectures={filteredArchs}
+        architectures={architectures}
         selectedSlug={selected?.slug}
         onArchClick={(slug) => {
           navigateArch(slug, false, "replace")

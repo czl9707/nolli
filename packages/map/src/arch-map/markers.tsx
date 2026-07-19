@@ -17,6 +17,7 @@ import {
 } from "../map-core/use-map-clustering"
 import { Caption, TRANSITION_SHORT } from "@nolli/ui"
 import type { ArchSummary } from "@nolli/data"
+import { ArchPinMarker } from "./pin-marker"
 import styles from "./arch-map.module.css"
 
 const CLUSTER_SPREAD_EASE: [number, number, number, number] = [
@@ -95,38 +96,16 @@ const IndividualMarker = memo(
     const isSelected = selectedSlug === point.slug
 
     return (
-      <MapMarker
+      <ArchPinMarker
         longitude={coords[0]}
         latitude={coords[1]}
-        transition={{
-          duration: TRANSITION_SHORT,
-          ease: CLUSTER_SPREAD_EASE,
-          delay,
-        }}
-      >
-        <MarkerContent>
-          <motion.div
-            className={styles.marker}
-            data-selected={isSelected}
-            initial={{ opacity: from ? 0 : 1 }}
-            animate={{ opacity: isPresent ? 1 : 0 }}
-            transition={{
-              duration: TRANSITION_SHORT,
-              ease: CLUSTER_SPREAD_EASE,
-              delay,
-            }}
-            onClick={() => onArchClick?.(point.slug)}
-          >
-            <div className={styles.pins}>
-              <MapPin
-                data-selected={isSelected}
-                className={styles.pin}
-              />
-            </div>
-            <Caption className={styles.label}>{point.name}</Caption>
-          </motion.div>
-        </MarkerContent>
-      </MapMarker>
+        selected={isSelected}
+        label={point.name}
+        transition={{ duration: TRANSITION_SHORT, ease: CLUSTER_SPREAD_EASE, delay }}
+        onClick={() => onArchClick?.(point.slug)}
+        initial={{ opacity: from ? 0 : 1 }}
+        animate={{ opacity: isPresent ? 1 : 0 }}
+      />
     )
   },
   (prev, next) =>
