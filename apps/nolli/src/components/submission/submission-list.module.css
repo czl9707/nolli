@@ -63,11 +63,3 @@
   height: 6rem;
   flex-shrink: 0;
 }
-
-.skeletonText {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  flex: 1;
-  padding-right: calc(var(--spacing-paragraph) + 0.75rem);
-}

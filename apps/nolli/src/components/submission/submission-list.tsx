@@ -62,13 +62,9 @@ export function NewSubmissionCard() {
 /** Placeholder matching SubmissionRow's shape: a 6rem thumbnail + text lines. */
 function SubmissionRowSkeleton() {
   return (
-    <div className={styles.skeletonRow}>
+    <Skeleton className={styles.skeletonRow}>
       <Skeleton className={styles.skeletonThumb} />
-      <div className={styles.skeletonText}>
-        <Skeleton height="1rem" width="70%" />
-        <Skeleton height="0.85rem" width="45%" />
-      </div>
-    </div>
+    </Skeleton>
   )
 }
 
