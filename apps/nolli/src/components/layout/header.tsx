@@ -4,6 +4,7 @@ import { Button } from "@nolli/ui"
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react"
 import { Link } from "react-router"
 import { useIsMobile } from "@/hooks/use-is-mobile"
+import { useLayout } from "@/hooks/use-layout"
 import styles from "./header.module.css"
 
 export function Header() {
@@ -22,9 +23,11 @@ export function Header() {
   }
 
   const isOpen = isMobile ? false : sidebarOpen
-  // Desktop sidebar toggle only while a <SideBar> is mounted; mobile always
-  // shows it (opens the nav drawer, which is real navigation).
-  const showSideBar = isMobile || mounted
+  const { isBoard } = useLayout()
+  // Desktop sidebar toggle only while a <SideBar> is mounted and not on the
+  // board view (board has no panel); mobile always shows it (opens the nav
+  // drawer, which is real navigation).
+  const showSideBar = isMobile || (mounted && !isBoard)
 
   return (
     <header className={styles.header}>
