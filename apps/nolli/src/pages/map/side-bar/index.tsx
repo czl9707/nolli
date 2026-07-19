@@ -18,7 +18,11 @@ import styles from "./index.module.css"
 function DesktopPanel({ children }: { children: ReactNode }) {
   const sidebarOpen = useSidebarStore((s) => s.sidebarOpen)
   const mounted = useSidebarStore((s) => s.mounted)
-  const isOpen = mounted && sidebarOpen
+  const { isBoard } = useLayout()
+  // `mounted` says a SideBar exists; board view suppresses the panel anyway
+  // (MapPage keeps SideBar mounted across map↔board, so mounted alone would
+  // leave it open on pin-board). Mirrors MobileSheet's `if (isBoard) return null`.
+  const isOpen = mounted && sidebarOpen && !isBoard
 
   // AnimatePresence must stay mounted (no early return) so it can run the
   // exit animation. `initial={false}` skips the mount-time grow so the panel
