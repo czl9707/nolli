@@ -3,7 +3,6 @@ import MapLibreGL from "maplibre-gl"
 import { useWatch, type UseFormReturn } from "react-hook-form"
 import { ArchMap, ArchPinMarker, MapControls, useMap, flyToArchCinematic } from "@nolli/map"
 import type { FormValues } from "./shape-payload"
-import { decideFocus } from "./focus-decision"
 import styles from "./coord-picker.module.css"
 
 const DEFAULT_ZOOM = 15
@@ -29,10 +28,10 @@ function MapBindings({ form }: { form: UseFormReturn<FormValues> }) {
   const hasFlownRef = useRef(false)
   const lastFlownRef = useRef<{ lat: number; lng: number } | null>(null)
   const lastClickAtRef = useRef(0)
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Click → stamp time, write both coords. The suppression window below keeps
-  // the coord-change effect from flying on the click's own two setValue calls.
+  // Map click → stamp the time and write both coords. The fly effect uses the
+  // stamp to ignore the click's own two setValue writes (which React doesn't
+  // batch, since the listener runs outside its event boundary).
   useEffect(() => {
     if (!map) return
     const handleClick = (e: MapLibreGL.MapMouseEvent) => {
@@ -52,37 +51,36 @@ function MapBindings({ form }: { form: UseFormReturn<FormValues> }) {
     }
   }, [map, form])
 
-  // Coord change → decide whether to fly.
+  // Coord change → fly. Immediate on the first valid coord once the map is
+  // ready, debounced thereafter so typing doesn't jitter the camera. Never on
+  // a map click.
   useEffect(() => {
-    if (!map) return
+    // Skip until the map and its style are ready.
+    if (!map || !isLoaded) return
 
-    const recentClick =
-      performance.now() - lastClickAtRef.current < CLICK_SUPPRESS_MS
-    const decision = decideFocus({
-      mapReady: isLoaded,
-      valid: isCoordValid(lat, lng),
-      sameAsLastFlown:
-        lastFlownRef.current?.lat === lat &&
-        lastFlownRef.current?.lng === lng,
-      hasFlown: hasFlownRef.current,
-    })
-    if (recentClick || decision === "none") return
+    // Nothing to fly to.
+    if (!isCoordValid(lat, lng)) return
+
+    // A click just wrote these coords — the viewport is already there.
+    if (performance.now() - lastClickAtRef.current < CLICK_SUPPRESS_MS) return
+
+    // Already showing this exact spot.
+    if (lastFlownRef.current?.lat === lat && lastFlownRef.current?.lng === lng)
+      return
 
     const fly = () => {
       flyToArchCinematic(map, lng, lat, DEFAULT_ZOOM)
-      hasFlownRef.current = true
       lastFlownRef.current = { lat, lng }
     }
-    if (decision === "now") fly()
-    else timerRef.current = setTimeout(fly, DEBOUNCE_MS)
 
-    // Clears the stale timer before each re-run and the pending timer on unmount.
-    return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current)
-        timerRef.current = null
-      }
+    if (!hasFlownRef.current) {
+      hasFlownRef.current = true
+      fly()
+      return
     }
+
+    const timer = setTimeout(fly, DEBOUNCE_MS)
+    return () => clearTimeout(timer)
   }, [map, isLoaded, lat, lng])
 
   return null
