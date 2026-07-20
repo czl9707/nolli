@@ -6,6 +6,8 @@ import type { FormValues } from "./shape-payload"
 import styles from "./coord-picker.module.css"
 
 const DEFAULT_ZOOM = 15
+const DEBOUNCE_MS = 500
+const CLICK_SUPPRESS_MS = 250
 
 function isCoordValid(lat: number, lng: number) {
   return (
@@ -19,16 +21,21 @@ function isCoordValid(lat: number, lng: number) {
 }
 
 function MapBindings({ form }: { form: UseFormReturn<FormValues> }) {
-  const { map } = useMap()
-  const userPicked = useRef(false)
-  const flewOnLoadRef = useRef(false)
+  const { map, isLoaded } = useMap()
   const lat = useWatch({ control: form.control, name: "metadata.latitude" })
   const lng = useWatch({ control: form.control, name: "metadata.longitude" })
 
+  const hasFlownRef = useRef(false)
+  const lastFlownRef = useRef<{ lat: number; lng: number } | null>(null)
+  const lastClickAtRef = useRef(0)
+
+  // Map click → stamp the time and write both coords. The fly effect uses the
+  // stamp to ignore the click's own two setValue writes (which React doesn't
+  // batch, since the listener runs outside its event boundary).
   useEffect(() => {
     if (!map) return
     const handleClick = (e: MapLibreGL.MapMouseEvent) => {
-      userPicked.current = true
+      lastClickAtRef.current = performance.now()
       form.setValue("metadata.latitude", e.lngLat.lat, {
         shouldValidate: true,
         shouldDirty: true,
@@ -44,12 +51,37 @@ function MapBindings({ form }: { form: UseFormReturn<FormValues> }) {
     }
   }, [map, form])
 
+  // Coord change → fly. Immediate on the first valid coord once the map is
+  // ready, debounced thereafter so typing doesn't jitter the camera. Never on
+  // a map click.
   useEffect(() => {
-    if (!map || flewOnLoadRef.current || userPicked.current) return
+    // Skip until the map and its style are ready.
+    if (!map || !isLoaded) return
+
+    // Nothing to fly to.
     if (!isCoordValid(lat, lng)) return
-    flewOnLoadRef.current = true;
-    flyToArchCinematic(map, lng, lat, DEFAULT_ZOOM)
-  }, [map, lat, lng])
+
+    // A click just wrote these coords — the viewport is already there.
+    if (performance.now() - lastClickAtRef.current < CLICK_SUPPRESS_MS) return
+
+    // Already showing this exact spot.
+    if (lastFlownRef.current?.lat === lat && lastFlownRef.current?.lng === lng)
+      return
+
+    const fly = () => {
+      flyToArchCinematic(map, lng, lat, DEFAULT_ZOOM)
+      lastFlownRef.current = { lat, lng }
+    }
+
+    if (!hasFlownRef.current) {
+      hasFlownRef.current = true
+      fly()
+      return
+    }
+
+    const timer = setTimeout(fly, DEBOUNCE_MS)
+    return () => clearTimeout(timer)
+  }, [map, isLoaded, lat, lng])
 
   return null
 }
