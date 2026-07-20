@@ -2,6 +2,7 @@
     display: flex;
     width: 100%;
     box-sizing: border-box;
+    height: auto;
     min-height: 2.25rem;
     min-width: 0;
     align-items: center;
@@ -19,6 +20,15 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 0.25rem;
+    max-height: 4rem;
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.badgeContainer::-webkit-scrollbar {
+    display: none;
 }
 
 .input {
