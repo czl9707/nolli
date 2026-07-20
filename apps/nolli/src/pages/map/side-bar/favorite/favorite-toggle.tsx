@@ -56,7 +56,7 @@ export function FavoriteToggle({
       aria-label={isFav ? "Remove from favorites" : "Add to favorites"}
       aria-pressed={isFav}
       disabled={loading}
-      className={`${styles.fav} ${className ?? ""}`}
+      className={className}
       onClick={(e) => {
         // Stop the click from also selecting the card / navigating.
         e.stopPropagation()
@@ -68,7 +68,7 @@ export function FavoriteToggle({
       {loading ? (
         <Loader2 size={resolvedIconSize} className={styles.spinner} />
       ) : (
-        <Heart size={resolvedIconSize} />
+        <Heart size={resolvedIconSize} className={styles.fav}/>
       )}
     </Button>
   )

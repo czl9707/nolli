@@ -49,11 +49,11 @@ export const useFavoritesStore = create<FavoritesState>((set, get) => ({
     try {
       if (isFav) {
         await removeFavorite(id);
-        set({ ids: ids.filter(i => i != id) });
+        set((s) => ({ ids: s.ids.filter((i) => i !== id) }));
       }
       else {
         await addFavorite(id)
-        set({ ids: [...ids, id] })
+        set((s) => ({ ids: [...s.ids, id] }))
       }
     } catch (err) {
       if (err instanceof UnauthorizedError) {
