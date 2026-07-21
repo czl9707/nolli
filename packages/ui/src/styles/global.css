@@ -110,7 +110,7 @@ body {
     --transition-short: .6s;
     --transition-long: 1.2s;
 
-    --size-border-radius: .5rem;
+    --size-border-radius: .25rem;
     --size-header-height: 3.5rem;
     --size-footer-height: 2rem;
     --size-sidebar-width: 24rem;
