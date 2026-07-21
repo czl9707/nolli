@@ -21,7 +21,7 @@ import controlsStyles from "./map-controls.module.css"
 import { useIsMobile } from "@/hooks/use-is-mobile"
 
 /**
- * Flies the map to the selected building. Rendered as a child of <ArchMap>
+ * Flies the map to the selected architecture. Rendered as a child of <ArchMap>
  * so it can use the useMap() context. Reads nolli stores directly.
  */
 function MapFlyNavigator() {
@@ -60,7 +60,7 @@ export function MapCore() {
   const navigate = useNavigate()
   const filteredArchs = useFilterStore((s) => s.filteredArchs)
   const selected = useArchDetailStore((s) => s.selected)
-  // Lift the selected building onto the map even when a filter has excluded it,
+  // Lift the selected architecture onto the map even when a filter has excluded it,
   // so picking a recommendation always leaves a pin to fly to. `Arch` is a
   // superset of `ArchSummary`, so it satisfies the marker shape directly.
   const architectures = useMemo(() => {

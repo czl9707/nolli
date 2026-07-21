@@ -1,6 +1,6 @@
 import { Shuffle } from "lucide-react"
 import { useArchDetailStore } from "@/stores/arch-detail"
-import { useRelatedBuildings, SUGGESTION_CAP } from "./use-related-buildings"
+import { useRelatedArchitectures, SUGGESTION_CAP } from "./use-related-architectures"
 import { ArchCardList } from "./arch-card-list"
 import { H5 } from "@nolli/ui"
 import { Button } from "@nolli/ui"
@@ -9,7 +9,7 @@ import styles from "./arch-suggestions.module.css"
 
 export function ArchSuggestions() {
   const arch = useArchDetailStore((s) => s.selected)
-  const { architect, city, loading } = useRelatedBuildings(arch)
+  const { architect, city, loading } = useRelatedArchitectures(arch)
 
   // Spec: render nothing while loading or when there is nothing to suggest.
   if (!arch || loading) return null

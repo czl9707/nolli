@@ -57,7 +57,7 @@ export function FavoritesPanel() {
     } else {
       content = (
         <Body2 className={styles.message}>
-          No favorites yet — tap the ♥ on any building to save it here.
+          No favorites yet — tap the ♥ on any architecture to save it here.
         </Body2>
       )
     }

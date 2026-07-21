@@ -16,7 +16,7 @@ import styles from "./arch-map.module.css"
 export type ArchMapProps = {
   /** Architectures to render as clustered markers. Empty array → no markers. */
   architectures: ArchSummary[]
-  /** Slug of the building whose marker should be highlighted. */
+  /** Slug of the architecture whose marker should be highlighted. */
   selectedSlug?: string
   /** Called when an individual marker is clicked. Omit for non-interactive markers. */
   onArchClick?: (slug: string) => void

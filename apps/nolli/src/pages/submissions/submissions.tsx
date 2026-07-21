@@ -85,7 +85,7 @@ export function SubmissionsPage() {
 
   return (
     <>
-      <Seo title="My submissions" description="Your building submissions." path="/submissions" />
+      <Seo title="My submissions" description="Your architecture submissions." path="/submissions" />
       <SideBar>{list}</SideBar>
       {main}
     </>
@@ -112,8 +112,8 @@ function NewSubmissionForm({ bump }: { bump: () => void }) {
 
   return (
     <SubmissionShell
-      title="Submit a building"
-      lead="Suggest a new building for the map."
+      title="Submit architecture"
+      lead="Suggest new architecture for the map."
       ready={initialized && !!user}
       onSubmit={submit}
       actions={

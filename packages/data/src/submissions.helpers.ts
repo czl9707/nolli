@@ -11,7 +11,7 @@ export function slugify(s: string): string {
 
 // Google Maps search URL from a place name + city + country. Matches the
 // `googleMapsUrl` format used by the seed data in scripts/_data — a `?q=`
-// place query, not a raw lat/lng pair, so the pin lands on the building, not
+// place query, not a raw lat/lng pair, so the pin lands on the architecture, not
 // the coordinate centroid.
 export function buildGoogleMapsUrl(m: {
   name: string

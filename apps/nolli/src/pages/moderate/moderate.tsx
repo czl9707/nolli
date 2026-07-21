@@ -102,7 +102,7 @@ export function ModeratePage() {
 
   return (
     <>
-      <Seo title="Moderate" description="Review building submissions." path="/moderate" />
+      <Seo title="Moderate" description="Review architecture submissions." path="/moderate" />
       <SideBar>{list}</SideBar>
       {main}
     </>
