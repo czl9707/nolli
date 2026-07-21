@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react"
-import { useNavigate, useParams } from "react-router"
+import { useLocation, useNavigate, useParams } from "react-router"
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import {
@@ -17,6 +17,7 @@ import { Seo } from "@/components/layout/seo"
 import { SubmissionList, SubmissionRow } from "@/components/submission/submission-list"
 import { SubmissionShell } from "@/components/submission/submission-shell"
 import { SubmissionFields } from "@/components/submission/submission-fields"
+import { CoordPicker } from "@/components/submission/coord-picker"
 import { useSubmissionForm, handleError } from "@/components/submission/use-submission-form"
 import { payloadToFormValues } from "@/components/submission/shape-payload"
 import {
@@ -27,6 +28,7 @@ import {
   type QueueEntry,
 } from "@/lib/api/submissions"
 import { useAuthStore } from "@/stores/auth"
+import { useSidebarStore } from "@/stores/sidebar"
 import styles from "@/components/submission/submission-shell.module.css"
 import { SideBar } from "../map/side-bar"
 
@@ -58,6 +60,11 @@ export function ModeratePage() {
   const { user, initialized } = useAuthStore()
   const isMod = user?.role === "moderator" || user?.role === "admin"
   const params = useParams()
+  const { pathname } = useLocation()
+  const setOpen = useSidebarStore((s) => s.setOpen)
+  useEffect(() => {
+    setOpen(pathname === "/moderate")
+  }, [pathname, setOpen])
   const id = Number(params.id)
 
   const queue = useQueue(isMod, initialized)
@@ -110,16 +117,16 @@ export function ModeratePage() {
 }
 
 function ReviewForm({ id, bump }: { id: number; bump: () => void }) {
+  const navigate = useNavigate();
   const { form, saving, submit } = useSubmissionForm({
     onSubmit: async (payload, values) => {
       await patchSubmission(id, payload)
       toast.success("Saved.")
       form.reset(values)
       bump()
+      navigate("/moderate")
     },
   })
-
-  const navigate = useNavigate();
   const [loadingReview, setLoadingReview] = useState(true)
   const [loadError, setLoadError] = useState(false)
   const [deciding, setDeciding] = useState(false)
@@ -171,6 +178,7 @@ function ReviewForm({ id, bump }: { id: number; bump: () => void }) {
         ready={!error && !loadingReview}
         error={error}
         onSubmit={submit}
+        aside={<CoordPicker form={form} />}
         actions={
           <div className={styles.decideBar}>
             <Button

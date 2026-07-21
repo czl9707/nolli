@@ -9,7 +9,7 @@
   box-sizing: border-box;
 }
 
-@media(--smaller-than-sm) {
+@media (--smaller-than-sm) {
   .shell {
     padding-left: var(--spacing-component);
     padding-right: var(--spacing-component);
@@ -17,13 +17,77 @@
   }
 }
 
+.frame {
+  width: 100%;
+  max-width: var(--breakpoint-md);
+  margin-inline: auto;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+@media (--larger-than-sm) {
+  .frame {
+    padding-inline: var(--spacing-paragraph);
+  }
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Two-column split lives inside the form so the aside (map) aligns to the
+   band between the topbar above and the actions bar below — both stay inside
+   the form, so submit/Enter keeps working. */
+.columnsRow {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (--larger-than-sm) {
+  .columnsRow {
+    flex-direction: row;
+    gap: var(--spacing-component);
+  }
+}
+
+.fields {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-top: var(--border);
+  border-bottom: var(--border);
+}
+
+.aside {
+  display: none;
+}
+
+@media (--larger-than-sm) {
+  .aside {
+    display: block;
+    flex-shrink: 0;
+    width: var(--breakpoint-xs);
+    min-width: 0;
+    min-height: 0;
+  }
+}
+
 .topbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--spacing-paragraph);
   padding: var(--spacing-paragraph) 0;
-  border-bottom: var(--border);
 }
 
 .heading {
@@ -64,8 +128,16 @@
   align-items: center;
   gap: 1rem;
   padding: var(--spacing-paragraph) 0;
-  border-top: var(--border);
   background: rgb(var(--color-primary-background));
+}
+
+/* Align the actions bar with the fields column (left), leaving the area under
+   the map as background — mirrors columnsRow's fields+gap+aside layout. */
+@media (--larger-than-sm) {
+  .actions {
+    align-self: flex-start;
+    width: calc(100% - var(--breakpoint-xs) - var(--spacing-component));
+  }
 }
 
 .decideBar {
