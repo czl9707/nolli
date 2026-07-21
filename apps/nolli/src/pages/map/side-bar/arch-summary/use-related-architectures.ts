@@ -11,7 +11,7 @@ export type RelatedAxis = {
   shuffle: () => void
 }
 
-export type RelatedBuildings = {
+export type RelatedArchitectures = {
   architect: RelatedAxis
   city: RelatedAxis
   loading: boolean
@@ -51,11 +51,11 @@ export function pickRandom<T>(
 /**
  * Derives architect-mate and city-mate suggestion pools for the given arch.
  * Resolves names→ids via getFilterOptions, fetches pools via
- * getAllArchitectures, excludes the current building, and picks SUGGESTION_CAP
+ * getAllArchitectures, excludes the current architecture, and picks SUGGESTION_CAP
  * random per axis. Pools are cached in a ref so `shuffle` re-rolls instantly.
  * Re-derives whenever the selected slug changes.
  */
-export function useRelatedBuildings(arch: Arch | null): RelatedBuildings {
+export function useRelatedArchitectures(arch: Arch | null): RelatedArchitectures {
   const dataSource = useDbStore((s) => s.dataSource)
 
   const [architectItems, setArchitectItems] = useState<ArchSummary[]>([])
