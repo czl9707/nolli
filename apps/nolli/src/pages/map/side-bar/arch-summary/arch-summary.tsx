@@ -1,7 +1,7 @@
-import { useRef } from "react"
+import { useRef, useState } from "react"
 import { useArchDetailStore } from "@/stores/arch-detail"
 import { useNavigate } from "react-router"
-import { H4, Body1 } from "@nolli/ui"
+import { H4, Body1, Skeleton } from "@nolli/ui"
 import { Button } from "@nolli/ui"
 import { ArrowRight, ChevronLeft, MapPin, User } from "lucide-react"
 import { SidebarCard } from "@/components/card/sidebar-card"
@@ -47,7 +47,7 @@ export function ArchSummary() {
             <div className={styles.favoriteButton}>
               <FavoriteToggle id={current.id} />
             </div>
-            <img className={styles.cover} src={cover} alt={current.name} />
+            <Cover key={current.slug} src={cover} alt={current.name} />
             <div className={styles.coverOverlay} />
             <H4 className={styles.title}>{current.name}</H4>
           </div>
@@ -92,5 +92,21 @@ export function ArchSummary() {
         <ArchSuggestions />
       </div>
     </div>
+  )
+}
+
+function Cover({ src, alt }: { src: string; alt: string }) {
+  const [loaded, setLoaded] = useState(false)
+  return (
+    <>
+      {!loaded && <Skeleton className={styles.coverSkeleton} />}
+      <img
+        className={styles.cover}
+        src={src}
+        alt={alt}
+        onLoad={() => setLoaded(true)}
+        onError={() => setLoaded(true)}
+      />
+    </>
   )
 }

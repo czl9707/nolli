@@ -46,6 +46,12 @@
   display: block;
 }
 
+.coverSkeleton {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  position: absolute;
+}
+
 .coverOverlay {
   position: absolute;
   inset: 0;
