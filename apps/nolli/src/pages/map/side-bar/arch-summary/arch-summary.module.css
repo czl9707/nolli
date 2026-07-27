@@ -87,7 +87,6 @@
 .info {
   display: flex;
   flex-direction: column;
-  gap: .25rem;
   padding: var(--spacing-paragraph);
 }
 
@@ -96,6 +95,7 @@
   align-items: center;
   gap: 0.5rem;
   width: 100%;
+  min-height: 2rem;
 }
 
 .rowIcon {
@@ -107,11 +107,23 @@
   padding-left: 0 !important;
 }
 
-.locationText {
+.locationRow {
+  align-items: flex-start;
+}
+
+.locationRow .rowIcon {
+  margin-top: 0.25rem;
+}
+
+.locationRow .locationLink.locationText {
+  flex: 1 1 auto;
   min-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  height: auto;
+  min-height: 2rem;
+  padding-left: 0;
+  justify-content: flex-start;
+  text-align: left;
+  white-space: normal;
 }
 
 .muted {

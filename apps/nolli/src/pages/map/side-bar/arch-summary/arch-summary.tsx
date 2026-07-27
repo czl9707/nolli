@@ -62,7 +62,7 @@ export function ArchSummary() {
             </Body1>
 
             <a
-              className={styles.row}
+              className={`${styles.row} ${styles.locationRow}`}
               href={mapUrl}
               target="_blank"
               rel="noopener noreferrer"
