@@ -24,6 +24,10 @@ const post = (msg: WorkerResponse) => self.postMessage(msg)
 let db: Database
 let sqlite3: Sqlite3Static
 const DB_NAME = "nolli.db"
+// Companion to DB_NAME in OPFS: records the manifest version of the db we last
+// persisted, so the worker can decide whether to re-download without relying
+// on localStorage (unavailable in workers).
+const VERSION_FILE = "nolli.version"
 
 function query(sql: string, bind?: BindingSpec): Row[] {
   return db.exec({
@@ -53,7 +57,7 @@ function mapSummaryRow(row: Row): ArchSummary {
   }
 }
 
-async function handleInit(msgId: number, download: boolean): Promise<void> {
+async function handleInit(msgId: number): Promise<void> {
   if (db) {
     post({ type: "ready", msgId, message: "Database already initialized" })
     return
@@ -66,27 +70,42 @@ async function handleInit(msgId: number, download: boolean): Promise<void> {
     return
   }
 
-  const hasOpfs = "opfs" in sqlite3 && typeof sqlite3.oo1.OpfsDb === "function"
+  const hasOpfs = "OpfsDb" in sqlite3.oo1
 
   try {
-    const message = hasOpfs
-      ? await openOpfsDb(download)
-      : await openTransientDb()
+    const message = hasOpfs ? await openOpfsDb() : await openTransientDb()
     post({ type: "ready", msgId, message })
   } catch (err) {
     post({ type: "error", msgId, error: String(err) })
   }
 }
 
-async function openOpfsDb(download: boolean): Promise<string | undefined> {
+async function openOpfsDb(): Promise<string | undefined> {
   const OpfsDb = sqlite3.oo1.OpfsDb
+  const remoteVersion = await fetchManifestVersion()
+  const localVersion = await readPersistedVersion()
+  const download = !remoteVersion || remoteVersion !== localVersion
+
   let message: string | undefined
-  if (download) message = await downloadDb(OpfsDb)
+  if (download) {
+    try {
+      await downloadDb(OpfsDb)
+      if (remoteVersion) await writePersistedVersion(remoteVersion)
+      message = "Latest map data loaded and stored."
+    } catch {
+      message = "Failed to fetch latest map data, using cached version"
+    }
+  }
+  else {
+    message = "Map data is up to date."
+  }
 
   try {
     db = new OpfsDb(DB_NAME, "r")
   } catch {
-    throw new Error(`Database file "${DB_NAME}" not found in OPFS.`)
+    await downloadDb(OpfsDb)
+    if (remoteVersion) await writePersistedVersion(remoteVersion)
+    db = new OpfsDb(DB_NAME, "r")
   }
   return message
 }
@@ -117,14 +136,9 @@ async function openTransientDb(): Promise<string | undefined> {
   return "Latest map data loaded."
 }
 
-async function downloadDb(OpfsDb: NonNullable<Sqlite3Static["oo1"]["OpfsDb"]>): Promise<string> {
-  try {
-    const buffer = await fetchDbBuffer()
-    await OpfsDb.importDb(DB_NAME, buffer)
-    return "Latest map data loaded and stored."
-  } catch {
-    return "Failed to fetch latest map data, using cached version"
-  }
+async function downloadDb(OpfsDb: NonNullable<Sqlite3Static["oo1"]["OpfsDb"]>): Promise<void> {
+  const buffer = await fetchDbBuffer()
+  await OpfsDb.importDb(DB_NAME, buffer)
 }
 
 async function fetchDbBuffer(): Promise<ArrayBuffer> {
@@ -134,6 +148,38 @@ async function fetchDbBuffer(): Promise<ArrayBuffer> {
     throw new Error(`Failed to fetch map data (HTTP ${res.status}).`)
   }
   return res.arrayBuffer()
+}
+
+async function fetchManifestVersion(): Promise<string | undefined> {
+  const baseUrl = import.meta.env.VITE_R2_PUBLIC_DB_URL as string
+  try {
+    const res = await fetch(`${baseUrl}/manifest.json`)
+    if (!res.ok) return undefined
+    const manifest = (await res.json()) as { version: string }
+    return manifest.version
+  } catch {
+    return undefined
+  }
+}
+
+async function readPersistedVersion(): Promise<string | undefined> {
+  try {
+    const root = await navigator.storage.getDirectory()
+    const handle = await root.getFileHandle(VERSION_FILE).catch(() => null)
+    if (!handle) return undefined
+    const text = await handle.getFile().then((f) => f.text())
+    return text.trim() || undefined
+  } catch {
+    return undefined
+  }
+}
+
+async function writePersistedVersion(version: string): Promise<void> {
+  const root = await navigator.storage.getDirectory()
+  const handle = await root.getFileHandle(VERSION_FILE, { create: true })
+  const writable = await handle.createWritable()
+  await writable.write(version)
+  await writable.close()
 }
 
 function handleGetAllArchitectures(filter: ArchFilter | undefined): ArchSummary[] {
@@ -281,7 +327,7 @@ self.onmessage = async (e: MessageEvent<WorkerInbound>) => {
   try {
     switch (type) {
       case "init":
-        await handleInit(msgId, e.data.download)
+        await handleInit(msgId)
         break
       case "getAllArchitectures":
         post({ type: "getAllArchitectures", msgId, data: handleGetAllArchitectures(e.data.filter) })
