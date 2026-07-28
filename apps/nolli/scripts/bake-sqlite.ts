@@ -277,9 +277,12 @@ async function main() {
     log("Dry run — no writes to R2")
   }
 
+  // Rollback journal, not WAL: the shipped latest.db is a read-only artifact,
+  // and an in-memory sqlite3_deserialize load can't be WAL (would fail with
+  // SQLITE_CANTOPEN). journal_mode is persistent in the file header, so this
+  // also de-WALs any previously-baked WAL file at DB_PATH.
   const db = new Database(DB_PATH)
-  db.pragma("journal_mode = WAL")
-  db.pragma("synchronous = NORMAL")
+  db.pragma("journal_mode = DELETE")
 
   createSchema(db)
 
