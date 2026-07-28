@@ -61,41 +61,79 @@ async function handleInit(msgId: number, download: boolean): Promise<void> {
 
   try {
     sqlite3 = await sqlite3InitModule()
-  
-    if (!sqlite3.oo1.OpfsDb) {
-      throw new Error("OPFS VFS is not supported in this environment, please switch to a standard browser.")
-    }
-  }
-  catch (err) {
+  } catch (err) {
     post({ type: "error", msgId, error: String(err) })
     return
   }
 
-
-  let message: string | undefined = undefined;
-  if (download) {
-    message = await downloadDb(sqlite3.oo1.OpfsDb)
-  }
+  const hasOpfs = "opfs" in sqlite3 && typeof sqlite3.oo1.OpfsDb === "function"
 
   try {
-    db = new sqlite3.oo1.OpfsDb(DB_NAME, "r");
+    const message = hasOpfs
+      ? await openOpfsDb(download)
+      : await openTransientDb()
+    post({ type: "ready", msgId, message })
+  } catch (err) {
+    post({ type: "error", msgId, error: String(err) })
+  }
+}
+
+async function openOpfsDb(download: boolean): Promise<string | undefined> {
+  const OpfsDb = sqlite3.oo1.OpfsDb
+  let message: string | undefined
+  if (download) message = await downloadDb(OpfsDb)
+
+  try {
+    db = new OpfsDb(DB_NAME, "r")
   } catch {
     throw new Error(`Database file "${DB_NAME}" not found in OPFS.`)
   }
+  return message
+}
 
-  post({ type: "ready", msgId, message })
+// OPFS unavailable (iOS Safari / in-app webviews): there is no persistence
+// layer, so fetch the latest build each session and load it into a transient
+// in-memory database via sqlite3_deserialize.
+async function openTransientDb(): Promise<string | undefined> {
+  const buffer = await fetchDbBuffer()
+  db = new sqlite3.oo1.DB(":memory:")
+  const bytes = new Uint8Array(buffer)
+  const ptr = sqlite3.wasm.allocFromTypedArray(bytes)
+  const flags =
+    sqlite3.capi.SQLITE_DESERIALIZE_FREEONCLOSE |
+    sqlite3.capi.SQLITE_DESERIALIZE_RESIZEABLE
+  const rc = sqlite3.capi.sqlite3_deserialize(
+    db.pointer as number,
+    "main",
+    ptr,
+    bytes.byteLength,
+    bytes.byteLength,
+    flags,
+  )
+  if (rc !== sqlite3.capi.SQLITE_OK) {
+    sqlite3.wasm.dealloc(ptr)
+    throw new Error(`Failed to load database into memory (rc=${rc}).`)
+  }
+  return "Latest map data loaded."
 }
 
 async function downloadDb(OpfsDb: NonNullable<Sqlite3Static["oo1"]["OpfsDb"]>): Promise<string> {
+  try {
+    const buffer = await fetchDbBuffer()
+    await OpfsDb.importDb(DB_NAME, buffer)
+    return "Latest map data loaded and stored."
+  } catch {
+    return "Failed to fetch latest map data, using cached version"
+  }
+}
+
+async function fetchDbBuffer(): Promise<ArrayBuffer> {
   const baseUrl = import.meta.env.VITE_R2_PUBLIC_DB_URL as string
   const res = await fetch(`${baseUrl}/latest.db`)
   if (!res.ok) {
-    return "Failed to fetch latest map data, using cached version"
+    throw new Error(`Failed to fetch map data (HTTP ${res.status}).`)
   }
-
-  const buffer = await res.arrayBuffer()
-  await OpfsDb.importDb(DB_NAME, buffer)
-  return "Latest map data loaded."
+  return res.arrayBuffer()
 }
 
 function handleGetAllArchitectures(filter: ArchFilter | undefined): ArchSummary[] {
