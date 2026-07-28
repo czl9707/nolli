@@ -31,6 +31,7 @@ export function MediaCard({
           className={`${styles.thumbnail} ${styles.image}`}
           src={coverUrl}
           alt={coverAlt}
+          crossOrigin="anonymous"
           loading="lazy"
         />
       ) : (
