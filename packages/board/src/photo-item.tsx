@@ -20,7 +20,7 @@ export function PhotoItem({ photo, position, delay }: PhotoItemProps) {
         delay={delay}
         onClick={() => setOpen(true)}
       >
-        <img src={photo.image} alt="" className={styles.photo} />
+        <img src={photo.image} alt="" className={styles.photo} crossOrigin="anonymous"/>
         {photo.caption && (
           <div className={styles.caption}>
             <Body2>{photo.caption}</Body2>
@@ -36,7 +36,7 @@ export function PhotoItem({ photo, position, delay }: PhotoItemProps) {
           }`}
           style={{ aspectRatio: `${photo.width}/${photo.height}` }}
         >
-          <img src={photo.image} alt="" className={styles.photo} />
+          <img src={photo.image} alt="" className={styles.photo} crossOrigin="anonymous"/>
           {photo.caption && (
             <div className={styles.caption}>
               <Body2>{photo.caption}</Body2>

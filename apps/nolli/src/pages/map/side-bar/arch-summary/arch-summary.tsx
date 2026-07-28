@@ -104,6 +104,7 @@ function Cover({ src, alt }: { src: string; alt: string }) {
         className={styles.cover}
         src={src}
         alt={alt}
+        crossOrigin="anonymous"
         onLoad={() => setLoaded(true)}
         onError={() => setLoaded(true)}
       />
