@@ -87,21 +87,29 @@ async function openOpfsDb(): Promise<string | undefined> {
   if (download) {
     try {
       await downloadDb(OpfsDb)
-      if (remoteVersion) await writePersistedVersion(remoteVersion)
       message = "Latest map data loaded and stored."
     } catch {
       message = "Failed to fetch latest map data, using cached version"
     }
-  }
-  else {
+  } else {
     message = "Map data is up to date."
+  }
+
+  // Best-effort: persist the version so we can skip re-downloading next session.
+  // Never fatal — a failed write (e.g. on some iOS Safari builds) just means we
+  // re-download next time; it must not mask a successful download above.
+  if (download && remoteVersion) {
+    try {
+      await writePersistedVersion(remoteVersion)
+    } catch {
+      /* ignored */
+    }
   }
 
   try {
     db = new OpfsDb(DB_NAME, "r")
   } catch {
     await downloadDb(OpfsDb)
-    if (remoteVersion) await writePersistedVersion(remoteVersion)
     db = new OpfsDb(DB_NAME, "r")
   }
   return message
@@ -171,12 +179,32 @@ async function readPersistedVersion(): Promise<string | undefined> {
   }
 }
 
+// createSyncAccessHandle is worker-only and not in the DOM lib, so declare the
+// minimal surface we use.
+interface SyncAccessHandle {
+  write(data: Uint8Array, opts?: { at?: number }): number
+  truncate(size: number): void
+  close(): Promise<void>
+}
+type SyncAccessFileHandle = FileSystemFileHandle & {
+  createSyncAccessHandle(): Promise<SyncAccessHandle>
+}
+
 async function writePersistedVersion(version: string): Promise<void> {
   const root = await navigator.storage.getDirectory()
-  const handle = await root.getFileHandle(VERSION_FILE, { create: true })
-  const writable = await handle.createWritable()
-  await writable.write(version)
-  await writable.close()
+  const handle = (await root.getFileHandle(VERSION_FILE, {
+    create: true,
+  })) as SyncAccessFileHandle
+  // createSyncAccessHandle (worker-only) is the reliable OPFS write primitive on
+  // iOS Safari — createWritable() throws on some builds.
+  const access = await handle.createSyncAccessHandle()
+  try {
+    const encoded = new TextEncoder().encode(version)
+    access.write(encoded, { at: 0 })
+    access.truncate(encoded.byteLength)
+  } finally {
+    await access.close()
+  }
 }
 
 function handleGetAllArchitectures(filter: ArchFilter | undefined): ArchSummary[] {
