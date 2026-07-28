@@ -24,9 +24,6 @@ const post = (msg: WorkerResponse) => self.postMessage(msg)
 let db: Database
 let sqlite3: Sqlite3Static
 const DB_NAME = "nolli.db"
-// Companion to DB_NAME in OPFS: records the manifest version of the db we last
-// persisted, so the worker can decide whether to re-download without relying
-// on localStorage (unavailable in workers).
 const VERSION_FILE = "nolli.version"
 
 function query(sql: string, bind?: BindingSpec): Row[] {
