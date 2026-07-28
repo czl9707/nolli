@@ -2,12 +2,6 @@ import type { DataSource, ArchFilter, FilterOptions } from "./data-source.type"
 import type { ArchSummary, Arch } from "./architectures.type"
 import type { WorkerRequest, WorkerResponse } from "./worker-protocol.type"
 
-const MANIFEST_KEY = "nolli-db-sha256"
-// Guarded so the barrel can be imported outside Vite (e.g. tsx build scripts).
-// `import.meta.env` is undefined under plain Node/tsx; in Vite it is defined.
-const BASE_URL = (import.meta.env?.VITE_R2_PUBLIC_DB_URL ?? "") as string
-
-
 type PendingMessage = {
   resolve: (response: WorkerResponse) => void
   reject: (error: Error) => void
@@ -52,7 +46,6 @@ export class SqliteDataSource implements DataSource {
     }
 
     this.worker.onerror = () => {
-      localStorage.removeItem(MANIFEST_KEY)
       this.initReject(new Error("Worker failed to load"))
     }
 
@@ -60,34 +53,9 @@ export class SqliteDataSource implements DataSource {
   }
 
   private async init(): Promise<string | undefined> {
-    let download = false
-    let newHash: string | undefined
-    const storedHash = localStorage.getItem(MANIFEST_KEY)
-
-    let message = "";
-    try {
-      const res = await fetch(`${BASE_URL}/manifest.json`)
-      if (res.ok) {
-        const manifest = (await res.json()) as { version: string }
-        download = manifest.version !== storedHash;
-        newHash = manifest.version;
-        message = download ? "" : "Map data is up to date. "
-      }
-    } catch {
-      message = "Fail to fetch meta data. "
-    }
-
-    try {
-      const response = await this.send({ type: "init", download })
-      if (newHash) {
-        localStorage.setItem(MANIFEST_KEY, newHash)
-      }
-      if (response.type === "ready") return message + (response.message ?? "")
-      else throw new Error(`Unexpected response: ${response.type}`)
-    } catch (err) {
-      localStorage.removeItem(MANIFEST_KEY)
-      throw err
-    }
+    const response = await this.send({ type: "init" })
+    if (response.type === "ready") return response.message
+    throw new Error(`Unexpected response: ${response.type}`)
   }
 
   private send(msg: WorkerRequest): Promise<WorkerResponse> {

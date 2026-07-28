@@ -278,8 +278,7 @@ async function main() {
   }
 
   const db = new Database(DB_PATH)
-  db.pragma("journal_mode = WAL")
-  db.pragma("synchronous = NORMAL")
+  db.pragma("journal_mode = DELETE")
 
   createSchema(db)
 
