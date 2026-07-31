@@ -47,6 +47,9 @@ apps/nolli/scripts/_data/
 # bake output
 nolli-map.db
 apps/nolli/nolli-map.db
+
+# motion render output
+apps/motion/out/
 # SQLite WAL/SHM sidecars (regenerated whenever the db is opened)
 *.db-shm
 *.db-wal

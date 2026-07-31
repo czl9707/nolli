@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react"
-import { useNavigate } from "react-router"
+import { useNavigate, useSearchParams } from "react-router"
 import { ArchMap } from "@nolli/map"
 import {
   flyToArchCinematic,
@@ -58,6 +58,10 @@ function MapFlyNavigator() {
  */
 export function MapCore() {
   const navigate = useNavigate()
+  // Opt-in WebGL readback for screenshot/video capture (?capture=1). Sets
+  // preserveDrawingBuffer so the map canvas isn't blank when screenshotted.
+  const [searchParams] = useSearchParams()
+  const capture = searchParams.get("capture") === "1"
   const filteredArchs = useFilterStore((s) => s.filteredArchs)
   const selected = useArchDetailStore((s) => s.selected)
   // Lift the selected architecture onto the map even when a filter has excluded it,
@@ -86,6 +90,7 @@ export function MapCore() {
       <MapControlsOffset />
       <ArchMap
         architectures={architectures}
+        capture={capture}
         selectedSlug={selected?.slug}
         onArchClick={(slug) => {
           navigateArch(slug, false, "replace")
