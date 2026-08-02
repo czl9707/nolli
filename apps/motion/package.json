@@ -5,9 +5,11 @@
   "type": "module",
   "scripts": {
     "studio": "remotion studio src/index.ts",
-    "render": "remotion render src/index.ts ArchitectSpotlight out/sanaa.mp4",
     "manifest": "tsx scripts/build-manifest.ts",
-    "capture": "tsx scripts/capture.ts",
+    "assets:images": "tsx scripts/assets-images.ts",
+    "assets:text": "tsx scripts/assets-text.ts",
+    "assets:morph": "tsx scripts/assets-morph.ts",
+    "assemble": "tsx scripts/assemble.ts",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },

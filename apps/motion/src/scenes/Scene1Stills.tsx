@@ -1,6 +1,7 @@
 import { AbsoluteFill, Img, Series, staticFile, useCurrentFrame } from "remotion";
 import { kenBurns } from "../lib/kenburns";
 import { STILL_FRAMES } from "../lib/timing";
+import { THEME } from "../lib/theme";
 import type { Manifest } from "../lib/manifest";
 
 const Still: React.FC<{ path: string }> = ({ path }) => {
@@ -24,7 +25,7 @@ const Still: React.FC<{ path: string }> = ({ path }) => {
 export const Scene1Stills: React.FC<{ manifest: Manifest }> = ({ manifest }) => {
   const stills = manifest.stills ?? [];
   return (
-    <AbsoluteFill style={{ backgroundColor: "#000" }}>
+    <AbsoluteFill style={{ backgroundColor: THEME.bg }}>
       <Series>
         {stills.map((s, i) => (
           <Series.Sequence key={s.path + i} durationInFrames={STILL_FRAMES}>

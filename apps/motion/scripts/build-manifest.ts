@@ -2,10 +2,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { ensureDb, queryArchitectBuildings } from "./db";
 import { rowsToManifest, type Manifest } from "./manifest";
-
-const ARCHITECTS: Record<string, { name: string; hero?: string }> = {
-  sanaa: { name: "SANAA", hero: "rolex-learning-center" },
-};
+import { ARCHITECTS } from "./architects";
 
 async function main() {
   const slug = process.argv[2] ?? "sanaa";
@@ -15,7 +12,7 @@ async function main() {
   const rows = queryArchitectBuildings(dbPath, cfg.name);
   if (rows.length === 0) throw new Error(`No buildings found for "${cfg.name}".`);
   const manifest: Manifest = rowsToManifest(rows, { architect: cfg.name, slug, heroSlug: cfg.hero });
-  const dir = resolve("public/capture", slug);
+  const dir = resolve("out", slug);
   mkdirSync(dir, { recursive: true });
   const out = join(dir, "manifest.json");
   writeFileSync(out, JSON.stringify(manifest, null, 2));

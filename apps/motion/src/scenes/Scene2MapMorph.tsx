@@ -1,4 +1,5 @@
 import { AbsoluteFill, Img, OffthreadVideo, staticFile, useCurrentFrame, useVideoConfig, interpolate } from "remotion";
+import { THEME } from "../lib/theme";
 import type { Manifest } from "../lib/manifest";
 
 export const Scene2MapMorph: React.FC<{ manifest: Manifest }> = ({ manifest }) => {
@@ -13,7 +14,7 @@ export const Scene2MapMorph: React.FC<{ manifest: Manifest }> = ({ manifest }) =
   const pushIn = interpolate(frame, [handoffStart, durationInFrames], [1, 1.06], { extrapolateLeft: "clamp" });
 
   return (
-    <AbsoluteFill style={{ backgroundColor: "#000" }}>
+    <AbsoluteFill style={{ backgroundColor: THEME.bg }}>
       {clip && (
         <OffthreadVideo src={clip} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
       )}

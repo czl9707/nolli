@@ -19,15 +19,6 @@ export type Manifest = {
   mapClipEnd?: string;
 };
 
-// Remotion cannot fetch() during render, so bundle the manifest JSON at build time.
-import sanaaManifest from "../../public/capture/sanaa/manifest.json";
-
-const MAP: Record<string, Manifest> = {
-  sanaa: sanaaManifest as unknown as Manifest,
-};
-
-export function importManifest(slug: string): Manifest {
-  const m = MAP[slug];
-  if (!m) throw new Error(`No bundled manifest for "${slug}".`);
-  return m;
-}
+// The manifest is no longer statically imported — it is generated into
+// out/<slug>/manifest.json and fed to the render via inputProps (see
+// scripts/assemble.ts). This module keeps only the shared types.
