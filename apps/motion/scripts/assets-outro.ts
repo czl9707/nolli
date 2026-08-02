@@ -2,11 +2,25 @@ import { bundle } from "@remotion/bundler";
 import { selectComposition, renderMedia } from "@remotion/renderer";
 import { resolve } from "node:path";
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
-import { TEXT_VARIANTS } from "./playlist";
+import { ARCHITECTS } from "./architects";
 import type { Manifest } from "./manifest";
 
+const SEGMENTS = [
+  { id: "OutroName", file: "outro-name.mp4" },
+  { id: "OutroCount", file: "outro-count.mp4" },
+  { id: "OutroNow", file: "outro-now.mp4" },
+  { id: "OutroLogo", file: "outro-logo.mp4" },
+] as const;
+
 async function main() {
-  const slug = process.argv[2] ?? "sanaa";
+  const slug = process.argv[2];
+  if (!slug) {
+    console.error("Usage: assets:outro <architect-slug>");
+    process.exit(1);
+  }
+  if (!ARCHITECTS[slug]) {
+    throw new Error(`Unknown architect slug "${slug}". Add it to ARCHITECTS in scripts/architects.ts.`);
+  }
   const fontVariant = "playful";
   const outDir = resolve("out", slug);
   mkdirSync(outDir, { recursive: true });
@@ -20,18 +34,14 @@ async function main() {
   console.log("Bundling…");
   const serveUrl = await bundle({ entryPoint: resolve("src/index.ts") });
 
-  for (const variant of TEXT_VARIANTS) {
-    const inputProps = { manifest, fontVariant, textVariant: variant };
-    const composition = await selectComposition({
-      serveUrl,
-      id: "Scene3Text",
-      inputProps,
-    });
-    const out = resolve(outDir, `text-${variant}.mp4`);
-    console.log(`Rendering ${variant} → ${out}`);
+  for (const seg of SEGMENTS) {
+    const inputProps = { manifest, fontVariant };
+    const composition = await selectComposition({ serveUrl, id: seg.id, inputProps });
+    const out = resolve(outDir, seg.file);
+    console.log(`Rendering ${seg.id} → ${out}`);
     await renderMedia({ composition, serveUrl, codec: "h264", outputLocation: out });
   }
-  console.log("Done. Review the three clips and set `text` in out/<slug>/video.json.");
+  console.log(`Done. ${SEGMENTS.length} outro clips written to out/${slug}/.`);
 }
 
 main().catch((e) => {

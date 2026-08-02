@@ -1,8 +1,9 @@
 import { Composition } from "remotion";
 import { ArchitectSpotlight, type SpotlightProps } from "./compositions/ArchitectSpotlight";
-import { Scene3Count, type TextVariant } from "./scenes/Scene3Count";
+import { SegmentName, SegmentCount, SegmentNow, SegmentLogo } from "./scenes/OutroSegments";
 import type { Manifest } from "./lib/manifest";
 import { FPS, STILL_FRAMES, scene2Duration, scene3Duration } from "./lib/timing";
+import { OUTRO } from "./lib/outro";
 
 // Placeholder manifest so Remotion Studio renders without --props. Real renders
 // always go through `assemble`, which passes the curated manifest via inputProps.
@@ -17,14 +18,11 @@ const placeholderManifest: Manifest = {
 const defaultProps: SpotlightProps = {
   manifest: placeholderManifest,
   fontVariant: "playful",
-  textVariant: "line-wipe",
 };
 
-// Standalone Scene 3 only — cheap to render so text-animation variants can be
-// A/B compared without rendering the full video.
-const Scene3Text: React.FC<SpotlightProps> = ({ manifest, fontVariant, textVariant }) => (
-  <Scene3Count manifest={manifest} fontVariant={fontVariant} variant={textVariant as TextVariant} />
-);
+// Standalone outro segments — cheap to render separately so clips can be
+// interleaved with other material later. assets:outro renders all four.
+const outroSegmentProps = { manifest: placeholderManifest, fontVariant: "playful" as const };
 
 export const RemotionRoot = () => {
   return (
@@ -45,13 +43,40 @@ export const RemotionRoot = () => {
         }}
       />
       <Composition
-        id="Scene3Text"
-        component={Scene3Text}
-        durationInFrames={scene3Duration}
+        id="OutroName"
+        component={SegmentName}
+        durationInFrames={OUTRO.segments.name}
         fps={FPS}
         width={1920}
         height={1080}
-        defaultProps={defaultProps}
+        defaultProps={outroSegmentProps}
+      />
+      <Composition
+        id="OutroCount"
+        component={SegmentCount}
+        durationInFrames={OUTRO.segments.count}
+        fps={FPS}
+        width={1920}
+        height={1080}
+        defaultProps={outroSegmentProps}
+      />
+      <Composition
+        id="OutroNow"
+        component={SegmentNow}
+        durationInFrames={OUTRO.segments.now}
+        fps={FPS}
+        width={1920}
+        height={1080}
+        defaultProps={outroSegmentProps}
+      />
+      <Composition
+        id="OutroLogo"
+        component={SegmentLogo}
+        durationInFrames={OUTRO.segments.logo}
+        fps={FPS}
+        width={1920}
+        height={1080}
+        defaultProps={outroSegmentProps}
       />
     </>
   );

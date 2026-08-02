@@ -7,26 +7,23 @@ import {
   mergePlaylist,
   validatePlaylist,
   loadPlaylist,
-  DEFAULT_TEXT,
   type Playlist,
 } from "./playlist";
 
 describe("seedPlaylist", () => {
-  it("builds a playlist with default text and null morph", () => {
+  it("builds a playlist with the given images and null morph", () => {
     const p = seedPlaylist("sanaa", ["images/a-detail.png", "images/b-board.png"]);
     expect(p.slug).toBe("sanaa");
     expect(p.images).toEqual(["images/a-detail.png", "images/b-board.png"]);
-    expect(p.text).toBe(DEFAULT_TEXT);
     expect(p.morph).toBeNull();
   });
 });
 
 describe("mergePlaylist", () => {
-  it("appends only new images, preserving existing order and edits", () => {
+  it("appends only new images, preserving existing order and slug", () => {
     const existing: Playlist = {
       slug: "sanaa",
       images: ["images/b-board.png", "images/a-detail.png"], // user reordered
-      text: "kinetic", // user picked
       morph: null,
     };
     const merged = mergePlaylist(existing, ["images/a-detail.png", "images/c-detail.png"]);
@@ -35,7 +32,6 @@ describe("mergePlaylist", () => {
       "images/a-detail.png",
       "images/c-detail.png",
     ]);
-    expect(merged.text).toBe("kinetic"); // edit preserved
     expect(merged.slug).toBe("sanaa");
   });
 });
@@ -54,7 +50,6 @@ describe("validatePlaylist", () => {
     const p: Playlist = {
       slug: "sanaa",
       images: ["images/a-detail.png"],
-      text: "line-wipe",
       morph: "morph.mp4",
     };
     expect(validatePlaylist(p, dir)).toEqual([]);
@@ -64,7 +59,6 @@ describe("validatePlaylist", () => {
     const p: Playlist = {
       slug: "sanaa",
       images: ["images/a-detail.png", "images/ghost.png"],
-      text: "line-wipe",
       morph: "ghost.mp4",
     };
     expect(validatePlaylist(p, dir).sort()).toEqual(["ghost.mp4", "images/ghost.png"]);
@@ -74,7 +68,6 @@ describe("validatePlaylist", () => {
     const p: Playlist = {
       slug: "sanaa",
       images: ["images/a-detail.png"],
-      text: "line-wipe",
       morph: null,
     };
     expect(validatePlaylist(p, dir)).toEqual([]);
@@ -95,8 +88,8 @@ describe("loadPlaylist", () => {
   it("reads and parses video.json", () => {
     writeFileSync(
       join(dir, "video.json"),
-      JSON.stringify({ slug: "sanaa", images: ["images/a.png"], text: "kinetic", morph: null }),
+      JSON.stringify({ slug: "sanaa", images: ["images/a.png"], morph: null }),
     );
-    expect(loadPlaylist(dir).text).toBe("kinetic");
+    expect(loadPlaylist(dir).slug).toBe("sanaa");
   });
 });

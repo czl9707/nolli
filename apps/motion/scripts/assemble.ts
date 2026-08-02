@@ -72,7 +72,6 @@ async function main() {
   const inputProps = {
     manifest,
     fontVariant: DEFAULT_FONT,
-    textVariant: playlist.text,
   };
   const composition = await selectComposition({
     serveUrl,
