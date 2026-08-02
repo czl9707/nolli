@@ -3,7 +3,7 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { LAUNCH_ARGS, SLOWMO, newDarkContext, waitForStable, slowDrag } from "./capture-helpers";
+import { LAUNCH_ARGS, SLOWMO, newDarkContext, waitForStable, waitForMoveEnd, waitForTilesLoaded, appWait } from "./capture-helpers";
 import { ARCHITECTS } from "./architects";
 import type { Playlist } from "./playlist";
 import type { Manifest } from "./manifest";
@@ -11,6 +11,31 @@ import { FPS, scene2Duration } from "../src/lib/timing";
 
 const execFileP = promisify(execFile);
 const BASE_URL = process.env.BASE_URL ?? "http://localhost:5173";
+
+// ── B-roll camera tuning ──────────────────────────────────────────────────
+// Drives the morph's opening sequence via the ?capture=1 map handle
+// (window.__nolliMap). Every duration is in APP-ms — the units the final
+// real-time clip shows (under SLOWMO, app time runs SLOWMO×wall, so an 800
+// app-ms move takes 800/SLOWMO wall-ms and yields SLOWMO× more captured frames,
+// then resamples back to real time). Tune the feel here; these are not per-run.
+const BROLL = {
+  // Opening zoom toward the centered hero pin. delta = zoom levels gained. The
+  // eased duration is long in wall-time (app-ms / SLOWMO), which is what lets
+  // the new zoom-level tiles load DURING the zoom — that load-during-move is the
+  // real fix for the coarse-pattern-after-zoom artifact (areTilesLoaded() proved
+  // unreliable under capture). `settle` is an app-ms rest after moveend for the
+  // fade crossfade (~300ms) to finish before pans begin.
+  zoom: { delta: [0.5, 0.9] as [number, number], duration: 800, settle: 500 },
+  pan: {
+    count: [2, 3] as [number, number], // number of pans
+    distance: [70, 130] as [number, number], // per-pan screen-px magnitude
+    duration: [600, 850] as [number, number], // app-ms per pan
+    pause: [250, 400] as [number, number], // app-ms dwell after each pan
+    driftX: 280, // max cumulative x offset (px) — keeps the pin on-screen
+    driftY: 160, // max cumulative y offset (px)
+  },
+  moveTimeout: 6000, // max wall-ms for a camera move to reach moveend
+} as const;
 
 // Capture the home->board morph via slow-mo CDP screencast, resample to a
 // real-time 30fps clip, and screenshot the morph's landing frame. Writes
@@ -32,8 +57,51 @@ async function captureMorph(slug: string, manifest: Manifest): Promise<void> {
       deviceScaleFactor: 1,
     });
     const page = await context.newPage();
-    await page.goto(`${BASE_URL}/arch/${manifest.hero}`);
+    // ?capture=1 does double duty here: preserveDrawingBuffer for the screencast
+    // AND it gates MapCaptureBridge, which exposes window.__nolliMap — without it
+    // the b-roll's easeTo/panBy calls are silent no-ops (the page just sits, then
+    // morphs). waitForStable gives the bridge effect time to set the handle.
+    await page.goto(`${BASE_URL}/arch/${manifest.hero}?capture=1`);
     await waitForStable(page);
+
+    // Fail loudly if the map handle isn't exposed — every b-roll move is a no-op
+    // without it (silent failure shows up as "no dragging, just sits then morphs").
+    const hasMap = await page.evaluate(
+      () => !!(window as unknown as { __nolliMap?: unknown }).__nolliMap,
+    );
+    if (!hasMap) {
+      throw new Error(
+        "window.__nolliMap not found — MapCaptureBridge didn't run. Is ?capture=1 present and the map loaded?",
+      );
+    }
+
+    // Warm the b-roll target zoom's tiles OFF-CAMERA (before slow-mo + screencast),
+    // so the recorded zoom finds them cached and snaps in instantly — matching a
+    // live browser, where tiles are already cached. Without this the capture
+    // shows a 2-3s coarse-then-fade as the new zoom-level tiles stream in. Runs at
+    // real time (setTimeout isn't patched by the clock wrapper) and is invisible
+    // (screencast hasn't started). Jumps to the max b-roll delta so the whole zoom
+    // range's most-detailed tile level is cached, then restores the start view.
+    const readZoom = () =>
+      page.evaluate(
+        () =>
+          (window as unknown as { __nolliMap?: { getZoom: () => number } }).__nolliMap
+            ?.getZoom() ?? 0,
+      );
+    const jumpTo = (z: number) =>
+      page.evaluate(
+        (zz: number) => {
+          (window as unknown as { __nolliMap?: { jumpTo: (o: { zoom: number }) => void } })
+            .__nolliMap?.jumpTo({ zoom: zz });
+        },
+        z,
+      );
+    const z0 = await readZoom();
+    await jumpTo(z0 + BROLL.zoom.delta[1]);
+    const targetOk = await waitForTilesLoaded(page, 6000);
+    await jumpTo(z0);
+    const startOk = await waitForTilesLoaded(page, 6000);
+    console.log(`  tile warm: target ${targetOk ? "✓" : "cap"}, start ${startOk ? "✓" : "cap"}`);
 
     // Flip slow-mo AFTER settle so the initial DB/map load runs at real time.
     // The clock wrapper is installed before any page script via addInitScript.
@@ -55,29 +123,53 @@ async function captureMorph(slug: string, manifest: Manifest): Promise<void> {
       maxHeight: 1080,
     });
 
-    // B-roll: zoom toward the centered pin FIRST (the page flew to it on load),
-    // then a few short randomized drag-pans, then the morph. slowDrag keeps the
-    // compositor fed (long idle settles starve the screencast).
+    // B-roll: a short zoom toward the centered hero pin, then a few randomized
+    // straight-line pans, then the morph. Driven through MapLibre's own camera
+    // API (window.__nolliMap, exposed under ?capture=1) rather than synthetic
+    // mouse events. Each eased move renders every frame (feeding the compositor
+    // so the screencast never starves), and the zoom's long wall-duration lets
+    // the new tiles load DURING the move — the fix for the coarse fill-pattern
+    // that a fast wheel-zoom left behind. waitForMoveEnd sequences the moves
+    // (easeTo returns before finishing); a short app-ms settle covers the fade.
     const rand = (min: number, max: number) => min + Math.random() * (max - min);
     const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
-    const mapBox = await page.locator(".maplibregl-map").first().boundingBox();
-    const mcx = mapBox ? mapBox.x + mapBox.width / 2 : 1295;
-    const mcy = mapBox ? mapBox.y + mapBox.height / 2 : 540;
 
-    await page.mouse.move(mcx, mcy);
-    await page.mouse.wheel(0, -rand(280, 440));
-    await page.waitForTimeout(600);
+    // Opening zoom. easeTo with no `center` zooms around the viewport center,
+    // where the hero pin already sits (the page flew to it on load).
+    await page.evaluate(
+      ({ d, dur }) => {
+        const m = (window as unknown as {
+          __nolliMap?: { getZoom: () => number; easeTo: (o: { zoom: number; duration: number }) => void };
+        }).__nolliMap;
+        m?.easeTo({ zoom: m.getZoom() + d, duration: dur });
+      },
+      { d: rand(BROLL.zoom.delta[0], BROLL.zoom.delta[1]), dur: BROLL.zoom.duration },
+    );
+    await waitForMoveEnd(page, BROLL.moveTimeout);
+    await appWait(page, BROLL.zoom.settle);
 
-    const dragCount = 3 + Math.floor(Math.random() * 2); // 3 or 4 pans
-    let cx = mcx, cy = mcy;
-    for (let i = 0; i < dragCount; i++) {
+    // Straight-line pans. Cumulative drift is clamped so the pin never sits far
+    // on the side of the viewport (would mis-target the morph).
+    const panCount = Math.round(rand(BROLL.pan.count[0], BROLL.pan.count[1] + 1));
+    let ox = 0, oy = 0;
+    for (let i = 0; i < panCount; i++) {
       const angle = Math.random() * Math.PI * 2;
-      const dist = rand(80, 150);
-      const ex = clamp(cx + Math.cos(angle) * dist, mcx - 320, mcx + 320);
-      const ey = clamp(cy + Math.sin(angle) * dist, mcy - 180, mcy + 180);
-      await slowDrag(page, cx, cy, ex, ey);
-      cx = ex; cy = ey;
-      await page.waitForTimeout(rand(180, 360));
+      const dist = rand(BROLL.pan.distance[0], BROLL.pan.distance[1]);
+      const nx = clamp(ox + Math.cos(angle) * dist, -BROLL.pan.driftX, BROLL.pan.driftX);
+      const ny = clamp(oy + Math.sin(angle) * dist, -BROLL.pan.driftY, BROLL.pan.driftY);
+      const dx = nx - ox, dy = ny - oy;
+      ox = nx; oy = ny;
+      await page.evaluate(
+        ({ dx, dy, dur }) => {
+          const m = (window as unknown as {
+            __nolliMap?: { panBy: (off: [number, number], o: { duration: number }) => void };
+          }).__nolliMap;
+          m?.panBy([dx, dy], { duration: dur });
+        },
+        { dx, dy, dur: Math.round(rand(BROLL.pan.duration[0], BROLL.pan.duration[1])) },
+      );
+      await waitForMoveEnd(page, BROLL.moveTimeout);
+      await appWait(page, Math.round(rand(BROLL.pan.pause[0], BROLL.pan.pause[1])));
     }
     clickWall = Date.now();
 

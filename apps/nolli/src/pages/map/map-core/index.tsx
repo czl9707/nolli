@@ -53,6 +53,26 @@ function MapFlyNavigator() {
 }
 
 /**
+ * Under `?capture=1`, exposes the live MapLibre instance on `window.__nolliMap`
+ * so the motion capture scripts can drive the camera (`easeTo`/`panBy`) and poll
+ * tile-readiness (`areTilesLoaded`/`isMoving`) directly — the synthetic-mouse
+ * approach can't await tile loads, which left the map's fill-pattern looking
+ * coarse after a zoom. No-op outside capture.
+ */
+function MapCaptureBridge() {
+  const { map } = useMap()
+  useEffect(() => {
+    if (!map) return
+    const w = window as unknown as { __nolliMap?: unknown }
+    w.__nolliMap = map
+    return () => {
+      delete w.__nolliMap
+    }
+  }, [map])
+  return null
+}
+
+/**
  * Thin wrapper around the shared <ArchMap>. Reads nolli stores and feeds them
  * as props; passes MapFlyNavigator as a child. Owns db-error navigation.
  */
@@ -108,6 +128,7 @@ export function MapCore() {
           />
         )}
         <MapFlyNavigator />
+        {capture && <MapCaptureBridge />}
       {userLocation && (
         <MapMarker
           longitude={userLocation.longitude}

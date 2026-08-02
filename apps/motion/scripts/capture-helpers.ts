@@ -89,22 +89,59 @@ export async function waitForStable(page: Page) {
   await page.waitForTimeout(Number(process.env.SETTLE_MS ?? 4000));
 }
 
-// Continuous drag-pan: moves the cursor in small increments. Each mousemove
-// triggers a MapLibre pan render (expensive under software WebGL), and those
-// constant renders keep Chrome's compositor fed — long idle settles throttle it
-// and starve the CDP screencast. The short inter-step wait yields to the event
-// loop so screencast frames are emitted between renders.
-export async function slowDrag(
+type CaptureMap = { isMoving: () => boolean };
+
+// Wait for the in-flight camera move (`easeTo`/`panBy`, issued via
+// `window.__nolliMap` under `?capture=1`) to reach moveend. `page.evaluate`
+// returns the instant `easeTo` is *called* — not when the animation finishes —
+// so the next move MUST await this, otherwise `panBy` retargets mid-flight and
+// the sequence collapses. Resolves silently on timeout so a stuck move never
+// aborts the run.
+//
+// NOTE: Playwright's `waitForFunction` takes `(fn, arg, options)`; the options
+// object MUST be the 3rd arg. Passing `{timeout}` as the 2nd silently makes it
+// the predicate arg and falls back to the 30s default.
+export async function waitForMoveEnd(page: Page, timeoutMs = 6000) {
+  await page
+    .waitForFunction(
+      () => {
+        const m = (window as unknown as { __nolliMap?: CaptureMap }).__nolliMap;
+        return !!m && !m.isMoving();
+      },
+      undefined,
+      { timeout: timeoutMs },
+    )
+    .catch(() => {});
+}
+
+// Wait `appMs` of APP time. Under slow-mo, app time advances at SLOWMO × wall
+// time, so the equivalent wall wait is `appMs / SLOWMO`. Expressing tunable
+// durations in app-ms keeps them in the units the final real-time video shows.
+export async function appWait(page: Page, appMs: number) {
+  await page.waitForTimeout(appMs / SLOWMO);
+}
+
+// Node-side poll (real wall-time) for MapLibre tile-readiness. Used during the
+// off-camera warm-up before slow-mo is flipped. Returns whether the map reported
+// all tiles loaded (false = timed out). NOTE: keep page.evaluate predicates as
+// simple arrow functions — tsx decorates nested/async in-page functions with a
+// `__name` helper that is undefined once Playwright serializes the function to
+// the page, throwing "ReferenceError: __name is not defined".
+export async function waitForTilesLoaded(
   page: Page,
-  sx: number, sy: number, ex: number, ey: number,
-  steps = 10,
-) {
-  await page.mouse.move(sx, sy);
-  await page.mouse.down();
-  for (let i = 1; i <= steps; i++) {
-    const t = i / steps;
-    await page.mouse.move(sx + (ex - sx) * t, sy + (ey - sy) * t);
-    await page.waitForTimeout(10);
+  timeoutMs = 6000,
+): Promise<boolean> {
+  try {
+    await page.waitForFunction(
+      () => {
+        const m = (window as unknown as { __nolliMap?: { areTilesLoaded: () => boolean } }).__nolliMap;
+        return !!m && m.areTilesLoaded();
+      },
+      undefined,
+      { timeout: timeoutMs },
+    );
+    return true;
+  } catch {
+    return false;
   }
-  await page.mouse.up();
 }
