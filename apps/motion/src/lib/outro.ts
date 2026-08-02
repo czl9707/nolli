@@ -3,11 +3,13 @@
 // duration is in frames @ FPS (see lib/timing.ts).
 export const OUTRO = {
   charFrames: 3, // frames per revealed character (≈10 chars/s @30fps)
+  hold: 15, // frames held after typing finishes before cutting to next segment (0.5s)
   segments: {
-    name: 60, // 2.0s
-    count: 75, // 2.5s
-    now: 60, // 2.0s
-    logo: 90, // 3.0s
+    // Each = (typeStart + (chars-1)*charFrames) + hold.
+    name: 35, // "SANAA"(5): 8 + 4*3 + 15
+    count: 65, // "9 architectures"(15): 8 + 14*3 + 15
+    now: 65, // "Now available in"(15): 8 + 14*3 + 15
+    logo: 47, // mark markIn→markSettle, "Nolli"(5): 20 + 4*3 + 15
   },
   // Per-segment frame at which typing begins (after a short entrance beat).
   typeStart: {
