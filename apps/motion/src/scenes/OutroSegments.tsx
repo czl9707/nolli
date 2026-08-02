@@ -1,7 +1,7 @@
 import { AbsoluteFill, Series, interpolate, useCurrentFrame } from "remotion";
 import { PLAYFUL_FAMILY, INTER_FAMILY } from "../fonts";
 import { THEME } from "../lib/theme";
-import { OUTRO, visibleCharCount } from "../lib/outro";
+import { OUTRO, visibleCharCount, outroSegmentDurations, countText, NOW_TEXT, LOGO_WORD } from "../lib/outro";
 import type { Manifest } from "../lib/manifest";
 
 type FontVariant = "inter" | "playful";
@@ -69,7 +69,7 @@ export const SegmentCount: React.FC<SegProps> = ({ manifest, fontVariant }) => {
   return (
     <AbsoluteFill style={{ backgroundColor: THEME.bg, justifyContent: "center", alignItems: "center" }}>
       <TypewriterLine
-        text={`${manifest.count} ${manifest.count === 1 ? "architecture" : "architectures"}`}
+        text={countText(manifest.count)}
         frame={frame}
         start={OUTRO.typeStart.count}
         fontFamily={family(fontVariant)}
@@ -85,7 +85,7 @@ export const SegmentNow: React.FC<SegProps> = ({ fontVariant }) => {
   return (
     <AbsoluteFill style={{ backgroundColor: THEME.bg, justifyContent: "center", alignItems: "center" }}>
       <TypewriterLine
-        text="Now available in"
+        text={NOW_TEXT}
         frame={frame}
         start={OUTRO.typeStart.now}
         fontFamily={family(fontVariant)}
@@ -109,7 +109,7 @@ export const SegmentLogo: React.FC<SegProps> = ({ fontVariant }) => {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const word = "Nolli";
+  const word = LOGO_WORD;
   const n = visibleCharCount({
     frame,
     start: OUTRO.logo.typeStart,
@@ -130,19 +130,22 @@ export const SegmentLogo: React.FC<SegProps> = ({ fontVariant }) => {
   );
 };
 
-export const OutroSeries: React.FC<SegProps> = (props) => (
-  <Series>
-    <Series.Sequence durationInFrames={OUTRO.segments.name}>
-      <SegmentName {...props} />
-    </Series.Sequence>
-    <Series.Sequence durationInFrames={OUTRO.segments.count}>
-      <SegmentCount {...props} />
-    </Series.Sequence>
-    <Series.Sequence durationInFrames={OUTRO.segments.now}>
-      <SegmentNow {...props} />
-    </Series.Sequence>
-    <Series.Sequence durationInFrames={OUTRO.segments.logo}>
-      <SegmentLogo {...props} />
-    </Series.Sequence>
-  </Series>
-);
+export const OutroSeries: React.FC<SegProps> = (props) => {
+  const d = outroSegmentDurations(props.manifest);
+  return (
+    <Series>
+      <Series.Sequence durationInFrames={d.name}>
+        <SegmentName {...props} />
+      </Series.Sequence>
+      <Series.Sequence durationInFrames={d.count}>
+        <SegmentCount {...props} />
+      </Series.Sequence>
+      <Series.Sequence durationInFrames={d.now}>
+        <SegmentNow {...props} />
+      </Series.Sequence>
+      <Series.Sequence durationInFrames={d.logo}>
+        <SegmentLogo {...props} />
+      </Series.Sequence>
+    </Series>
+  );
+};

@@ -25,7 +25,7 @@ export const ArchitectSpotlight: React.FC<SpotlightProps> = ({ manifest, fontVar
           <Scene2MapMorph manifest={manifest} />
         </Series.Sequence>
       )}
-      <Series.Sequence durationInFrames={scene3Duration}>
+      <Series.Sequence durationInFrames={scene3Duration(manifest)}>
         <OutroSeries manifest={manifest} fontVariant={fontVariant} />
       </Series.Sequence>
     </Series>

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { OUTRO, outroDuration, visibleCharCount } from "./outro";
+import { OUTRO, outroDuration, outroSegmentDurations, segmentDuration, visibleCharCount } from "./outro";
 
 describe("visibleCharCount", () => {
   it("returns 0 before the start frame", () => {
@@ -15,10 +15,25 @@ describe("visibleCharCount", () => {
   });
 });
 
+describe("segmentDuration", () => {
+  it("is typeStart + (chars-1)*charFrames + hold", () => {
+    // "SANAA" (5 chars), entrance at frame 8: 8 + 4*3 + 15
+    expect(segmentDuration(5, 8)).toBe(8 + 4 * OUTRO.charFrames + OUTRO.hold);
+  });
+  it("still holds even with no text", () => {
+    expect(segmentDuration(0, 8)).toBe(8 + OUTRO.hold);
+  });
+});
+
 describe("outroDuration", () => {
-  it("is the sum of the four segment durations", () => {
-    expect(outroDuration).toBe(
-      OUTRO.segments.name + OUTRO.segments.count + OUTRO.segments.now + OUTRO.segments.logo,
-    );
+  it("is the sum of the four derived segment durations", () => {
+    const manifest = { architect: "SANAA", count: 9 };
+    const d = outroSegmentDurations(manifest);
+    expect(outroDuration(manifest)).toBe(d.name + d.count + d.now + d.logo);
+  });
+  it("grows when the architect name is longer", () => {
+    const short = outroDuration({ architect: "SANAA", count: 9 });
+    const long = outroDuration({ architect: "Tadao Ando", count: 9 });
+    expect(long).toBeGreaterThan(short);
   });
 });
