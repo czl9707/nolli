@@ -3,7 +3,6 @@
 // duration is in frames @ FPS (see lib/timing.ts).
 export const OUTRO = {
   charFrames: 3, // frames per revealed character (≈10 chars/s @30fps)
-  exit: 12, // whole-segment fade-out at each tail
   segments: {
     name: 60, // 2.0s
     count: 75, // 2.5s

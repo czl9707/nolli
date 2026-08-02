@@ -1,4 +1,4 @@
-import { AbsoluteFill, Series, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, Series, interpolate, useCurrentFrame } from "remotion";
 import { PLAYFUL_FAMILY, INTER_FAMILY } from "../fonts";
 import { THEME } from "../lib/theme";
 import { OUTRO, visibleCharCount } from "../lib/outro";
@@ -8,13 +8,6 @@ type FontVariant = "inter" | "playful";
 type SegProps = { manifest: Manifest; fontVariant: FontVariant };
 
 const family = (v: FontVariant) => (v === "inter" ? INTER_FAMILY : PLAYFUL_FAMILY);
-
-// Whole-scene fade-out over OUTRO.exit frames at the tail.
-function useExit(frame: number, durationInFrames: number) {
-  return interpolate(frame, [durationInFrames - OUTRO.exit, durationInFrames - 1], [1, 0], {
-    extrapolateLeft: "clamp",
-  });
-}
 
 // Expand-from-center typewriter. Renders the visible substring centered; as
 // chars reveal the partial re-centers, so the line grows from the middle.
@@ -57,9 +50,8 @@ const NolliMark: React.FC<{ size: number }> = ({ size }) => (
 
 export const SegmentName: React.FC<SegProps> = ({ manifest, fontVariant }) => {
   const frame = useCurrentFrame();
-  const { durationInFrames } = useVideoConfig();
   return (
-    <AbsoluteFill style={{ backgroundColor: THEME.bg, justifyContent: "center", alignItems: "center", opacity: useExit(frame, durationInFrames) }}>
+    <AbsoluteFill style={{ backgroundColor: THEME.bg, justifyContent: "center", alignItems: "center" }}>
       <TypewriterLine
         text={manifest.architect}
         frame={frame}
@@ -74,9 +66,8 @@ export const SegmentName: React.FC<SegProps> = ({ manifest, fontVariant }) => {
 
 export const SegmentCount: React.FC<SegProps> = ({ manifest, fontVariant }) => {
   const frame = useCurrentFrame();
-  const { durationInFrames } = useVideoConfig();
   return (
-    <AbsoluteFill style={{ backgroundColor: THEME.bg, justifyContent: "center", alignItems: "center", opacity: useExit(frame, durationInFrames) }}>
+    <AbsoluteFill style={{ backgroundColor: THEME.bg, justifyContent: "center", alignItems: "center" }}>
       <TypewriterLine
         text={`${manifest.count} ${manifest.count === 1 ? "architecture" : "architectures"}`}
         frame={frame}
@@ -91,9 +82,8 @@ export const SegmentCount: React.FC<SegProps> = ({ manifest, fontVariant }) => {
 
 export const SegmentNow: React.FC<SegProps> = ({ fontVariant }) => {
   const frame = useCurrentFrame();
-  const { durationInFrames } = useVideoConfig();
   return (
-    <AbsoluteFill style={{ backgroundColor: THEME.bg, justifyContent: "center", alignItems: "center", opacity: useExit(frame, durationInFrames) }}>
+    <AbsoluteFill style={{ backgroundColor: THEME.bg, justifyContent: "center", alignItems: "center" }}>
       <TypewriterLine
         text="Now available in"
         frame={frame}
@@ -111,7 +101,6 @@ export const SegmentNow: React.FC<SegProps> = ({ fontVariant }) => {
 // slightly left toward its seat — the "lock-in." Ends on the centered lockup.
 export const SegmentLogo: React.FC<SegProps> = ({ fontVariant }) => {
   const frame = useCurrentFrame();
-  const { durationInFrames } = useVideoConfig();
   const markScale = interpolate(frame, [OUTRO.logo.markIn, OUTRO.logo.markSettle], [0.6, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
@@ -128,7 +117,7 @@ export const SegmentLogo: React.FC<SegProps> = ({ fontVariant }) => {
     length: word.length,
   });
   return (
-    <AbsoluteFill style={{ backgroundColor: THEME.bg, justifyContent: "center", alignItems: "center", opacity: useExit(frame, durationInFrames) }}>
+    <AbsoluteFill style={{ backgroundColor: THEME.bg, justifyContent: "center", alignItems: "center" }}>
       <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 28 }}>
         <div style={{ transform: `scale(${markScale})`, opacity: markOpacity }}>
           <NolliMark size={OUTRO.logo.size} />
