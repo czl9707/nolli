@@ -2,7 +2,6 @@ import { bundle } from "@remotion/bundler";
 import { selectComposition, renderMedia } from "@remotion/renderer";
 import { resolve } from "node:path";
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
-import { ARCHITECTS } from "./architects";
 import type { Manifest } from "./manifest";
 
 const SEGMENTS = [
@@ -17,9 +16,6 @@ async function main() {
   if (!slug) {
     console.error("Usage: assets:outro <architect-slug>");
     process.exit(1);
-  }
-  if (!ARCHITECTS[slug]) {
-    throw new Error(`Unknown architect slug "${slug}". Add it to ARCHITECTS in scripts/architects.ts.`);
   }
   const fontVariant = "playful";
   const outDir = resolve("out", slug);

@@ -1,17 +1,22 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { ensureDb, queryArchitectBuildings } from "./db";
+import { ensureDb, queryArchitectBuildings, resolveArchitect } from "./db";
 import { rowsToManifest, type Manifest } from "./manifest";
-import { ARCHITECTS } from "./architects";
 
 async function main() {
+  // Usage: manifest <slug> [hero-building-slug]
+  // Name + buildings come straight from sqlite; the hero defaults to the first
+  // building in the (year-ascending) query when no override is given.
   const slug = process.argv[2] ?? "sanaa";
-  const cfg = ARCHITECTS[slug];
-  if (!cfg) throw new Error(`Unknown architect slug "${slug}". Add it to ARCHITECTS.`);
+  const heroSlug = process.argv[3];
   const dbPath = await ensureDb();
-  const rows = queryArchitectBuildings(dbPath, cfg.name);
-  if (rows.length === 0) throw new Error(`No buildings found for "${cfg.name}".`);
-  const manifest: Manifest = rowsToManifest(rows, { architect: cfg.name, slug, heroSlug: cfg.hero });
+  const architect = resolveArchitect(dbPath, slug);
+  const rows = queryArchitectBuildings(dbPath, architect);
+  if (rows.length === 0) throw new Error(`No buildings found for "${architect}".`);
+  if (heroSlug && !rows.some((r) => r.slug === heroSlug)) {
+    throw new Error(`Hero "${heroSlug}" is not among ${architect}'s ${rows.length} buildings.`);
+  }
+  const manifest: Manifest = rowsToManifest(rows, { architect, slug, heroSlug });
   const dir = resolve("out", slug);
   mkdirSync(dir, { recursive: true });
   const out = join(dir, "manifest.json");

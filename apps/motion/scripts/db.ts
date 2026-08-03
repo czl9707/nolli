@@ -24,6 +24,23 @@ async function downloadDb(dest: string): Promise<void> {
   file.end();
 }
 
+// Resolve the architect's DB display name from a lowercase CLI slug.
+// The architects table has no slug column, so we match lower(name) against
+// the slug with hyphens turned back into spaces ("sanaa" -> "SANAA",
+// "tadao-ando" -> "Tadao Ando").
+export function resolveArchitect(dbPath: string, slug: string): string {
+  const db = new Database(dbPath, { readonly: true });
+  const key = slug.toLowerCase().replace(/-/g, " ");
+  const row = db.prepare("SELECT name FROM architects WHERE lower(name) = ?").get(key) as
+    | { name: string }
+    | undefined;
+  db.close();
+  if (!row) {
+    throw new Error(`No architect matches slug "${slug}" (no architects.name equals "${key}").`);
+  }
+  return row.name;
+}
+
 export function queryArchitectBuildings(dbPath: string, architectName: string): BuildingRow[] {
   const db = new Database(dbPath, { readonly: true });
   const rows = db.prepare(`

@@ -4,7 +4,6 @@ import { promisify } from "node:util";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { LAUNCH_ARGS, SLOWMO, newDarkContext, waitForStable, waitForMoveEnd, waitForTilesLoaded, appWait } from "./capture-helpers";
-import { ARCHITECTS } from "./architects";
 import type { Playlist } from "./playlist";
 import type { Manifest } from "./manifest";
 import { FPS, scene2Duration } from "../src/lib/timing";
@@ -252,9 +251,6 @@ async function main() {
   if (!slug) {
     console.error("Usage: assets:morph <architect-slug>");
     process.exit(1);
-  }
-  if (!ARCHITECTS[slug]) {
-    throw new Error(`Unknown architect slug "${slug}". Add it to ARCHITECTS in scripts/architects.ts.`);
   }
   const manifestPath = resolve("out", slug, "manifest.json");
   if (!existsSync(manifestPath)) {

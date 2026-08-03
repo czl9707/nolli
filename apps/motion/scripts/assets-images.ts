@@ -3,7 +3,6 @@ import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { newDarkContext, waitForStable, LAUNCH_ARGS } from "./capture-helpers";
 import { seedPlaylist, mergePlaylist, type Playlist } from "./playlist";
-import { ARCHITECTS } from "./architects";
 import type { Manifest } from "./manifest";
 
 const BASE_URL = process.env.BASE_URL ?? "http://localhost:5173";
@@ -95,10 +94,9 @@ async function main() {
     console.error("Usage: assets:images <architect-slug>");
     process.exit(1);
   }
-  if (!ARCHITECTS[slug]) {
-    throw new Error(
-      `Unknown architect slug "${slug}". Add it to ARCHITECTS in scripts/architects.ts.`,
-    );
+  const manifestPath = resolve("out", slug, "manifest.json");
+  if (!existsSync(manifestPath)) {
+    throw new Error(`Missing ${manifestPath}. Run \`pnpm --filter motion manifest ${slug}\` first.`);
   }
   console.log(`assets:images — ${slug}`);
   await captureImagesForSlug(slug);
