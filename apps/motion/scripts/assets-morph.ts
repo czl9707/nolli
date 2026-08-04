@@ -3,37 +3,38 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { LAUNCH_ARGS, SLOWMO, newDarkContext, waitForStable, waitForMoveEnd, waitForTilesLoaded, appWait } from "./capture-helpers";
+import { LAUNCH_ARGS, newDarkContext, waitForStable, waitForMoveEnd, waitForTilesLoaded } from "./capture-helpers";
+import { farthestFrom } from "./geo";
 import type { Playlist } from "./playlist";
 import type { Manifest } from "./manifest";
-import { FPS, scene2Duration } from "../src/lib/timing";
+import { FPS } from "../src/lib/timing";
 
 const execFileP = promisify(execFile);
 const BASE_URL = process.env.BASE_URL ?? "http://localhost:5173";
 
-// ── B-roll camera tuning ──────────────────────────────────────────────────
-// Drives the morph's opening sequence via the ?capture=1 map handle
-// (window.__nolliMap). Every duration is in APP-ms — the units the final
-// real-time clip shows (under SLOWMO, app time runs SLOWMO×wall, so an 800
-// app-ms move takes 800/SLOWMO wall-ms and yields SLOWMO× more captured frames,
-// then resamples back to real time). Tune the feel here; these are not per-run.
-const BROLL = {
-  // Opening zoom toward the centered hero pin. delta = zoom levels gained. The
-  // eased duration is long in wall-time (app-ms / SLOWMO), which is what lets
-  // the new zoom-level tiles load DURING the zoom — that load-during-move is the
-  // real fix for the coarse-pattern-after-zoom artifact (areTilesLoaded() proved
-  // unreliable under capture). `settle` is an app-ms rest after moveend for the
-  // fade crossfade (~300ms) to finish before pans begin.
-  zoom: { delta: [0.5, 0.9] as [number, number], duration: 800, settle: 500 },
-  pan: {
-    count: [2, 3] as [number, number], // number of pans
-    distance: [70, 130] as [number, number], // per-pan screen-px magnitude
-    duration: [600, 850] as [number, number], // app-ms per pan
-    pause: [250, 400] as [number, number], // app-ms dwell after each pan
-    driftX: 280, // max cumulative x offset (px) — keeps the pin on-screen
-    driftY: 160, // max cumulative y offset (px)
-  },
-  moveTimeout: 6000, // max wall-ms for a camera move to reach moveend
+// app-ms wait under the journey's slow-mo factor (local, not the shared SLOWMO).
+const appWait = (page: import("playwright").Page, appMs: number) =>
+  page.waitForTimeout(appMs / JOURNEY.slowmo);
+
+// ── Journey tuning ─────────────────────────────────────────────────────────
+// All durations are APP-ms (the units the final real-time clip shows). Under
+// `slowmo`, an app-ms wait takes appMs/slowmo wall-ms. Keep the sum of holds
+// divided by `slowmo` under ~30s of wall-time — Chrome throttles the CDP
+// screencast compositor on long idle captures and starves the frame stream.
+const JOURNEY = {
+  slowmo: 0.4, // app-speed factor (lower = slower capture, more sampled frames)
+  establishMaxZoom: 6, // fitBounds cap so single-city architects still pull back
+  establishHold: 1200, // hold on the wide "all pins" establishing view
+  flyZoom: 14, // destination zoom (matches flyToArchCinematic default)
+  flyHold: 800, // hold after each flyTo lands
+  boardHold: 1000, // hold after the map->board morph settles
+  detailHold: 1000, // hold on the open photo lightbox
+  detailCloseHold: 400, // hold after closing the lightbox
+  panCount: 3, // number of board drag-pans
+  panDistance: 260, // drag magnitude (px)
+  panHold: 500, // hold between pans
+  screencastQuality: 92,
+  maxFrames: 14 * FPS, // resample ceiling (14s real-time)
 } as const;
 
 // Capture the home->board morph via slow-mo CDP screencast, resample to a
@@ -43,11 +44,17 @@ const BROLL = {
 // WAAPI / b-roll rationale (this is the migrated captureMapMorph).
 async function captureMorph(slug: string, manifest: Manifest): Promise<void> {
   const outDir = resolve("out", slug);
-  const targetSeconds = scene2Duration / FPS; // matches Scene 2's window
+
+  const buildings = manifest.buildings;
+  if (buildings.length < 2) {
+    throw new Error(`Journey needs >=2 buildings; ${slug} has ${buildings.length}.`);
+  }
+  const hero = buildings.find((b) => b.slug === manifest.hero) ?? buildings[0];
+  const far = farthestFrom(buildings, manifest.hero);
+  const coords = buildings.map((b): [number, number] => [b.longitude, b.latitude]);
 
   const frames: { wall: number; data: string }[] = [];
   let wall0 = 0;
-  let clickWall = 0;
 
   const browser = await chromium.launch({ args: LAUNCH_ARGS });
   try {
@@ -56,15 +63,11 @@ async function captureMorph(slug: string, manifest: Manifest): Promise<void> {
       deviceScaleFactor: 1,
     });
     const page = await context.newPage();
-    // ?capture=1 does double duty here: preserveDrawingBuffer for the screencast
-    // AND it gates MapCaptureBridge, which exposes window.__nolliMap — without it
-    // the b-roll's easeTo/panBy calls are silent no-ops (the page just sits, then
-    // morphs). waitForStable gives the bridge effect time to set the handle.
+    // ?capture=1: preserveDrawingBuffer for the screencast AND gates
+    // MapCaptureBridge, which exposes window.__nolliMap.
     await page.goto(`${BASE_URL}/arch/${manifest.hero}?capture=1`);
     await waitForStable(page);
 
-    // Fail loudly if the map handle isn't exposed — every b-roll move is a no-op
-    // without it (silent failure shows up as "no dragging, just sits then morphs").
     const hasMap = await page.evaluate(
       () => !!(window as unknown as { __nolliMap?: unknown }).__nolliMap,
     );
@@ -74,40 +77,40 @@ async function captureMorph(slug: string, manifest: Manifest): Promise<void> {
       );
     }
 
-    // Warm the b-roll target zoom's tiles OFF-CAMERA (before slow-mo + screencast),
-    // so the recorded zoom finds them cached and snaps in instantly — matching a
-    // live browser, where tiles are already cached. Without this the capture
-    // shows a 2-3s coarse-then-fade as the new zoom-level tiles stream in. Runs at
-    // real time (setTimeout isn't patched by the clock wrapper) and is invisible
-    // (screencast hasn't started). Jumps to the max b-roll delta so the whole zoom
-    // range's most-detailed tile level is cached, then restores the start view.
-    const readZoom = () =>
+    // ── Off-camera tile warm-up ───────────────────────────────────────────
+    // Warm both flyTo destinations' zoom level at their centers BEFORE slow-mo,
+    // so each swoop snaps in instantly during capture. Jumps run at real time
+    // (setTimeout isn't patched) and are invisible (screencast hasn't started).
+    const jumpTo = (center: [number, number], zoom: number) =>
       page.evaluate(
-        () =>
-          (window as unknown as { __nolliMap?: { getZoom: () => number } }).__nolliMap
-            ?.getZoom() ?? 0,
-      );
-    const jumpTo = (z: number) =>
-      page.evaluate(
-        (zz: number) => {
-          (window as unknown as { __nolliMap?: { jumpTo: (o: { zoom: number }) => void } })
-            .__nolliMap?.jumpTo({ zoom: zz });
+        ({ center, zoom }) => {
+          (window as unknown as {
+            __nolliMap?: { jumpTo: (o: { center: [number, number]; zoom: number }) => void };
+          }).__nolliMap?.jumpTo({ center, zoom });
         },
-        z,
+        { center, zoom },
       );
-    const z0 = await readZoom();
-    await jumpTo(z0 + BROLL.zoom.delta[1]);
-    const targetOk = await waitForTilesLoaded(page, 6000);
-    await jumpTo(z0);
-    const startOk = await waitForTilesLoaded(page, 6000);
-    console.log(`  tile warm: target ${targetOk ? "✓" : "cap"}, start ${startOk ? "✓" : "cap"}`);
+    const startZoom = await page.evaluate(
+      () => (window as unknown as { __nolliMap?: { getZoom: () => number } }).__nolliMap?.getZoom() ?? 14,
+    );
+    for (const target of [
+      [hero.longitude, hero.latitude],
+      [far.longitude, far.latitude],
+    ] as [number, number][]) {
+      await jumpTo(target, JOURNEY.flyZoom);
+      await waitForTilesLoaded(page, 6000);
+    }
+    await jumpTo([hero.longitude, hero.latitude], startZoom);
+    await waitForTilesLoaded(page, 6000);
+    console.log("  tile warm: hero + far destination warmed");
 
-    // Flip slow-mo AFTER settle so the initial DB/map load runs at real time.
-    // The clock wrapper is installed before any page script via addInitScript.
+    // ── Flip slow-mo, then start the screencast ───────────────────────────
     wall0 = Date.now();
     await page.evaluate(
-      (s) => { (window as unknown as { __SLOWMO?: number }).__SLOWMO = s; },
-      SLOWMO,
+      (s) => {
+        (window as unknown as { __SLOWMO?: number }).__SLOWMO = s;
+      },
+      JOURNEY.slowmo,
     );
 
     const client = await context.newCDPSession(page);
@@ -117,82 +120,109 @@ async function captureMorph(slug: string, manifest: Manifest): Promise<void> {
     });
     await client.send("Page.startScreencast", {
       format: "jpeg",
-      quality: 92,
+      quality: JOURNEY.screencastQuality,
       maxWidth: 1920,
       maxHeight: 1080,
     });
 
-    // B-roll: a short zoom toward the centered hero pin, then a few randomized
-    // straight-line pans, then the morph. Driven through MapLibre's own camera
-    // API (window.__nolliMap, exposed under ?capture=1) rather than synthetic
-    // mouse events. Each eased move renders every frame (feeding the compositor
-    // so the screencast never starves), and the zoom's long wall-duration lets
-    // the new tiles load DURING the move — the fix for the coarse fill-pattern
-    // that a fast wheel-zoom left behind. waitForMoveEnd sequences the moves
-    // (easeTo returns before finishing); a short app-ms settle covers the fade.
-    const rand = (min: number, max: number) => min + Math.random() * (max - min);
-    const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
-
-    // Opening zoom. easeTo with no `center` zooms around the viewport center,
-    // where the hero pin already sits (the page flew to it on load).
-    await page.evaluate(
-      ({ d, dur }) => {
-        const m = (window as unknown as {
-          __nolliMap?: { getZoom: () => number; easeTo: (o: { zoom: number; duration: number }) => void };
-        }).__nolliMap;
-        m?.easeTo({ zoom: m.getZoom() + d, duration: dur });
-      },
-      { d: rand(BROLL.zoom.delta[0], BROLL.zoom.delta[1]), dur: BROLL.zoom.duration },
-    );
-    await waitForMoveEnd(page, BROLL.moveTimeout);
-    await appWait(page, BROLL.zoom.settle);
-
-    // Straight-line pans. Cumulative drift is clamped so the pin never sits far
-    // on the side of the viewport (would mis-target the morph).
-    const panCount = Math.round(rand(BROLL.pan.count[0], BROLL.pan.count[1] + 1));
-    let ox = 0, oy = 0;
-    for (let i = 0; i < panCount; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const dist = rand(BROLL.pan.distance[0], BROLL.pan.distance[1]);
-      const nx = clamp(ox + Math.cos(angle) * dist, -BROLL.pan.driftX, BROLL.pan.driftX);
-      const ny = clamp(oy + Math.sin(angle) * dist, -BROLL.pan.driftY, BROLL.pan.driftY);
-      const dx = nx - ox, dy = ny - oy;
-      ox = nx; oy = ny;
-      await page.evaluate(
-        ({ dx, dy, dur }) => {
-          const m = (window as unknown as {
-            __nolliMap?: { panBy: (off: [number, number], o: { duration: number }) => void };
-          }).__nolliMap;
-          m?.panBy([dx, dy], { duration: dur });
+    // In-page camera primitives mirroring packages/map/src/map-flyto.ts.
+    const fitAll = () =>
+      page.evaluate(
+        ({ coords, maxZoom }) => {
+          (window as unknown as {
+            __nolliMap?: { fitBounds: (b: [number, number][], o: { padding: number; maxZoom: number }) => void };
+          }).__nolliMap?.fitBounds(coords, { padding: 120, maxZoom });
         },
-        { dx, dy, dur: Math.round(rand(BROLL.pan.duration[0], BROLL.pan.duration[1])) },
+        { coords, maxZoom: JOURNEY.establishMaxZoom },
       );
-      await waitForMoveEnd(page, BROLL.moveTimeout);
-      await appWait(page, Math.round(rand(BROLL.pan.pause[0], BROLL.pan.pause[1])));
-    }
-    clickWall = Date.now();
+    const flyTo = (lat: number, lng: number) =>
+      page.evaluate(
+        ({ lat, lng, zoom }) => {
+          const m = (window as unknown as {
+            __nolliMap?: {
+              getZoom: () => number;
+              getBounds: () => { contains: (p: [number, number]) => boolean };
+              stop: () => void;
+              flyTo: (o: {
+                center: [number, number];
+                zoom: number;
+                duration: number;
+                curve: number;
+                speed: number;
+                essential: boolean;
+              }) => void;
+            };
+          }).__nolliMap;
+          if (!m) return;
+          const dest = Math.max(m.getZoom(), zoom);
+          const delta = dest - m.getZoom();
+          const contains = m.getBounds().contains([lng, lat]);
+          const duration = contains ? 600 + delta * 200 : 1800;
+          m.stop();
+          m.flyTo({ center: [lng, lat], zoom: dest, duration, curve: 1.2, speed: 1.0, essential: true });
+        },
+        { lat, lng, zoom: JOURNEY.flyZoom },
+      );
 
-    // Trigger the morph, then hold long enough for it to play out (kept short —
-    // Chrome throttles the compositor on long idle captures).
+    // ── Beat 1: establishing wide view of all pins ────────────────────────
+    await fitAll();
+    await waitForMoveEnd(page);
+    await appWait(page, JOURNEY.establishHold);
+
+    // ── Beat 2: fly to hero ───────────────────────────────────────────────
+    await flyTo(hero.latitude, hero.longitude);
+    await waitForMoveEnd(page);
+    await appWait(page, JOURNEY.flyHold);
+
+    // ── Beat 3: fly to the farthest building (the money shot) ─────────────
+    await flyTo(far.latitude, far.longitude);
+    await waitForMoveEnd(page);
+    await appWait(page, JOURNEY.flyHold);
+
+    // ── Beat 4: "Go to Pin Board" → map shrinks to inset, polaroids bloom ─
     await page.getByRole("button", { name: /go to pin board/i }).click();
-    await page.waitForTimeout(10000);
+    await waitForMoveEnd(page);
+    await appWait(page, JOURNEY.boardHold);
 
+    // ── Beat 5: open a photo (detail lightbox, cross-fade) ────────────────
+    const photo = page.locator('div[style*="rotate("] img:not([src*="pin.png"])').first();
+    await photo.click({ force: true });
+    await page.locator('div[style*="aspect-ratio"]').waitFor({ state: "visible" });
+    await appWait(page, JOURNEY.detailHold);
+
+    // ── Beat 6: close the lightbox (backdrop click → onClose) ─────────────
+    // Click a corner that is backdrop, not the centered photo.
+    await page.mouse.click(40, 40);
+    await appWait(page, JOURNEY.detailCloseHold);
+
+    // ── Beat 7: pan the board a few times (pointer drag; wheel zooms, not pans)
+    const cx = 960;
+    const cy = 540;
+    for (let i = 0; i < JOURNEY.panCount; i++) {
+      const sign = i % 2 === 0 ? 1 : -1;
+      await page.mouse.move(cx, cy);
+      await page.mouse.down();
+      await page.mouse.move(cx + sign * JOURNEY.panDistance, cy + sign * 60, { steps: 14 });
+      await page.mouse.up();
+      await appWait(page, JOURNEY.panHold);
+    }
+
+    // ── Beat 8: stop, then grab the final panned board as the lock-frame still
     await client.send("Page.stopScreencast");
+    await page.screenshot({ path: join(outDir, "morph-end.png") });
   } finally {
     await browser.close();
   }
-  if (frames.length < 30) throw new Error(`Morph capture failed: only ${frames.length} frames.`);
+  if (frames.length < 60) throw new Error(`Morph capture failed: only ${frames.length} frames.`);
 
-  // app-time of each captured frame = wall-elapsed * SLOWMO (seconds). Resample
-  // to real-time 30fps by nearest app-time — every output frame is a genuine
-  // sample, no blend ghosting.
-  const appT = frames.map((f) => ((f.wall - wall0) * SLOWMO) / 1000);
-  const clickApp = ((clickWall - wall0) * SLOWMO) / 1000;
-  const tailApp = 2.5;
+  // app-time of each captured frame = wall-elapsed * slowmo (seconds). Resample
+  // the FULL journey window to real-time 30fps by nearest app-time — pacing is
+  // 1:1 because the journey's app-time IS the real-time the viewer experiences.
+  const appT = frames.map((f) => ((f.wall - wall0) * JOURNEY.slowmo) / 1000);
   const winStart = appT[0];
-  const winEnd = Math.min(appT[appT.length - 1], clickApp + tailApp);
+  const winEnd = appT[appT.length - 1];
   const span = Math.max(1, winEnd - winStart);
-  const outCount = Math.round(targetSeconds * FPS);
+  const outCount = Math.min(Math.round(span * FPS), JOURNEY.maxFrames);
   const out: string[] = [];
   let j = 0;
   for (let k = 0; k < outCount; k++) {
@@ -200,8 +230,7 @@ async function captureMorph(slug: string, manifest: Manifest): Promise<void> {
     while (j + 1 < appT.length && Math.abs(appT[j + 1] - target) <= Math.abs(appT[j] - target)) j++;
     out.push(frames[j].data);
   }
-  console.log(`  morph at app-t ${clickApp.toFixed(2)}s, window ${winStart.toFixed(2)}–${winEnd.toFixed(2)}s`);
-  console.log(`  morph: ${frames.length} captured -> ${outCount} real-time frames @${FPS}fps`);
+  console.log(`  journey: ${frames.length} captured -> ${outCount} real-time frames (${span.toFixed(1)}s @${FPS}fps)`);
 
   const framesDir = join(outDir, "morph-frames");
   rmSync(framesDir, { recursive: true, force: true });
@@ -224,19 +253,6 @@ async function captureMorph(slug: string, manifest: Manifest): Promise<void> {
     clipAbs,
   ]);
   rmSync(framesDir, { recursive: true, force: true });
-
-  // End-still: the hero board page (the morph's landing frame), for Scene 2's
-  // lock-frame handoff.
-  const b2 = await chromium.launch({ args: LAUNCH_ARGS });
-  try {
-    const c2 = await newDarkContext(b2, { viewport: { width: 1920, height: 1080 } });
-    const p2 = await c2.newPage();
-    await p2.goto(`${BASE_URL}/arch/${manifest.hero}/board?capture=1`);
-    await waitForStable(p2);
-    await p2.screenshot({ path: join(outDir, "morph-end.png") });
-  } finally {
-    await b2.close();
-  }
 
   // Point the playlist at the clip so `assemble` renders Scene 2.
   const playlistPath = join(outDir, "video.json");
