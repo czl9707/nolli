@@ -12,7 +12,7 @@ import { FPS } from "../src/lib/timing";
 const execFileP = promisify(execFile);
 const BASE_URL = process.env.BASE_URL ?? "http://localhost:5173";
 
-// app-ms wait under the journey's slow-mo factor (local, not the shared SLOWMO).
+// app-ms wait under the journey's slow-mo factor.
 const appWait = (page: import("playwright").Page, appMs: number) =>
   page.waitForTimeout(appMs / JOURNEY.slowmo);
 
@@ -22,7 +22,7 @@ const appWait = (page: import("playwright").Page, appMs: number) =>
 // divided by `slowmo` under ~30s of wall-time — Chrome throttles the CDP
 // screencast compositor on long idle captures and starves the frame stream.
 const JOURNEY = {
-  slowmo: 0.4, // app-speed factor (lower = slower capture, more sampled frames)
+  slowmo: 0.4, // app-speed factor; 0.4 (not the canonical 0.25) keeps this ~3x-longer journey's wall-time under the compositor-starvation threshold
   establishMaxZoom: 6, // fitBounds cap so single-city architects still pull back
   establishHold: 1200, // hold on the wide "all pins" establishing view
   flyZoom: 14, // destination zoom (matches flyToArchCinematic default)
@@ -41,7 +41,7 @@ const JOURNEY = {
 // real-time 30fps clip, and screenshot the morph's landing frame. Writes
 // morph.mp4 + morph-end.png into out/<slug>/ and points video.json's `morph` at
 // the clip so `assemble` renders Scene 2. See project memory for the slow-mo /
-// WAAPI / b-roll rationale (this is the migrated captureMapMorph).
+// WAAPI rationale (this is the migrated captureMapMorph).
 async function captureMorph(slug: string, manifest: Manifest): Promise<void> {
   const outDir = resolve("out", slug);
 
@@ -51,7 +51,18 @@ async function captureMorph(slug: string, manifest: Manifest): Promise<void> {
   }
   const hero = buildings.find((b) => b.slug === manifest.hero) ?? buildings[0];
   const far = farthestFrom(buildings, manifest.hero);
-  const coords = buildings.map((b): [number, number] => [b.longitude, b.latitude]);
+  // MapLibre's LngLatBounds only honors [0]=SW,[1]=NE (NaNs at exactly 4 points),
+  // so reduce to a true bounding box before fitBounds.
+  const bounds: [[number, number], [number, number]] = buildings.reduce(
+    (acc, b) => [
+      [Math.min(acc[0][0], b.longitude), Math.min(acc[0][1], b.latitude)],
+      [Math.max(acc[1][0], b.longitude), Math.max(acc[1][1], b.latitude)],
+    ],
+    [
+      [buildings[0].longitude, buildings[0].latitude],
+      [buildings[0].longitude, buildings[0].latitude],
+    ] as [[number, number], [number, number]],
+  );
 
   const frames: { wall: number; data: string }[] = [];
   let wall0 = 0;
@@ -128,12 +139,12 @@ async function captureMorph(slug: string, manifest: Manifest): Promise<void> {
     // In-page camera primitives mirroring packages/map/src/map-flyto.ts.
     const fitAll = () =>
       page.evaluate(
-        ({ coords, maxZoom }) => {
+        ({ bounds, maxZoom }) => {
           (window as unknown as {
-            __nolliMap?: { fitBounds: (b: [number, number][], o: { padding: number; maxZoom: number }) => void };
-          }).__nolliMap?.fitBounds(coords, { padding: 120, maxZoom });
+            __nolliMap?: { fitBounds: (b: [[number, number], [number, number]], o: { padding: number; maxZoom: number }) => void };
+          }).__nolliMap?.fitBounds(bounds, { padding: 120, maxZoom });
         },
-        { coords, maxZoom: JOURNEY.establishMaxZoom },
+        { bounds, maxZoom: JOURNEY.establishMaxZoom },
       );
     const flyTo = (lat: number, lng: number) =>
       page.evaluate(
@@ -181,7 +192,11 @@ async function captureMorph(slug: string, manifest: Manifest): Promise<void> {
 
     // ── Beat 4: "Go to Pin Board" → map shrinks to inset, polaroids bloom ─
     await page.getByRole("button", { name: /go to pin board/i }).click();
-    await waitForMoveEnd(page);
+    // The morph is framer-motion (map.isMoving() stays false) and the inset's
+    // camera flyTo fires from a real-setTimeout (not slowed by the clock), so
+    // waitForMoveEnd is a no-op here. boardHold must cover the morph + delayed
+    // flyTo in WALL time (appMs / slowmo); keep boardHold generous if you raise
+    // `slowmo` toward 1.0.
     await appWait(page, JOURNEY.boardHold);
 
     // ── Beat 5: open a photo (detail lightbox, cross-fade) ────────────────
@@ -198,6 +213,13 @@ async function captureMorph(slug: string, manifest: Manifest): Promise<void> {
     // ── Beat 7: pan the board a few times (pointer drag; wheel zooms, not pans)
     const cx = 960;
     const cy = 540;
+    const polaroidX = () =>
+      page.evaluate(
+        () =>
+          (document.querySelector('div[style*="rotate("]') as HTMLElement | null)?.getBoundingClientRect()
+            .left ?? NaN,
+      );
+    const xBefore = await polaroidX();
     for (let i = 0; i < JOURNEY.panCount; i++) {
       const sign = i % 2 === 0 ? 1 : -1;
       await page.mouse.move(cx, cy);
@@ -205,6 +227,10 @@ async function captureMorph(slug: string, manifest: Manifest): Promise<void> {
       await page.mouse.move(cx + sign * JOURNEY.panDistance, cy + sign * 60, { steps: 14 });
       await page.mouse.up();
       await appWait(page, JOURNEY.panHold);
+    }
+    const xAfter = await polaroidX();
+    if (!Number.isNaN(xBefore) && !Number.isNaN(xAfter) && Math.abs(xAfter - xBefore) < 2) {
+      throw new Error("Board drag-pan produced no movement — synthetic pointer drag didn't take.");
     }
 
     // ── Beat 8: stop, then grab the final panned board as the lock-frame still
@@ -217,7 +243,8 @@ async function captureMorph(slug: string, manifest: Manifest): Promise<void> {
 
   // app-time of each captured frame = wall-elapsed * slowmo (seconds). Resample
   // the FULL journey window to real-time 30fps by nearest app-time — pacing is
-  // 1:1 because the journey's app-time IS the real-time the viewer experiences.
+  // 1:1 because the journey's app-time IS the real-time the viewer experiences
+  // (capped at `maxFrames`; beyond that the cap compresses pacing).
   const appT = frames.map((f) => ((f.wall - wall0) * JOURNEY.slowmo) / 1000);
   const winStart = appT[0];
   const winEnd = appT[appT.length - 1];
