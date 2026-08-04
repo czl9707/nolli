@@ -16,14 +16,6 @@ export const DARK_INIT = `
   try { localStorage.setItem('theme', 'dark'); } catch (e) {}
 `;
 
-// Slow-mo factor for the morph capture. The app's clock runs at SLOWMO x wall
-// speed so the same ~1.2s morph is sampled by ~4x more real frames, then we
-// resample back to real-time 30fps. 0.25 keeps morph frozen-frames to ~2/36.
-// IMPORTANT: keep the interaction wall-time SHORT — Chrome throttles the
-// compositor (and thus CDP screencast) during long idle settles, which starves
-// the capture. Short waits yielded ~270 frames; long waits ~99.
-export const SLOWMO = 0.25;
-
 // framer-motion v12 gates its native WAAPI path on a lazy feature flag that does
 // `div.animate({opacity:[1]})` in a try/catch. Native animations bind to
 // document.timeline (real wall clock), which the JS clock wrapper can't slow —
@@ -112,13 +104,6 @@ export async function waitForMoveEnd(page: Page, timeoutMs = 6000) {
       { timeout: timeoutMs },
     )
     .catch(() => {});
-}
-
-// Wait `appMs` of APP time. Under slow-mo, app time advances at SLOWMO × wall
-// time, so the equivalent wall wait is `appMs / SLOWMO`. Expressing tunable
-// durations in app-ms keeps them in the units the final real-time video shows.
-export async function appWait(page: Page, appMs: number) {
-  await page.waitForTimeout(appMs / SLOWMO);
 }
 
 // Node-side poll (real wall-time) for MapLibre tile-readiness. Used during the
