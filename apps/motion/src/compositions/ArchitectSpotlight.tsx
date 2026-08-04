@@ -46,7 +46,7 @@ export const ArchitectSpotlight: React.FC<SpotlightProps> = ({ manifest, fontVar
         <SegmentNow {...segProps} />
       </Series.Sequence>
       {hasMorph && (
-        <Series.Sequence durationInFrames={scene2Duration}>
+        <Series.Sequence durationInFrames={manifest.mapClipFrames ?? scene2Duration}>
           <Scene2MapMorph manifest={manifest} />
         </Series.Sequence>
       )}

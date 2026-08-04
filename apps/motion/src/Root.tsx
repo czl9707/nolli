@@ -43,7 +43,10 @@ export const RemotionRoot = () => {
         calculateMetadata={({ props }) => {
           const m = props.manifest;
           const stillCount = m.stills?.length ?? 0;
-          const total = stillCount * STILL_FRAMES + (m.mapClip ? scene2Duration : 0) + scene3Duration(m);
+          const total =
+            stillCount * STILL_FRAMES +
+            (m.mapClip ? (m.mapClipFrames ?? scene2Duration) : 0) +
+            scene3Duration(m);
           return { durationInFrames: total, props };
         }}
       />
