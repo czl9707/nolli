@@ -21,7 +21,13 @@ async function probeClipFrames(path: string): Promise<number> {
     "-of", "default=noprint_wrappers=1:nokey=1",
     path,
   ]);
-  return Math.round(parseFloat(stdout.trim()) * FPS);
+  const seconds = parseFloat(stdout.trim());
+  if (!Number.isFinite(seconds) || seconds <= 0) {
+    throw new Error(
+      `ffprobe returned an invalid duration (${JSON.stringify(stdout.trim())}) for ${path}`,
+    );
+  }
+  return Math.round(seconds * FPS);
 }
 
 const DEFAULT_FONT = "playful";
