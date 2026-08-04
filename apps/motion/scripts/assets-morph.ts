@@ -34,7 +34,7 @@ const JOURNEY = {
   panDistance: 260, // drag magnitude (px)
   panHold: 500, // hold between pans
   screencastQuality: 92,
-  maxFrames: 14 * FPS, // resample ceiling (14s real-time)
+  maxFrames: 18 * FPS, // resample ceiling (18s real-time; journey is ~15s)
 } as const;
 
 // Capture the home->board morph via slow-mo CDP screencast, resample to a
@@ -206,8 +206,14 @@ async function captureMorph(slug: string, manifest: Manifest): Promise<void> {
     await appWait(page, JOURNEY.detailHold);
 
     // ── Beat 6: close the lightbox (backdrop click → onClose) ─────────────
-    // Click a corner that is backdrop, not the centered photo.
+    // Click a corner that is backdrop, not the centered photo, then wait for the
+    // modal to fully unmount (framer-motion exit fade ~0.6s app) before panning —
+    // otherwise the still-present backdrop swallows the drag's pointerdown.
     await page.mouse.click(40, 40);
+    await page
+      .locator('div[style*="aspect-ratio"]')
+      .waitFor({ state: "detached", timeout: 5000 })
+      .catch(() => {});
     await appWait(page, JOURNEY.detailCloseHold);
 
     // ── Beat 7: pan the board a few times (pointer drag; wheel zooms, not pans)
@@ -220,11 +226,24 @@ async function captureMorph(slug: string, manifest: Manifest): Promise<void> {
             .left ?? NaN,
       );
     const xBefore = await polaroidX();
+    // useBoardPan gates pointermove on isPanning, which is set in pointerdown via
+    // a React state update. Playwright's batched mouse.move steps can all land
+    // before React commits isPanning=true (every move returns early → no pan), so
+    // settle after down() and move in spaced increments — each gets its own
+    // render, which also yields a smooth glide under slow-mo.
+    const panSteps = 14;
     for (let i = 0; i < JOURNEY.panCount; i++) {
       const sign = i % 2 === 0 ? 1 : -1;
       await page.mouse.move(cx, cy);
       await page.mouse.down();
-      await page.mouse.move(cx + sign * JOURNEY.panDistance, cy + sign * 60, { steps: 14 });
+      await appWait(page, 150);
+      for (let s = 1; s <= panSteps; s++) {
+        await page.mouse.move(
+          cx + sign * JOURNEY.panDistance * (s / panSteps),
+          cy + sign * 60 * (s / panSteps),
+        );
+        await appWait(page, 30);
+      }
       await page.mouse.up();
       await appWait(page, JOURNEY.panHold);
     }
