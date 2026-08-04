@@ -2,7 +2,7 @@ import { Composition } from "remotion";
 import { ArchitectSpotlight, type SpotlightProps } from "./compositions/ArchitectSpotlight";
 import { SegmentName, SegmentCount, SegmentNow, SegmentLogo } from "./scenes/OutroSegments";
 import type { Manifest } from "./lib/manifest";
-import { FPS, STILL_FRAMES, scene2Duration, scene3Duration } from "./lib/timing";
+import { FPS, totalDuration } from "./lib/timing";
 import { outroSegmentDurations } from "./lib/outro";
 
 // Placeholder manifest so Remotion Studio renders without --props. Real renders
@@ -43,10 +43,7 @@ export const RemotionRoot = () => {
         calculateMetadata={({ props }) => {
           const m = props.manifest;
           const stillCount = m.stills?.length ?? 0;
-          const total =
-            stillCount * STILL_FRAMES +
-            (m.mapClip ? (m.mapClipFrames ?? scene2Duration) : 0) +
-            scene3Duration(m);
+          const total = totalDuration(stillCount, Boolean(m.mapClip), m);
           return { durationInFrames: total, props };
         }}
       />

@@ -3,7 +3,7 @@ import { Scene1Stills } from "../scenes/Scene1Stills";
 import { Scene2MapMorph } from "../scenes/Scene2MapMorph";
 import { SegmentName, SegmentCount, SegmentNow, SegmentLogo } from "../scenes/OutroSegments";
 import type { Manifest } from "../lib/manifest";
-import { STILL_FRAMES, scene2Duration } from "../lib/timing";
+import { STILL_FRAMES, scene2Frames } from "../lib/timing";
 import { outroSegmentDurations } from "../lib/outro";
 
 export type SpotlightProps = {
@@ -46,7 +46,7 @@ export const ArchitectSpotlight: React.FC<SpotlightProps> = ({ manifest, fontVar
         <SegmentNow {...segProps} />
       </Series.Sequence>
       {hasMorph && (
-        <Series.Sequence durationInFrames={manifest.mapClipFrames ?? scene2Duration}>
+        <Series.Sequence durationInFrames={scene2Frames(manifest.mapClipFrames)}>
           <Scene2MapMorph manifest={manifest} />
         </Series.Sequence>
       )}
