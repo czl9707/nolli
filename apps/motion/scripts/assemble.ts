@@ -3,9 +3,26 @@ import { selectComposition, renderMedia } from "@remotion/renderer";
 import {
   copyFileSync, existsSync, mkdirSync, readFileSync, rmSync,
 } from "node:fs";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import { join, resolve } from "node:path";
 import { loadPlaylist, validatePlaylist } from "./playlist";
 import type { Manifest } from "./manifest";
+import { FPS } from "../src/lib/timing";
+
+const execFileP = promisify(execFile);
+
+// Frame count of the captured clip = round(duration_s * FPS). The clip is
+// encoded at a constant FPS, so deriving from duration is fast and accurate.
+async function probeClipFrames(path: string): Promise<number> {
+  const { stdout } = await execFileP("ffprobe", [
+    "-v", "error",
+    "-show_entries", "format=duration",
+    "-of", "default=noprint_wrappers=1:nokey=1",
+    path,
+  ]);
+  return Math.round(parseFloat(stdout.trim()) * FPS);
+}
 
 const DEFAULT_FONT = "playful";
 
@@ -48,8 +65,10 @@ async function main() {
   // Stage morph + end-still if present.
   if (playlist.morph) {
     const morphFlat = playlist.morph.split("/").pop()!;
-    copyFileSync(join(outDir, playlist.morph), join(stageDir, morphFlat));
+    const stagedMorph = join(stageDir, morphFlat);
+    copyFileSync(join(outDir, playlist.morph), stagedMorph);
     manifest.mapClip = `capture/${slug}/${morphFlat}`;
+    manifest.mapClipFrames = await probeClipFrames(stagedMorph);
     const endSrc = join(outDir, "morph-end.png");
     if (existsSync(endSrc)) {
       copyFileSync(endSrc, join(stageDir, "morph-end.png"));
@@ -63,6 +82,7 @@ async function main() {
   } else {
     manifest.mapClip = undefined;
     manifest.mapClipEnd = undefined;
+    manifest.mapClipFrames = undefined;
   }
 
   console.log(`Staged ${stills.length} stills${manifest.mapClip ? " + morph" : ""} → ${stageDir}`);
