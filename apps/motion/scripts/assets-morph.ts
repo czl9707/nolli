@@ -23,9 +23,10 @@ const appWait = (page: import("playwright").Page, appMs: number) =>
 // screencast compositor on long idle captures and starves the frame stream.
 const JOURNEY = {
   slowmo: 0.4, // app-speed factor; 0.4 (not the canonical 0.25) keeps this ~3x-longer journey's wall-time under the compositor-starvation threshold
-  establishMaxZoom: 6, // fitBounds cap so single-city architects still pull back
-  establishHold: 1200, // hold on the wide "all pins" establishing view
-  flyZoom: 14, // destination zoom (matches flyToArchCinematic default)
+  establishZoom: 9, // opening mid-zoom on the hero (the camera starts here)
+  diveZoom: 13, // ease-in target — the "lean in" before the flyTo
+  establishHold: 1000, // hold on the opening mid view before easing in
+  flyZoom: 14, // far-building flyTo destination (matches flyToArchCinematic default)
   flyHold: 800, // hold after each flyTo lands
   boardHold: 1000, // hold after the map->board morph settles
   detailHold: 1000, // hold on the open photo lightbox
@@ -51,18 +52,6 @@ async function captureMorph(slug: string, manifest: Manifest): Promise<void> {
   }
   const hero = buildings.find((b) => b.slug === manifest.hero) ?? buildings[0];
   const far = farthestFrom(buildings, manifest.hero);
-  // MapLibre's LngLatBounds only honors [0]=SW,[1]=NE (NaNs at exactly 4 points),
-  // so reduce to a true bounding box before fitBounds.
-  const bounds: [[number, number], [number, number]] = buildings.reduce(
-    (acc, b) => [
-      [Math.min(acc[0][0], b.longitude), Math.min(acc[0][1], b.latitude)],
-      [Math.max(acc[1][0], b.longitude), Math.max(acc[1][1], b.latitude)],
-    ],
-    [
-      [buildings[0].longitude, buildings[0].latitude],
-      [buildings[0].longitude, buildings[0].latitude],
-    ] as [[number, number], [number, number]],
-  );
 
   const frames: { wall: number; data: string }[] = [];
   let wall0 = 0;
@@ -101,19 +90,17 @@ async function captureMorph(slug: string, manifest: Manifest): Promise<void> {
         },
         { center, zoom },
       );
-    const startZoom = await page.evaluate(
-      () => (window as unknown as { __nolliMap?: { getZoom: () => number } }).__nolliMap?.getZoom() ?? 14,
-    );
     for (const target of [
-      [hero.longitude, hero.latitude],
-      [far.longitude, far.latitude],
-    ] as [number, number][]) {
-      await jumpTo(target, JOURNEY.flyZoom);
+      { c: [hero.longitude, hero.latitude] as [number, number], z: JOURNEY.diveZoom },
+      { c: [far.longitude, far.latitude] as [number, number], z: JOURNEY.flyZoom },
+    ]) {
+      await jumpTo(target.c, target.z);
       await waitForTilesLoaded(page, 6000);
     }
-    await jumpTo([hero.longitude, hero.latitude], startZoom);
+    // Open at the mid establishing zoom on the hero (the camera's start state).
+    await jumpTo([hero.longitude, hero.latitude], JOURNEY.establishZoom);
     await waitForTilesLoaded(page, 6000);
-    console.log("  tile warm: hero + far destination warmed");
+    console.log("  tile warm done");
 
     // ── Flip slow-mo, then start the screencast ───────────────────────────
     wall0 = Date.now();
@@ -136,17 +123,8 @@ async function captureMorph(slug: string, manifest: Manifest): Promise<void> {
       maxHeight: 1080,
     });
 
-    // In-page camera primitives mirroring packages/map/src/map-flyto.ts.
-    const fitAll = () =>
-      page.evaluate(
-        ({ bounds, maxZoom }) => {
-          (window as unknown as {
-            __nolliMap?: { fitBounds: (b: [[number, number], [number, number]], o: { padding: number; maxZoom: number }) => void };
-          }).__nolliMap?.fitBounds(bounds, { padding: 120, maxZoom });
-        },
-        { bounds, maxZoom: JOURNEY.establishMaxZoom },
-      );
-    const flyTo = (lat: number, lng: number) =>
+    // In-page camera primitive mirroring packages/map/src/map-flyto.ts.
+    const flyTo = (lat: number, lng: number, zoom: number = JOURNEY.flyZoom) =>
       page.evaluate(
         ({ lat, lng, zoom }) => {
           const m = (window as unknown as {
@@ -172,20 +150,18 @@ async function captureMorph(slug: string, manifest: Manifest): Promise<void> {
           m.stop();
           m.flyTo({ center: [lng, lat], zoom: dest, duration, curve: 1.2, speed: 1.0, essential: true });
         },
-        { lat, lng, zoom: JOURNEY.flyZoom },
+        { lat, lng, zoom },
       );
 
-    // ── Beat 1: establishing wide view of all pins ────────────────────────
-    await fitAll();
-    await waitForMoveEnd(page);
+    // ── Beat 1: open mid-zoom on the hero, hold, then ease in closer ──────
+    // A continuous inward motion — replaces the old fitBounds-wide→dive-back,
+    // which read as a redundant out-and-back to the same hero view.
     await appWait(page, JOURNEY.establishHold);
-
-    // ── Beat 2: fly to hero ───────────────────────────────────────────────
-    await flyTo(hero.latitude, hero.longitude);
+    await flyTo(hero.latitude, hero.longitude, JOURNEY.diveZoom);
     await waitForMoveEnd(page);
     await appWait(page, JOURNEY.flyHold);
 
-    // ── Beat 3: fly to the farthest building (the money shot) ─────────────
+    // ── Beat 2: fly to the farthest building (the money shot) ─────────────
     await flyTo(far.latitude, far.longitude);
     await waitForMoveEnd(page);
     await appWait(page, JOURNEY.flyHold);
