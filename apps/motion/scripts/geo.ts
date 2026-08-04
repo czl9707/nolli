@@ -10,7 +10,7 @@ export function haversine(aLat: number, aLng: number, bLat: number, bLng: number
   const s =
     Math.sin(dLat / 2) ** 2 +
     Math.cos(rad(aLat)) * Math.cos(rad(bLat)) * Math.sin(dLng / 2) ** 2;
-  return 2 * R_KM * Math.asin(Math.sqrt(s));
+  return 2 * R_KM * Math.asin(Math.min(1, Math.sqrt(s)));
 }
 
 /** The building farthest (great-circle) from the origin building. Used to pick
