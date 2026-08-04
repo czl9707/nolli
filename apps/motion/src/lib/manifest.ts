@@ -17,6 +17,9 @@ export type Manifest = {
   stills?: { path: string }[];
   mapClip?: string;
   mapClipEnd?: string;
+  /** Real frame count of the captured Scene 2 clip (set by assemble via ffprobe).
+   *  When present, sizes the morph Sequence; falls back to scene2Duration otherwise. */
+  mapClipFrames?: number;
 };
 
 // The manifest is no longer statically imported — it is generated into

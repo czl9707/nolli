@@ -18,6 +18,8 @@ export type Manifest = {
   stills?: { path: string }[];
   mapClip?: string;
   mapClipEnd?: string;
+  /** Real frame count of the captured morph clip; set by assemble via ffprobe. */
+  mapClipFrames?: number;
 };
 
 export function rowsToManifest(
