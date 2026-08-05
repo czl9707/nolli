@@ -3,13 +3,21 @@ import { selectComposition, renderMedia } from "@remotion/renderer";
 import { resolve } from "node:path";
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import type { Manifest } from "./manifest";
+import { countText, NOW_TEXT } from "../src/lib/outro";
+import type { TextScene } from "../src/lib/scenes";
 
-const SEGMENTS = [
-  { id: "OutroName", file: "outro-name.mp4" },
-  { id: "OutroCount", file: "outro-count.mp4" },
-  { id: "OutroNow", file: "outro-now.mp4" },
-  { id: "OutroLogo", file: "outro-logo.mp4" },
-] as const;
+type Seg =
+  | { id: "OutroText"; file: string; scene: TextScene }
+  | { id: "OutroLogo"; file: string };
+
+function segments(manifest: Manifest): Seg[] {
+  return [
+    { id: "OutroText", file: "outro-name.mp4", scene: { type: "text", text: manifest.architect, size: 132, color: "fg" } },
+    { id: "OutroText", file: "outro-count.mp4", scene: { type: "text", text: countText(manifest.count), size: 104, color: "fg" } },
+    { id: "OutroText", file: "outro-now.mp4", scene: { type: "text", text: NOW_TEXT, size: 104, color: "fgSecondary" } },
+    { id: "OutroLogo", file: "outro-logo.mp4" },
+  ];
+}
 
 async function main() {
   const slug = process.argv[2];
@@ -30,14 +38,17 @@ async function main() {
   console.log("Bundling…");
   const serveUrl = await bundle({ entryPoint: resolve("src/index.ts") });
 
-  for (const seg of SEGMENTS) {
-    const inputProps = { manifest, fontVariant };
+  for (const seg of segments(manifest)) {
+    const inputProps =
+      seg.id === "OutroText"
+        ? { scene: seg.scene, fontVariant }
+        : { fontVariant };
     const composition = await selectComposition({ serveUrl, id: seg.id, inputProps });
     const out = resolve(outDir, seg.file);
     console.log(`Rendering ${seg.id} → ${out}`);
     await renderMedia({ composition, serveUrl, codec: "h264", outputLocation: out });
   }
-  console.log(`Done. ${SEGMENTS.length} outro clips written to out/${slug}/.`);
+  console.log(`Done. 4 outro clips written to out/${slug}/.`);
 }
 
 main().catch((e) => {
