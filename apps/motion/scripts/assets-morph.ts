@@ -34,8 +34,15 @@ const JOURNEY = {
   detailHold: 2000, // hold on the open photo lightbox
   detailCloseHold: 500, // hold after closing the lightbox
   panCount: 2, // number of board drag-pans
-  panDistance: 300, // shared pan magnitude (px) — map panBy AND board drag
-  panDurationMs: 360, // shared pan SPEED: app-ms per pan glide (lower = faster). Map + board both use this.
+  // Distinct pan gestures cycled through for BOTH map drift-pans and board drags.
+  // Varied direction + distance so the "look around" reads organic rather than a
+  // symmetric back-and-forth. dx/dy in px, dur in app-ms per glide.
+  panMotions: [
+    { dx: 300, dy: 40, dur: 360 },
+    { dx: -220, dy: -90, dur: 300 },
+    { dx: 160, dy: 120, dur: 420 },
+    { dx: -280, dy: 60, dur: 340 },
+  ],
   panSteps: 14, // board-drag smoothing increments per glide (map panBy is eased natively)
   panHold: 500, // app-ms hold between pans
   mapReturnMs: 3000, // wait after clicking back to the map — covers the framer-motion board→map morph + the flyTo settle, then the lock-frame still is the map view
@@ -187,7 +194,11 @@ async function captureMorph(
         const c = m?.getCenter();
         return c ? { lng: c.lng, lat: c.lat } : { lng: NaN, lat: NaN };
       });
-    const panMap = (dx: number, dy: number) =>
+    // Running index across ALL look-around gestures (map drifts + board drags) so
+    // consecutive pans pick distinct direction/distance variants, never a mirror.
+    let panIdx = 0;
+    const nextPan = () => JOURNEY.panMotions[panIdx++ % JOURNEY.panMotions.length];
+    const panMap = (dx: number, dy: number, dur: number) =>
       page.evaluate(
         ({ dx, dy, duration }) => {
           const m = (window as unknown as {
@@ -195,13 +206,13 @@ async function captureMorph(
           }).__nolliMap;
           m?.panBy([dx, dy], { duration });
         },
-        { dx, dy, duration: JOURNEY.panDurationMs },
+        { dx, dy, duration: dur },
       );
     const panMapAround = async () => {
       for (let i = 0; i < JOURNEY.mapPanCount; i++) {
-        const sign = i % 2 === 0 ? 1 : -1;
+        const p = nextPan();
         const before = await mapCenter();
-        await panMap(sign * JOURNEY.panDistance, sign * 60);
+        await panMap(p.dx, p.dy, p.dur);
         await waitForMoveEnd(page);
         const after = await mapCenter();
         if (
@@ -298,32 +309,34 @@ async function captureMorph(
           (document.querySelector('div[style*="rotate("]') as HTMLElement | null)?.getBoundingClientRect()
             .left ?? NaN,
       );
-    const xBefore = await polaroidX();
     // useBoardPan gates pointermove on isPanning, which is set in pointerdown via
     // a React state update. Playwright's batched mouse.move steps can all land
     // before React commits isPanning=true (every move returns early → no pan), so
     // settle after down() and move in spaced increments — each gets its own
-    // render, which also yields a smooth glide under slow-mo. Glide speed is
-    // panDurationMs (shared with the map pan); panSteps only sets smoothness.
-    const stepDelay = JOURNEY.panDurationMs / JOURNEY.panSteps;
+    // render, which also yields a smooth glide under slow-mo. Each pan uses the
+    // next panMotions gesture (varied direction + distance); panSteps sets
+    // smoothness only. Assert PER pan — varied directions can net ~zero over the
+    // whole loop, so a net-displacement check would false-throw.
     for (let i = 0; i < JOURNEY.panCount; i++) {
-      const sign = i % 2 === 0 ? 1 : -1;
+      const p = nextPan();
+      const x0 = await polaroidX();
+      const stepDelay = p.dur / JOURNEY.panSteps;
       await page.mouse.move(cx, cy);
       await page.mouse.down();
       await appWait(page, 150);
       for (let s = 1; s <= JOURNEY.panSteps; s++) {
         await page.mouse.move(
-          cx + sign * JOURNEY.panDistance * (s / JOURNEY.panSteps),
-          cy + sign * 60 * (s / JOURNEY.panSteps),
+          cx + p.dx * (s / JOURNEY.panSteps),
+          cy + p.dy * (s / JOURNEY.panSteps),
         );
         await appWait(page, stepDelay);
       }
       await page.mouse.up();
       await appWait(page, JOURNEY.panHold);
-    }
-    const xAfter = await polaroidX();
-    if (!Number.isNaN(xBefore) && !Number.isNaN(xAfter) && Math.abs(xAfter - xBefore) < 2) {
-      throw new Error("Board drag-pan produced no movement — synthetic pointer drag didn't take.");
+      const x1 = await polaroidX();
+      if (!Number.isNaN(x0) && !Number.isNaN(x1) && Math.abs(x1 - x0) < 2) {
+        throw new Error("Board drag-pan produced no movement — synthetic pointer drag didn't take.");
+      }
     }
     beat("board pans done");
 
