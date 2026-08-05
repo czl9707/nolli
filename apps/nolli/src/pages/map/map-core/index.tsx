@@ -73,6 +73,36 @@ function MapCaptureBridge() {
 }
 
 /**
+ * Under `?capture=1`, exposes the same nav the sidebar suggestion cards use
+ * (select + `/arch/:slug` push → MapFlyNavigator flies), so the motion capture
+ * can drive a real arch→arch transition deterministically — identical sidebar
+ * (selection panel) update and camera flight a user gets clicking an "Also by"
+ * card. Unlike the shared navigateArch, this PRESERVES the current ?search
+ * (notably ?capture=1): navigateArch drops it, which would flip `capture` false,
+ * unmount MapCaptureBridge, and lose window.__nolliMap mid-journey (breaking the
+ * #2 map pan after the hop). No-op outside capture.
+ */
+function ArchNavCaptureBridge() {
+  const select = useArchDetailStore((s) => s.select)
+  const navigate = useNavigate()
+  useEffect(() => {
+    const w = window as unknown as {
+      __nolliNavigateArch?: (slug: string, shouldFlyTo?: boolean) => void
+    }
+    w.__nolliNavigateArch = (slug, shouldFlyTo = true) => {
+      const search = window.location.search
+      void select(slug, shouldFlyTo).then((loaded) => {
+        if (loaded) navigate(`/arch/${slug}${search}`)
+      })
+    }
+    return () => {
+      delete w.__nolliNavigateArch
+    }
+  }, [select, navigate])
+  return null
+}
+
+/**
  * Thin wrapper around the shared <ArchMap>. Reads nolli stores and feeds them
  * as props; passes MapFlyNavigator as a child. Owns db-error navigation.
  */
@@ -129,6 +159,7 @@ export function MapCore() {
         )}
         <MapFlyNavigator />
         {capture && <MapCaptureBridge />}
+        {capture && <ArchNavCaptureBridge />}
       {userLocation && (
         <MapMarker
           longitude={userLocation.longitude}
