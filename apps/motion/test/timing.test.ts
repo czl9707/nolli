@@ -1,16 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { FPS, scene1Duration, scene2Duration, scene3Duration, totalDuration, STILL_FRAMES, MORPH_PLAYBACK_RATE } from "../src/lib/timing";
+import { FPS, STILL_FRAMES, scene2Duration } from "../src/lib/timing";
 
-const manifest = { architect: "SANAA", count: 9 };
-
-describe("timing", () => {
-  it("computes scene1 length from still count", () => {
-    expect(scene1Duration(9)).toBe(STILL_FRAMES * 9);
+describe("timing constants", () => {
+  it("exposes FPS, STILL_FRAMES, scene2Duration", () => {
+    expect(FPS).toBe(30);
+    expect(STILL_FRAMES).toBe(18);
+    expect(scene2Duration).toBe(150);
   });
-  it("totals the three scenes", () => {
-    expect(totalDuration(9, true, manifest)).toBe(
-      scene1Duration(9) + Math.ceil(scene2Duration / MORPH_PLAYBACK_RATE) + scene3Duration(manifest),
-    );
-  });
-  it("FPS is 30", () => expect(FPS).toBe(30));
 });

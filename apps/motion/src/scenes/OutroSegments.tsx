@@ -1,12 +1,9 @@
 import { AbsoluteFill, interpolate, useCurrentFrame } from "remotion";
 import { PLAYFUL_FAMILY, INTER_FAMILY } from "../fonts";
 import { THEME } from "../lib/theme";
-import { OUTRO, visibleCharCount, countText, NOW_TEXT, LOGO_WORD } from "../lib/outro";
-import type { Manifest } from "../lib/manifest";
+import { OUTRO, visibleCharCount, LOGO_WORD } from "../lib/outro";
 import type { TextScene, FontVariant } from "../lib/scenes";
 import { DEFAULT_TEXT_SIZE } from "../lib/scenes";
-
-type SegProps = { manifest: Manifest; fontVariant: FontVariant };
 
 const family = (v: FontVariant) => (v === "inter" ? INTER_FAMILY : PLAYFUL_FAMILY);
 
@@ -48,54 +45,6 @@ const NolliMark: React.FC<{ size: number }> = ({ size }) => (
     <path d="M0 16.753C0 21.7061 3.62587 25.9129 8.52479 26.6436L97.717 39.9469C104.931 41.0229 110.833 34.2633 108.793 27.2605L102.953 7.20423C101.71 2.93545 97.7981 0 93.352 0H10C4.47715 0 0 4.47715 0 10V16.753Z" fill="#EDEAE1" />
   </svg>
 );
-
-export const SegmentName: React.FC<SegProps> = ({ manifest, fontVariant }) => {
-  const frame = useCurrentFrame();
-  return (
-    <AbsoluteFill style={{ backgroundColor: THEME.bg, justifyContent: "center", alignItems: "center" }}>
-      <TypewriterLine
-        text={manifest.architect}
-        frame={frame}
-        start={OUTRO.typeStart.name}
-        fontFamily={family(fontVariant)}
-        fontSize={132}
-        color={THEME.fg}
-      />
-    </AbsoluteFill>
-  );
-};
-
-export const SegmentCount: React.FC<SegProps> = ({ manifest, fontVariant }) => {
-  const frame = useCurrentFrame();
-  return (
-    <AbsoluteFill style={{ backgroundColor: THEME.bg, justifyContent: "center", alignItems: "center" }}>
-      <TypewriterLine
-        text={countText(manifest.count)}
-        frame={frame}
-        start={OUTRO.typeStart.count}
-        fontFamily={family(fontVariant)}
-        fontSize={104}
-        color={THEME.fg}
-      />
-    </AbsoluteFill>
-  );
-};
-
-export const SegmentNow: React.FC<SegProps> = ({ fontVariant }) => {
-  const frame = useCurrentFrame();
-  return (
-    <AbsoluteFill style={{ backgroundColor: THEME.bg, justifyContent: "center", alignItems: "center" }}>
-      <TypewriterLine
-        text={NOW_TEXT}
-        frame={frame}
-        start={OUTRO.typeStart.now}
-        fontFamily={family(fontVariant)}
-        fontSize={104}
-        color={THEME.fgSecondary}
-      />
-    </AbsoluteFill>
-  );
-};
 
 // Generic text scene: animate any string with the expand-from-center typewriter.
 // Replaces the per-field SegmentName/Count/Now.
