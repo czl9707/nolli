@@ -516,17 +516,15 @@ async function captureMorph(
         await panMapAround(page, far);
         beat("pan#2 done");
       },
-      // Beat 5: "Go to Pin Board" → map shrinks to inset, polaroids bloom.
+      // Beat 5: "Go to Pin Board" → map shrinks to inset, polaroids bloom. The
+      // app's MapFlyNavigator recenters the inset on the building on board entry;
+      // we do NOT flyTo ourselves — trust the app's recenter. boardOpenSettle lets
+      // the bloom + recenter play out in WALL time (appMs / slowmo); raise it if
+      // you push `slowmo` toward 1.0. boardHold is then a PURE static pause that
+      // survives the final-cut 2× playbackRate so the viewer reads the board.
       async () => {
         await page.getByRole("button", { name: /go to pin board/i }).click();
         beat("board clicked");
-        // The morph is framer-motion (map.isMoving() stays false) and the inset's
-        // camera flyTo fires from a real-setTimeout (not slowed by the clock), so
-        // waitForMoveEnd is a no-op here. boardOpenSettle covers the bloom + the
-        // unscaled flyTo landing in WALL time (appMs / slowmo); raise it if you
-        // push `slowmo` toward 1.0. boardHold is then a PURE static pause after
-        // the reveal settles — it survives the final-cut 2× playbackRate so the
-        // viewer actually reads the board before the cut.
         await appWait(page, JOURNEY.boardOpenSettle);
         beat("boardOpenSettle done");
         await appWait(page, JOURNEY.boardHold);
