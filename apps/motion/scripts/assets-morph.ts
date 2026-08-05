@@ -73,7 +73,7 @@ async function captureMorph(
     const page = await context.newPage();
     // ?capture=1: preserveDrawingBuffer for the screencast AND gates
     // MapCaptureBridge, which exposes window.__nolliMap.
-    await page.goto(`${BASE_URL}/arch/${manifest.hero}?capture=1`);
+    await page.goto(`${BASE_URL}/arch/${hero.slug}?capture=1`);
     await waitForStable(page);
 
     const hasMap = await page.evaluate(
