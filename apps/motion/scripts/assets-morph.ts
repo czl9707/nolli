@@ -5,8 +5,7 @@ import { promisify } from "node:util";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { LAUNCH_ARGS, newDarkContext, waitForStable, waitForMoveEnd, waitForTilesLoaded } from "./capture-helpers";
-import type { Playlist } from "./playlist";
-import { loadPlaylist } from "./playlist";
+import { loadMorphConfig, type MorphConfig, type Tuning } from "./morph-config";
 import type { BuildingRow, Manifest } from "./manifest";
 import { FPS } from "../src/lib/timing";
 
@@ -68,46 +67,21 @@ const panFromAngle = (base: number, fanHalfDeg: number): { dx: number; dy: numbe
 // CDP screencast compositor on long idle captures and starves the frame stream.
 // The journey is now recorded as two chunks (map journey, then board section),
 // so each chunk's continuous screencast is half as long.
-const JOURNEY = {
-  slowmo: 0.4, // app-speed factor. Lower = more slow-mo (and more wall-time: appMs/slowmo). If a capture comes back with too few frames, RAISE this toward 0.5–0.7 (less wall-time) — Chrome starves the CDP screencast on long idle captures.
-  establishZoom: 10, // opening mid-zoom on the hero (the camera starts here)
-  diveZoom: 14, // ease-in target — the "lean in" before the look-around + arch hop
-  establishHold: 1000, // hold on the opening mid view before easing in
-  flyZoom: 14, // arch #2 flyTo destination (matches flyToArchCinematic default)
-  flyHold: 1500, // hold after the ease-in
-  navLandMs: 2100, // fixed wait after triggering the arch→arch nav — covers the off-screen fly (MAP_TRANSITION_LONG = 1800 app-ms) + a short settle, then straight into the #2 map pan. Replaces the old variable waitForMoveEnd + a dead hold.
-  mapPanCount: 2, // map drift-pans while dwelling on each arch (the "look around")
-  boardHold: 3000, // hold after the map->board morph settles
-  detailHold: 2000, // hold on the open photo lightbox
-  detailCloseHold: 500, // hold after closing the lightbox
-
-  panCount: 2, // number of board drag-pans
-  panFanHalf: 20, // half-angle (deg) of the return fan around the line back to the pin → 40° fan
-  panMagMin: 150, // min pan magnitude in px (a gentle glance, not a fling)
-  panMagMax: 400, // max pan magnitude in px (keeps the pin comfortably in view)
-  panDurMin: 200, // min glide duration in app-ms
-  panDurMax: 400, // max glide duration in app-ms
-  panSteps: 14, // board-drag smoothing increments per glide (map panBy is eased natively)
-  panHold: 500, // app-ms hold between pans
-
-  mapReturnMs: 3000, // wait after clicking back to the map — covers the framer-motion board→map morph + the flyTo settle, then the lock-frame still is the map view
-  mapReturnHold: 1000, // hold on the arch #2 map view before cutting
-  screencastQuality: 92,
-  maxFrames: 24 * FPS, // resample ceiling — hard cap on output frames; raise if a longer journey legitimately truncates
-} as const;
+//
+// Tuning comes from morph.json (set at the top of captureMorph from config.tuning).
+// Kept module-level so the existing helpers read JOURNEY.<field> unchanged.
+let JOURNEY: Tuning;
 
 // ── Recording primitives ───────────────────────────────────────────────────
 // startRecording / endRecording fold a CDP screencast into a Recorder; Journey
-// owns the timeline and exposes start/seam/end so the journey can be captured
-// as N sequential chunks. The seam is a single seam() call — move it to
-// relocate where one chunk ends and the next begins. The commit keeps the final
-// timeline continuous (app-time), so an unrecorded gap between two chunks just
-// reads as a hard cut.
+// owns the per-chunk frame lists and exposes start/seam/end so the journey can
+// be captured as N sequential chunks. The seam is a single seam() call — move
+// it (via morph.json's seamAfterBeat) to relocate where one chunk ends and the
+// next begins. Each chunk becomes its own output file (morph-<n>.mp4).
 
 type ScreencastFrame = { wall: number; data: string };
 type Recorder = { client: CDPSession; frames: ScreencastFrame[]; wall0: number };
-// Master timeline frame: app-time (ms) the viewer experiences, already offset
-// across chunks into one continuous timeline.
+// One captured frame in a chunk's timeline: app-time (ms) local to that chunk.
 type MasterFrame = { appMs: number; data: string };
 
 // Open a CDP screencast on the page. Each Recorder owns its own session + wall
@@ -135,48 +109,38 @@ async function endRecording(rec: Recorder): Promise<void> {
   await rec.client.detach().catch(() => {});
 }
 
-// Fold a finished chunk's frames onto the master timeline, offset onto the tail
-// of whatever prior chunks already appended. Frames keep their intra-chunk
-// pacing (wall - wall0) * slowmo and land end-to-end with prior chunks;
-// anything not recorded between chunks is simply absent → hard cut.
-function commitChunk(master: MasterFrame[], rec: Recorder): void {
-  const offset = master.length ? master[master.length - 1].appMs : 0;
+// Fold a finished chunk's frames into its own local app-time list (no cross-chunk
+// offset — each chunk becomes its own output file). Frames keep their intra-chunk
+// pacing (wall - wall0) * slowmo.
+function commitChunk(chunk: MasterFrame[], rec: Recorder): void {
   for (const f of rec.frames) {
-    master.push({ appMs: (f.wall - rec.wall0) * JOURNEY.slowmo + offset, data: f.data });
+    chunk.push({ appMs: (f.wall - rec.wall0) * JOURNEY.slowmo, data: f.data });
   }
 }
 
-// Owns the master timeline + the currently-recording chunk. Chunks auto-number
-// for logging; the caller only places start/seam/end around the beats. Adding a
-// chunk = adding one seam() call + its beats — no per-chunk locals or cursor
-// bookkeeping at the call site.
+// Owns the per-chunk frame lists + the currently-recording chunk. Chunks auto-
+// number for logging; the caller only places start/seam/end around the beats.
 class Journey {
-  private master: MasterFrame[] = [];
+  private chunks: MasterFrame[][] = [];
   private current: Recorder | null = null;
   private chunkNo = 0;
-  constructor(private context: BrowserContext, private page: Page, private beat: (label: string) => void) {}
+  constructor(
+    private context: BrowserContext,
+    private page: Page,
+    private beat: (label: string) => void,
+  ) {}
 
   /** Begin recording chunk 1. */
-  async start(): Promise<void> {
-    await this.begin();
-  }
+  async start(): Promise<void> { await this.begin(); }
 
   /** End the current chunk and begin the next — this call IS the seam. */
-  async seam(): Promise<void> {
-    await this.finish();
-    await this.begin();
-  }
+  async seam(): Promise<void> { await this.finish(); await this.begin(); }
 
   /** End the final chunk (no restart). */
-  async end(): Promise<void> {
-    await this.finish();
-    this.current = null;
-  }
+  async end(): Promise<void> { await this.finish(); this.current = null; }
 
-  /** The committed, continuous app-time frame timeline across all chunks. */
-  frames(): MasterFrame[] {
-    return this.master;
-  }
+  /** Per-chunk frame lists, each chunk's appMs local to that chunk. */
+  chunkFrames(): MasterFrame[][] { return this.chunks; }
 
   private async begin(): Promise<void> {
     this.chunkNo++;
@@ -187,9 +151,10 @@ class Journey {
     const rec = this.current;
     if (!rec) throw new Error("Journey: no active recording to finish");
     await endRecording(rec);
-    const n = rec.frames.length;
-    commitChunk(this.master, rec);
-    this.beat(`chunk ${this.chunkNo} committed (${n} frames)`);
+    const chunk: MasterFrame[] = [];
+    commitChunk(chunk, rec);
+    this.chunks.push(chunk);
+    this.beat(`chunk ${this.chunkNo} committed (${chunk.length} frames)`);
   }
 }
 
@@ -443,11 +408,10 @@ async function navigateToArch(page: Page, far: BuildingRow, beat: (label: string
   );
 }
 
-// Resample the continuous app-time frame timeline to a real-time 30fps frame
-// list by nearest app-time. Pacing is 1:1 (the journey's app-time IS the
-// real-time the viewer experiences); outCount is capped at maxFrames, beyond
-// which pacing compresses. Chunks concat cleanly because commitChunk already
-// offset them onto one timeline.
+// Resample one chunk's app-time frame timeline to a real-time 30fps frame list
+// by nearest app-time. Pacing is 1:1 (the chunk's app-time IS the real-time the
+// viewer experiences); outCount is capped at maxFrames, beyond which pacing
+// compresses. Runs once per chunk.
 function resampleTimeline(master: MasterFrame[]): string[] {
   const winStart = master[0].appMs;
   const winEnd = master[master.length - 1].appMs;
@@ -464,17 +428,17 @@ function resampleTimeline(master: MasterFrame[]): string[] {
   return out;
 }
 
-// Write the resampled frames as a jpg sequence and mux to morph.mp4 (h264), then
-// point video.json's `morph` at the clip so `assemble` renders Scene 2.
-async function muxClip(outDir: string, frames: string[]): Promise<void> {
-  const framesDir = join(outDir, "morph-frames");
+// Write one chunk's resampled frames as a jpg sequence and mux to morph-<index>.mp4
+// (h264). Returns the absolute clip path.
+async function muxChunk(outDir: string, frames: string[], index: number): Promise<string> {
+  const framesDir = join(outDir, `morph-frames-${index}`);
   rmSync(framesDir, { recursive: true, force: true });
   mkdirSync(framesDir, { recursive: true });
   frames.forEach((d, i) => {
     writeFileSync(join(framesDir, `f${String(i).padStart(5, "0")}.jpg`), Buffer.from(d, "base64"));
   });
 
-  const clipAbs = join(outDir, "morph.mp4");
+  const clipAbs = join(outDir, `morph-${index}.mp4`);
   rmSync(clipAbs, { force: true });
   await execFileP("ffmpeg", [
     "-y",
@@ -488,37 +452,31 @@ async function muxClip(outDir: string, frames: string[]): Promise<void> {
     clipAbs,
   ]);
   rmSync(framesDir, { recursive: true, force: true });
-
-  const playlistPath = join(outDir, "video.json");
-  const playlist = JSON.parse(readFileSync(playlistPath, "utf8")) as Playlist;
-  playlist.morph = "morph.mp4";
-  writeFileSync(playlistPath, JSON.stringify(playlist, null, 2));
-  console.log(`Wrote ${clipAbs}; set morph in ${playlistPath}`);
+  return clipAbs;
 }
 
-// Capture the home->board morph via slow-mo CDP screencast, resample to a
-// real-time 30fps clip, and screenshot the morph's landing frame. Writes
-// morph.mp4 + morph-end.png into out/<slug>/ and points video.json's `morph` at
-// the clip so `assemble` renders Scene 2. See project memory for the slow-mo /
-// WAAPI rationale (this is the migrated captureMapMorph).
+// Capture the home->board morph via slow-mo CDP screencast, resample each chunk
+// to a real-time 30fps clip, and screenshot the morph's landing frame. Writes
+// morph-1.mp4 + morph-2.mp4 + morph-end.png into out/<slug>/. Tuning + journey
+// targets + seamAfterBeat come from morph.json (loadMorphConfig). See project
+// memory for the slow-mo / WAAPI rationale (this is the migrated captureMapMorph).
 //
-// Recorded as TWO chunks (map journey, then board section) joined by a single
-// seam() call — move that call to relocate the cut; add another seam() anywhere
-// for 3+ chunks. Default seam: right before entering the board (Beat 5).
+// Recorded as N chunks (default 2: map journey, then board section). The seam
+// fires after beat `config.seamAfterBeat` — move it by editing morph.json.
 async function captureMorph(
   slug: string,
   manifest: Manifest,
   hero: BuildingRow,
   far: BuildingRow,
+  config: MorphConfig,
 ): Promise<void> {
   const outDir = resolve("out", slug);
+  JOURNEY = config.tuning; // module-level tuning for helpers (appWait, pan helpers, etc.)
 
   if (manifest.buildings.length < 2) {
     throw new Error(`Journey needs >=2 buildings; ${slug} has ${manifest.buildings.length}.`);
   }
 
-  // Capture-wide wall clock for beat logging only (per-chunk app-time uses each
-  // recorder's own wall0).
   const wallStart = Date.now();
   const beat = (label: string) =>
     console.log(`  morph+${((Date.now() - wallStart) / 1000).toFixed(2)}s ${label}`);
@@ -530,91 +488,108 @@ async function captureMorph(
     await warmTiles(page, hero, far);
     await flipSlowmo(page);
 
-    // ══ CHUNK 1 — the map journey (beats 1–4) ════════════════════════════
     journey = new Journey(context, page, beat);
     await journey.start();
 
-    // Beat 1: open mid-zoom on the hero, hold, then ease in closer.
-    await appWait(page, JOURNEY.establishHold);
-    await flyTo(page, hero.latitude, hero.longitude, JOURNEY.diveZoom);
-    await waitForMoveEnd(page);
-    await appWait(page, JOURNEY.flyHold);
-    beat("beat1 done (ease-in + hold)");
+    // Beats in order. The chunk seam fires after beat `config.seamAfterBeat`
+    // (1-indexed). Move the cut by editing morph.json's seamAfterBeat.
+    const beats: Array<() => Promise<void>> = [
+      // Beat 1: open mid-zoom on the hero, hold, then ease in closer.
+      async () => {
+        await appWait(page, JOURNEY.establishHold);
+        await flyTo(page, hero.latitude, hero.longitude, JOURNEY.diveZoom);
+        await waitForMoveEnd(page);
+        await appWait(page, JOURNEY.flyHold);
+        beat("beat1 done (ease-in + hold)");
+      },
+      // Beat 2: drift the map a couple times (a human "look around" on #1).
+      async () => {
+        await panMapAround(page, hero);
+        beat("pan#1 done");
+      },
+      // Beat 3: arch→arch navigation (the money shot).
+      async () => {
+        await navigateToArch(page, far, beat);
+      },
+      // Beat 4: drift the map again on arch #2 before entering its board.
+      async () => {
+        await panMapAround(page, far);
+        beat("pan#2 done");
+      },
+      // Beat 5: "Go to Pin Board" → map shrinks to inset, polaroids bloom.
+      async () => {
+        await page.getByRole("button", { name: /go to pin board/i }).click();
+        beat("board clicked");
+        // The morph is framer-motion (map.isMoving() stays false) and the inset's
+        // camera flyTo fires from a real-setTimeout (not slowed by the clock), so
+        // waitForMoveEnd is a no-op here. boardHold must cover the morph + delayed
+        // flyTo in WALL time (appMs / slowmo); keep boardHold generous if you raise
+        // `slowmo` toward 1.0.
+        await appWait(page, JOURNEY.boardHold);
+        beat("boardHold done");
+      },
+      // Beat 6: open a photo (detail lightbox, cross-fade).
+      async () => {
+        const photo = page.locator('div[style*="rotate("] img:not([src*="pin.png"])').first();
+        await photo.click({ force: true });
+        await page.locator('div[style*="aspect-ratio"]').waitFor({ state: "visible" });
+        await appWait(page, JOURNEY.detailHold);
+      },
+      // Beat 7: close the lightbox (backdrop click), wait for unmount before panning
+      // — otherwise the still-present backdrop swallows the drag's pointerdown.
+      async () => {
+        await page.mouse.click(40, 40);
+        await page
+          .locator('div[style*="aspect-ratio"]')
+          .waitFor({ state: "detached", timeout: 5000 })
+          .catch(() => {});
+        await appWait(page, JOURNEY.detailCloseHold);
+      },
+      // Beat 8: pan the board a few times (pointer drag).
+      async () => {
+        for (let i = 0; i < JOURNEY.panCount; i++) {
+          await panBoard(page, randomPan());
+        }
+        beat("board pans done");
+      },
+      // Beat 9: click the inset-map overlay to navigate back to the map view. Its
+      // onClick does navigate(-1), which pops to the prior /arch/:slug?capture=1
+      // entry (the board push dropped capture, but navigate(-1) restores it). The
+      // board→map morph + MapFlyNavigator flyTo run off real setTimeouts (not
+      // slowed), so mapReturnMs is generous wall-time.
+      async () => {
+        await page.getByText(/click to go back to map view/i).click();
+        await appWait(page, JOURNEY.mapReturnMs);
+        beat("returned to map");
+        await appWait(page, JOURNEY.mapReturnHold);
+      },
+    ];
 
-    // Beat 2: drift the map a couple times (a human "look around" on #1).
-    await panMapAround(page, hero);
-    beat("pan#1 done");
-
-    // Beat 3: arch→arch navigation (the money shot).
-    await navigateToArch(page, far, beat);
-
-    // Beat 4: drift the map again on arch #2 before entering its board.
-    await panMapAround(page, far);
-    beat("pan#2 done");
-
-    // ── SEAM (default): end the map-journey chunk here, before the board.
-    // This single seam() call IS the cut — move it to relocate where chunk 1
-    // ends and chunk 2 begins. Add another seam() anywhere to make 3+ chunks.
-    await journey.seam();
-
-    // ══ CHUNK 2 — the board section (beats 5–9) ══════════════════════════
-    // Beat 5: "Go to Pin Board" → map shrinks to inset, polaroids bloom.
-    await page.getByRole("button", { name: /go to pin board/i }).click();
-    beat("board clicked");
-    // The morph is framer-motion (map.isMoving() stays false) and the inset's
-    // camera flyTo fires from a real-setTimeout (not slowed by the clock), so
-    // waitForMoveEnd is a no-op here. boardHold must cover the morph + delayed
-    // flyTo in WALL time (appMs / slowmo); keep boardHold generous if you raise
-    // `slowmo` toward 1.0.
-    await appWait(page, JOURNEY.boardHold);
-    beat("boardHold done");
-
-    // Beat 6: open a photo (detail lightbox, cross-fade).
-    const photo = page.locator('div[style*="rotate("] img:not([src*="pin.png"])').first();
-    await photo.click({ force: true });
-    await page.locator('div[style*="aspect-ratio"]').waitFor({ state: "visible" });
-    await appWait(page, JOURNEY.detailHold);
-
-    // Beat 7: close the lightbox (backdrop click → onClose). Click a corner that
-    // is backdrop, not the centered photo, then wait for the modal to fully
-    // unmount (framer-motion exit fade ~0.6s app) before panning — otherwise the
-    // still-present backdrop swallows the drag's pointerdown.
-    await page.mouse.click(40, 40);
-    await page
-      .locator('div[style*="aspect-ratio"]')
-      .waitFor({ state: "detached", timeout: 5000 })
-      .catch(() => {});
-    await appWait(page, JOURNEY.detailCloseHold);
-
-    // Beat 8: pan the board a few times (pointer drag; wheel zooms, not pans).
-    for (let i = 0; i < JOURNEY.panCount; i++) {
-      await panBoard(page, randomPan());
+    for (let i = 0; i < beats.length; i++) {
+      await beats[i]();
+      if (i + 1 === config.seamAfterBeat) await journey.seam();
     }
-    beat("board pans done");
-
-    // Beat 9: click the inset-map overlay to navigate back to the map view. Its
-    // onClick does navigate(-1), which pops to the /arch/:slug?capture=1 map entry
-    // (the board push dropped capture, but navigate(-1) restores the prior entry
-    // that still has it). The board→map morph + the MapFlyNavigator flyTo run off
-    // real setTimeouts (not slowed), so mapReturnMs is generous wall-time.
-    await page.getByText(/click to go back to map view/i).click();
-    await appWait(page, JOURNEY.mapReturnMs);
-    beat("returned to map");
-
-    // Hold on the map view so the journey lingers on arch #2 before cutting.
-    await appWait(page, JOURNEY.mapReturnHold);
-
     await journey.end();
-    // Grab the final map view of arch #2 as the lock-frame still.
+    // Grab the final map view of arch #2 as the lock-frame still (morph-2 end).
     await page.screenshot({ path: join(outDir, "morph-end.png") });
   } finally {
     await browser.close();
   }
 
-  const master = journey.frames();
-  if (master.length < 60) throw new Error(`Morph capture failed: only ${master.length} frames.`);
-  const frames = resampleTimeline(master);
-  await muxClip(outDir, frames);
+  const chunks = journey.chunkFrames();
+  if (chunks.length < 2) {
+    throw new Error(
+      `Morph capture produced ${chunks.length} chunk(s); expected >=2. Check morph.json \`seamAfterBeat\` (must be between 1 and the beat count, default 4). Got: ${config.seamAfterBeat}.`,
+    );
+  }
+  for (let i = 0; i < chunks.length; i++) {
+    const frames = chunks[i];
+    if (frames.length < 30) {
+      throw new Error(`Morph chunk ${i + 1} capture failed: only ${frames.length} frames.`);
+    }
+    const clipAbs = await muxChunk(outDir, resampleTimeline(frames), i + 1);
+    console.log(`Wrote ${clipAbs}`);
+  }
 }
 
 async function main() {
@@ -630,20 +605,19 @@ async function main() {
   }
   const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as Manifest;
 
-  // Journey targets come from video.json (seeded by assets:images, editable).
-  const playlist = loadPlaylist(outDir);
-  const { hero: heroSlug, far: farSlug } = playlist.journey;
+  const config = loadMorphConfig(outDir);
+  const { hero: heroSlug, far: farSlug } = config.journey;
   const hero = manifest.buildings.find((b) => b.slug === heroSlug);
   const far = manifest.buildings.find((b) => b.slug === farSlug);
   if (!hero || !far) {
     throw new Error(
-      `video.json journey (${heroSlug}→${farSlug}) not found in manifest buildings. ` +
-        `Edit the "journey" section in out/${slug}/video.json or rerun \`pnpm assets:images ${slug}\`.`,
+      `morph.json journey (${heroSlug}→${farSlug}) not found in manifest buildings. ` +
+        `Edit the "journey" in out/${slug}/morph.json or rerun \`pnpm seed ${slug}\`.`,
     );
   }
 
-  console.log(`assets:morph — ${slug} (journey: ${hero.slug} → ${far.slug})`);
-  await captureMorph(slug, manifest, hero, far);
+  console.log(`assets:morph — ${slug} (journey: ${hero.slug} → ${far.slug}, seam after beat ${config.seamAfterBeat})`);
+  await captureMorph(slug, manifest, hero, far, config);
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });
