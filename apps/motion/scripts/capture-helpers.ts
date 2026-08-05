@@ -39,6 +39,13 @@ export const ANIM_INIT = `
 // the factor read from window.__SLOWMO (default 1 = real-time), lets us flip the
 // WHOLE app — MapLibre camera AND framer-motion — to slow-mo at capture time.
 // Identity at factor 1, so non-capture contexts are unaffected.
+//
+// setTimeout/setInterval are scaled too: app transitions triggered by a timer
+// (e.g. MapFlyNavigator's board-open flyTo, which fires off setTimeout(TRANSITION_SHORT))
+// must stay in lockstep with the rAF-driven framer morph. Without this, the flyTo
+// fires in real time while the morph runs slow, so it races the container resize
+// and the building never recenters — the marker lands off the inset. f() is 1
+// until __SLOWMO is flipped, so warm-up (pre-slowmo) stays real-time.
 export const CLOCK_INIT = `
 (() => {
   const rn = performance.now.bind(performance);
@@ -49,6 +56,9 @@ export const CLOCK_INIT = `
   performance.now = () => w0 + (rn() - w0) * f();
   Date.now = () => Math.round(d0 + (dn() - d0) * f());
   window.requestAnimationFrame = (cb) => raf((ts) => cb(w0 + (ts - w0) * f()));
+  const _st = window.setTimeout, _si = window.setInterval;
+  window.setTimeout = (cb, ms, ...a) => _st(cb, (ms ?? 0) / f(), ...a);
+  window.setInterval = (cb, ms, ...a) => _si(cb, (ms ?? 0) / f(), ...a);
 })();
 `;
 
