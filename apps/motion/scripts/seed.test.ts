@@ -24,8 +24,8 @@ const manifest: Manifest = {
 
 describe("countText", () => {
   it("singular vs plural", () => {
-    expect(countText(1)).toBe("1 architecture");
-    expect(countText(2)).toBe("2 architectures");
+    expect(countText(1)).toBe("1 Architecture");
+    expect(countText(2)).toBe("2 Architectures");
   });
 });
 
@@ -57,7 +57,7 @@ describe("buildScenes", () => {
     expect(scenes[4]).toEqual({ type: "image", src: "images/b-detail.png" });
   });
   it("count scene uses countText", () => {
-    expect(scenes[5]).toEqual({ type: "text", text: "2 architectures", size: 104, color: "fg" });
+    expect(scenes[5]).toEqual({ type: "text", text: "2 Architectures", size: 104, color: "fg" });
   });
   it("single morph chunk then now card then logo", () => {
     expect(scenes[6]).toEqual({ type: "video", src: "morph-1.mp4", playbackRate: 2 });

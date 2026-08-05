@@ -22,7 +22,7 @@ export const OUTRO = {
 export const NOW_TEXT = "Now available in";
 export const LOGO_WORD = "Nolli";
 export const countText = (count: number) =>
-  `${count} ${count === 1 ? "architecture" : "architectures"}`;
+  `${count} ${count === 1 ? "Architecture" : "Architectures"}`;
 
 // Frames a typing segment runs: entrance beat + (fixed typing window) + hold.
 // Independent of text length — empty text skips the typing window.
