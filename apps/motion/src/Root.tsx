@@ -93,10 +93,10 @@ export const RemotionRoot = () => {
         fps={FPS}
         width={1920}
         height={1080}
-        defaultProps={outroSegmentProps}
-        calculateMetadata={({ props }) => ({
-          durationInFrames: outroSegmentDurations(props.manifest).logo,
-          props,
+        defaultProps={{ fontVariant: "playful" }}
+        calculateMetadata={() => ({
+          durationInFrames: placeholderSeg.logo,
+          props: { fontVariant: "playful" as const },
         })}
       />
     </>

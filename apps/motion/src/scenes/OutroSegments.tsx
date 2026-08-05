@@ -1,10 +1,11 @@
-import { AbsoluteFill, Series, interpolate, useCurrentFrame } from "remotion";
+import { AbsoluteFill, interpolate, useCurrentFrame } from "remotion";
 import { PLAYFUL_FAMILY, INTER_FAMILY } from "../fonts";
 import { THEME } from "../lib/theme";
-import { OUTRO, visibleCharCount, outroSegmentDurations, countText, NOW_TEXT, LOGO_WORD } from "../lib/outro";
+import { OUTRO, visibleCharCount, countText, NOW_TEXT, LOGO_WORD } from "../lib/outro";
 import type { Manifest } from "../lib/manifest";
+import type { TextScene, FontVariant } from "../lib/scenes";
+import { DEFAULT_TEXT_SIZE } from "../lib/scenes";
 
-type FontVariant = "inter" | "playful";
 type SegProps = { manifest: Manifest; fontVariant: FontVariant };
 
 const family = (v: FontVariant) => (v === "inter" ? INTER_FAMILY : PLAYFUL_FAMILY);
@@ -96,10 +97,33 @@ export const SegmentNow: React.FC<SegProps> = ({ fontVariant }) => {
   );
 };
 
+// Generic text scene: animate any string with the expand-from-center typewriter.
+// Replaces the per-field SegmentName/Count/Now.
+export const SegmentText: React.FC<{ scene: TextScene; fontVariant: FontVariant }> = ({
+  scene,
+  fontVariant,
+}) => {
+  const frame = useCurrentFrame();
+  const size = scene.size ?? DEFAULT_TEXT_SIZE;
+  const color = scene.color === "fgSecondary" ? THEME.fgSecondary : THEME.fg;
+  return (
+    <AbsoluteFill style={{ backgroundColor: THEME.bg, justifyContent: "center", alignItems: "center" }}>
+      <TypewriterLine
+        text={scene.text}
+        frame={frame}
+        start={OUTRO.typeStart.name}
+        fontFamily={family(fontVariant)}
+        fontSize={size}
+        color={color}
+      />
+    </AbsoluteFill>
+  );
+};
+
 // Logo mark in first; "Nolli" types char-by-char to its right. The mark+word
 // row is centered, so as "Nolli" fills the group re-centers and the mark slides
 // slightly left toward its seat — the "lock-in." Ends on the centered lockup.
-export const SegmentLogo: React.FC<SegProps> = ({ fontVariant }) => {
+export const SegmentLogo: React.FC<{ fontVariant: FontVariant }> = ({ fontVariant }) => {
   const frame = useCurrentFrame();
   const markScale = interpolate(frame, [OUTRO.logo.markIn, OUTRO.logo.markSettle], [0.6, 1], {
     extrapolateLeft: "clamp",
@@ -127,25 +151,5 @@ export const SegmentLogo: React.FC<SegProps> = ({ fontVariant }) => {
         </div>
       </div>
     </AbsoluteFill>
-  );
-};
-
-export const OutroSeries: React.FC<SegProps> = (props) => {
-  const d = outroSegmentDurations(props.manifest);
-  return (
-    <Series>
-      <Series.Sequence durationInFrames={d.name}>
-        <SegmentName {...props} />
-      </Series.Sequence>
-      <Series.Sequence durationInFrames={d.count}>
-        <SegmentCount {...props} />
-      </Series.Sequence>
-      <Series.Sequence durationInFrames={d.now}>
-        <SegmentNow {...props} />
-      </Series.Sequence>
-      <Series.Sequence durationInFrames={d.logo}>
-        <SegmentLogo {...props} />
-      </Series.Sequence>
-    </Series>
   );
 };
