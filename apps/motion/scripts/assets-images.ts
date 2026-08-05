@@ -1,17 +1,14 @@
 import { chromium } from "playwright";
-import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
+import { mkdirSync, readFileSync, existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { newDarkContext, waitForStable, LAUNCH_ARGS } from "./capture-helpers";
-import { seedPlaylist, mergePlaylist, type Playlist } from "./playlist";
-import { farthestFrom } from "./geo";
 import type { Manifest } from "./manifest";
 
 const BASE_URL = process.env.BASE_URL ?? "http://localhost:5173";
 
 // Capture BOTH types (detail + board lightbox) for every building of one slug
-// into out/<slug>/images/, then seed/refresh out/<slug>/video.json. The base
-// manifest (out/<slug>/manifest.json from `pnpm manifest <slug>`) is read for
-// the building list and left in place for `assemble` to consume.
+// into out/<slug>/images/. The base manifest (out/<slug>/manifest.json from
+// `pnpm manifest <slug>`) is read for the building list.
 async function captureImagesForSlug(slug: string) {
   const outDir = resolve("out", slug);
   const manifestPath = resolve("out", slug, "manifest.json");
@@ -74,31 +71,8 @@ async function captureImagesForSlug(slug: string) {
   if (failures.length) {
     console.error(`\n${failures.length} building(s) failed: ${failures.join(", ")}`);
   }
-
-  // Seed the journey targets (hero + farthest building) when first creating
-  // video.json. On rerun, preserve a hand-edited journey — only fill it in if
-  // missing. The morph reads these slugs; editing here pins the journey.
-  const journey = { hero: manifest.hero, far: farthestFrom(manifest.buildings, manifest.hero).slug };
-
-  const playlistPath = join(outDir, "video.json");
-  let playlist: Playlist;
-  if (existsSync(playlistPath)) {
-    const existing = JSON.parse(readFileSync(playlistPath, "utf8")) as Partial<Playlist>;
-    if (Array.isArray(existing.detail) && Array.isArray(existing.board)) {
-      playlist = mergePlaylist(existing as Playlist, detailImgs, boardImgs);
-      playlist.slug = slug; // keep slug in sync if rerun for a different slug in the same dir
-      if (!playlist.journey) playlist.journey = journey;
-    } else {
-      // Stale old-shape video.json (pre-refactor `images[]`) — regenerate fresh.
-      playlist = seedPlaylist(slug, detailImgs, boardImgs, journey);
-    }
-  } else {
-    playlist = seedPlaylist(slug, detailImgs, boardImgs, journey);
-  }
-  writeFileSync(playlistPath, JSON.stringify(playlist, null, 2));
   console.log(
-    `Wrote ${playlistPath} (${detailImgs.length + boardImgs.length} captured, ` +
-      `${playlist.detail.length + playlist.board.length} listed, journey: ${playlist.journey.hero}→${playlist.journey.far})`,
+    `Captured ${detailImgs.length} detail + ${boardImgs.length} board images → ${imagesDir}`,
   );
 }
 
