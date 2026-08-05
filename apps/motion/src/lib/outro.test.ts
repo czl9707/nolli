@@ -16,6 +16,9 @@ describe("visibleCharCount", () => {
   it("clamps to length past the end", () => {
     expect(visibleCharCount({ frame: 999, start: 6, typeFrames: OUTRO.typeFrames, length: 5 })).toBe(5);
   });
+  it("reveals all chars immediately when typeFrames is 0", () => {
+    expect(visibleCharCount({ frame: 6, start: 6, typeFrames: 0, length: 10 })).toBe(10);
+  });
 });
 
 describe("segmentDuration", () => {

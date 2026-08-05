@@ -54,6 +54,7 @@ export function visibleCharCount(opts: {
   typeFrames: number;
   length: number;
 }): number {
+  if (opts.length <= 0) return 0;
   if (opts.frame < opts.start) return 0;
   if (opts.typeFrames <= 0) return opts.length;
   const progress = (opts.frame - opts.start) / opts.typeFrames;
