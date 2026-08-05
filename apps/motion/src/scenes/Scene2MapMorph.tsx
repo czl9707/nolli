@@ -1,5 +1,6 @@
 import { AbsoluteFill, Img, OffthreadVideo, staticFile, useCurrentFrame, useVideoConfig, interpolate } from "remotion";
 import { THEME } from "../lib/theme";
+import { MORPH_PLAYBACK_RATE } from "../lib/timing";
 import type { Manifest } from "../lib/manifest";
 
 export const Scene2MapMorph: React.FC<{ manifest: Manifest }> = ({ manifest }) => {
@@ -16,7 +17,7 @@ export const Scene2MapMorph: React.FC<{ manifest: Manifest }> = ({ manifest }) =
   return (
     <AbsoluteFill style={{ backgroundColor: THEME.bg }}>
       {clip && (
-        <OffthreadVideo src={clip} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        <OffthreadVideo src={clip} playbackRate={MORPH_PLAYBACK_RATE} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
       )}
       {endStill && (
         <Img

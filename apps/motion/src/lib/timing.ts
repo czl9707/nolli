@@ -6,8 +6,14 @@ export const STILL_FRAMES = 18;
 /** Fixed fallback budget for Scene 2 (used when no captured clip frame count is known). */
 export const scene2Duration = 150;
 
-/** Effective Scene 2 length: the captured clip's frame count if known, else the fallback. */
-export const scene2Frames = (frames?: number): number => frames ?? scene2Duration;
+// The captured morph clip is sped up this much in the final cut. The clip itself
+// is recorded at real-time app pace; this only affects playback, so the Sequence
+// length (and totalDuration) is the native frame count divided by this rate.
+export const MORPH_PLAYBACK_RATE = 2;
+
+/** Effective Scene 2 length: the clip's frame count / playback rate if known, else fallback. */
+export const scene2Frames = (frames?: number): number =>
+  Math.ceil((frames ?? scene2Duration) / MORPH_PLAYBACK_RATE);
 
 export const scene1Duration = (stillCount: number) => STILL_FRAMES * stillCount;
 
