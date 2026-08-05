@@ -6,6 +6,7 @@
   "scripts": {
     "studio": "remotion studio src/index.ts",
     "manifest": "tsx scripts/build-manifest.ts",
+    "seed": "tsx scripts/seed.ts",
     "assets:images": "tsx scripts/assets-images.ts",
     "assets:outro": "tsx scripts/assets-outro.ts",
     "assets:morph": "tsx scripts/assets-morph.ts",
