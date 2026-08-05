@@ -8,9 +8,11 @@ Nolli app. Templated: one manifest per architect drives the whole thing.
 
 ## Timeline
 
-`name → first-half stills → count → second-half stills → now → Scene 2 (map journey) → logo`
+`name → detail stills → count → board stills → now → Scene 2 (map journey) → logo`
 
-- **Stills** — Ken-Burns-free hard cuts (detail photo + board lightbox per building).
+- **Stills** — Ken-Burns-free hard cuts split into two batches from `video.json`:
+  `detail` photos (play after the name) and `board` lightbox shots (play after
+  the count).
 - **Scene 2** — a captured "Body of Work" user journey through the real app:
   open mid-zoom on the hero → ease in → drift-pan the map → **navigate to arch #2**
   (real `Also by …` suggestion-card transition: URL + sidebar update + camera
@@ -55,7 +57,9 @@ pnpm assets:images <slug>
 
 - For every building: screenshots the detail view (`<slug>-detail.png`) and the
   board view with its cover photo opened in the lightbox (`<slug>-board.png`).
-- Writes `out/<slug>/images/` and seeds `out/<slug>/video.json` (the playlist).
+- Writes `out/<slug>/images/` and seeds `out/<slug>/video.json`: the `detail` and
+  `board` image batches, plus a `journey` section (`hero` + `far` building slugs
+  for Scene 2 — defaults to the hero + its farthest building; edit to pin).
 
 ### 3. Morph — capture Scene 2 (the map journey)
 
@@ -67,8 +71,10 @@ pnpm assets:morph <slug>
   (`window.__nolliMap` for the camera, `window.__nolliNavigateArch` for the real
   arch→arch navigation), captured with a slow-mo CDP screencast and resampled to
   real-time 30 fps.
-- Picks the farthest building from the hero (great-circle) as arch #2 and reaches
-  it through the same navigation a sidebar "Also by" card triggers.
+- Reads the two buildings the journey flies between from the `journey` section of
+  `video.json` (`hero` + `far` building slugs, seeded by `assets:images` to the
+  hero + its farthest building; edit `video.json` to pin them) and reaches `far`
+  through the same navigation a sidebar "Also by" card triggers.
 - Writes `out/<slug>/morph.mp4` + `morph-end.png`, and sets `morph` in
   `video.json`. **Needs the dev server.**
 
@@ -105,6 +111,9 @@ pnpm assemble ludwig-mies-van-der-rohe
   per-arch map drifts; `mapReturnMs` the wait after clicking back to the map.
   The final-cut playback speed of the morph clip is `MORPH_PLAYBACK_RATE` in
   `src/lib/timing.ts`. Re-run `assets:morph` then `assemble` after editing.
+- **Outro typing speed** — every outro segment (name / count / now / logo)
+  reveals its text over one fixed window, `OUTRO.typeFrames` in `src/lib/outro.ts`
+  (≈0.75s @30fps), followed by `OUTRO.hold`. Independent of text length.
 - **Re-render only** — after editing Remotion source, just re-run `assemble`
   (reuses the existing captured assets).
 
