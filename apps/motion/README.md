@@ -12,8 +12,12 @@ Nolli app. Templated: one manifest per architect drives the whole thing.
 
 - **Stills** — Ken-Burns-free hard cuts (detail photo + board lightbox per building).
 - **Scene 2** — a captured "Body of Work" user journey through the real app:
-  open mid-zoom on the hero → ease in → flyTo the farthest building → "Go to Pin
-  Board" morph → open a photo lightbox → close it → drag-pan the board.
+  open mid-zoom on the hero → ease in → drift-pan the map → **navigate to arch #2**
+  (real `Also by …` suggestion-card transition: URL + sidebar update + camera
+  flight) → drift-pan again → "Go to Pin Board" morph on #2 → open a photo
+  lightbox → close it → drag-pan the board → click the inset map to return to
+  the map view. The captured clip is played back at **2×** in the final cut
+  (`MORPH_PLAYBACK_RATE` in `src/lib/timing.ts`).
 - **Outro** — name / count / "Now available in" / logo segments.
 
 ## Prerequisites
@@ -59,10 +63,12 @@ pnpm assets:images <slug>
 pnpm assets:morph <slug>
 ```
 
-- Drives the real app through the journey via the `?capture=1` map handle
-  (`window.__nolliMap`), captured with a slow-mo CDP screencast and resampled to
+- Drives the real app through the journey via the `?capture=1` handles
+  (`window.__nolliMap` for the camera, `window.__nolliNavigateArch` for the real
+  arch→arch navigation), captured with a slow-mo CDP screencast and resampled to
   real-time 30 fps.
-- Picks the farthest building from the hero (great-circle) as the flyTo target.
+- Picks the farthest building from the hero (great-circle) as arch #2 and reaches
+  it through the same navigation a sidebar "Also by" card triggers.
 - Writes `out/<slug>/morph.mp4` + `morph-end.png`, and sets `morph` in
   `video.json`. **Needs the dev server.**
 
@@ -92,9 +98,13 @@ pnpm assemble ludwig-mies-van-der-rohe
   clips standalone (`out/<slug>/outro-*.mp4`) for interleaving with other material.
 - **Skip Scene 2** — omit the `assets:morph` step. `assemble` renders a
   stills-only video (no morph → `mapClipFrames` cleared, Scene 2 dropped).
-- **Re-tune the journey** — all Scene 2 timing (zooms, holds, pan count/distance,
-  slow-mo factor) lives in the `JOURNEY` const at the top of
-  `scripts/assets-morph.ts`. Re-run `assets:morph` then `assemble` after editing.
+- **Re-tune the journey** — all Scene 2 timing (zooms, holds, pan counts/distance,
+  pan speed, slow-mo factor) lives in the `JOURNEY` const at the top of
+  `scripts/assets-morph.ts`. `panDurationMs` is the shared pan-speed knob (lower =
+  faster) for both the map drift-pans and the board drag; `mapPanCount` sets the
+  per-arch map drifts; `mapReturnMs` the wait after clicking back to the map.
+  The final-cut playback speed of the morph clip is `MORPH_PLAYBACK_RATE` in
+  `src/lib/timing.ts`. Re-run `assets:morph` then `assemble` after editing.
 - **Re-render only** — after editing Remotion source, just re-run `assemble`
   (reuses the existing captured assets).
 
