@@ -14,7 +14,7 @@ export type Manifest = {
   count: number;
   hero: string;
   buildings: Building[];
-  stills?: { path: string }[];
+  stills?: { detail: { path: string }[]; board: { path: string }[] };
   mapClip?: string;
   mapClipEnd?: string;
   /** Real frame count of the captured Scene 2 clip (set by assemble via ffprobe).

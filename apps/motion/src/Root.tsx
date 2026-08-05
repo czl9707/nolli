@@ -13,7 +13,7 @@ const placeholderManifest: Manifest = {
   count: 0,
   hero: "",
   buildings: [],
-  stills: [],
+  stills: { detail: [], board: [] },
 };
 
 const defaultProps: SpotlightProps = {
@@ -42,7 +42,7 @@ export const RemotionRoot = () => {
         defaultProps={defaultProps}
         calculateMetadata={({ props }) => {
           const m = props.manifest;
-          const stillCount = m.stills?.length ?? 0;
+          const stillCount = (m.stills?.detail?.length ?? 0) + (m.stills?.board?.length ?? 0);
           const total = totalDuration(stillCount, Boolean(m.mapClip), m);
           return { durationInFrames: total, props };
         }}

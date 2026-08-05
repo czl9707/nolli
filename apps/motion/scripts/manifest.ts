@@ -14,8 +14,8 @@ export type Manifest = {
   count: number;
   hero: string;
   buildings: BuildingRow[];
-  /** Populated by capture.ts in a later task */
-  stills?: { path: string }[];
+  /** Populated by assemble.ts */
+  stills?: { detail: { path: string }[]; board: { path: string }[] };
   mapClip?: string;
   mapClipEnd?: string;
   /** Real frame count of the captured morph clip; set by assemble via ffprobe. */

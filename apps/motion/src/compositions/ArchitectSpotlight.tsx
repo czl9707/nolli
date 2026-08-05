@@ -12,14 +12,13 @@ export type SpotlightProps = {
 };
 
 // Interleaved timeline: each text segment is separated by a content beat —
-//   name → first half of stills → count → second half → now → morph → logo.
-// Total length is unchanged from the contiguous layout; only the order shifts.
+//   name → detail stills → count → board stills → now → morph → logo.
+// The two still batches are explicit config (manifest.stills.detail / .board),
+// staged from video.json by `assemble`.
 export const ArchitectSpotlight: React.FC<SpotlightProps> = ({ manifest, fontVariant }) => {
-  const stills = manifest.stills ?? [];
+  const detail = manifest.stills?.detail ?? [];
+  const board = manifest.stills?.board ?? [];
   const hasMorph = Boolean(manifest.mapClip);
-  const mid = Math.ceil(stills.length / 2);
-  const firstHalf = stills.slice(0, mid);
-  const secondHalf = stills.slice(mid);
 
   const seg = outroSegmentDurations(manifest);
   const segProps = { manifest, fontVariant };
@@ -29,17 +28,17 @@ export const ArchitectSpotlight: React.FC<SpotlightProps> = ({ manifest, fontVar
       <Series.Sequence durationInFrames={seg.name}>
         <SegmentName {...segProps} />
       </Series.Sequence>
-      {firstHalf.length > 0 && (
-        <Series.Sequence durationInFrames={firstHalf.length * STILL_FRAMES}>
-          <Scene1Stills stills={firstHalf} />
+      {detail.length > 0 && (
+        <Series.Sequence durationInFrames={detail.length * STILL_FRAMES}>
+          <Scene1Stills stills={detail} />
         </Series.Sequence>
       )}
       <Series.Sequence durationInFrames={seg.count}>
         <SegmentCount {...segProps} />
       </Series.Sequence>
-      {secondHalf.length > 0 && (
-        <Series.Sequence durationInFrames={secondHalf.length * STILL_FRAMES}>
-          <Scene1Stills stills={secondHalf} />
+      {board.length > 0 && (
+        <Series.Sequence durationInFrames={board.length * STILL_FRAMES}>
+          <Scene1Stills stills={board} />
         </Series.Sequence>
       )}
       <Series.Sequence durationInFrames={seg.now}>

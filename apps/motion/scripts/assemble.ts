@@ -59,14 +59,17 @@ async function main() {
   }
   const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as Manifest;
 
-  // Stage images (flatten into public/capture/<slug>/) and build stills paths.
-  const stills: { path: string }[] = [];
-  for (const img of playlist.images) {
-    const flat = img.split("/").pop()!;
-    copyFileSync(join(outDir, img), join(stageDir, flat));
-    stills.push({ path: `capture/${slug}/${flat}` }); // public/-relative for staticFile
-  }
-  manifest.stills = stills;
+  // Stage images (flatten into public/capture/<slug>/) and build the two still
+  // batches. `detail` plays after the name segment, `board` after the count.
+  const stage = (imgs: string[]) =>
+    imgs.map((img) => {
+      const flat = img.split("/").pop()!;
+      copyFileSync(join(outDir, img), join(stageDir, flat));
+      return { path: `capture/${slug}/${flat}` }; // public/-relative for staticFile
+    });
+  const detail = stage(playlist.detail);
+  const board = stage(playlist.board);
+  manifest.stills = { detail, board };
 
   // Stage morph + end-still if present.
   if (playlist.morph) {
@@ -91,7 +94,7 @@ async function main() {
     manifest.mapClipFrames = undefined;
   }
 
-  console.log(`Staged ${stills.length} stills${manifest.mapClip ? " + morph" : ""} → ${stageDir}`);
+  console.log(`Staged ${detail.length + board.length} stills (${detail.length} detail + ${board.length} board)${manifest.mapClip ? " + morph" : ""} → ${stageDir}`);
 
   console.log("Bundling…");
   const serveUrl = await bundle({ entryPoint: resolve("src/index.ts") });
