@@ -83,13 +83,15 @@ async function captureImagesForSlug(slug: string) {
   const playlistPath = join(outDir, "video.json");
   let playlist: Playlist;
   if (existsSync(playlistPath)) {
-    playlist = mergePlaylist(
-      JSON.parse(readFileSync(playlistPath, "utf8")) as Playlist,
-      detailImgs,
-      boardImgs,
-    );
-    playlist.slug = slug; // keep slug in sync if rerun for a different slug in the same dir
-    if (!playlist.journey) playlist.journey = journey;
+    const existing = JSON.parse(readFileSync(playlistPath, "utf8")) as Partial<Playlist>;
+    if (Array.isArray(existing.detail) && Array.isArray(existing.board)) {
+      playlist = mergePlaylist(existing as Playlist, detailImgs, boardImgs);
+      playlist.slug = slug; // keep slug in sync if rerun for a different slug in the same dir
+      if (!playlist.journey) playlist.journey = journey;
+    } else {
+      // Stale old-shape video.json (pre-refactor `images[]`) — regenerate fresh.
+      playlist = seedPlaylist(slug, detailImgs, boardImgs, journey);
+    }
   } else {
     playlist = seedPlaylist(slug, detailImgs, boardImgs, journey);
   }
