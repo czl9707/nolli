@@ -1,19 +1,37 @@
 import { bundle } from "@remotion/bundler";
 import { selectComposition, renderMedia } from "@remotion/renderer";
-import {
-  copyFileSync, existsSync, mkdirSync, readFileSync, rmSync,
-} from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { join, resolve } from "node:path";
-import { loadPlaylist, validatePlaylist } from "./playlist";
-import type { Manifest } from "./manifest";
+import { basename, join, resolve } from "node:path";
 import { FPS } from "../src/lib/timing";
+import type { Scene, VideoConfig, VideoScene } from "../src/lib/scenes";
 
 const execFileP = promisify(execFile);
+const DEFAULT_FONT = "playful";
 
-// Frame count of the captured clip = round(duration_s * FPS). The clip is
-// encoded at a constant FPS, so deriving from duration is fast and accurate.
+function loadVideoConfig(outDir: string): VideoConfig {
+  const file = join(outDir, "video.json");
+  if (!existsSync(file)) {
+    throw new Error(`No video.json at ${file}. Run \`pnpm seed <slug>\` first.`);
+  }
+  return JSON.parse(readFileSync(file, "utf8")) as VideoConfig;
+}
+
+// Collect every file referenced by a scene (src + optional endStill) and report
+// any that don't exist in the out dir.
+function missingFiles(config: VideoConfig, outDir: string): string[] {
+  const missing: string[] = [];
+  for (const s of config.scenes) {
+    if (s.type === "image") if (!existsSync(join(outDir, s.src))) missing.push(s.src);
+    if (s.type === "video") {
+      if (!existsSync(join(outDir, s.src))) missing.push(s.src);
+      if (s.endStill && !existsSync(join(outDir, s.endStill))) missing.push(s.endStill);
+    }
+  }
+  return missing;
+}
+
 async function probeClipFrames(path: string): Promise<number> {
   const { stdout } = await execFileP("ffprobe", [
     "-v", "error",
@@ -23,23 +41,17 @@ async function probeClipFrames(path: string): Promise<number> {
   ]);
   const seconds = parseFloat(stdout.trim());
   if (!Number.isFinite(seconds) || seconds <= 0) {
-    throw new Error(
-      `ffprobe returned an invalid duration (${JSON.stringify(stdout.trim())}) for ${path}`,
-    );
+    throw new Error(`ffprobe returned an invalid duration (${JSON.stringify(stdout.trim())}) for ${path}`);
   }
   return Math.round(seconds * FPS);
 }
 
-const DEFAULT_FONT = "playful";
-
-// Stage the curated playlist into public/capture/<slug>/ (what Remotion bundles
-// and serves via staticFile), write manifest.json, then render.
 async function main() {
   const slug = process.argv[2] ?? "sanaa";
   const outDir = resolve("out", slug);
-  const playlist = loadPlaylist(outDir);
+  const config = loadVideoConfig(outDir);
 
-  const missing = validatePlaylist(playlist, outDir);
+  const missing = missingFiles(config, outDir);
   if (missing.length) {
     console.error("Missing files referenced by video.json:\n  " + missing.join("\n  "));
     process.exit(1);
@@ -50,58 +62,40 @@ async function main() {
   rmSync(stageDir, { recursive: true, force: true });
   mkdirSync(stageDir, { recursive: true });
 
-  // Base manifest (buildings/count/hero) from `pnpm manifest <slug>` at
-  // out/<slug>/manifest.json. Assemble adds the curated stills/morph and feeds
-  // the whole manifest to the render via inputProps (no manifest file in public/).
-  const manifestPath = join(outDir, "manifest.json");
-  if (!existsSync(manifestPath)) {
-    throw new Error(`Missing ${manifestPath}. Run \`pnpm manifest ${slug}\` first.`);
-  }
-  const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as Manifest;
-
-  // Stage images (flatten into public/capture/<slug>/) and build the two still
-  // batches. `detail` plays after the name segment, `board` after the count.
-  const stage = (imgs: string[]) =>
-    imgs.map((img) => {
-      const flat = img.split("/").pop()!;
-      copyFileSync(join(outDir, img), join(stageDir, flat));
-      return { path: `capture/${slug}/${flat}` }; // public/-relative for staticFile
-    });
-  const detail = stage(playlist.detail);
-  const board = stage(playlist.board);
-  manifest.stills = { detail, board };
-
-  // Stage morph + end-still if present.
-  if (playlist.morph) {
-    const morphFlat = playlist.morph.split("/").pop()!;
-    const stagedMorph = join(stageDir, morphFlat);
-    copyFileSync(join(outDir, playlist.morph), stagedMorph);
-    manifest.mapClip = `capture/${slug}/${morphFlat}`;
-    manifest.mapClipFrames = await probeClipFrames(stagedMorph);
-    const endSrc = join(outDir, "morph-end.png");
-    if (existsSync(endSrc)) {
-      copyFileSync(endSrc, join(stageDir, "morph-end.png"));
-      manifest.mapClipEnd = `capture/${slug}/morph-end.png`;
-    } else {
-      // Clear any stale end-still carried in from the base-manifest backup
-      // (e.g. a legacy `capture` run polluted it) so Scene 2 doesn't staticFile
-      // a non-existent file.
-      manifest.mapClipEnd = undefined;
+  // Stage every referenced file (flatten into public/capture/<slug>/) and rewrite
+  // each scene's path to its capture/<slug>/<flat> form for staticFile.
+  const copyIn = (rel: string) => {
+    const flat = basename(rel);
+    copyFileSync(join(outDir, rel), join(stageDir, flat));
+    return `capture/${slug}/${flat}`;
+  };
+  const stagedScenes: Scene[] = config.scenes.map((s): Scene => {
+    if (s.type === "image") return { ...s, src: copyIn(s.src) };
+    if (s.type === "video") {
+      const out: VideoScene = { ...s, src: copyIn(s.src) };
+      if (s.endStill) out.endStill = copyIn(s.endStill);
+      return out;
     }
-  } else {
-    manifest.mapClip = undefined;
-    manifest.mapClipEnd = undefined;
-    manifest.mapClipFrames = undefined;
+    return s;
+  });
+
+  // ffprobe each staged video so durationOf can size it accurately.
+  for (const s of stagedScenes) {
+    if (s.type === "video") {
+      s.frames = await probeClipFrames(join(stageDir, basename(s.src)));
+    }
   }
 
-  console.log(`Staged ${detail.length + board.length} stills (${detail.length} detail + ${board.length} board)${manifest.mapClip ? " + morph" : ""} → ${stageDir}`);
+  const staged: VideoConfig = { ...config, scenes: stagedScenes };
+  const counts = stagedScenes.reduce<Record<string, number>>((acc, s) => {
+    acc[s.type] = (acc[s.type] ?? 0) + 1;
+    return acc;
+  }, {});
+  console.log(`Staged ${Object.entries(counts).map(([k, v]) => `${v} ${k}`).join(", ")} → ${stageDir}`);
 
   console.log("Bundling…");
   const serveUrl = await bundle({ entryPoint: resolve("src/index.ts") });
-  const inputProps = {
-    manifest,
-    fontVariant: DEFAULT_FONT,
-  };
+  const inputProps = { config: staged, fontVariant: staged.fontVariant ?? DEFAULT_FONT };
   const composition = await selectComposition({
     serveUrl,
     id: "ArchitectSpotlight",
