@@ -4,9 +4,9 @@ import { promisify } from "node:util";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { LAUNCH_ARGS, newDarkContext, waitForStable, waitForMoveEnd, waitForTilesLoaded } from "./capture-helpers";
-import { farthestFrom } from "./geo";
 import type { Playlist } from "./playlist";
-import type { Manifest } from "./manifest";
+import { loadPlaylist } from "./playlist";
+import type { BuildingRow, Manifest } from "./manifest";
 import { FPS } from "../src/lib/timing";
 
 const execFileP = promisify(execFile);
@@ -49,15 +49,17 @@ const JOURNEY = {
 // morph.mp4 + morph-end.png into out/<slug>/ and points video.json's `morph` at
 // the clip so `assemble` renders Scene 2. See project memory for the slow-mo /
 // WAAPI rationale (this is the migrated captureMapMorph).
-async function captureMorph(slug: string, manifest: Manifest): Promise<void> {
+async function captureMorph(
+  slug: string,
+  manifest: Manifest,
+  hero: BuildingRow,
+  far: BuildingRow,
+): Promise<void> {
   const outDir = resolve("out", slug);
 
-  const buildings = manifest.buildings;
-  if (buildings.length < 2) {
-    throw new Error(`Journey needs >=2 buildings; ${slug} has ${buildings.length}.`);
+  if (manifest.buildings.length < 2) {
+    throw new Error(`Journey needs >=2 buildings; ${slug} has ${manifest.buildings.length}.`);
   }
-  const hero = buildings.find((b) => b.slug === manifest.hero) ?? buildings[0];
-  const far = farthestFrom(buildings, manifest.hero);
 
   const frames: { wall: number; data: string }[] = [];
   let wall0 = 0;
@@ -400,13 +402,27 @@ async function main() {
     console.error("Usage: assets:morph <architect-slug>");
     process.exit(1);
   }
-  const manifestPath = resolve("out", slug, "manifest.json");
+  const outDir = resolve("out", slug);
+  const manifestPath = join(outDir, "manifest.json");
   if (!existsSync(manifestPath)) {
     throw new Error(`Missing ${manifestPath}. Run \`pnpm manifest ${slug}\` first.`);
   }
   const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as Manifest;
-  console.log(`assets:morph — ${slug} (hero: ${manifest.hero})`);
-  await captureMorph(slug, manifest);
+
+  // Journey targets come from video.json (seeded by assets:images, editable).
+  const playlist = loadPlaylist(outDir);
+  const { hero: heroSlug, far: farSlug } = playlist.journey;
+  const hero = manifest.buildings.find((b) => b.slug === heroSlug);
+  const far = manifest.buildings.find((b) => b.slug === farSlug);
+  if (!hero || !far) {
+    throw new Error(
+      `video.json journey (${heroSlug}→${farSlug}) not found in manifest buildings. ` +
+        `Edit the "journey" section in out/${slug}/video.json or rerun \`pnpm assets:images ${slug}\`.`,
+    );
+  }
+
+  console.log(`assets:morph — ${slug} (journey: ${hero.slug} → ${far.slug})`);
+  await captureMorph(slug, manifest, hero, far);
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });
