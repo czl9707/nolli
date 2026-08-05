@@ -10,17 +10,17 @@ Nolli app. Templated: one manifest per architect drives the whole thing.
 
 Driven by an ordered `scenes[]` list in `video.json` (written by `seed`,
 editable freely): `image* (board) → text (name) → image* (detail) → text (count)
-→ video (morph-1) → text (now) → video (morph-2) → logo`. The list leads with a
-board photo so the social-media preview thumbnail is a real image, not the dark
-text card; the "Now available in" card splits the two morph chunks so the demo
-doesn't play as one long video. Each image entry is one photo; reordering or
-cutting the video is a `video.json` edit, not code.
+→ video (morph-1) → text (now) → logo`. The list leads with a board photo so the
+social-media preview thumbnail is a real image, not the dark text card. The
+default cut uses **one** morph chunk — the journey → board reveal (ending on a
+visible hold). Each image entry is one photo; reordering or cutting the video is
+a `video.json` edit, not code.
 
 - **`text`** — typed outro-style segment (name / count / "Now available in").
 - **`image`** — a hard-cut still, one entry per photo.
 - **`video`** — a captured morph chunk. Each entry has its own `playbackRate`
-  (morph chunks run at 2×) and an optional `endStill` (frozen on the chunk's
-  last frame after it ends).
+  (morph runs at 2×) and an optional `endStill` (frozen on the chunk's last
+  frame after it ends — used by the optional second chunk).
 - **`logo`** — the Nolli logo card.
 
 ## Config files
@@ -43,22 +43,30 @@ Both written by `seed` into `out/<slug>/`. Edit them; rerun the affected step.
       { "type": "image", "src": "images/b-detail.png" },
       { "type": "text", "text": "2 architectures", "size": 104, "color": "fg" },
       { "type": "video", "src": "morph-1.mp4", "playbackRate": 2 },
-      { "type": "text", "text": "Now available in", "size": 104, "color": "fgSecondary" },
-      { "type": "video", "src": "morph-2.mp4", "playbackRate": 2, "endStill": "morph-end.png" },
+      { "type": "text", "text": "Now available in", "size": 104, "color": "fg" },
       { "type": "logo" }
     ]
   }
   ```
 
-- **`morph.json`** — the recording config for `assets:morph`:
+  The default cut is one morph chunk. `assets:morph` still captures the full
+  journey as two chunks (`morph-1.mp4`, `morph-2.mp4`); add a second `video`
+  entry (with `endStill: "morph-end.png"`) to use the long-form demo.
+
+- **`morph.json`** — the recording config for `assets:morph`, kept minimal:
 
   ```jsonc
   {
     "journey": { "hero": "<building-slug>", "far": "<building-slug>" },
-    "seamAfterBeat": 4,
-    "tuning": { "slowmo": 0.4, "establishZoom": 10 /* …all capture knobs… */ }
+    "seamAfterBeat": 5
   }
   ```
+
+  `seamAfterBeat` (1-indexed beat, default 5 = after the board open + hold) is
+  where the captured journey is split into two chunks; chunk 1 is the default
+  cut. All capture tuning (zooms, holds, pan counts/distance/speed, slow-mo)
+  lives in code (`DEFAULT_TUNING` in `scripts/morph-config.ts`) — re-tuning is a
+  code edit, not a config edit.
 
 ## Prerequisites
 
@@ -158,13 +166,12 @@ pnpm assemble ludwig-mies-van-der-rohe
 - **Skip Scene 2** — drop the two `video` entries (and `morph-end.png`) from
   `video.json`. `assemble` then renders a stills-only cut.
 - **Re-tune the journey** — all capture tuning (zooms, holds, pan counts /
-  distance / speed, slow-mo) lives in `morph.json`'s `tuning` block. Write it
-  via `pnpm seed <slug>` (preserves your hand-edits on rerun), or edit
-  `morph.json` directly, then re-run `assets:morph` and `assemble`. The final-cut
-  playback speed of each morph chunk is the `playbackRate` on its `video` entry
-  in `video.json` (default `2`).
+  distance / speed, slow-mo) lives in `DEFAULT_TUNING` in
+  `scripts/morph-config.ts` (code, not config). Edit it, then re-run
+  `assets:morph` and `assemble`. The final-cut playback speed of each morph
+  chunk is the `playbackRate` on its `video` entry in `video.json` (default `2`).
 - **Move the cut** — edit `morph.json`'s `seamAfterBeat` (1-indexed beat; default
-  `4`), then re-run `assets:morph` + `assemble`.
+  `5` = after the board open + hold), then re-run `assets:morph` + `assemble`.
 - **Outro typing speed** — every `text` segment reveals its text over one fixed
   window, `OUTRO.typeFrames` in `src/lib/outro.ts` (≈0.75s @30fps), followed by
   `OUTRO.hold`. Independent of text length.

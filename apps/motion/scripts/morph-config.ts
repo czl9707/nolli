@@ -4,10 +4,12 @@ import { FPS } from "../src/lib/timing";
 
 export type Journey = { hero: string; far: string };
 
-export const SEAM_AFTER_BEAT_DEFAULT = 4;
+// Seam fires after beat 5 = the "Go to Pin Board" open + hold. That makes chunk 1
+// (morph-1, the only chunk the default video.json uses) end on the board reveal.
+export const SEAM_AFTER_BEAT_DEFAULT = 5;
 
-// Canonical capture tuning. Values moved verbatim from the JOURNEY const in
-// scripts/assets-morph.ts; Task 6 retargets assets-morph to consume this module.
+// Canonical capture tuning. morph.json does NOT carry tuning — re-tuning is a
+// code edit here. Values are app-ms (the units the final real-time clip shows).
 export const DEFAULT_TUNING = {
   slowmo: 0.4,
   establishZoom: 10,
@@ -17,7 +19,13 @@ export const DEFAULT_TUNING = {
   flyHold: 1500,
   navLandMs: 2100,
   mapPanCount: 2,
-  boardHold: 3000,
+  // Beat 5 is split: boardOpenSettle absorbs the "Go to Pin Board" morph-in
+  // (framer-motion) + the inset camera flyTo (a real setTimeout, unscaled by
+  // slow-mo, so it lands in app-time faster than its delay suggests). boardHold
+  // is then a PURE static pause after the bloom finishes — readable even after
+  // the final-cut 2× playbackRate. Together ~3.5s app.
+  boardOpenSettle: 2000,
+  boardHold: 1500,
   detailHold: 2000,
   detailCloseHold: 500,
 
@@ -38,6 +46,12 @@ export const DEFAULT_TUNING = {
 
 export type Tuning = typeof DEFAULT_TUNING;
 
+// The on-disk file is just the two slugs + the seam; tuning is code-only.
+export type MorphConfigFile = {
+  journey: Journey;
+  seamAfterBeat?: number;
+};
+
 export type MorphConfig = {
   journey: Journey;
   seamAfterBeat: number;
@@ -49,11 +63,11 @@ export function loadMorphConfig(dir: string): MorphConfig {
   if (!existsSync(file)) {
     throw new Error(`No morph.json at ${file}. Run \`pnpm seed <slug>\` first.`);
   }
-  const parsed = JSON.parse(readFileSync(file, "utf8")) as Partial<MorphConfig>;
+  const parsed = JSON.parse(readFileSync(file, "utf8")) as Partial<MorphConfigFile>;
   if (!parsed.journey) throw new Error(`${file} is missing journey.hero/far.`);
   return {
     journey: parsed.journey,
     seamAfterBeat: parsed.seamAfterBeat ?? SEAM_AFTER_BEAT_DEFAULT,
-    tuning: { ...DEFAULT_TUNING, ...parsed.tuning },
+    tuning: DEFAULT_TUNING,
   };
 }

@@ -39,10 +39,10 @@ describe("buildScenes", () => {
   const scenes = buildScenes(manifest);
 
   // Lead with board photos (social thumbnail), then name, detail photos, count,
-  // morph-1, "Now available in" (splits the two morph chunks), morph-2, logo.
-  it("order: board imgs, name, detail imgs, count, morph-1, now, morph-2, logo", () => {
+  // a single morph chunk (journey → board reveal), "Now available in", logo.
+  it("order: board imgs, name, detail imgs, count, morph-1, now, logo", () => {
     expect(scenes.map((s) => s.type)).toEqual([
-      "image", "image", "text", "image", "image", "text", "video", "text", "video", "logo",
+      "image", "image", "text", "image", "image", "text", "video", "text", "logo",
     ]);
   });
   it("board image srcs come first, deterministic from building slugs, in order", () => {
@@ -59,13 +59,10 @@ describe("buildScenes", () => {
   it("count scene uses countText", () => {
     expect(scenes[5]).toEqual({ type: "text", text: "2 architectures", size: 104, color: "fg" });
   });
-  it("morph-1, then now scene splitting the two morph chunks", () => {
+  it("single morph chunk then now card then logo", () => {
     expect(scenes[6]).toEqual({ type: "video", src: "morph-1.mp4", playbackRate: 2 });
-    expect(scenes[7]).toEqual({ type: "text", text: "Now available in", size: 104, color: "fgSecondary" });
-  });
-  it("morph-2 carries endStill + rate 2, then logo", () => {
-    expect(scenes[8]).toEqual({ type: "video", src: "morph-2.mp4", playbackRate: 2, endStill: "morph-end.png" });
-    expect(scenes[9]).toEqual({ type: "logo" });
+    expect(scenes[7]).toEqual({ type: "text", text: "Now available in", size: 104, color: "fg" });
+    expect(scenes[8]).toEqual({ type: "logo" });
   });
 });
 
@@ -74,27 +71,25 @@ describe("writeMorphJson", () => {
   beforeEach(() => { dir = mkdtempSync(join(tmpdir(), "seed-")); });
   afterEach(() => rmSync(dir, { recursive: true, force: true }));
 
-  it("writes journey + default seam + default tuning when absent", () => {
+  it("writes journey + default seam, and no tuning block", () => {
     writeMorphJson(dir, manifest);
     const cfg = JSON.parse(readFileSync(join(dir, "morph.json"), "utf8"));
     expect(cfg.journey).toEqual({ hero: "a", far: "b" });
-    expect(cfg.seamAfterBeat).toBe(4);
-    expect(cfg.tuning.slowmo).toBe(0.4);
+    expect(cfg.seamAfterBeat).toBe(5);
+    expect(cfg.tuning).toBeUndefined();
   });
 
-  it("preserves hand-edited journey + seam + tuning overrides on rerun", () => {
+  it("preserves hand-edited journey + seam on rerun", () => {
     writeMorphJson(dir, manifest);
     const first = JSON.parse(readFileSync(join(dir, "morph.json"), "utf8"));
     first.journey = { hero: "b", far: "a" };
     first.seamAfterBeat = 6;
-    first.tuning.slowmo = 0.5;
     writeFileSync(join(dir, "morph.json"), JSON.stringify(first));
 
     writeMorphJson(dir, manifest);
     const cfg = JSON.parse(readFileSync(join(dir, "morph.json"), "utf8"));
     expect(cfg.journey).toEqual({ hero: "b", far: "a" });
     expect(cfg.seamAfterBeat).toBe(6);
-    expect(cfg.tuning.slowmo).toBe(0.5);
   });
 });
 
@@ -108,7 +103,7 @@ describe("writeVideoJson", () => {
     const cfg = JSON.parse(readFileSync(join(dir, "video.json"), "utf8"));
     expect(cfg.slug).toBe("mies");
     expect(cfg.fontVariant).toBe("playful");
-    expect(cfg.scenes).toHaveLength(10);
+    expect(cfg.scenes).toHaveLength(9);
   });
 
   it("preserves an existing video.json for the same slug (no overwrite)", () => {
@@ -124,6 +119,6 @@ describe("writeVideoJson", () => {
     writeVideoJson(dir, "mies", buildScenes(manifest));
     const cfg = JSON.parse(readFileSync(join(dir, "video.json"), "utf8"));
     expect(cfg.slug).toBe("mies");
-    expect(cfg.scenes).toHaveLength(10);
+    expect(cfg.scenes).toHaveLength(9);
   });
 });

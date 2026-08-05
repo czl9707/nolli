@@ -31,18 +31,18 @@ describe("loadMorphConfig", () => {
     expect(cfg.tuning).toEqual(DEFAULT_TUNING);
   });
 
-  it("merges partial tuning over defaults", () => {
+  it("ignores a tuning block in the file (tuning is code-only)", () => {
     writeFileSync(
       join(dir, "morph.json"),
       JSON.stringify({ journey: { hero: "a", far: "b" }, tuning: { slowmo: 0.5 } }),
     );
     const cfg = loadMorphConfig(dir);
-    expect(cfg.tuning.slowmo).toBe(0.5);
-    expect(cfg.tuning.panFanHalf).toBe(DEFAULT_TUNING.panFanHalf);
+    expect(cfg.tuning).toEqual(DEFAULT_TUNING);
+    expect(cfg.tuning.slowmo).toBe(DEFAULT_TUNING.slowmo);
   });
 
   it("throws when journey is missing", () => {
-    writeFileSync(join(dir, "morph.json"), JSON.stringify({ seamAfterBeat: 4 }));
+    writeFileSync(join(dir, "morph.json"), JSON.stringify({ seamAfterBeat: 5 }));
     expect(() => loadMorphConfig(dir)).toThrow(/journey/);
   });
 });

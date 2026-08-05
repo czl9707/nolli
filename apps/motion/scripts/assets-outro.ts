@@ -14,7 +14,7 @@ function segments(manifest: Manifest): Seg[] {
   return [
     { id: "OutroText", file: "outro-name.mp4", scene: { type: "text", text: manifest.architect, size: 132, color: "fg" } },
     { id: "OutroText", file: "outro-count.mp4", scene: { type: "text", text: countText(manifest.count), size: 104, color: "fg" } },
-    { id: "OutroText", file: "outro-now.mp4", scene: { type: "text", text: NOW_TEXT, size: 104, color: "fgSecondary" } },
+    { id: "OutroText", file: "outro-now.mp4", scene: { type: "text", text: NOW_TEXT, size: 104, color: "fg" } },
     { id: "OutroLogo", file: "outro-logo.mp4" },
   ];
 }

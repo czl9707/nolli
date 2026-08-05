@@ -522,9 +522,13 @@ async function captureMorph(
         beat("board clicked");
         // The morph is framer-motion (map.isMoving() stays false) and the inset's
         // camera flyTo fires from a real-setTimeout (not slowed by the clock), so
-        // waitForMoveEnd is a no-op here. boardHold must cover the morph + delayed
-        // flyTo in WALL time (appMs / slowmo); keep boardHold generous if you raise
-        // `slowmo` toward 1.0.
+        // waitForMoveEnd is a no-op here. boardOpenSettle covers the bloom + the
+        // unscaled flyTo landing in WALL time (appMs / slowmo); raise it if you
+        // push `slowmo` toward 1.0. boardHold is then a PURE static pause after
+        // the reveal settles — it survives the final-cut 2× playbackRate so the
+        // viewer actually reads the board before the cut.
+        await appWait(page, JOURNEY.boardOpenSettle);
+        beat("boardOpenSettle done");
         await appWait(page, JOURNEY.boardHold);
         beat("boardHold done");
       },
@@ -579,7 +583,7 @@ async function captureMorph(
   const chunks = journey.chunkFrames();
   if (chunks.length < 2) {
     throw new Error(
-      `Morph capture produced ${chunks.length} chunk(s); expected >=2. Check morph.json \`seamAfterBeat\` (must be between 1 and the beat count, default 4). Got: ${config.seamAfterBeat}.`,
+      `Morph capture produced ${chunks.length} chunk(s); expected >=2. Check morph.json \`seamAfterBeat\` (must be between 1 and the beat count, default 5). Got: ${config.seamAfterBeat}.`,
     );
   }
   for (let i = 0; i < chunks.length; i++) {

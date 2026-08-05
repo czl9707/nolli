@@ -3,7 +3,7 @@ import { join, resolve } from "node:path";
 import type { Manifest, BuildingRow } from "./manifest";
 import { farthestFrom } from "./geo";
 import { countText, NOW_TEXT } from "../src/lib/outro";
-import { DEFAULT_TUNING, SEAM_AFTER_BEAT_DEFAULT, type MorphConfig, type Journey } from "./morph-config";
+import { SEAM_AFTER_BEAT_DEFAULT, type Journey } from "./morph-config";
 import type { Scene, VideoConfig } from "../src/lib/scenes";
 
 const FONT_DEFAULT = "playful" as const;
@@ -18,9 +18,11 @@ export function freshJourney(manifest: Manifest): Journey {
   return { hero: manifest.hero, far: farthestFrom(manifest.buildings, manifest.hero).slug };
 }
 
-// Scene order leads with a photo (board images) so the social-media preview
-// thumbnail is a real image, not the dark text card — and the "Now available in"
-// card splits the two morph chunks so the demo doesn't play as one long video.
+// Scene order leads with photos (board images) so the social-media preview
+// thumbnail is a real image, not the dark text card. The default cut uses ONE
+// morph chunk (the journey → board reveal); "Now available in" sits between it
+// and the logo. To ship the long-form demo, add the morph-2 entry back here or
+// in video.json (its capture is still produced by assets:morph).
 export function buildScenes(manifest: Manifest): Scene[] {
   const scenes: Scene[] = [];
   for (const b of manifest.buildings) scenes.push({ type: "image", src: boardSrc(b) });
@@ -28,21 +30,19 @@ export function buildScenes(manifest: Manifest): Scene[] {
   for (const b of manifest.buildings) scenes.push({ type: "image", src: detailSrc(b) });
   scenes.push({ type: "text", text: countText(manifest.count), size: 104, color: "fg" });
   scenes.push({ type: "video", src: "morph-1.mp4", playbackRate: MORPH_RATE });
-  scenes.push({ type: "text", text: NOW_TEXT, size: 104, color: "fgSecondary" });
-  scenes.push({ type: "video", src: "morph-2.mp4", playbackRate: MORPH_RATE, endStill: "morph-end.png" });
+  scenes.push({ type: "text", text: NOW_TEXT, size: 104, color: "fg" });
   scenes.push({ type: "logo" });
   return scenes;
 }
 
-export function writeMorphJson(dir: string, manifest: Manifest): MorphConfig {
+export function writeMorphJson(dir: string, manifest: Manifest): { journey: Journey; seamAfterBeat: number } {
   const path = join(dir, "morph.json");
   const existing = existsSync(path)
-    ? (JSON.parse(readFileSync(path, "utf8")) as Partial<MorphConfig>)
+    ? (JSON.parse(readFileSync(path, "utf8")) as { journey?: Journey; seamAfterBeat?: number })
     : {};
-  const cfg: MorphConfig = {
+  const cfg = {
     journey: existing.journey ?? freshJourney(manifest),
     seamAfterBeat: existing.seamAfterBeat ?? SEAM_AFTER_BEAT_DEFAULT,
-    tuning: { ...DEFAULT_TUNING, ...existing.tuning },
   };
   writeFileSync(path, JSON.stringify(cfg, null, 2));
   return cfg;
