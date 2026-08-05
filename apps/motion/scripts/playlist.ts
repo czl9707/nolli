@@ -3,23 +3,42 @@ import { join } from "node:path";
 
 export type Playlist = {
   slug: string;
-  images: string[]; // paths relative to the playlist's out dir
-  morph: string | null; // path relative to the out dir, or null
+  detail: string[]; // *-detail.png paths relative to the out dir (batch 1)
+  board: string[]; // *-board.png paths relative to the out dir (batch 2)
+  journey: { hero: string; far: string }; // building slugs the Scene 2 morph flies between
+  morph: string | null; // path relative to the out dir, or null until assets:morph runs
 };
 
-export function seedPlaylist(slug: string, images: string[]): Playlist {
-  return { slug, images, morph: null };
+export function seedPlaylist(
+  slug: string,
+  detail: string[],
+  board: string[],
+  journey: { hero: string; far: string },
+): Playlist {
+  return { slug, detail, board, journey, morph: null };
 }
 
-export function mergePlaylist(existing: Playlist, captured: string[]): Playlist {
-  const have = new Set(existing.images);
-  const appended = captured.filter((p) => !have.has(p));
-  return { ...existing, images: [...existing.images, ...appended] };
+// Non-destructive refresh on rerun: dedupe+append each list separately, preserve
+// a hand-edited journey/morph/slug.
+export function mergePlaylist(
+  existing: Playlist,
+  capturedDetail: string[],
+  capturedBoard: string[],
+): Playlist {
+  const merge = (list: string[], add: string[]) => {
+    const have = new Set(list);
+    return [...list, ...add.filter((p) => !have.has(p))];
+  };
+  return {
+    ...existing,
+    detail: merge(existing.detail, capturedDetail),
+    board: merge(existing.board, capturedBoard),
+  };
 }
 
 export function validatePlaylist(p: Playlist, outDir: string): string[] {
   const missing: string[] = [];
-  for (const img of p.images) if (!existsSync(join(outDir, img))) missing.push(img);
+  for (const img of [...p.detail, ...p.board]) if (!existsSync(join(outDir, img))) missing.push(img);
   if (p.morph && !existsSync(join(outDir, p.morph))) missing.push(p.morph);
   return missing;
 }

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, expect, it, beforeEach, afterEach } from "vitest";
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -10,29 +10,38 @@ import {
   type Playlist,
 } from "./playlist";
 
+const journey = { hero: "a", far: "b" };
+
 describe("seedPlaylist", () => {
-  it("builds a playlist with the given images and null morph", () => {
-    const p = seedPlaylist("sanaa", ["images/a-detail.png", "images/b-board.png"]);
+  it("builds a playlist with detail/board/journey and null morph", () => {
+    const p = seedPlaylist("sanaa", ["images/a-detail.png"], ["images/a-board.png"], journey);
     expect(p.slug).toBe("sanaa");
-    expect(p.images).toEqual(["images/a-detail.png", "images/b-board.png"]);
+    expect(p.detail).toEqual(["images/a-detail.png"]);
+    expect(p.board).toEqual(["images/a-board.png"]);
+    expect(p.journey).toEqual(journey);
     expect(p.morph).toBeNull();
   });
 });
 
 describe("mergePlaylist", () => {
-  it("appends only new images, preserving existing order and slug", () => {
+  it("appends only new images per list, preserving order, slug, journey, morph", () => {
     const existing: Playlist = {
       slug: "sanaa",
-      images: ["images/b-board.png", "images/a-detail.png"], // user reordered
-      morph: null,
+      detail: ["images/b-detail.png"],
+      board: ["images/b-board.png"],
+      journey,
+      morph: "morph.mp4",
     };
-    const merged = mergePlaylist(existing, ["images/a-detail.png", "images/c-detail.png"]);
-    expect(merged.images).toEqual([
-      "images/b-board.png",
-      "images/a-detail.png",
-      "images/c-detail.png",
-    ]);
+    const merged = mergePlaylist(
+      existing,
+      ["images/b-detail.png", "images/c-detail.png"],
+      ["images/b-board.png", "images/c-board.png"],
+    );
+    expect(merged.detail).toEqual(["images/b-detail.png", "images/c-detail.png"]);
+    expect(merged.board).toEqual(["images/b-board.png", "images/c-board.png"]);
     expect(merged.slug).toBe("sanaa");
+    expect(merged.journey).toEqual(journey);
+    expect(merged.morph).toBe("morph.mp4");
   });
 });
 
@@ -42,6 +51,7 @@ describe("validatePlaylist", () => {
     dir = mkdtempSync(join(tmpdir(), "pl-"));
     mkdirSync(join(dir, "images"), { recursive: true });
     writeFileSync(join(dir, "images/a-detail.png"), "x");
+    writeFileSync(join(dir, "images/a-board.png"), "x");
     writeFileSync(join(dir, "morph.mp4"), "x");
   });
   afterEach(() => rmSync(dir, { recursive: true, force: true }));
@@ -49,25 +59,35 @@ describe("validatePlaylist", () => {
   it("returns no missing when all files exist", () => {
     const p: Playlist = {
       slug: "sanaa",
-      images: ["images/a-detail.png"],
+      detail: ["images/a-detail.png"],
+      board: ["images/a-board.png"],
+      journey,
       morph: "morph.mp4",
     };
     expect(validatePlaylist(p, dir)).toEqual([]);
   });
 
-  it("lists missing images and morph", () => {
+  it("lists missing detail, board, and morph", () => {
     const p: Playlist = {
       slug: "sanaa",
-      images: ["images/a-detail.png", "images/ghost.png"],
+      detail: ["images/a-detail.png", "images/ghost-d.png"],
+      board: ["images/a-board.png", "images/ghost-b.png"],
+      journey,
       morph: "ghost.mp4",
     };
-    expect(validatePlaylist(p, dir).sort()).toEqual(["ghost.mp4", "images/ghost.png"]);
+    expect(validatePlaylist(p, dir).sort()).toEqual([
+      "ghost.mp4",
+      "images/ghost-b.png",
+      "images/ghost-d.png",
+    ]);
   });
 
   it("does not check morph when null", () => {
     const p: Playlist = {
       slug: "sanaa",
-      images: ["images/a-detail.png"],
+      detail: ["images/a-detail.png"],
+      board: ["images/a-board.png"],
+      journey,
       morph: null,
     };
     expect(validatePlaylist(p, dir)).toEqual([]);
@@ -88,7 +108,7 @@ describe("loadPlaylist", () => {
   it("reads and parses video.json", () => {
     writeFileSync(
       join(dir, "video.json"),
-      JSON.stringify({ slug: "sanaa", images: ["images/a.png"], morph: null }),
+      JSON.stringify({ slug: "sanaa", detail: [], board: [], journey, morph: null }),
     );
     expect(loadPlaylist(dir).slug).toBe("sanaa");
   });
