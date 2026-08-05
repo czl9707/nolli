@@ -1,10 +1,10 @@
-// Outro brand-segment tuning. Only primitives live here — per-char speed and
-// the post-typing hold. Segment durations are DERIVED from the actual text
-// length (see segmentDuration), so swapping content never needs hand-edits.
-// Mirrors the BROLL pattern in assets-morph.ts. Durations are frames @ FPS.
+// Outro brand-segment tuning. Only primitives live here — a fixed typing
+// duration and the post-typing hold. The reveal takes the same time regardless
+// of text length, so all four segments share one typing window. Durations are
+// frames @ FPS.
 export const OUTRO = {
-  charFrames: 3, // frames per revealed character (≈10 chars/s @30fps)
-  hold: 15, // frames held after typing finishes before cutting on (0.5s)
+  typeFrames: 23, // fixed typing-window length (≈0.75s @30fps) — same for every segment
+  hold: 15, // frames held after typing finishes before cutting (0.5s)
   typeStart: {
     name: 8,
     count: 8,
@@ -24,14 +24,14 @@ export const LOGO_WORD = "Nolli";
 export const countText = (count: number) =>
   `${count} ${count === 1 ? "architecture" : "architectures"}`;
 
-// Frames a typing segment runs: entrance beat + (chars-1)*charFrames + hold.
+// Frames a typing segment runs: entrance beat + (fixed typing window) + hold.
+// Independent of text length — empty text skips the typing window.
 export function segmentDuration(textLen: number, typeStart: number): number {
-  const typed = textLen <= 0 ? 0 : (textLen - 1) * OUTRO.charFrames;
+  const typed = textLen <= 0 ? 0 : OUTRO.typeFrames;
   return typeStart + typed + OUTRO.hold;
 }
 
-// Per-segment duration for a given manifest. name/count depend on content;
-// now/logo are fixed-length.
+// Per-segment duration for a given manifest.
 export const outroSegmentDurations = (manifest: { architect: string; count: number }) => ({
   name: segmentDuration(manifest.architect.length, OUTRO.typeStart.name),
   count: segmentDuration(countText(manifest.count).length, OUTRO.typeStart.count),
@@ -44,15 +44,18 @@ export const outroDuration = (manifest: { architect: string; count: number }) =>
   return d.name + d.count + d.now + d.logo;
 };
 
-// Number of characters visible at `frame` for an expand-from-center typewriter.
-// The segment renders `text.slice(0, n)` centered, so the partial re-centers
-// every frame and grows symmetrically from the middle.
+// Number of characters visible at `frame` for an expand-from-center typewriter
+// that reveals all chars linearly over `typeFrames`. One char at `start`, all at
+// `start + typeFrames`; the segment renders `text.slice(0, n)` centered, so the
+// partial re-centers every frame and grows symmetrically from the middle.
 export function visibleCharCount(opts: {
   frame: number;
   start: number;
-  charFrames: number;
+  typeFrames: number;
   length: number;
 }): number {
   if (opts.frame < opts.start) return 0;
-  return Math.max(0, Math.min(opts.length, Math.floor((opts.frame - opts.start) / opts.charFrames) + 1));
+  if (opts.typeFrames <= 0) return opts.length;
+  const progress = (opts.frame - opts.start) / opts.typeFrames;
+  return Math.max(1, Math.min(opts.length, Math.ceil(progress * opts.length)));
 }

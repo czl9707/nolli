@@ -3,24 +3,27 @@ import { OUTRO, outroDuration, outroSegmentDurations, segmentDuration, visibleCh
 
 describe("visibleCharCount", () => {
   it("returns 0 before the start frame", () => {
-    expect(visibleCharCount({ frame: 5, start: 6, charFrames: 3, length: 10 })).toBe(0);
+    expect(visibleCharCount({ frame: 5, start: 6, typeFrames: OUTRO.typeFrames, length: 10 })).toBe(0);
   });
-  it("reveals one char per charFrames", () => {
-    expect(visibleCharCount({ frame: 6, start: 6, charFrames: 3, length: 10 })).toBe(1);
-    expect(visibleCharCount({ frame: 8, start: 6, charFrames: 3, length: 10 })).toBe(1);
-    expect(visibleCharCount({ frame: 9, start: 6, charFrames: 3, length: 10 })).toBe(2);
+  it("reveals one char at the start frame", () => {
+    expect(visibleCharCount({ frame: 6, start: 6, typeFrames: OUTRO.typeFrames, length: 10 })).toBe(1);
   });
-  it("clamps to length", () => {
-    expect(visibleCharCount({ frame: 999, start: 6, charFrames: 3, length: 5 })).toBe(5);
+  it("reveals all chars by start + typeFrames", () => {
+    expect(
+      visibleCharCount({ frame: 6 + OUTRO.typeFrames, start: 6, typeFrames: OUTRO.typeFrames, length: 10 }),
+    ).toBe(10);
+  });
+  it("clamps to length past the end", () => {
+    expect(visibleCharCount({ frame: 999, start: 6, typeFrames: OUTRO.typeFrames, length: 5 })).toBe(5);
   });
 });
 
 describe("segmentDuration", () => {
-  it("is typeStart + (chars-1)*charFrames + hold", () => {
-    // "SANAA" (5 chars), entrance at frame 8: 8 + 4*3 + 15
-    expect(segmentDuration(5, 8)).toBe(8 + 4 * OUTRO.charFrames + OUTRO.hold);
+  it("is typeStart + typeFrames + hold for any non-empty text", () => {
+    expect(segmentDuration(5, 8)).toBe(8 + OUTRO.typeFrames + OUTRO.hold);
+    expect(segmentDuration(50, 8)).toBe(8 + OUTRO.typeFrames + OUTRO.hold);
   });
-  it("still holds even with no text", () => {
+  it("still holds even with no text (no typing window)", () => {
     expect(segmentDuration(0, 8)).toBe(8 + OUTRO.hold);
   });
 });
@@ -31,9 +34,9 @@ describe("outroDuration", () => {
     const d = outroSegmentDurations(manifest);
     expect(outroDuration(manifest)).toBe(d.name + d.count + d.now + d.logo);
   });
-  it("grows when the architect name is longer", () => {
+  it("is independent of the architect name length", () => {
     const short = outroDuration({ architect: "SANAA", count: 9 });
     const long = outroDuration({ architect: "Tadao Ando", count: 9 });
-    expect(long).toBeGreaterThan(short);
+    expect(long).toBe(short);
   });
 });

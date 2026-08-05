@@ -19,7 +19,7 @@ const TypewriterLine: React.FC<{
   fontSize: number;
   color: string;
 }> = ({ text, frame, start, fontFamily, fontSize, color }) => {
-  const n = visibleCharCount({ frame, start, charFrames: OUTRO.charFrames, length: text.length });
+  const n = visibleCharCount({ frame, start, typeFrames: OUTRO.typeFrames, length: text.length });
   return (
     <div style={{ fontFamily, fontSize, color, lineHeight: 1.1, whiteSpace: "pre" }}>
       {text.slice(0, n)}
@@ -113,7 +113,7 @@ export const SegmentLogo: React.FC<SegProps> = ({ fontVariant }) => {
   const n = visibleCharCount({
     frame,
     start: OUTRO.logo.typeStart,
-    charFrames: OUTRO.charFrames,
+    typeFrames: OUTRO.typeFrames,
     length: word.length,
   });
   return (
