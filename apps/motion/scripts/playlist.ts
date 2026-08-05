@@ -48,5 +48,11 @@ export function loadPlaylist(outDir: string): Playlist {
   if (!existsSync(file)) {
     throw new Error(`No playlist at ${file}. Run \`assets:images <slug>\` first.`);
   }
-  return JSON.parse(readFileSync(file, "utf8")) as Playlist;
+  const parsed = JSON.parse(readFileSync(file, "utf8")) as Partial<Playlist>;
+  if (!Array.isArray(parsed.detail) || !Array.isArray(parsed.board) || !parsed.journey) {
+    throw new Error(
+      `${file} is missing detail/board/journey (stale format). Re-run \`assets:images <slug>\` to regenerate it.`,
+    );
+  }
+  return parsed as Playlist;
 }

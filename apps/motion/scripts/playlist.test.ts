@@ -112,4 +112,12 @@ describe("loadPlaylist", () => {
     );
     expect(loadPlaylist(dir).slug).toBe("sanaa");
   });
+
+  it("throws a clear error for a stale (old-shape) video.json", () => {
+    writeFileSync(
+      join(dir, "video.json"),
+      JSON.stringify({ slug: "sanaa", images: ["images/a.png"], morph: null }),
+    );
+    expect(() => loadPlaylist(dir)).toThrow(/stale format/);
+  });
 });
