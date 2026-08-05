@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { OUTRO, outroDuration, outroSegmentDurations, segmentDuration, visibleCharCount } from "./outro";
+import { OUTRO, segmentDuration, visibleCharCount } from "./outro";
 
 describe("visibleCharCount", () => {
   it("returns 0 before the start frame", () => {
@@ -28,18 +28,5 @@ describe("segmentDuration", () => {
   });
   it("still holds even with no text (no typing window)", () => {
     expect(segmentDuration(0, 8)).toBe(8 + OUTRO.hold);
-  });
-});
-
-describe("outroDuration", () => {
-  it("is the sum of the four derived segment durations", () => {
-    const manifest = { architect: "SANAA", count: 9 };
-    const d = outroSegmentDurations(manifest);
-    expect(outroDuration(manifest)).toBe(d.name + d.count + d.now + d.logo);
-  });
-  it("is independent of the architect name length", () => {
-    const short = outroDuration({ architect: "SANAA", count: 9 });
-    const long = outroDuration({ architect: "Tadao Ando", count: 9 });
-    expect(long).toBe(short);
   });
 });

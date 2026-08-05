@@ -25,7 +25,6 @@ export type VideoConfig = {
 };
 
 export const DEFAULT_TEXT_SIZE = 104;
-export const DEFAULT_TEXT_COLOR: ColorToken = "fg";
 export const DEFAULT_PLAYBACK_RATE = 1;
 
 export function durationOf(scene: Scene): number {

@@ -7,7 +7,7 @@ export const SceneVideo: React.FC<{ scene: VideoScene }> = ({ scene }) => {
   const endStill = scene.endStill ? staticFile(scene.endStill) : null;
 
   // Last ~24 frames: crossfade from clip into the lock-frame still + slow push-in.
-  const handoffStart = durationInFrames - 24;
+  const handoffStart = Math.max(0, durationInFrames - 24);
   const stillOpacity = endStill
     ? interpolate(frame, [handoffStart, durationInFrames], [0, 1], { extrapolateLeft: "clamp" })
     : 0;

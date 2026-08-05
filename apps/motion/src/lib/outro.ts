@@ -31,19 +31,6 @@ export function segmentDuration(textLen: number, typeStart: number): number {
   return typeStart + typed + OUTRO.hold;
 }
 
-// Per-segment duration for a given manifest.
-export const outroSegmentDurations = (manifest: { architect: string; count: number }) => ({
-  name: segmentDuration(manifest.architect.length, OUTRO.typeStart.name),
-  count: segmentDuration(countText(manifest.count).length, OUTRO.typeStart.count),
-  now: segmentDuration(NOW_TEXT.length, OUTRO.typeStart.now),
-  logo: segmentDuration(LOGO_WORD.length, OUTRO.logo.typeStart),
-});
-
-export const outroDuration = (manifest: { architect: string; count: number }) => {
-  const d = outroSegmentDurations(manifest);
-  return d.name + d.count + d.now + d.logo;
-};
-
 // Number of characters visible at `frame` for an expand-from-center typewriter
 // that reveals all chars linearly over `typeFrames`. One char at `start`, all at
 // `start + typeFrames`; the segment renders `text.slice(0, n)` centered, so the
