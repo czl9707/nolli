@@ -87,8 +87,9 @@ type CaptureMap = { isMoving: () => boolean };
 // `window.__nolliMap` under `?capture=1`) to reach moveend. `page.evaluate`
 // returns the instant `easeTo` is *called* — not when the animation finishes —
 // so the next move MUST await this, otherwise `panBy` retargets mid-flight and
-// the sequence collapses. Resolves silently on timeout so a stuck move never
-// aborts the run.
+// the sequence collapses. Resolves instantly if `__nolliMap` is absent (nothing
+// to wait for) so a lost handle never burns the whole timeout, and silently on
+// timeout so a stuck move never aborts the run.
 //
 // NOTE: Playwright's `waitForFunction` takes `(fn, arg, options)`; the options
 // object MUST be the 3rd arg. Passing `{timeout}` as the 2nd silently makes it
@@ -98,7 +99,7 @@ export async function waitForMoveEnd(page: Page, timeoutMs = 6000) {
     .waitForFunction(
       () => {
         const m = (window as unknown as { __nolliMap?: CaptureMap }).__nolliMap;
-        return !!m && !m.isMoving();
+        return !m || !m.isMoving();
       },
       undefined,
       { timeout: timeoutMs },

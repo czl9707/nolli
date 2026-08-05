@@ -22,20 +22,26 @@ const appWait = (page: import("playwright").Page, appMs: number) =>
 // divided by `slowmo` under ~30s of wall-time — Chrome throttles the CDP
 // screencast compositor on long idle captures and starves the frame stream.
 const JOURNEY = {
-  slowmo: 0.4, // app-speed factor; 0.4 (not the canonical 0.25) keeps this ~3x-longer journey's wall-time under the compositor-starvation threshold
-  establishZoom: 9, // opening mid-zoom on the hero (the camera starts here)
-  diveZoom: 13, // ease-in target — the "lean in" before the flyTo
-  establishHold: 1000, // hold on the opening mid view before easing in
-  flyZoom: 14, // far-building flyTo destination (matches flyToArchCinematic default)
-  flyHold: 800, // hold after each flyTo lands
-  boardHold: 1000, // hold after the map->board morph settles
-  detailHold: 1000, // hold on the open photo lightbox
-  detailCloseHold: 400, // hold after closing the lightbox
-  panCount: 3, // number of board drag-pans
-  panDistance: 260, // drag magnitude (px)
-  panHold: 500, // hold between pans
+  slowmo: 0.4, // app-speed factor. Lower = more slow-mo (and more wall-time: appMs/slowmo). If a capture comes back with too few frames, RAISE this toward 0.5–0.7 (less wall-time) — Chrome starves the CDP screencast on long idle captures.
+  establishZoom: 10, // opening mid-zoom on the hero (the camera starts here)
+  diveZoom: 14, // ease-in target — the "lean in" before the look-around + arch hop
+  establishHold: 1500, // hold on the opening mid view before easing in
+  flyZoom: 14, // arch #2 flyTo destination (matches flyToArchCinematic default)
+  flyHold: 1500, // hold after the ease-in
+  navLandMs: 2100, // fixed wait after triggering the arch→arch nav — covers the off-screen fly (MAP_TRANSITION_LONG = 1800 app-ms) + a short settle, then straight into the #2 map pan. Replaces the old variable waitForMoveEnd + a dead hold.
+  mapPanCount: 2, // map drift-pans while dwelling on each arch (the "look around")
+  boardHold: 3000, // hold after the map->board morph settles
+  detailHold: 2000, // hold on the open photo lightbox
+  detailCloseHold: 500, // hold after closing the lightbox
+  panCount: 2, // number of board drag-pans
+  panDistance: 300, // shared pan magnitude (px) — map panBy AND board drag
+  panDurationMs: 360, // shared pan SPEED: app-ms per pan glide (lower = faster). Map + board both use this.
+  panSteps: 14, // board-drag smoothing increments per glide (map panBy is eased natively)
+  panHold: 500, // app-ms hold between pans
+  mapReturnMs: 3000, // wait after clicking back to the map — covers the framer-motion board→map morph + the flyTo settle, then the lock-frame still is the map view
+  mapReturnHold: 1000, // hold on the arch #2 map view before cutting
   screencastQuality: 92,
-  maxFrames: 18 * FPS, // resample ceiling (18s real-time; journey is ~15s)
+  maxFrames: 24 * FPS, // resample ceiling (journey is now ~19-20s real-time)
 } as const;
 
 // Capture the home->board morph via slow-mo CDP screencast, resample to a
@@ -123,6 +129,21 @@ async function captureMorph(slug: string, manifest: Manifest): Promise<void> {
       maxHeight: 1080,
     });
 
+    // Wall-time beat timeline (Node clock is real; only the in-page clock is
+    // slowed). Prints where capture time accumulates so dead segments are
+    // obvious. app-time delta = wall delta * slowmo.
+    const beat = (label: string) =>
+      console.log(`  morph+${((Date.now() - wall0) / 1000).toFixed(2)}s ${label}`);
+    const cam = () =>
+      page.evaluate(() => {
+        const m = (window as unknown as {
+          __nolliMap?: { getZoom: () => number; getCenter: () => { lng: number; lat: number } };
+        }).__nolliMap;
+        if (!m) return null;
+        const c = m.getCenter();
+        return { zoom: m.getZoom(), lng: c.lng, lat: c.lat };
+      });
+
     // In-page camera primitive mirroring packages/map/src/map-flyto.ts.
     const flyTo = (lat: number, lng: number, zoom: number = JOURNEY.flyZoom) =>
       page.evaluate(
@@ -153,35 +174,109 @@ async function captureMorph(slug: string, manifest: Manifest): Promise<void> {
         { lat, lng, zoom },
       );
 
+    // ── Map pan (look-around drift) ──────────────────────────────────────────
+    // Mirrors the board pan's tuning (panDistance/panDurationMs/panHold) but via
+    // the camera primitive panBy (eased), since the map has no useBoardPan. Reads
+    // as a human "look around" while dwelling on an arch. Asserts each pan moved
+    // (getCenter before/after) so a silent static drift fails loudly.
+    const mapCenter = () =>
+      page.evaluate(() => {
+        const m = (window as unknown as { __nolliMap?: { getCenter: () => { lng: number; lat: number } } }).__nolliMap;
+        const c = m?.getCenter();
+        return c ? { lng: c.lng, lat: c.lat } : { lng: NaN, lat: NaN };
+      });
+    const panMap = (dx: number, dy: number) =>
+      page.evaluate(
+        ({ dx, dy, duration }) => {
+          const m = (window as unknown as {
+            __nolliMap?: { panBy: (off: [number, number], o: { duration: number }) => void };
+          }).__nolliMap;
+          m?.panBy([dx, dy], { duration });
+        },
+        { dx, dy, duration: JOURNEY.panDurationMs },
+      );
+    const panMapAround = async () => {
+      for (let i = 0; i < JOURNEY.mapPanCount; i++) {
+        const sign = i % 2 === 0 ? 1 : -1;
+        const before = await mapCenter();
+        await panMap(sign * JOURNEY.panDistance, sign * 60);
+        await waitForMoveEnd(page);
+        const after = await mapCenter();
+        if (
+          !Number.isNaN(before.lng) &&
+          Math.abs(after.lng - before.lng) < 1e-6 &&
+          Math.abs(after.lat - before.lat) < 1e-6
+        ) {
+          throw new Error("Map pan produced no movement — panBy didn't take.");
+        }
+        await appWait(page, JOURNEY.panHold);
+      }
+    };
+
     // ── Beat 1: open mid-zoom on the hero, hold, then ease in closer ──────
-    // A continuous inward motion — replaces the old fitBounds-wide→dive-back,
-    // which read as a redundant out-and-back to the same hero view.
     await appWait(page, JOURNEY.establishHold);
     await flyTo(hero.latitude, hero.longitude, JOURNEY.diveZoom);
     await waitForMoveEnd(page);
     await appWait(page, JOURNEY.flyHold);
+    beat("beat1 done (ease-in + hold)");
 
-    // ── Beat 2: fly to the farthest building (the money shot) ─────────────
-    await flyTo(far.latitude, far.longitude);
-    await waitForMoveEnd(page);
-    await appWait(page, JOURNEY.flyHold);
+    // ── Beat 2: drift the map a couple times (a human "look around" on #1)
+    await panMapAround();
+    beat("pan#1 done");
 
-    // ── Beat 4: "Go to Pin Board" → map shrinks to inset, polaroids bloom ─
+    // ── Beat 3: real arch→arch navigation — the money shot. Same code path as
+    // clicking an "Also by" suggestion card (window.__nolliNavigateArch, exposed
+    // under ?capture=1): the URL changes, the sidebar (selection panel) updates
+    // to arch #2, and MapFlyNavigator flies. Target is the farthest same-architect
+    // building (warmed off-camera above) — reached via the real nav handler, not a
+    // synthetic flyTo, so this is exactly the inter-arch transition a user gets.
+    const hasNav = await page.evaluate(
+      () => !!(window as unknown as { __nolliNavigateArch?: unknown }).__nolliNavigateArch,
+    );
+    if (!hasNav) {
+      throw new Error("window.__nolliNavigateArch not found — ArchNavCaptureBridge didn't run.");
+    }
+    const camBeforeNav = await cam();
+    beat(`nav trigger → ${far.slug} (from zoom ${camBeforeNav?.zoom} lng ${camBeforeNav?.lng.toFixed(3)})`);
+    await page.evaluate(
+      (slug) => {
+        (window as unknown as { __nolliNavigateArch?: (s: string, fly?: boolean) => void }).__nolliNavigateArch?.(slug, true);
+      },
+      far.slug,
+    );
+    // Fixed wait for the off-screen fly (MAP_TRANSITION_LONG = 1800 app-ms) to land
+    // + a short settle, then straight into the #2 map pan. Replaces a variable
+    // waitForMoveEnd (which resolved unpredictably because `select` is async, so
+    // isMoving() was already false at the first poll) plus a dead hold.
+    await appWait(page, JOURNEY.navLandMs);
+    const camAfterNav = await cam();
+    beat(
+      `navLandMs done (zoom ${camAfterNav?.zoom} lng ${camAfterNav?.lng.toFixed(3)}, ` +
+        `Δlng ${((camAfterNav?.lng ?? 0) - (camBeforeNav?.lng ?? 0)).toFixed(3)})`,
+    );
+
+    // ── Beat 4: drift the map again on arch #2 before entering its board ──
+    await panMapAround();
+    beat("pan#2 done");
+
+    // ── Beat 5: "Go to Pin Board" → map shrinks to inset, polaroids bloom ─
     await page.getByRole("button", { name: /go to pin board/i }).click();
+    beat("board clicked");
     // The morph is framer-motion (map.isMoving() stays false) and the inset's
     // camera flyTo fires from a real-setTimeout (not slowed by the clock), so
     // waitForMoveEnd is a no-op here. boardHold must cover the morph + delayed
     // flyTo in WALL time (appMs / slowmo); keep boardHold generous if you raise
     // `slowmo` toward 1.0.
     await appWait(page, JOURNEY.boardHold);
+    beat("boardHold done");
 
-    // ── Beat 5: open a photo (detail lightbox, cross-fade) ────────────────
+    // ── Beat 6: open a photo (detail lightbox, cross-fade) ────────────────
     const photo = page.locator('div[style*="rotate("] img:not([src*="pin.png"])').first();
     await photo.click({ force: true });
     await page.locator('div[style*="aspect-ratio"]').waitFor({ state: "visible" });
     await appWait(page, JOURNEY.detailHold);
 
-    // ── Beat 6: close the lightbox (backdrop click → onClose) ─────────────
+    // ── Beat 7: close the lightbox (backdrop click → onClose) ─────────────
     // Click a corner that is backdrop, not the centered photo, then wait for the
     // modal to fully unmount (framer-motion exit fade ~0.6s app) before panning —
     // otherwise the still-present backdrop swallows the drag's pointerdown.
@@ -192,7 +287,7 @@ async function captureMorph(slug: string, manifest: Manifest): Promise<void> {
       .catch(() => {});
     await appWait(page, JOURNEY.detailCloseHold);
 
-    // ── Beat 7: pan the board a few times (pointer drag; wheel zooms, not pans)
+    // ── Beat 8: pan the board a few times (pointer drag; wheel zooms, not pans)
     const cx = 960;
     const cy = 540;
     const polaroidX = () =>
@@ -206,19 +301,20 @@ async function captureMorph(slug: string, manifest: Manifest): Promise<void> {
     // a React state update. Playwright's batched mouse.move steps can all land
     // before React commits isPanning=true (every move returns early → no pan), so
     // settle after down() and move in spaced increments — each gets its own
-    // render, which also yields a smooth glide under slow-mo.
-    const panSteps = 14;
+    // render, which also yields a smooth glide under slow-mo. Glide speed is
+    // panDurationMs (shared with the map pan); panSteps only sets smoothness.
+    const stepDelay = JOURNEY.panDurationMs / JOURNEY.panSteps;
     for (let i = 0; i < JOURNEY.panCount; i++) {
       const sign = i % 2 === 0 ? 1 : -1;
       await page.mouse.move(cx, cy);
       await page.mouse.down();
       await appWait(page, 150);
-      for (let s = 1; s <= panSteps; s++) {
+      for (let s = 1; s <= JOURNEY.panSteps; s++) {
         await page.mouse.move(
-          cx + sign * JOURNEY.panDistance * (s / panSteps),
-          cy + sign * 60 * (s / panSteps),
+          cx + sign * JOURNEY.panDistance * (s / JOURNEY.panSteps),
+          cy + sign * 60 * (s / JOURNEY.panSteps),
         );
-        await appWait(page, 30);
+        await appWait(page, stepDelay);
       }
       await page.mouse.up();
       await appWait(page, JOURNEY.panHold);
@@ -227,8 +323,22 @@ async function captureMorph(slug: string, manifest: Manifest): Promise<void> {
     if (!Number.isNaN(xBefore) && !Number.isNaN(xAfter) && Math.abs(xAfter - xBefore) < 2) {
       throw new Error("Board drag-pan produced no movement — synthetic pointer drag didn't take.");
     }
+    beat("board pans done");
 
-    // ── Beat 8: stop, then grab the final panned board as the lock-frame still
+    // ── Beat 9: click the inset-map overlay to navigate back to the map view.
+    // The overlay is the board's mini-map ("Click to go back to map view"); its
+    // onClick does navigate(-1), which pops to the /arch/:slug?capture=1 map entry
+    // (the board push dropped capture, but navigate(-1) restores the prior entry
+    // that still has it). The board→map morph + the MapFlyNavigator flyTo run off
+    // real setTimeouts (not slowed), so mapReturnMs is generous wall-time.
+    await page.getByText(/click to go back to map view/i).click();
+    await appWait(page, JOURNEY.mapReturnMs);
+    beat("returned to map");
+
+    // ── Hold on the map view so the journey lingers on arch #2 before cutting.
+    await appWait(page, JOURNEY.mapReturnHold);
+
+    // ── Stop, then grab the final map view of arch #2 as the lock-frame still
     await client.send("Page.stopScreencast");
     await page.screenshot({ path: join(outDir, "morph-end.png") });
   } finally {
