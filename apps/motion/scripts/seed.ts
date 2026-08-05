@@ -18,14 +18,17 @@ export function freshJourney(manifest: Manifest): Journey {
   return { hero: manifest.hero, far: farthestFrom(manifest.buildings, manifest.hero).slug };
 }
 
+// Scene order leads with a photo (board images) so the social-media preview
+// thumbnail is a real image, not the dark text card — and the "Now available in"
+// card splits the two morph chunks so the demo doesn't play as one long video.
 export function buildScenes(manifest: Manifest): Scene[] {
   const scenes: Scene[] = [];
+  for (const b of manifest.buildings) scenes.push({ type: "image", src: boardSrc(b) });
   scenes.push({ type: "text", text: manifest.architect, size: 132, color: "fg" });
   for (const b of manifest.buildings) scenes.push({ type: "image", src: detailSrc(b) });
   scenes.push({ type: "text", text: countText(manifest.count), size: 104, color: "fg" });
-  for (const b of manifest.buildings) scenes.push({ type: "image", src: boardSrc(b) });
-  scenes.push({ type: "text", text: NOW_TEXT, size: 104, color: "fgSecondary" });
   scenes.push({ type: "video", src: "morph-1.mp4", playbackRate: MORPH_RATE });
+  scenes.push({ type: "text", text: NOW_TEXT, size: 104, color: "fgSecondary" });
   scenes.push({ type: "video", src: "morph-2.mp4", playbackRate: MORPH_RATE, endStill: "morph-end.png" });
   scenes.push({ type: "logo" });
   return scenes;

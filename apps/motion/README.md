@@ -9,13 +9,15 @@ Nolli app. Templated: one manifest per architect drives the whole thing.
 ## Timeline
 
 Driven by an ordered `scenes[]` list in `video.json` (written by `seed`,
-editable freely): `text → image* (detail) → text (count) → image* (board) →
-text (now) → video (morph-1) → video (morph-2) → logo`. Each image entry is one
-photo; reordering or cutting the video is a `video.json` edit, not code.
+editable freely): `image* (board) → text (name) → image* (detail) → text (count)
+→ video (morph-1) → text (now) → video (morph-2) → logo`. The list leads with a
+board photo so the social-media preview thumbnail is a real image, not the dark
+text card; the "Now available in" card splits the two morph chunks so the demo
+doesn't play as one long video. Each image entry is one photo; reordering or
+cutting the video is a `video.json` edit, not code.
 
 - **`text`** — typed outro-style segment (name / count / "Now available in").
-- **`image`** — a hard-cut still, one entry per photo (detail shots then board
-  lightbox shots).
+- **`image`** — a hard-cut still, one entry per photo.
 - **`video`** — a captured morph chunk. Each entry has its own `playbackRate`
   (morph chunks run at 2×) and an optional `endStill` (frozen on the chunk's
   last frame after it ends).
@@ -34,14 +36,14 @@ Both written by `seed` into `out/<slug>/`. Edit them; rerun the affected step.
     "slug": "mies",
     "fontVariant": "playful",
     "scenes": [
+      { "type": "image", "src": "images/a-board.png" },
+      { "type": "image", "src": "images/b-board.png" },
       { "type": "text", "text": "Ludwig Mies van der Rohe", "size": 132, "color": "fg" },
       { "type": "image", "src": "images/a-detail.png" },
       { "type": "image", "src": "images/b-detail.png" },
       { "type": "text", "text": "2 architectures", "size": 104, "color": "fg" },
-      { "type": "image", "src": "images/a-board.png" },
-      { "type": "image", "src": "images/b-board.png" },
-      { "type": "text", "text": "Now available in", "size": 104, "color": "fgSecondary" },
       { "type": "video", "src": "morph-1.mp4", "playbackRate": 2 },
+      { "type": "text", "text": "Now available in", "size": 104, "color": "fgSecondary" },
       { "type": "video", "src": "morph-2.mp4", "playbackRate": 2, "endStill": "morph-end.png" },
       { "type": "logo" }
     ]

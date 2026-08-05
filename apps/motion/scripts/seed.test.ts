@@ -38,33 +38,33 @@ describe("freshJourney", () => {
 describe("buildScenes", () => {
   const scenes = buildScenes(manifest);
 
-  it("order: name, detail imgs, count, board imgs, now, morph-1, morph-2, logo", () => {
+  // Lead with board photos (social thumbnail), then name, detail photos, count,
+  // morph-1, "Now available in" (splits the two morph chunks), morph-2, logo.
+  it("order: board imgs, name, detail imgs, count, morph-1, now, morph-2, logo", () => {
     expect(scenes.map((s) => s.type)).toEqual([
-      "text", "image", "image", "text", "image", "image", "text", "video", "video", "logo",
+      "image", "image", "text", "image", "image", "text", "video", "text", "video", "logo",
     ]);
   });
-  it("name scene text + size", () => {
-    expect(scenes[0]).toEqual({ type: "text", text: "Mies", size: 132, color: "fg" });
+  it("board image srcs come first, deterministic from building slugs, in order", () => {
+    expect(scenes[0]).toEqual({ type: "image", src: "images/a-board.png" });
+    expect(scenes[1]).toEqual({ type: "image", src: "images/b-board.png" });
   });
-  it("detail image srcs are deterministic from building slugs, in order", () => {
-    expect(scenes[1]).toEqual({ type: "image", src: "images/a-detail.png" });
-    expect(scenes[2]).toEqual({ type: "image", src: "images/b-detail.png" });
+  it("name scene text + size", () => {
+    expect(scenes[2]).toEqual({ type: "text", text: "Mies", size: 132, color: "fg" });
+  });
+  it("detail image srcs", () => {
+    expect(scenes[3]).toEqual({ type: "image", src: "images/a-detail.png" });
+    expect(scenes[4]).toEqual({ type: "image", src: "images/b-detail.png" });
   });
   it("count scene uses countText", () => {
-    expect(scenes[3]).toEqual({ type: "text", text: "2 architectures", size: 104, color: "fg" });
+    expect(scenes[5]).toEqual({ type: "text", text: "2 architectures", size: 104, color: "fg" });
   });
-  it("board image srcs", () => {
-    expect(scenes[4]).toEqual({ type: "image", src: "images/a-board.png" });
-    expect(scenes[5]).toEqual({ type: "image", src: "images/b-board.png" });
+  it("morph-1, then now scene splitting the two morph chunks", () => {
+    expect(scenes[6]).toEqual({ type: "video", src: "morph-1.mp4", playbackRate: 2 });
+    expect(scenes[7]).toEqual({ type: "text", text: "Now available in", size: 104, color: "fgSecondary" });
   });
-  it("now scene", () => {
-    expect(scenes[6]).toEqual({ type: "text", text: "Now available in", size: 104, color: "fgSecondary" });
-  });
-  it("two morph videos, morph-2 carries endStill + rate 2", () => {
-    expect(scenes[7]).toEqual({ type: "video", src: "morph-1.mp4", playbackRate: 2 });
+  it("morph-2 carries endStill + rate 2, then logo", () => {
     expect(scenes[8]).toEqual({ type: "video", src: "morph-2.mp4", playbackRate: 2, endStill: "morph-end.png" });
-  });
-  it("ends on logo", () => {
     expect(scenes[9]).toEqual({ type: "logo" });
   });
 });
