@@ -3,6 +3,7 @@ import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { newDarkContext, waitForStable, LAUNCH_ARGS } from "./capture-helpers";
 import { seedPlaylist, mergePlaylist, type Playlist } from "./playlist";
+import { farthestFrom } from "./geo";
 import type { Manifest } from "./manifest";
 
 const BASE_URL = process.env.BASE_URL ?? "http://localhost:5173";
@@ -22,7 +23,8 @@ async function captureImagesForSlug(slug: string) {
   mkdirSync(imagesDir, { recursive: true });
 
   const browser = await chromium.launch({ args: LAUNCH_ARGS });
-  const captured: string[] = [];
+  const detailImgs: string[] = [];
+  const boardImgs: string[] = [];
   const failures: string[] = [];
   try {
     const context = await newDarkContext(browser, {
@@ -38,7 +40,7 @@ async function captureImagesForSlug(slug: string) {
         await waitForStable(page);
         const detailRel = `images/${b.slug}-detail.png`;
         await page.screenshot({ path: join(outDir, detailRel), fullPage: false });
-        captured.push(detailRel);
+        detailImgs.push(detailRel);
 
         // Board view with the cover photo opened in the lightbox. Hash-proof
         // selectors carried over from the legacy capture.ts: polaroid wrappers
@@ -57,7 +59,7 @@ async function captureImagesForSlug(slug: string) {
         await page.waitForTimeout(600); // BoardModal fade-in
         const boardRel = `images/${b.slug}-board.png`;
         await page.screenshot({ path: join(outDir, boardRel), fullPage: false });
-        captured.push(boardRel);
+        boardImgs.push(boardRel);
 
         console.log(`  ${b.slug}: detail + board`);
       } catch (err) {
@@ -73,18 +75,28 @@ async function captureImagesForSlug(slug: string) {
     console.error(`\n${failures.length} building(s) failed: ${failures.join(", ")}`);
   }
 
-  // Seed (first run) or non-destructively refresh (later runs) video.json.
+  // Seed the journey targets (hero + farthest building) when first creating
+  // video.json. On rerun, preserve a hand-edited journey — only fill it in if
+  // missing. The morph reads these slugs; editing here pins the journey.
+  const journey = { hero: manifest.hero, far: farthestFrom(manifest.buildings, manifest.hero).slug };
+
   const playlistPath = join(outDir, "video.json");
   let playlist: Playlist;
   if (existsSync(playlistPath)) {
-    playlist = mergePlaylist(JSON.parse(readFileSync(playlistPath, "utf8")) as Playlist, captured);
+    playlist = mergePlaylist(
+      JSON.parse(readFileSync(playlistPath, "utf8")) as Playlist,
+      detailImgs,
+      boardImgs,
+    );
     playlist.slug = slug; // keep slug in sync if rerun for a different slug in the same dir
+    if (!playlist.journey) playlist.journey = journey;
   } else {
-    playlist = seedPlaylist(slug, captured); // detail-before-board per building
+    playlist = seedPlaylist(slug, detailImgs, boardImgs, journey);
   }
   writeFileSync(playlistPath, JSON.stringify(playlist, null, 2));
   console.log(
-    `Wrote ${playlistPath} (${captured.length} captured, ${playlist.images.length} listed)`,
+    `Wrote ${playlistPath} (${detailImgs.length + boardImgs.length} captured, ` +
+      `${playlist.detail.length + playlist.board.length} listed, journey: ${playlist.journey.hero}→${playlist.journey.far})`,
   );
 }
 
