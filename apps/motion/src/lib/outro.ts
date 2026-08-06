@@ -3,17 +3,22 @@
 // of text length, so all four segments share one typing window. Durations are
 // frames @ FPS.
 export const OUTRO = {
-  typeFrames: 23, // fixed typing-window length (≈0.75s @30fps) — same for every segment
-  hold: 15, // frames held after typing finishes before cutting (0.5s)
-  typeStart: {
-    name: 8,
-    count: 8,
-    now: 8,
+  typeFrames: 23, // fixed reveal-window budget (≈0.75s @30fps) — same for every segment
+  hold: 6, // frames held fully revealed before exiting/cutting (0.2s)
+  // Per-word reveal (WordReveal). Each word lands over `reveal` frames; words
+  // stagger `stagger` apart so a line builds rhythmically. `rise`/`blur` are the
+  // slide-up (px) and gaussian blur (px) that clear as a word lands.
+  word: {
+    reveal: 10,
+    stagger: 4,
+    rise: 10,
+    blur: 6,
   },
+  exitFrames: 8, // frames a text card spends wiping out before the cut (logo holds)
   logo: {
     markIn: 6, // frame the mark starts scaling/fading in
     markSettle: 18, // frame the mark reaches final size
-    typeStart: 20, // frame "Nolli" begins typing to the right
+    typeStart: 20, // frame "Nolli" begins revealing to the right
     size: 96, // mark render height in px
   },
 } as const;
@@ -24,11 +29,17 @@ export const LOGO_WORD = "Nolli";
 export const countText = (count: number) =>
   `${count} ${count === 1 ? "Architecture" : "Architectures"}`;
 
-// Frames a typing segment runs: entrance beat + (fixed typing window) + hold.
-// Independent of text length — empty text skips the typing window.
-export function segmentDuration(textLen: number, typeStart: number): number {
+// Frames a segment runs: entrance beat + (reveal window) + hold + exit.
+// Independent of text length — empty text skips the reveal window. The logo is
+// the final lockup and passes exit=false so it holds instead of wiping out.
+export function segmentDuration(textLen: number, typeStart: number, exit = false): number {
   const typed = textLen <= 0 ? 0 : OUTRO.typeFrames;
-  return typeStart + typed + OUTRO.hold;
+  return typeStart + typed + OUTRO.hold + (exit ? OUTRO.exitFrames : 0);
+}
+
+// Frame at which a segment's exit wipe begins (entrance + reveal + hold).
+export function exitStartFrame(typeStart: number): number {
+  return typeStart + OUTRO.typeFrames + OUTRO.hold;
 }
 
 // Number of characters visible at `frame` for an expand-from-center typewriter

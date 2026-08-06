@@ -1,26 +1,92 @@
-import { AbsoluteFill, interpolate, useCurrentFrame } from "remotion";
+import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig, Easing } from "remotion";
 import { PLAYFUL_FAMILY, INTER_FAMILY } from "../fonts";
 import { THEME } from "../lib/theme";
-import { OUTRO, visibleCharCount, LOGO_WORD } from "../lib/outro";
+import { OUTRO, exitStartFrame, LOGO_WORD } from "../lib/outro";
 import type { TextScene, FontVariant } from "../lib/scenes";
 import { DEFAULT_TEXT_SIZE } from "../lib/scenes";
 
 const family = (v: FontVariant) => (v === "inter" ? INTER_FAMILY : PLAYFUL_FAMILY);
 
-// Expand-from-center typewriter. Renders the visible substring centered; as
-// chars reveal the partial re-centers, so the line grows from the middle.
-const TypewriterLine: React.FC<{
+// Per-word reveal: each word is uncovered by a left-to-right clip wipe while
+// sliding up and clearing a soft blur, staggered word-to-word so the line
+// builds rhythmically. Playful variant lands on a spring overshoot; inter lands
+// on a smooth ease-out. If `exitStart` is finite, the whole line wipes out
+// (slide up + blur + re-clip) together over OUTRO.exitFrames.
+const WordReveal: React.FC<{
   text: string;
   frame: number;
   start: number;
+  exitStart: number;
   fontFamily: string;
   fontSize: number;
   color: string;
-}> = ({ text, frame, start, fontFamily, fontSize, color }) => {
-  const n = visibleCharCount({ frame, start, typeFrames: OUTRO.typeFrames, length: text.length });
+  fontVariant: FontVariant;
+}> = ({ text, frame, start, exitStart, fontFamily, fontSize, color, fontVariant }) => {
+  const { fps } = useVideoConfig();
+  const { reveal, stagger, rise, blur } = OUTRO.word;
+  const playful = fontVariant === "playful";
+  const words = text.split(" ");
   return (
-    <div style={{ fontFamily, fontSize, color, lineHeight: 1.1, whiteSpace: "pre" }}>
-      {text.slice(0, n)}
+    <div
+      style={{
+        display: "flex",
+        flexWrap: "wrap",
+        justifyContent: "center",
+        alignItems: "baseline",
+        gap: "0.28em",
+        fontFamily,
+        fontSize,
+        color,
+        lineHeight: 1.1,
+      }}
+    >
+      {words.map((word, i) => {
+        const wordStart = start + i * stagger;
+        // Entrance progress 0→(1 + overshoot for playful).
+        const pIn = playful
+          ? spring({
+              frame: frame - wordStart,
+              fps,
+              durationInFrames: reveal,
+              config: { damping: 14, stiffness: 130, mass: 0.6 },
+            })
+          : interpolate(frame, [wordStart, wordStart + reveal], [0, 1], {
+              extrapolateLeft: "clamp",
+              extrapolateRight: "clamp",
+              easing: Easing.out(Easing.cubic),
+            });
+        const pInClamped = Math.max(0, Math.min(1, pIn));
+
+        // Exit progress — every word leaves together over the exit window.
+        const pOut = Number.isFinite(exitStart)
+          ? interpolate(frame, [exitStart, exitStart + OUTRO.exitFrames], [0, 1], {
+              extrapolateLeft: "clamp",
+              extrapolateRight: "clamp",
+              easing: Easing.in(Easing.cubic),
+            })
+          : 0;
+
+        const translateY = rise * (1 - pIn) - rise * pOut;
+        const blurPx = blur * (1 - pInClamped) + blur * pOut;
+        const opacity = pInClamped * (1 - pOut);
+        const clipRight = Math.max(100 * (1 - pInClamped), 100 * pOut); // %, 100 = fully hidden
+
+        return (
+          <span
+            key={i}
+            style={{
+              display: "inline-block",
+              transform: `translateY(${translateY}px)`,
+              filter: blurPx > 0.01 ? `blur(${blurPx}px)` : undefined,
+              opacity,
+              clipPath: `inset(0 ${clipRight}% 0 0)`,
+              willChange: "transform, filter, opacity, clip-path",
+            }}
+          >
+            {word}
+          </span>
+        );
+      })}
     </div>
   );
 };
@@ -46,8 +112,7 @@ const NolliMark: React.FC<{ size: number }> = ({ size }) => (
   </svg>
 );
 
-// Generic text scene: animate any string with the expand-from-center typewriter.
-// Replaces the per-field SegmentName/Count/Now.
+// Generic text scene: per-word wipe-in, hold, then wipe-out before the cut.
 export const SegmentText: React.FC<{ scene: TextScene; fontVariant: FontVariant }> = ({
   scene,
   fontVariant,
@@ -57,21 +122,23 @@ export const SegmentText: React.FC<{ scene: TextScene; fontVariant: FontVariant 
   const color = scene.color === "fgSecondary" ? THEME.fgSecondary : THEME.fg;
   return (
     <AbsoluteFill style={{ backgroundColor: THEME.bg, justifyContent: "center", alignItems: "center" }}>
-      <TypewriterLine
+      <WordReveal
         text={scene.text}
         frame={frame}
-        start={OUTRO.typeStart.name}
+        start={0}
+        exitStart={exitStartFrame(0)}
         fontFamily={family(fontVariant)}
         fontSize={size}
         color={color}
+        fontVariant={fontVariant}
       />
     </AbsoluteFill>
   );
 };
 
-// Logo mark in first; "Nolli" types char-by-char to its right. The mark+word
-// row is centered, so as "Nolli" fills the group re-centers and the mark slides
-// slightly left toward its seat — the "lock-in." Ends on the centered lockup.
+// Logo mark scales/fades in first; "Nolli" reveals to its right with the same
+// per-word wipe as the text cards. The mark+word row is centered — the lockup
+// seats and holds. No exit: the logo is the final frame.
 export const SegmentLogo: React.FC<{ fontVariant: FontVariant }> = ({ fontVariant }) => {
   const frame = useCurrentFrame();
   const markScale = interpolate(frame, [OUTRO.logo.markIn, OUTRO.logo.markSettle], [0.6, 1], {
@@ -82,22 +149,22 @@ export const SegmentLogo: React.FC<{ fontVariant: FontVariant }> = ({ fontVarian
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const word = LOGO_WORD;
-  const n = visibleCharCount({
-    frame,
-    start: OUTRO.logo.typeStart,
-    typeFrames: OUTRO.typeFrames,
-    length: word.length,
-  });
   return (
     <AbsoluteFill style={{ backgroundColor: THEME.bg, justifyContent: "center", alignItems: "center" }}>
       <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 28 }}>
         <div style={{ transform: `scale(${markScale})`, opacity: markOpacity }}>
           <NolliMark size={OUTRO.logo.size} />
         </div>
-        <div style={{ fontFamily: family(fontVariant), fontSize: 120, color: THEME.fg, lineHeight: 1, whiteSpace: "pre" }}>
-          {word.slice(0, n)}
-        </div>
+        <WordReveal
+          text={LOGO_WORD}
+          frame={frame}
+          start={OUTRO.logo.typeStart}
+          exitStart={Infinity}
+          fontFamily={family(fontVariant)}
+          fontSize={120}
+          color={THEME.fg}
+          fontVariant={fontVariant}
+        />
       </div>
     </AbsoluteFill>
   );

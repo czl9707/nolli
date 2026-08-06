@@ -1,5 +1,7 @@
 import { STILL_FRAMES, scene2Duration } from "./timing";
 import { OUTRO, segmentDuration, LOGO_WORD } from "./outro";
+// Text cards animate out before the cut; the logo is the final lockup, so it
+// holds (exit = false).
 
 export type FontVariant = "inter" | "playful";
 export type ColorToken = "fg" | "fgSecondary";
@@ -30,7 +32,8 @@ export const DEFAULT_PLAYBACK_RATE = 1;
 export function durationOf(scene: Scene): number {
   switch (scene.type) {
     case "text":
-      return segmentDuration(scene.text.length, OUTRO.typeStart.name);
+      // Text cards start revealing on frame 0 (no entrance beat).
+      return segmentDuration(scene.text.length, 0, true);
     case "image":
       return STILL_FRAMES;
     case "video":

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { OUTRO, segmentDuration, visibleCharCount } from "./outro";
+import { OUTRO, segmentDuration, visibleCharCount, exitStartFrame } from "./outro";
 
 describe("visibleCharCount", () => {
   it("returns 0 before the start frame", () => {
@@ -28,5 +28,11 @@ describe("segmentDuration", () => {
   });
   it("still holds even with no text (no typing window)", () => {
     expect(segmentDuration(0, 8)).toBe(8 + OUTRO.hold);
+  });
+  it("adds an exit wipe window when exit is true", () => {
+    expect(segmentDuration(5, 8, true)).toBe(8 + OUTRO.typeFrames + OUTRO.hold + OUTRO.exitFrames);
+  });
+  it("exit start is entrance + reveal window + hold", () => {
+    expect(exitStartFrame(8)).toBe(8 + OUTRO.typeFrames + OUTRO.hold);
   });
 });

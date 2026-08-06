@@ -4,10 +4,8 @@ import { OUTRO, segmentDuration, LOGO_WORD } from "./outro";
 import { STILL_FRAMES, scene2Duration } from "./timing";
 
 describe("durationOf", () => {
-  it("text = segmentDuration(text.length, typeStart.name)", () => {
-    expect(durationOf({ type: "text", text: "Mies" })).toBe(
-      segmentDuration(4, OUTRO.typeStart.name),
-    );
+  it("text = segmentDuration(text.length, 0, exit=true)", () => {
+    expect(durationOf({ type: "text", text: "Mies" })).toBe(segmentDuration(4, 0, true));
   });
   it("image = STILL_FRAMES", () => {
     expect(durationOf({ type: "image", src: "x.png" })).toBe(STILL_FRAMES);
