@@ -5,7 +5,7 @@ import { promisify } from "node:util";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { LAUNCH_ARGS, newDarkContext, waitForStable, waitForMoveEnd, waitForTilesLoaded } from "./capture-helpers";
-import { loadMorphConfig, type MorphConfig, type Tuning } from "./morph-config";
+import { loadDemoConfig, type DemoConfig, type Tuning } from "./demo-config";
 import type { BuildingRow, Manifest } from "./manifest";
 import { FPS } from "../src/lib/timing";
 
@@ -68,7 +68,7 @@ const panFromAngle = (base: number, fanHalfDeg: number): { dx: number; dy: numbe
 // The journey is now recorded as two chunks (map journey, then board section),
 // so each chunk's continuous screencast is half as long.
 //
-// Tuning comes from morph.json (set at the top of captureMorph from config.tuning).
+// Tuning comes from demo.json (set at the top of captureDemo from config.tuning).
 // Kept module-level so the existing helpers read JOURNEY.<field> unchanged.
 let JOURNEY: Tuning;
 
@@ -76,8 +76,8 @@ let JOURNEY: Tuning;
 // startRecording / endRecording fold a CDP screencast into a Recorder; Journey
 // owns the per-chunk frame lists and exposes start/seam/end so the journey can
 // be captured as N sequential chunks. The seam is a single seam() call — move
-// it (via morph.json's seamAfterBeat) to relocate where one chunk ends and the
-// next begins. Each chunk becomes its own output file (morph-<n>.mp4).
+// it (via demo.json's seamAfterBeat) to relocate where one chunk ends and the
+// next begins. Each chunk becomes its own output file (demo-<n>.mp4).
 
 type ScreencastFrame = { wall: number; data: string };
 type Recorder = { client: CDPSession; frames: ScreencastFrame[]; wall0: number };
@@ -312,7 +312,7 @@ async function panBoard(page: Page, p: { dx: number; dy: number; dur: number }) 
 }
 
 // ── Capture phases ──────────────────────────────────────────────────────────
-// Each phase of the journey capture is its own helper; captureMorph is just the
+// Each phase of the journey capture is its own helper; captureDemo is just the
 // sequencer. The recording beats stay inline (they ARE the cinematic narrative)
 // while the mechanics — page setup, tile warm-up, nav internals, resample, mux
 // — live behind named functions.
@@ -428,17 +428,16 @@ function resampleTimeline(master: MasterFrame[]): string[] {
   return out;
 }
 
-// Write one chunk's resampled frames as a jpg sequence and mux to morph-<index>.mp4
-// (h264). Returns the absolute clip path.
+// Write one chunk's resampled frames as a jpg sequence and mux to demo-<index>.mp4// (h264). Returns the absolute clip path.
 async function muxChunk(outDir: string, frames: string[], index: number): Promise<string> {
-  const framesDir = join(outDir, `morph-frames-${index}`);
+  const framesDir = join(outDir, `demo-frames-${index}`);
   rmSync(framesDir, { recursive: true, force: true });
   mkdirSync(framesDir, { recursive: true });
   frames.forEach((d, i) => {
     writeFileSync(join(framesDir, `f${String(i).padStart(5, "0")}.jpg`), Buffer.from(d, "base64"));
   });
 
-  const clipAbs = join(outDir, `morph-${index}.mp4`);
+  const clipAbs = join(outDir, `demo-${index}.mp4`);
   rmSync(clipAbs, { force: true });
   await execFileP("ffmpeg", [
     "-y",
@@ -455,20 +454,20 @@ async function muxChunk(outDir: string, frames: string[], index: number): Promis
   return clipAbs;
 }
 
-// Capture the home->board morph via slow-mo CDP screencast, resample each chunk
-// to a real-time 30fps clip, and screenshot the morph's landing frame. Writes
-// morph-1.mp4 + morph-2.mp4 + morph-end.png into out/<slug>/. Tuning + journey
-// targets + seamAfterBeat come from morph.json (loadMorphConfig). See project
-// memory for the slow-mo / WAAPI rationale (this is the migrated captureMapMorph).
+// Capture the home->board journey via slow-mo CDP screencast, resample each chunk
+// to a real-time 30fps clip, and screenshot the demo's landing frame. Writes
+// demo-1.mp4 + demo-2.mp4 + demo-end.png into out/<slug>/. Tuning + journey
+// targets + seamAfterBeat come from demo.json (loadDemoConfig). See project
+// memory for the slow-mo / WAAPI rationale.
 //
 // Recorded as N chunks (default 2: map journey, then board section). The seam
-// fires after beat `config.seamAfterBeat` — move it by editing morph.json.
-async function captureMorph(
+// fires after beat `config.seamAfterBeat` — move it by editing demo.json.
+async function captureDemo(
   slug: string,
   manifest: Manifest,
   hero: BuildingRow,
   far: BuildingRow,
-  config: MorphConfig,
+  config: DemoConfig,
 ): Promise<void> {
   const outDir = resolve("out", slug);
   JOURNEY = config.tuning; // module-level tuning for helpers (appWait, pan helpers, etc.)
@@ -479,7 +478,7 @@ async function captureMorph(
 
   const wallStart = Date.now();
   const beat = (label: string) =>
-    console.log(`  morph+${((Date.now() - wallStart) / 1000).toFixed(2)}s ${label}`);
+    console.log(`  demo+${((Date.now() - wallStart) / 1000).toFixed(2)}s ${label}`);
 
   let journey!: Journey;
   const browser = await chromium.launch({ args: LAUNCH_ARGS });
@@ -492,7 +491,7 @@ async function captureMorph(
     await journey.start();
 
     // Beats in order. The chunk seam fires after beat `config.seamAfterBeat`
-    // (1-indexed). Move the cut by editing morph.json's seamAfterBeat.
+    // (1-indexed). Move the cut by editing demo.json's seamAfterBeat.
     const beats: Array<() => Promise<void>> = [
       // Beat 1: open mid-zoom on the hero, hold, then ease in closer.
       async () => {
@@ -557,8 +556,8 @@ async function captureMorph(
       // Beat 9: click the inset-map overlay to navigate back to the map view. Its
       // onClick does navigate(-1), which pops to the prior /arch/:slug?capture=1
       // entry (the board push dropped capture, but navigate(-1) restores it). The
-      // board→map morph + MapFlyNavigator flyTo run off real setTimeouts (not
-      // slowed), so mapReturnMs is generous wall-time.
+      // board→map transition + MapFlyNavigator flyTo run off real setTimeouts
+      // (not slowed), so mapReturnMs is generous wall-time.
       async () => {
         await page.getByText(/click to go back to map view/i).click();
         await appWait(page, JOURNEY.mapReturnMs);
@@ -572,8 +571,8 @@ async function captureMorph(
       if (i + 1 === config.seamAfterBeat) await journey.seam();
     }
     await journey.end();
-    // Grab the final map view of arch #2 as the lock-frame still (morph-2 end).
-    await page.screenshot({ path: join(outDir, "morph-end.png") });
+    // Grab the final map view of arch #2 as the lock-frame still (demo-2 end).
+    await page.screenshot({ path: join(outDir, "demo-end.png") });
   } finally {
     await browser.close();
   }
@@ -581,45 +580,49 @@ async function captureMorph(
   const chunks = journey.chunkFrames();
   if (chunks.length < 2) {
     throw new Error(
-      `Morph capture produced ${chunks.length} chunk(s); expected >=2. Check morph.json \`seamAfterBeat\` (must be between 1 and the beat count, default 5). Got: ${config.seamAfterBeat}.`,
+      `Demo capture produced ${chunks.length} chunk(s); expected >=2. Check demo.json \`seamAfterBeat\` (must be between 1 and the beat count, default 5). Got: ${config.seamAfterBeat}.`,
     );
   }
   for (let i = 0; i < chunks.length; i++) {
     const frames = chunks[i];
     if (frames.length < 30) {
-      throw new Error(`Morph chunk ${i + 1} capture failed: only ${frames.length} frames.`);
+      throw new Error(`Demo chunk ${i + 1} capture failed: only ${frames.length} frames.`);
     }
     const clipAbs = await muxChunk(outDir, resampleTimeline(frames), i + 1);
     console.log(`Wrote ${clipAbs}`);
   }
 }
 
-async function main() {
-  const slug = process.argv[2];
-  if (!slug) {
-    console.error("Usage: assets:morph <architect-slug>");
-    process.exit(1);
-  }
+export async function runDemo(slug: string) {
   const outDir = resolve("out", slug);
   const manifestPath = join(outDir, "manifest.json");
   if (!existsSync(manifestPath)) {
-    throw new Error(`Missing ${manifestPath}. Run \`pnpm manifest ${slug}\` first.`);
+    throw new Error(`Missing ${manifestPath}. Run \`pnpm seed ${slug}\` first.`);
   }
   const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as Manifest;
 
-  const config = loadMorphConfig(outDir);
+  const config = loadDemoConfig(outDir);
   const { hero: heroSlug, far: farSlug } = config.journey;
   const hero = manifest.buildings.find((b) => b.slug === heroSlug);
   const far = manifest.buildings.find((b) => b.slug === farSlug);
   if (!hero || !far) {
     throw new Error(
-      `morph.json journey (${heroSlug}→${farSlug}) not found in manifest buildings. ` +
-        `Edit the "journey" in out/${slug}/morph.json or rerun \`pnpm seed ${slug}\`.`,
+      `demo.json journey (${heroSlug}→${farSlug}) not found in manifest buildings. ` +
+        `Edit the "journey" in out/${slug}/demo.json or rerun \`pnpm seed ${slug}\`.`,
     );
   }
 
-  console.log(`assets:morph — ${slug} (journey: ${hero.slug} → ${far.slug}, seam after beat ${config.seamAfterBeat})`);
-  await captureMorph(slug, manifest, hero, far, config);
+  console.log(`assets:demo — ${slug} (journey: ${hero.slug} → ${far.slug}, seam after beat ${config.seamAfterBeat})`);
+  await captureDemo(slug, manifest, hero, far, config);
+}
+
+async function main() {
+  const slug = process.argv[2];
+  if (!slug) {
+    console.error("Usage: assets:demo <architect-slug>");
+    process.exit(1);
+  }
+  await runDemo(slug);
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });

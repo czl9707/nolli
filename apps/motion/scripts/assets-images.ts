@@ -8,13 +8,13 @@ const BASE_URL = process.env.BASE_URL ?? "http://localhost:5173";
 
 // Capture BOTH types (detail + board lightbox) for every building of one slug
 // into out/<slug>/images/. The base manifest (out/<slug>/manifest.json from
-// `pnpm manifest <slug>`) is read for the building list.
-async function captureImagesForSlug(slug: string) {
+// `pnpm seed <slug>`) is read for the building list.
+export async function runImages(slug: string) {
   const outDir = resolve("out", slug);
   const manifestPath = resolve("out", slug, "manifest.json");
   const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as Manifest;
   if (!manifest.buildings?.length)
-    throw new Error(`No buildings in manifest for ${slug}. Run \`pnpm manifest ${slug}\` first.`);
+    throw new Error(`No buildings in manifest for ${slug}. Run \`pnpm seed ${slug}\` first.`);
 
   const imagesDir = join(outDir, "images");
   mkdirSync(imagesDir, { recursive: true });
@@ -84,10 +84,10 @@ async function main() {
   }
   const manifestPath = resolve("out", slug, "manifest.json");
   if (!existsSync(manifestPath)) {
-    throw new Error(`Missing ${manifestPath}. Run \`pnpm --filter motion manifest ${slug}\` first.`);
+    throw new Error(`Missing ${manifestPath}. Run \`pnpm seed ${slug}\` first.`);
   }
   console.log(`assets:images — ${slug}`);
-  await captureImagesForSlug(slug);
+  await runImages(slug);
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });

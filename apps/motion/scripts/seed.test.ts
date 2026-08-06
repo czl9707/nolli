@@ -5,7 +5,7 @@ import { join } from "node:path";
 import {
   buildScenes,
   countText,
-  writeMorphJson,
+  writeDemoJson,
   writeVideoJson,
   freshJourney,
 } from "./seed";
@@ -39,8 +39,8 @@ describe("buildScenes", () => {
   const scenes = buildScenes(manifest);
 
   // Lead with board photos (social thumbnail), then name, detail photos, count,
-  // a single morph chunk (journey → board reveal), "Now available in", logo.
-  it("order: board imgs, name, detail imgs, count, morph-1, now, logo", () => {
+  // a single demo chunk (journey → board reveal), "Now available in", logo.
+  it("order: board imgs, name, detail imgs, count, demo-1, now, logo", () => {
     expect(scenes.map((s) => s.type)).toEqual([
       "image", "image", "text", "image", "image", "text", "video", "text", "logo",
     ]);
@@ -59,35 +59,35 @@ describe("buildScenes", () => {
   it("count scene uses countText", () => {
     expect(scenes[5]).toEqual({ type: "text", text: "2 Architectures", size: 104, color: "fg" });
   });
-  it("single morph chunk then now card then logo", () => {
-    expect(scenes[6]).toEqual({ type: "video", src: "morph-1.mp4", playbackRate: 2 });
+  it("single demo chunk then now card then logo", () => {
+    expect(scenes[6]).toEqual({ type: "video", src: "demo-1.mp4", playbackRate: 2 });
     expect(scenes[7]).toEqual({ type: "text", text: "Now available in", size: 104, color: "fg" });
     expect(scenes[8]).toEqual({ type: "logo" });
   });
 });
 
-describe("writeMorphJson", () => {
+describe("writeDemoJson", () => {
   let dir: string;
   beforeEach(() => { dir = mkdtempSync(join(tmpdir(), "seed-")); });
   afterEach(() => rmSync(dir, { recursive: true, force: true }));
 
   it("writes journey + default seam, and no tuning block", () => {
-    writeMorphJson(dir, manifest);
-    const cfg = JSON.parse(readFileSync(join(dir, "morph.json"), "utf8"));
+    writeDemoJson(dir, manifest);
+    const cfg = JSON.parse(readFileSync(join(dir, "demo.json"), "utf8"));
     expect(cfg.journey).toEqual({ hero: "a", far: "b" });
     expect(cfg.seamAfterBeat).toBe(5);
     expect(cfg.tuning).toBeUndefined();
   });
 
   it("preserves hand-edited journey + seam on rerun", () => {
-    writeMorphJson(dir, manifest);
-    const first = JSON.parse(readFileSync(join(dir, "morph.json"), "utf8"));
+    writeDemoJson(dir, manifest);
+    const first = JSON.parse(readFileSync(join(dir, "demo.json"), "utf8"));
     first.journey = { hero: "b", far: "a" };
     first.seamAfterBeat = 6;
-    writeFileSync(join(dir, "morph.json"), JSON.stringify(first));
+    writeFileSync(join(dir, "demo.json"), JSON.stringify(first));
 
-    writeMorphJson(dir, manifest);
-    const cfg = JSON.parse(readFileSync(join(dir, "morph.json"), "utf8"));
+    writeDemoJson(dir, manifest);
+    const cfg = JSON.parse(readFileSync(join(dir, "demo.json"), "utf8"));
     expect(cfg.journey).toEqual({ hero: "b", far: "a" });
     expect(cfg.seamAfterBeat).toBe(6);
   });

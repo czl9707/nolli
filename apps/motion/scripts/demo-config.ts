@@ -5,10 +5,10 @@ import { FPS } from "../src/lib/timing";
 export type Journey = { hero: string; far: string };
 
 // Seam fires after beat 5 = the "Go to Pin Board" open + hold. That makes chunk 1
-// (morph-1, the only chunk the default video.json uses) end on the board reveal.
+// (demo-1, the only chunk the default video.json uses) end on the board reveal.
 export const SEAM_AFTER_BEAT_DEFAULT = 5;
 
-// Canonical capture tuning. morph.json does NOT carry tuning — re-tuning is a
+// Canonical capture tuning. demo.json does NOT carry tuning — re-tuning is a
 // code edit here. Values are app-ms (the units the final real-time clip shows).
 export const DEFAULT_TUNING = {
   slowmo: 0.4,
@@ -47,23 +47,23 @@ export const DEFAULT_TUNING = {
 export type Tuning = typeof DEFAULT_TUNING;
 
 // The on-disk file is just the two slugs + the seam; tuning is code-only.
-export type MorphConfigFile = {
+export type DemoConfigFile = {
   journey: Journey;
   seamAfterBeat?: number;
 };
 
-export type MorphConfig = {
+export type DemoConfig = {
   journey: Journey;
   seamAfterBeat: number;
   tuning: Tuning;
 };
 
-export function loadMorphConfig(dir: string): MorphConfig {
-  const file = join(dir, "morph.json");
+export function loadDemoConfig(dir: string): DemoConfig {
+  const file = join(dir, "demo.json");
   if (!existsSync(file)) {
-    throw new Error(`No morph.json at ${file}. Run \`pnpm seed <slug>\` first.`);
+    throw new Error(`No demo.json at ${file}. Run \`pnpm seed <slug>\` first.`);
   }
-  const parsed = JSON.parse(readFileSync(file, "utf8")) as Partial<MorphConfigFile>;
+  const parsed = JSON.parse(readFileSync(file, "utf8")) as Partial<DemoConfigFile>;
   if (!parsed.journey) throw new Error(`${file} is missing journey.hero/far.`);
   return {
     journey: parsed.journey,
