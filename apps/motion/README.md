@@ -9,12 +9,14 @@ Nolli app. Templated: one manifest per architect drives the whole thing.
 ## Timeline
 
 Driven by an ordered `scenes[]` list in `video.json` (written by `seed`,
-editable freely): `image* (board) → text (name) → image* (detail) → text (count)
-→ video (demo-1) → text (now) → logo`. The list leads with a board photo so the
-social-media preview thumbnail is a real image, not the dark text card. The
-default cut uses **one** demo chunk — the journey → board reveal (ending on a
-visible hold). Each image entry is one photo; reordering or cutting the video is
-a `video.json` edit, not code.
+editable freely): `video (demo-1) → text (name) → image* (board) → text (count)
+→ image* (detail) → text (now) → logo`. The list leads with the demo (the
+journey → board reveal, ending on a visible hold), then alternates text → image
+sets. The default cut uses **one** demo chunk. Each image entry is one photo;
+reordering or cutting the video is a `video.json` edit, not code.
+
+Note: leading with the demo means the social-media preview thumbnail is the
+demo's first frame, not a still photo.
 
 - **`text`** — typed outro-style segment (name / count / "Now available in").
 - **`image`** — a hard-cut still, one entry per photo.
@@ -36,13 +38,13 @@ Both written by `seed` into `out/<slug>/`. Edit them; rerun the affected step.
     "slug": "mies",
     "fontVariant": "playful",
     "scenes": [
+      { "type": "video", "src": "demo-1.mp4", "playbackRate": 2 },
+      { "type": "text", "text": "Ludwig Mies van der Rohe", "size": 132, "color": "fg" },
       { "type": "image", "src": "images/a-board.png" },
       { "type": "image", "src": "images/b-board.png" },
-      { "type": "text", "text": "Ludwig Mies van der Rohe", "size": 132, "color": "fg" },
+      { "type": "text", "text": "2 Architectures", "size": 104, "color": "fg" },
       { "type": "image", "src": "images/a-detail.png" },
       { "type": "image", "src": "images/b-detail.png" },
-      { "type": "text", "text": "2 Architectures", "size": 104, "color": "fg" },
-      { "type": "video", "src": "demo-1.mp4", "playbackRate": 2 },
       { "type": "text", "text": "Now available in", "size": 104, "color": "fg" },
       { "type": "logo" }
     ]
@@ -141,7 +143,7 @@ pnpm assemble ludwig-mies-van-der-rohe
 
 ## Optional / partial
 
-- **Skip Scene 2** — drop the `video` entry from `video.json`. `assemble` then
+- **Skip the demo** — drop the `video` entry from `video.json`. `assemble` then
   renders a stills-only cut.
 - **Long-form demo** — `assets:demo` captures two chunks; the default
   `video.json` uses only `demo-1.mp4`. Add a second `video` entry (with

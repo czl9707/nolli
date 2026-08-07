@@ -39,18 +39,18 @@ export function freshJourney(manifest: Manifest): Journey {
   return { hero: manifest.hero, far: farthestFrom(manifest.buildings, manifest.hero).slug };
 }
 
-// Scene order leads with photos (board images) so the social-media preview
-// thumbnail is a real image, not the dark text card. The default cut uses ONE
-// demo chunk (the journey → board reveal); "Now available in" sits between it
-// and the logo. To ship the long-form demo, add the demo-2 entry back here or
-// in video.json (its capture is still produced by assets:demo).
+// Scene order leads with the demo (journey → board reveal), then alternates
+// text → images → text → images → text → logo: name, board photos, count,
+// detail photos, "Now available in". The default cut uses ONE demo chunk; to
+// ship the long-form demo, add the demo-2 entry here or in video.json (its
+// capture is still produced by assets:demo).
 export function buildScenes(manifest: Manifest): Scene[] {
   const scenes: Scene[] = [];
-  for (const b of manifest.buildings) scenes.push({ type: "image", src: boardSrc(b) });
-  scenes.push({ type: "text", text: manifest.architect, size: 132, color: "fg" });
-  for (const b of manifest.buildings) scenes.push({ type: "image", src: detailSrc(b) });
-  scenes.push({ type: "text", text: countText(manifest.count), size: 104, color: "fg" });
   scenes.push({ type: "video", src: "demo-1.mp4", playbackRate: DEMO_RATE });
+  scenes.push({ type: "text", text: manifest.architect, size: 132, color: "fg" });
+  for (const b of manifest.buildings) scenes.push({ type: "image", src: boardSrc(b) });
+  scenes.push({ type: "text", text: countText(manifest.count), size: 104, color: "fg" });
+  for (const b of manifest.buildings) scenes.push({ type: "image", src: detailSrc(b) });
   scenes.push({ type: "text", text: NOW_TEXT, size: 104, color: "fg" });
   scenes.push({ type: "logo" });
   return scenes;

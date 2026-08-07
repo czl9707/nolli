@@ -38,29 +38,31 @@ describe("freshJourney", () => {
 describe("buildScenes", () => {
   const scenes = buildScenes(manifest);
 
-  // Lead with board photos (social thumbnail), then name, detail photos, count,
-  // a single demo chunk (journey → board reveal), "Now available in", logo.
-  it("order: board imgs, name, detail imgs, count, demo-1, now, logo", () => {
+  // Leads with the demo chunk (journey → board reveal), then alternates
+  // name, board photos, count, detail photos, "Now available in", logo.
+  it("order: demo-1, name, board imgs, count, detail imgs, now, logo", () => {
     expect(scenes.map((s) => s.type)).toEqual([
-      "image", "image", "text", "image", "image", "text", "video", "text", "logo",
+      "video", "text", "image", "image", "text", "image", "image", "text", "logo",
     ]);
   });
-  it("board image srcs come first, deterministic from building slugs, in order", () => {
-    expect(scenes[0]).toEqual({ type: "image", src: "images/a-board.png" });
-    expect(scenes[1]).toEqual({ type: "image", src: "images/b-board.png" });
+  it("single demo chunk first", () => {
+    expect(scenes[0]).toEqual({ type: "video", src: "demo-1.mp4", playbackRate: 2 });
   });
   it("name scene text + size", () => {
-    expect(scenes[2]).toEqual({ type: "text", text: "Mies", size: 132, color: "fg" });
+    expect(scenes[1]).toEqual({ type: "text", text: "Mies", size: 132, color: "fg" });
   });
-  it("detail image srcs", () => {
-    expect(scenes[3]).toEqual({ type: "image", src: "images/a-detail.png" });
-    expect(scenes[4]).toEqual({ type: "image", src: "images/b-detail.png" });
+  it("board image srcs, deterministic from building slugs, in order", () => {
+    expect(scenes[2]).toEqual({ type: "image", src: "images/a-board.png" });
+    expect(scenes[3]).toEqual({ type: "image", src: "images/b-board.png" });
   });
   it("count scene uses countText", () => {
-    expect(scenes[5]).toEqual({ type: "text", text: "2 Architectures", size: 104, color: "fg" });
+    expect(scenes[4]).toEqual({ type: "text", text: "2 Architectures", size: 104, color: "fg" });
   });
-  it("single demo chunk then now card then logo", () => {
-    expect(scenes[6]).toEqual({ type: "video", src: "demo-1.mp4", playbackRate: 2 });
+  it("detail image srcs", () => {
+    expect(scenes[5]).toEqual({ type: "image", src: "images/a-detail.png" });
+    expect(scenes[6]).toEqual({ type: "image", src: "images/b-detail.png" });
+  });
+  it("now card then logo", () => {
     expect(scenes[7]).toEqual({ type: "text", text: "Now available in", size: 104, color: "fg" });
     expect(scenes[8]).toEqual({ type: "logo" });
   });
