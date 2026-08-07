@@ -29,6 +29,8 @@ export type ArchMapProps = {
   capture?: boolean
   /** Extra content rendered inside <Map> (after the marker layer) — e.g. overlays. */
   children?: ReactNode
+  /** Controlled viewport (e.g. driven per-frame by Remotion). Omit for interactive mode. */
+  viewport?: { center: [number, number]; zoom: number }
 }
 
 /**
@@ -48,6 +50,7 @@ export const ArchMap = forwardRef<MapRef, ArchMapProps>(function ArchMap(
     ready,
     capture = false,
     children,
+    viewport,
   },
   ref
 ) {
@@ -79,6 +82,7 @@ export const ArchMap = forwardRef<MapRef, ArchMapProps>(function ArchMap(
         ref={handleRef}
         styles={mapStyles}
         loading={isLoading}
+        viewport={viewport}
         canvasContextAttributes={capture ? { preserveDrawingBuffer: true } : undefined}
       >
         <ArchMarkers
