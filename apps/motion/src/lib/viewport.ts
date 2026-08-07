@@ -7,16 +7,24 @@ export function lerp(a: number, b: number, t: number): number {
 }
 
 const BUILDING_ZOOM = 14;
+// Cinematic zoom arc: pull back mid-flight, push back in at each building.
+const FLY_DIP = 4;
+
+function easeInOut(t: number): number {
+  return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+}
 
 export function flyViewport(buildings: ReelBuilding[], i: number, intra: number, maxZoom: number): MapViewport {
   const cur = buildings[i];
   const next = buildings[Math.min(i + 1, buildings.length - 1)];
-  const t = buildings.length === 1 ? 0 : intra;
+  const raw = buildings.length === 1 ? 0 : intra;
+  const t = easeInOut(raw);
   const center: [number, number] = [
     lerp(cur.coordinates.lng, next.coordinates.lng, t),
     lerp(cur.coordinates.lat, next.coordinates.lat, t),
   ];
-  return { center, zoom: Math.min(BUILDING_ZOOM, maxZoom) };
+  const zoom = Math.min(maxZoom, BUILDING_ZOOM - FLY_DIP * Math.sin(Math.PI * raw));
+  return { center, zoom };
 }
 
 export function fitViewport(buildings: ReelBuilding[], maxZoom: number): MapViewport {
