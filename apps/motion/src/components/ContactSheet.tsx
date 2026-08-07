@@ -13,7 +13,7 @@ export const ContactSheet: React.FC<{ slug: string; buildings: { slug: string; y
         const isCurrent = i === currentIndex;
         return (
           <div key={b.slug} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, opacity: isCurrent ? 1 : 0.5 }}>
-            <div style={{ width: isCurrent ? 72 : 56, height: isCurrent ? 72 : 56, borderRadius: 6, overflow: "hidden", outline: isCurrent ? "2px solid rgb(var(--color-accent-foreground))" : "none" }}>
+            <div style={{ width: isCurrent ? 72 : 56, height: isCurrent ? 72 : 56, borderRadius: "var(--size-border-radius)", overflow: "hidden", outline: isCurrent ? "2px solid rgb(var(--color-accent-foreground))" : "none" }}>
               <Img src={staticFile(`capture/${slug}/images/${b.slug}-thumb.jpg`)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             </div>
             <Caption style={{ color: isCurrent ? "rgb(var(--color-accent-foreground))" : "rgb(var(--color-secondary-foreground))" }}>{b.year}</Caption>

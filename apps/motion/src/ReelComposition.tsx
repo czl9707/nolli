@@ -1,16 +1,17 @@
 import { AbsoluteFill, useCurrentFrame } from "remotion";
 import { ArchMap } from "@nolli/map";
 import type { MapRef } from "@nolli/map";
+import type { ArchSummary } from "@nolli/data";
 import { Body1, H2, useThemeStore } from "@nolli/ui";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useReelConfig } from "./lib/use-reel-config";
-import { useAllBuildings } from "./lib/use-all-buildings";
-import { useMapCamera } from "./lib/use-map-camera";
+import { useMapFit } from "./lib/use-map-camera";
 import { getTimelineState, BEAT } from "./lib/timeline";
-import { flyViewport, fitViewport, type MapViewport } from "./lib/viewport";
+import { fitViewport, type MapViewport } from "./lib/viewport";
 import { Hero } from "./components/Hero";
 import { Caption } from "./components/Caption";
 import { ContactSheet } from "./components/ContactSheet";
+import { SelectedMarker } from "./components/SelectedMarker";
 
 useThemeStore.setState({ theme: "dark", resolvedTheme: "dark" });
 if (typeof document !== "undefined") {
@@ -18,12 +19,11 @@ if (typeof document !== "undefined") {
 }
 
 const MAP_MAX_ZOOM = 6;
-const MAX_BUILDING_ZOOM = 14;
+const FALLBACK_VP: MapViewport = { center: [0, 0], zoom: 1 };
 
 export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
   const frame = useCurrentFrame();
   const cfg = useReelConfig(slug);
-  const allBuildings = useAllBuildings();
   const [map, setMap] = useState<MapRef | null>(null);
 
   const buildings = cfg?.buildings ?? [];
@@ -35,20 +35,31 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
     : null;
   const current = st ? buildings[st.currentIndex] : null;
 
-  let vp: MapViewport = { center: [0, 0], zoom: 1 };
-  if (st && current) {
-    if (st.beat === BEAT.WALK)
-      vp = flyViewport(buildings, st.currentIndex, st.intra, MAX_BUILDING_ZOOM);
-    else if (st.beat === BEAT.WHOLE) vp = fitViewport(buildings, MAP_MAX_ZOOM);
-    else
-      vp = {
-        center: [current.coordinates.lng, current.coordinates.lat],
-        zoom: MAX_BUILDING_ZOOM,
-      };
-  }
-  useMapCamera(map, vp, frame);
+  // The map shows the architect's own buildings only (their footprint). At the
+  // fit zoom the figure-ground is legible AND the selected pin stays an
+  // individual marker (all-DB markers would cluster and hide the selection).
+  const archSummaries = useMemo<ArchSummary[]>(
+    () =>
+      (cfg?.buildings ?? []).map((b, i) => ({
+        id: i,
+        slug: b.slug,
+        name: b.name,
+        architect: cfg!.architect,
+        year: b.year,
+        coordinates: b.coordinates,
+        cover: { image: b.coverImage, width: 0, height: 0 },
+      })),
+    [cfg],
+  );
+  // Stable camera: fit to the footprint once, then hold. The figure-ground is
+  // only legible at low zoom, so per-frame flying reads as "random locations".
+  const fitVp = useMemo<MapViewport>(
+    () => (cfg && cfg.buildings.length >= 2 ? fitViewport(cfg.buildings, MAP_MAX_ZOOM) : FALLBACK_VP),
+    [cfg],
+  );
+  useMapFit(map, fitVp);
 
-  if (!cfg || !allBuildings || !st || !current) return null;
+  if (!cfg || !st || !current) return null;
 
   return (
     <AbsoluteFill
@@ -115,16 +126,22 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
             position: "relative",
             minHeight: 0,
             overflow: "hidden",
-            borderRadius: 12,
+            borderRadius: "var(--size-border-radius)",
           }}
         >
           <ArchMap
             ref={setMap}
-            architectures={allBuildings}
+            architectures={archSummaries}
             selectedSlug={current.slug}
             ready
             capture
-          />
+          >
+            <SelectedMarker
+              lng={current.coordinates.lng}
+              lat={current.coordinates.lat}
+              label={current.name}
+            />
+          </ArchMap>
         </div>
       </div>
     </AbsoluteFill>

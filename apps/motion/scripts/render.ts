@@ -59,11 +59,6 @@ async function main() {
     onProgress: ({ progress }) => process.stdout.write(`\r${(progress * 100).toFixed(1)}%`),
   });
   console.log(`\ndone -> ${outPath}`);
-
-  const squarePath = outPath.replace(/\.mp4$/, "-1x1.mp4");
-  const { execFileSync } = await import("node:child_process");
-  execFileSync("ffmpeg", ["-y", "-i", outPath, "-vf", "crop=1080:1080:420:0", squarePath], { stdio: "inherit" });
-  console.log(`square -> ${squarePath}`);
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });

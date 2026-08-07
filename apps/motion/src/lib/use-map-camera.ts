@@ -3,14 +3,17 @@ import { delayRender, continueRender } from "remotion";
 import type { MapRef } from "@nolli/map";
 import type { MapViewport } from "./viewport";
 
-export function useMapCamera(
-  map: MapRef | null,
-  viewport: MapViewport,
-  frame: number,
-): void {
+/**
+ * Sets the map camera to `viewport` ONCE when the map is ready and gates the
+ * first frame on tile load. The camera is then stable for the whole reel —
+ * markers are maplibre-projected, so only `selectedSlug` (handled by ArchMap)
+ * changes per frame. (Per-frame flying was removed: the figure-ground map is
+ * illegible at building zoom, so a stable footprint fit reads far better.)
+ */
+export function useMapFit(map: MapRef | null, viewport: MapViewport): void {
   useEffect(() => {
-    if (!map || map.loaded()) return;
-    const handle = delayRender("archmap-load");
+    if (!map) return;
+    const handle = delayRender("archmap-fit");
     let done = false;
     const release = () => {
       if (!done) {
@@ -21,27 +24,12 @@ export function useMapCamera(
     const onIdle = () => {
       if (map.loaded()) release();
     };
-    map.once("idle", onIdle);
+    map.jumpTo({ center: viewport.center, zoom: viewport.zoom });
+    if (map.loaded()) release();
+    else map.once("idle", onIdle);
     return () => {
       map.off("idle", onIdle);
       release();
     };
-  }, [map]);
-
-  useEffect(() => {
-    if (!map) return;
-    const handle = delayRender(`archmap frame ${frame}`);
-    let done = false;
-    const release = () => {
-      if (done) return;
-      done = true;
-      continueRender(handle);
-    };
-    map.jumpTo({ center: viewport.center, zoom: viewport.zoom });
-    map.once("idle", release);
-    return () => {
-      map.off("idle", release);
-      release();
-    };
-  }, [map, viewport.center[0], viewport.center[1], viewport.zoom, frame]);
+  }, [map, viewport.center[0], viewport.center[1], viewport.zoom]);
 }
