@@ -1,20 +1,21 @@
 import { AbsoluteFill, useCurrentFrame } from "remotion";
 import { ArchMap } from "@nolli/map";
 import type { MapRef } from "@nolli/map";
-import { useThemeStore } from "@nolli/ui";
+import { Body1, H2, useThemeStore } from "@nolli/ui";
 import { useState } from "react";
-import { THEME } from "./theme";
 import { useReelConfig } from "./lib/use-reel-config";
 import { useAllBuildings } from "./lib/use-all-buildings";
 import { useMapCamera } from "./lib/use-map-camera";
 import { getTimelineState, BEAT } from "./lib/timeline";
 import { flyViewport, fitViewport, type MapViewport } from "./lib/viewport";
-import { Masthead } from "./components/Masthead";
 import { Hero } from "./components/Hero";
 import { Caption } from "./components/Caption";
 import { ContactSheet } from "./components/ContactSheet";
 
 useThemeStore.setState({ theme: "dark", resolvedTheme: "dark" });
+if (typeof document !== "undefined") {
+  document.body.dataset.theme = "dark";
+}
 
 const MAP_MAX_ZOOM = 6;
 const MAX_BUILDING_ZOOM = 14;
@@ -50,84 +51,80 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
   if (!cfg || !allBuildings || !st || !current) return null;
 
   return (
-    <AbsoluteFill style={{ backgroundColor: THEME.bg, padding: 24 }}>
+    <AbsoluteFill
+      data-theme="dark"
+      style={{
+        backgroundColor: "rgb(var(--color-primary-background))",
+        padding: 24,
+      }}
+    >
       <div
         style={{
           width: "100%",
           height: "100%",
           display: "grid",
-          gridTemplateRows: "auto 1fr",
-          gap: 12,
+          gridTemplateColumns: "1fr 1fr",
+          gap: 16,
+          minHeight: 0,
         }}
       >
-        <Masthead episode={cfg.episode} />
+        <div style={{ display: "flex", flexDirection: "column", minHeight: 0 }}>
+          {st.beat < BEAT.CTA ? (
+            <>
+              <Hero slug={cfg.slug} buildingSlug={current.slug} />
+              <Caption
+                name={st.beat === BEAT.NAME ? cfg.architect : current.name}
+                year={current.year}
+                city={current.city}
+                countryCode={current.countryCode}
+              />
+              {st.beat === BEAT.WHOLE ? (
+                <Body1
+                  style={{
+                    color: "rgb(var(--color-secondary-foreground))",
+                    padding: "0 4px 8px",
+                  }}
+                >
+                  {cfg.stats.line}
+                </Body1>
+              ) : null}
+              <ContactSheet
+                slug={cfg.slug}
+                buildings={buildings}
+                currentIndex={st.currentIndex}
+              />
+            </>
+          ) : (
+            <div
+              style={{
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                textAlign: "center",
+              }}
+            >
+              <H2 style={{ color: "rgb(var(--color-primary-foreground))" }}>
+                Explore {cfg.architect}&apos;s work in Nolli
+              </H2>
+            </div>
+          )}
+        </div>
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 16,
+            position: "relative",
             minHeight: 0,
+            overflow: "hidden",
+            borderRadius: 12,
           }}
         >
-          <div style={{ display: "flex", flexDirection: "column", minHeight: 0 }}>
-            {st.beat < BEAT.CTA ? (
-              <>
-                <Hero slug={cfg.slug} buildingSlug={current.slug} />
-                <Caption
-                  name={st.beat === BEAT.NAME ? cfg.architect : current.name}
-                  year={current.year}
-                  city={current.city}
-                  countryCode={current.countryCode}
-                />
-                {st.beat === BEAT.WHOLE ? (
-                  <div
-                    style={{
-                      color: THEME.fgSecondary,
-                      fontSize: 16,
-                      padding: "0 4px 8px",
-                    }}
-                  >
-                    {cfg.stats.line}
-                  </div>
-                ) : null}
-                <ContactSheet
-                  slug={cfg.slug}
-                  buildings={buildings}
-                  currentIndex={st.currentIndex}
-                />
-              </>
-            ) : (
-              <div
-                style={{
-                  flex: 1,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: THEME.fg,
-                  fontSize: 40,
-                  textAlign: "center",
-                }}
-              >
-                Explore {cfg.architect}&apos;s work in Nolli
-              </div>
-            )}
-          </div>
-          <div
-            style={{
-              position: "relative",
-              minHeight: 0,
-              overflow: "hidden",
-              borderRadius: 12,
-            }}
-          >
-            <ArchMap
-              ref={setMap}
-              architectures={allBuildings}
-              selectedSlug={current.slug}
-              ready
-              capture
-            />
-          </div>
+          <ArchMap
+            ref={setMap}
+            architectures={allBuildings}
+            selectedSlug={current.slug}
+            ready
+            capture
+          />
         </div>
       </div>
     </AbsoluteFill>
