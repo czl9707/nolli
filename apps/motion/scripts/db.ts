@@ -1,5 +1,5 @@
 import Database from "better-sqlite3";
-import { existsSync, mkdirSync, createWriteStream } from "node:fs";
+import { existsSync, mkdirSync, createWriteStream, rename, unlink } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import type { ReelBuilding } from "../src/lib/config";
@@ -17,11 +17,26 @@ export async function ensureDb(): Promise<string> {
 }
 
 async function downloadDb(dest: string): Promise<void> {
-  const res = await fetch(DB_URL);
-  if (!res.ok || !res.body) throw new Error(`fetch ${DB_URL} -> ${res.status}`);
-  const file = createWriteStream(dest);
-  for await (const chunk of res.body as unknown as AsyncIterable<Buffer>) file.write(chunk);
-  file.end();
+  const tmp = `${dest}.tmp-${process.pid}`;
+  try {
+    const res = await fetch(DB_URL);
+    if (!res.ok || !res.body) throw new Error(`fetch ${DB_URL} -> ${res.status}`);
+    const file = createWriteStream(tmp);
+    for await (const chunk of res.body as unknown as AsyncIterable<Buffer>) file.write(chunk);
+    file.end();
+    await new Promise<void>((resolve, reject) => {
+      file.on("finish", resolve);
+      file.on("error", reject);
+    });
+    await new Promise<void>((resolve, reject) =>
+      rename(tmp, dest, (err) => (err ? reject(err) : resolve())),
+    );
+  } catch (err) {
+    await new Promise<void>((resolve) =>
+      unlink(tmp, () => resolve()),
+    );
+    throw err;
+  }
 }
 
 export function resolveArchitectName(dbPath: string, slug: string): string {
