@@ -9,7 +9,7 @@
     color: rgb(var(--color-primary-foreground));
     padding: 0.625rem;
     font-size: 0.875rem;
-    font-family: var(--font-playful);
+    font-family: var(--font-sans);
     box-shadow: var(--shadow-sm), var(--shadow-ring);
     outline: none;
     transform-origin: var(--radix-popover-content-transform-origin);

@@ -8,7 +8,7 @@
     background-color: transparent;
     padding: 0.25rem 0.625rem;
     font-size: 1rem;
-    font-family: var(--font-playful);
+    font-family: var(--font-sans);
     transition: color var(--transition-instant), background-color var(--transition-instant), border-color var(--transition-instant), box-shadow var(--transition-instant);
     outline: none;
     color: rgb(var(--color-primary-foreground));
@@ -43,7 +43,7 @@
     font-size: 0.875rem;
     font-weight: 500;
     color: rgb(var(--color-primary-foreground));
-    font-family: var(--font-playful);
+    font-family: var(--font-sans);
     margin-right: 0.25rem;
 }
 
