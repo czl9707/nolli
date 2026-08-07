@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "studio": "remotion studio src/index.ts",
+    "generate:patterns": "tsx ../../packages/map/scripts/generate-patterns.ts",
     "seed": "tsx scripts/seed.ts",
     "assets": "tsx scripts/assets.ts",
     "render": "tsx scripts/render.ts",
