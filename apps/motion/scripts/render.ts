@@ -13,6 +13,14 @@ function stageAssets(slug: string): void {
   const capDir = resolve("public", "capture", slug);
   mkdirSync(capDir, { recursive: true });
   copyFileSync(srcCfg, resolve(capDir, "reel.json"));
+  const allSrc = resolve("out", "all-buildings.json");
+  if (existsSync(allSrc)) {
+    const captureRoot = resolve("public", "capture");
+    if (!existsSync(captureRoot)) mkdirSync(captureRoot, { recursive: true });
+    copyFileSync(allSrc, resolve(captureRoot, "all-buildings.json"));
+  } else {
+    console.warn("Warning: out/all-buildings.json missing — map will show no background markers. Run seed.");
+  }
   if (!existsSync(resolve(capDir, "images"))) {
     console.warn(`Warning: public/capture/${slug}/images missing — run 'assets ${slug}' or hero/thumb images will 404.`);
   }

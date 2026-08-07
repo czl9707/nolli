@@ -1,6 +1,6 @@
 import { mkdirSync, writeFileSync, existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { ensureDb, resolveArchitectName, queryArchitectBuildings } from "./db";
+import { ensureDb, resolveArchitectName, queryArchitectBuildings, queryAllBuildings } from "./db";
 import { buildReelConfig } from "./config-builder";
 import type { ReelConfig } from "../src/lib/config";
 
@@ -15,6 +15,16 @@ async function main() {
   const buildings = queryArchitectBuildings(dbPath, architect);
   const outDir = OUT_DIR(slug);
   mkdirSync(outDir, { recursive: true });
+
+  const allPath = resolve("out", "all-buildings.json");
+  const allBuildings = queryAllBuildings(dbPath).map((r) => ({
+    id: r.id,
+    slug: r.slug,
+    name: r.name,
+    coordinates: { lng: r.lng, lat: r.lat },
+  }));
+  writeFileSync(allPath, JSON.stringify(allBuildings));
+  console.log(`wrote ${allPath} — ${allBuildings.length} buildings`);
 
   const cfgPath = resolve(outDir, "reel.json");
   let episode = 1;

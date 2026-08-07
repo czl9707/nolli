@@ -63,6 +63,19 @@ type DbRow = {
   photos: number;
 };
 
+export type AllBuildingRow = { id: number; slug: string; name: string; lng: number; lat: number };
+
+export function queryAllBuildings(dbPath: string): AllBuildingRow[] {
+  const db = new Database(dbPath, { readonly: true });
+  const rows = db.prepare(`
+    SELECT a.id, a.slug, a.name, a.latitude AS lat, a.longitude AS lng
+    FROM architectures a
+    ORDER BY a.id ASC
+  `).all() as AllBuildingRow[];
+  db.close();
+  return rows;
+}
+
 export function queryArchitectBuildings(dbPath: string, architectName: string): ReelBuilding[] {
   const db = new Database(dbPath, { readonly: true });
   const rows = db
