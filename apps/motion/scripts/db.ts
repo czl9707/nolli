@@ -1,0 +1,82 @@
+import Database from "better-sqlite3";
+import { existsSync, mkdirSync, createWriteStream } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
+import type { ReelBuilding } from "../src/lib/config";
+
+const DB_URL = "https://db.nolli-map.com/latest.db";
+const CACHE_DIR = process.env.NOLLI_DB_DIR ?? join(homedir(), ".nolli");
+const CACHE_PATH = join(CACHE_DIR, "latest.db");
+
+export async function ensureDb(): Promise<string> {
+  if (!existsSync(CACHE_PATH)) {
+    mkdirSync(CACHE_DIR, { recursive: true });
+    await downloadDb(CACHE_PATH);
+  }
+  return CACHE_PATH;
+}
+
+async function downloadDb(dest: string): Promise<void> {
+  const res = await fetch(DB_URL);
+  if (!res.ok || !res.body) throw new Error(`fetch ${DB_URL} -> ${res.status}`);
+  const file = createWriteStream(dest);
+  for await (const chunk of res.body as unknown as AsyncIterable<Buffer>) file.write(chunk);
+  file.end();
+}
+
+export function resolveArchitectName(dbPath: string, slug: string): string {
+  const db = new Database(dbPath, { readonly: true });
+  const key = slug.replace(/-/g, " ").toLowerCase();
+  const row = db.prepare("SELECT name FROM architects WHERE lower(name) = ?").get(key) as
+    | { name: string }
+    | undefined;
+  db.close();
+  if (!row) throw new Error(`No architect matches slug "${slug}".`);
+  return row.name;
+}
+
+type DbRow = {
+  slug: string;
+  name: string;
+  year: number;
+  city: string | null;
+  country: string | null;
+  cc: string | null;
+  lat: number;
+  lng: number;
+  cover: string | null;
+  photos: number;
+};
+
+export function queryArchitectBuildings(dbPath: string, architectName: string): ReelBuilding[] {
+  const db = new Database(dbPath, { readonly: true });
+  const rows = db
+    .prepare(
+      `
+    SELECT a.slug, a.name, a.year,
+           ci.name AS city, co.name AS country, co.code AS cc,
+           a.latitude AS lat, a.longitude AS lng,
+           (SELECT p.image FROM architecture_photos p WHERE p.architecture_id = a.id AND p.is_cover = 1) AS cover,
+           (SELECT COUNT(*) FROM architecture_photos p WHERE p.architecture_id = a.id) AS photos
+    FROM architectures a
+    JOIN architects ar ON a.architect_id = ar.id
+    LEFT JOIN cities ci ON a.city_id = ci.id
+    LEFT JOIN countries co ON ci.country_id = co.id
+    WHERE ar.name = ?
+    ORDER BY a.year ASC
+  `,
+    )
+    .all(architectName) as DbRow[];
+  db.close();
+  return rows.map((r) => ({
+    slug: r.slug,
+    name: r.name,
+    year: r.year,
+    city: r.city ?? "—",
+    country: r.country ?? "—",
+    countryCode: r.cc ?? "",
+    coordinates: { lng: r.lng, lat: r.lat },
+    coverImage: r.cover ?? "",
+    photoCount: r.photos,
+  }));
+}
