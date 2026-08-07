@@ -46,6 +46,72 @@ export const ANIM_INIT = `
 // fires in real time while the morph runs slow, so it races the container resize
 // and the building never recenters — the marker lands off the inset. f() is 1
 // until __SLOWMO is flipped, so warm-up (pre-slowmo) stays real-time.
+// A purely-presentational cursor overlay so the pointer is visible in the CDP
+// screencast (headless Chromium never composites the native OS cursor, so
+// clicks/drags would otherwise be invisible on camera). pointer-events:none,
+// hidden until the first pointermove. All motion comes from real page.mouse
+// events — this element just follows them — so hover states and the board-pan
+// pointerdown logic are untouched. Press feedback (a small shrink toward the
+// tip) fires on pointerdown/up.
+//
+// The element is appended to documentElement on DOMContentLoaded (NOT at
+// document_start): addInitScript runs before the HTML parser finishes, and any
+// nodes appended then are discarded when the parser rebuilds the tree. The
+// window-level listeners are installed immediately (window is stable across the
+// parse) and lazily create the element on the first pointermove as a fallback.
+export const CURSOR_INIT = `
+(() => {
+  if (window.__nolliCursor) return;
+  window.__nolliCursor = true;
+  let el = null;
+  const ensure = () => {
+    if (el || !document.documentElement) return;
+    const style = document.createElement('style');
+    style.textContent = '#__nolli_cursor{position:fixed;top:0;left:0;width:24px;height:24px;pointer-events:none;z-index:2147483647;opacity:0;transition:opacity .12s ease-out;will-change:transform}#__nolli_cursor svg{display:block;transition:transform .08s ease-out;transform-origin:2px 2px}#__nolli_cursor.__pressed svg{transform:scale(.82)}';
+    el = document.createElement('div');
+    el.id = '__nolli_cursor';
+    el.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" style="filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.55))"><path d="M2 2 L2 18 L7.5 14 L11 22 L14 21 L10.5 13 L16 13 Z" fill="#fff" stroke="rgba(0,0,0,.5)" stroke-width="1" stroke-linejoin="round"/></svg>';
+    document.documentElement.appendChild(style);
+    document.documentElement.appendChild(el);
+  };
+  const setPos = (x, y) => { if (el) el.style.transform = 'translate3d(' + (x - 2) + 'px,' + (y - 2) + 'px,0)'; };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ensure, { once: true });
+  else ensure();
+  // During a map panBy, mirror the cursor to the map's REAL per-frame content
+  // offset (project(centerAtPanStart) read each rAF), so the cursor is locked to
+  // the pan exactly — same easing, no Node/CDP drift. rAF + setTimeout here are
+  // the CLOCK_INIT-slowed variants, so this stays on the capture's app-time
+  // clock in lockstep with MapLibre's own rAF-driven pan. Resolves on moveend
+  // (or a safety timeout) with the final pixel offset so the caller can update
+  // its Node-side cursor coordinate.
+  window.__nolliCursorFollow = (sx, sy) => new Promise((resolve) => {
+    const m = window.__nolliMap;
+    const e = document.getElementById('__nolli_cursor');
+    if (!m || !e || !m.getCenter || !m.project) return resolve({ fx: 0, fy: 0 });
+    const c0 = m.getCenter();
+    const p0 = m.project([c0.lng, c0.lat]);
+    e.style.opacity = '1';
+    let done = false;
+    const place = () => {
+      const p = m.project([c0.lng, c0.lat]);
+      e.style.transform = 'translate3d(' + (sx + (p.x - p0.x) - 2) + 'px,' + (sy + (p.y - p0.y) - 2) + 'px,0)';
+    };
+    const finish = () => {
+      if (done) return; done = true; place();
+      const p = m.project([c0.lng, c0.lat]);
+      resolve({ fx: p.x - p0.x, fy: p.y - p0.y });
+    };
+    const loop = () => { if (done) return; place(); requestAnimationFrame(loop); };
+    requestAnimationFrame(loop);
+    if (m.once) m.once('moveend', finish);
+    setTimeout(finish, 4000);
+  });
+  window.addEventListener('pointermove', (e) => { ensure(); if (el) { el.style.opacity = '1'; setPos(e.clientX, e.clientY); } }, { capture: true });
+  window.addEventListener('pointerdown', (e) => { ensure(); if (el) { el.classList.add('__pressed'); setPos(e.clientX, e.clientY); } }, { capture: true });
+  window.addEventListener('pointerup', () => { if (el) el.classList.remove('__pressed'); }, { capture: true });
+})();
+`;
+
 export const CLOCK_INIT = `
 (() => {
   const rn = performance.now.bind(performance);
@@ -70,6 +136,7 @@ export async function newDarkContext(
   await context.addInitScript(DARK_INIT);
   await context.addInitScript(CLOCK_INIT);
   await context.addInitScript(ANIM_INIT);
+  await context.addInitScript(CURSOR_INIT);
   return context;
 }
 

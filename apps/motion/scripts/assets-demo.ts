@@ -7,6 +7,7 @@ import { join, resolve } from "node:path";
 import { LAUNCH_ARGS, newDarkContext, waitForStable, waitForMoveEnd, waitForTilesLoaded } from "./capture-helpers";
 import { loadDemoConfig, type DemoConfig, type Tuning } from "./demo-config";
 import type { BuildingRow, Manifest } from "./manifest";
+import { createCursor, type Cursor } from "./cursor";
 import { FPS } from "../src/lib/timing";
 
 const execFileP = promisify(execFile);
@@ -226,7 +227,16 @@ const panMap = (page: Page, dx: number, dy: number, dur: number) =>
 // effective center), so "away from the pin" on pan 1 is what guarantees the two
 // pans differ — aiming pan 1 at the pin would send both the same way. Asserts
 // per-pan movement (getCenter before/after) so a silent no-op pan fails.
-async function panMapAround(page: Page, target: { longitude: number; latitude: number }) {
+//
+// The pan is a camera panBy (no pointer), so while it runs we ALSO mirror the
+// cursor to the map's real per-frame pan offset (cursor.followPan — an in-page
+// rAF loop) — that's what makes the cursor read as dragging the map instead of
+// sitting dead while the world slides, locked exactly to MapLibre's easing.
+async function panMapAround(
+  page: Page,
+  cursor: Cursor,
+  target: { longitude: number; latitude: number },
+) {
   for (let i = 0; i < JOURNEY.mapPanCount; i++) {
     const pin = await pinScreen(page, target.longitude, target.latitude);
     let p: { dx: number; dy: number; dur: number };
@@ -258,8 +268,14 @@ async function panMapAround(page: Page, target: { longitude: number; latitude: n
       `    map pan ${i + 1}/${JOURNEY.mapPanCount} dx=${signed(p.dx)} dy=${signed(p.dy)}` +
         ` (center=${before.lng.toFixed(3)},${before.lat.toFixed(3)})`,
     );
+    // A small random hand-settling move before the drag — looks like a person
+    // reaching for the map. followPan then tracks from the landed position.
+    await cursor.reach();
     await panMap(page, p.dx, p.dy, p.dur);
-    await waitForMoveEnd(page);
+    // followPan mirrors the cursor to the map's real per-frame pan offset (in-page
+    // rAF) and resolves on moveend — i.e. it both syncs the cursor AND waits for
+    // the pan to finish, replacing waitForMoveEnd here.
+    await cursor.followPan();
     const after = await mapCenter(page);
     if (
       !Number.isNaN(before.lng) &&
@@ -276,10 +292,11 @@ async function panMapAround(page: Page, target: { longitude: number; latitude: n
 // pointermove on isPanning, set in pointerdown via a React state update.
 // Playwright's batched mouse.move steps can all land before React commits
 // isPanning=true (every move returns early → no pan), so settle after down()
-// and move in spaced increments — each gets its own render, which also yields a
-// smooth glide under slow-mo. Asserts PER pan — varied directions can net ~zero
+// before the drag. The drag itself follows a ghost-cursor Bézier (cursor.drag)
+// so the visible cursor traces a human arc instead of a dead straight line.
+// Asserts PER pan — varied directions can net ~zero
 // over the whole loop, so a net-displacement check would false-throw.
-async function panBoard(page: Page, p: { dx: number; dy: number; dur: number }) {
+async function panBoard(page: Page, cursor: Cursor, p: { dx: number; dy: number; dur: number }) {
   const cx = 960;
   const cy = 540;
   const polaroidPos = () =>
@@ -288,17 +305,10 @@ async function panBoard(page: Page, p: { dx: number; dy: number; dur: number }) 
       return r ? { left: r.left, top: r.top } : { left: NaN, top: NaN };
     });
   const start = await polaroidPos();
-  const stepDelay = p.dur / JOURNEY.panSteps;
-  await page.mouse.move(cx, cy);
+  await cursor.moveTo({ x: cx, y: cy }, Math.min(p.dur, 260));
   await page.mouse.down();
   await appWait(page, 150);
-  for (let s = 1; s <= JOURNEY.panSteps; s++) {
-    await page.mouse.move(
-      cx + p.dx * (s / JOURNEY.panSteps),
-      cy + p.dy * (s / JOURNEY.panSteps),
-    );
-    await appWait(page, stepDelay);
-  }
+  await cursor.drag({ x: cx + p.dx, y: cy + p.dy }, p.dur);
   await page.mouse.up();
   await appWait(page, JOURNEY.panHold);
   const end = await polaroidPos();
@@ -487,23 +497,41 @@ async function captureDemo(
     await warmTiles(page, hero, far);
     await flipSlowmo(page);
 
+    const cursor = createCursor(page, {
+      slowmo: JOURNEY.slowmo,
+      viewport: { width: 1920, height: 1080 },
+    });
+
     journey = new Journey(context, page, beat);
     await journey.start();
+    // Reveal the cursor at screen center as the journey begins.
+    await cursor.appear();
 
     // Beats in order. The chunk seam fires after beat `config.seamAfterBeat`
     // (1-indexed). Move the cut by editing demo.json's seamAfterBeat.
+    //
+    // Cursor philosophy: STILL during camera beats (a frozen pointer over a
+    // panning map is correct and reads as "watching"), then ONE decisive move +
+    // hover to each thing it clicks. No aimless wandering — that's what read as
+    // "blind" movement.
+    const clickT = {
+      moveAppMs: JOURNEY.cursorMoveAppMs,
+      hoverAppMs: JOURNEY.cursorHoverAppMs,
+      dwellAppMs: JOURNEY.cursorDwellAppMs,
+    };
     const beats: Array<() => Promise<void>> = [
       // Beat 1: open mid-zoom on the hero, hold, then ease in closer.
       async () => {
         await appWait(page, JOURNEY.establishHold);
         await flyTo(page, hero.latitude, hero.longitude, JOURNEY.diveZoom);
         await waitForMoveEnd(page);
+        // Cursor rests at center during the ease-in + hold.
         await appWait(page, JOURNEY.flyHold);
         beat("beat1 done (ease-in + hold)");
       },
       // Beat 2: drift the map a couple times (a human "look around" on #1).
       async () => {
-        await panMapAround(page, hero);
+        await panMapAround(page, cursor, hero);
         beat("pan#1 done");
       },
       // Beat 3: arch→arch navigation (the money shot).
@@ -512,7 +540,7 @@ async function captureDemo(
       },
       // Beat 4: drift the map again on arch #2 before entering its board.
       async () => {
-        await panMapAround(page, far);
+        await panMapAround(page, cursor, far);
         beat("pan#2 done");
       },
       // Beat 5: "Go to Pin Board" → map shrinks to inset, polaroids bloom. The
@@ -522,7 +550,7 @@ async function captureDemo(
       // you push `slowmo` toward 1.0. boardHold is then a PURE static pause that
       // survives the final-cut 2× playbackRate so the viewer reads the board.
       async () => {
-        await page.getByRole("button", { name: /go to pin board/i }).click();
+        await cursor.click(page.getByRole("button", { name: /go to pin board/i }), clickT);
         beat("board clicked");
         await appWait(page, JOURNEY.boardOpenSettle);
         beat("boardOpenSettle done");
@@ -532,14 +560,14 @@ async function captureDemo(
       // Beat 6: open a photo (detail lightbox, cross-fade).
       async () => {
         const photo = page.locator('div[style*="rotate("] img:not([src*="pin.png"])').first();
-        await photo.click({ force: true });
+        await cursor.click(photo, clickT);
         await page.locator('div[style*="aspect-ratio"]').waitFor({ state: "visible" });
         await appWait(page, JOURNEY.detailHold);
       },
       // Beat 7: close the lightbox (backdrop click), wait for unmount before panning
       // — otherwise the still-present backdrop swallows the drag's pointerdown.
       async () => {
-        await page.mouse.click(40, 40);
+        await cursor.click({ x: 40, y: 40 }, clickT);
         await page
           .locator('div[style*="aspect-ratio"]')
           .waitFor({ state: "detached", timeout: 5000 })
@@ -549,7 +577,7 @@ async function captureDemo(
       // Beat 8: pan the board a few times (pointer drag).
       async () => {
         for (let i = 0; i < JOURNEY.panCount; i++) {
-          await panBoard(page, randomPan());
+          await panBoard(page, cursor, randomPan());
         }
         beat("board pans done");
       },
@@ -559,7 +587,7 @@ async function captureDemo(
       // board→map transition + MapFlyNavigator flyTo run off real setTimeouts
       // (not slowed), so mapReturnMs is generous wall-time.
       async () => {
-        await page.getByText(/click to go back to map view/i).click();
+        await cursor.click(page.getByText(/click to go back to map view/i), clickT);
         await appWait(page, JOURNEY.mapReturnMs);
         beat("returned to map");
         await appWait(page, JOURNEY.mapReturnHold);
@@ -571,6 +599,8 @@ async function captureDemo(
       if (i + 1 === config.seamAfterBeat) await journey.seam();
     }
     await journey.end();
+    // Glide the cursor off-screen so the lock-frame still has no pointer in it.
+    await cursor.exit();
     // Grab the final map view of arch #2 as the lock-frame still (demo-2 end).
     await page.screenshot({ path: join(outDir, "demo-end.png") });
   } finally {

@@ -16,7 +16,7 @@ export const DEFAULT_TUNING = {
   diveZoom: 14,
   establishHold: 1000,
   flyZoom: 14,
-  flyHold: 1500,
+  flyHold: 400,
   navLandMs: 2100,
   mapPanCount: 2,
   // Beat 5 is split: boardOpenSettle absorbs the "Go to Pin Board" morph-in
@@ -42,6 +42,14 @@ export const DEFAULT_TUNING = {
   mapReturnHold: 1000,
   screencastQuality: 92,
   maxFrames: 24 * FPS,
+
+  // Visible-cursor feel (see scripts/cursor.ts). app-ms, like the rest. The
+  // approach to a click target, the hover-on-target before pressing (the "I'm
+  // here" beat), and the post-release settle. Cursor is still during camera
+  // beats and only moves to deliberately click/drag — visual tuning.
+  cursorMoveAppMs: 260,
+  cursorHoverAppMs: 220,
+  cursorDwellAppMs: 110,
 } as const;
 
 export type Tuning = typeof DEFAULT_TUNING;
