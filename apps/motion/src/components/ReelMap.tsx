@@ -24,13 +24,20 @@ export const ReelMap: React.FC<{
   useEffect(() => {
     if (!map || map.loaded()) return
     const handle = delayRender("reel-map-load")
+    let done = false
+    const release = () => {
+      if (!done) {
+        done = true
+        continueRender(handle)
+      }
+    }
     const onIdle = () => {
-      if (map.loaded()) continueRender(handle)
+      if (map.loaded()) release()
     }
     map.once("idle", onIdle)
     return () => {
       map.off("idle", onIdle)
-      continueRender(handle)
+      release()
     }
   }, [map])
 
