@@ -42,6 +42,10 @@ async function main() {
 
   const maxFrames = process.env.REEL_MAX_FRAMES ? Number(process.env.REEL_MAX_FRAMES) : comp.durationInFrames;
   const composition = { ...comp, durationInFrames: Math.min(maxFrames, comp.durationInFrames) };
+  // Optional: lower concurrency eases per-frame tile pressure on the vector tile
+  // source (a dropped tile leaves a blank hole in that frame). Default leaves
+  // Remotion's concurrency unchanged for speed.
+  const concurrency = process.env.REEL_CONCURRENCY ? Number(process.env.REEL_CONCURRENCY) : undefined;
 
   const outDir = resolve("out", slug);
   mkdirSync(outDir, { recursive: true });
@@ -53,6 +57,7 @@ async function main() {
     serveUrl,
     codec: "h264",
     outputLocation: outPath,
+    concurrency,
     chromiumOptions: { gl: "angle" },
     browserExecutable: BROWSER,
     inputProps,
