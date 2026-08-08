@@ -66,89 +66,83 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
 
   if (!cfg || !st || !current) return null;
 
-  // ESTABLISH → WALK handoff: the large centered timeline eases toward the
-  // bottom-left (where the compact WALK timeline will live) while shrinking and
-  // fading; the WALK column fades in over the same window for a real crossfade.
+  // ESTABLISH → WALK handoff, WITHIN the left column: the large centered
+  // timeline eases down toward the bottom (where the compact WALK timeline
+  // lives) while shrinking and fading, as the cover/text/timeline content
+  // fades in across the same window. The map stays on the right half throughout.
   const settleEnd = WALK_START;
   const settleStart = WALK_START - Math.round(0.6 * FPS);
   const settleT = interpolate(frame, [settleStart, settleEnd], [0, 1], {
     extrapolateLeft: "clamp", extrapolateRight: "clamp",
   });
-  const establishOpacity = 1 - settleT;
-  const establishScale = 1 - 0.3 * settleT;             // 1 → 0.7
-  const establishX = -474 * settleT;                    // center → bottom-left
-  const establishY = 460 * settleT;
+  const walkColumnOpacity = settleT;                    // 0 → 1 across the settle
+  const establishOpacity = 1 - settleT;                 // 1 → 0
+  const establishScale = 1 - 0.4 * settleT;             // 1 → 0.6
+  const establishY = 200 * settleT;                     // center → toward bottom
   const showEstablishTimeline =
     st.beat === BEAT.ESTABLISH || (st.beat === BEAT.WALK && frame < WALK_START + 1);
-  const walkColumnOpacity = interpolate(
-    frame,
-    [WALK_START, WALK_START + Math.round(0.4 * FPS)],
-    [0, 1],
-    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-  );
 
   const isWalk = st.beat === BEAT.WALK;
+  const isGrid = st.beat === BEAT.ESTABLISH || isWalk;
 
   return (
-    <AbsoluteFill data-theme="dark" style={{ backgroundColor: "rgb(var(--color-primary-background))" }}>
-      {/* Map fills the frame in ESTABLISH/WALK; hidden during HOOK & CTA. */}
-      {st.beat === BEAT.ESTABLISH || st.beat === BEAT.WALK ? (
-        <div style={{ position: "absolute", inset: 24, borderRadius: "var(--size-border-radius)", overflow: "hidden" }}>
-          <ArchMap
-            ref={setMap}
-            architectures={archSummaries}
-            selectedSlug={current.slug}
-            ready
-            capture
-          />
-        </div>
-      ) : null}
-
+    <AbsoluteFill data-theme="dark" style={{ backgroundColor: "rgb(var(--color-primary-background))", padding: 24 }}>
       {st.beat === BEAT.HOOK ? (
         <HookTitle architect={cfg.architect} fromYear={cfg.stats.fromYear} toYear={cfg.stats.toYear} />
       ) : null}
 
-      {/* ESTABLISH: large centered timeline overlay */}
-      {showEstablishTimeline ? (
-        <div style={{ position: "absolute", inset: 0, opacity: establishOpacity, transform: `translate(${establishX}px, ${establishY}px) scale(${establishScale})` }}>
-          <Timeline
-            slug={cfg.slug}
-            buildings={buildings}
-            currentIndex={st.currentIndex}
-            windowSize={TIMELINE_WINDOW}
-            variant="establish"
-          />
-        </div>
-      ) : null}
+      {st.beat === BEAT.CTA ? <CtaLockup ctaFrame={frame - ctaStart(count)} /> : null}
 
-      {/* WALK: left column with Hero + Caption + compact Timeline */}
-      {isWalk ? (
-        <div
-          style={{
-            position: "absolute", left: 24, top: 24, bottom: 24, width: "calc(50% - 36px)",
-            display: "flex", flexDirection: "column", minHeight: 0, opacity: walkColumnOpacity,
-          }}
-        >
-          <Hero slug={cfg.slug} buildingSlug={current.slug} />
-          <Caption
-            name={current.name}
-            year={current.year}
-            city={current.city}
-            countryCode={current.countryCode}
-          />
-          <div style={{ paddingTop: 8 }}>
-            <Timeline
-              slug={cfg.slug}
-              buildings={buildings}
-              currentIndex={st.currentIndex}
-              windowSize={TIMELINE_WINDOW}
-              variant="walk"
+      {/* ESTABLISH & WALK: 50/50 grid — left = cover/text/timeline, right = map. */}
+      {isGrid ? (
+        <div style={{ width: "100%", height: "100%", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, minHeight: 0 }}>
+          {/* LEFT: cover + text + timeline */}
+          <div style={{ position: "relative", display: "flex", flexDirection: "column", minHeight: 0 }}>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0, opacity: walkColumnOpacity }}>
+              <Hero slug={cfg.slug} buildingSlug={current.slug} />
+              <Caption
+                name={current.name}
+                year={current.year}
+                city={current.city}
+                countryCode={current.countryCode}
+              />
+              <div style={{ paddingTop: 8 }}>
+                <Timeline
+                  slug={cfg.slug}
+                  buildings={buildings}
+                  currentIndex={st.currentIndex}
+                  windowSize={TIMELINE_WINDOW}
+                  variant="walk"
+                />
+              </div>
+            </div>
+
+            {/* ESTABLISH overlay: large centered timeline easing down as WALK fades in */}
+            {showEstablishTimeline ? (
+              <div style={{ position: "absolute", inset: 0, opacity: establishOpacity, transform: `translateY(${establishY}px) scale(${establishScale})` }}>
+                <Timeline
+                  slug={cfg.slug}
+                  buildings={buildings}
+                  currentIndex={st.currentIndex}
+                  windowSize={TIMELINE_WINDOW}
+                  variant="establish"
+                />
+              </div>
+            ) : null}
+          </div>
+
+          {/* RIGHT: map (world view during ESTABLISH, flying during WALK) */}
+          <div style={{ position: "relative", minHeight: 0, borderRadius: "var(--size-border-radius)", overflow: "hidden" }}>
+            <ArchMap
+              ref={setMap}
+              architectures={archSummaries}
+              selectedSlug={current.slug}
+              ready
+              capture
             />
           </div>
         </div>
       ) : null}
-
-      {st.beat === BEAT.CTA ? <CtaLockup ctaFrame={frame - ctaStart(count)} /> : null}
     </AbsoluteFill>
   );
 };
