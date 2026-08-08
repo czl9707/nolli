@@ -1,35 +1,40 @@
 import { describe, it, expect } from "vitest";
-import { getTimelineState, TOTAL_FRAMES, BEAT } from "./timeline";
+import {
+  FPS, HOOK_S, ESTABLISH_S, WALK_SLOT_S, CTA_S,
+  HOOK_START, ESTABLISH_START, WALK_START, ctaStart, totalFrames,
+  BEAT, getTimelineState,
+} from "./timeline";
 
-describe("getTimelineState", () => {
-  it("hook beat maps to the hook building index", () => {
-    const s = getTimelineState(0, 5, 0); // frame, count, hookIndex
-    expect(s.beat).toBe(BEAT.HOOK);
-    expect(s.currentIndex).toBe(0);
+describe("timeline", () => {
+  const COUNT = 9;
+  it("derives frame boundaries from seconds constants", () => {
+    expect(HOOK_START).toBe(0);
+    expect(ESTABLISH_START).toBe(Math.round(HOOK_S * FPS));
+    expect(WALK_START).toBe(Math.round((HOOK_S + ESTABLISH_S) * FPS));
+    expect(ctaStart(COUNT)).toBe(WALK_START + Math.round(COUNT * WALK_SLOT_S * FPS));
+    expect(totalFrames(COUNT)).toBe(ctaStart(COUNT) + Math.round(CTA_S * FPS));
   });
-
-  it("walk beat advances currentIndex across its window", () => {
-    const count = 4;
-    const mid = BEAT.WALK_START + Math.floor((BEAT.WALK_END - BEAT.WALK_START) / 2);
-    const sStart = getTimelineState(BEAT.WALK_START, count, 0);
-    const sMid = getTimelineState(mid, count, 0);
-    const sEnd = getTimelineState(BEAT.WALK_END - 1, count, 0);
-    expect(sStart.beat).toBe(BEAT.WALK);
-    expect(sStart.currentIndex).toBe(0);
-    expect(sEnd.currentIndex).toBe(count - 1);
-    expect(sMid.currentIndex).toBeGreaterThan(sStart.currentIndex);
-    expect(sMid.currentIndex).toBeLessThan(sEnd.currentIndex);
+  it("scales total length with building count", () => {
+    expect(totalFrames(5)).toBeLessThan(totalFrames(9));
+    expect(totalFrames(9) - totalFrames(5)).toBe(Math.round(4 * WALK_SLOT_S * FPS));
   });
-
-  it("whole beat clamps to last building", () => {
-    const s = getTimelineState(BEAT.WHOLE_START, 4, 0);
-    expect(s.beat).toBe(BEAT.WHOLE);
-    expect(s.currentIndex).toBe(3);
+  it("maps frames to beats", () => {
+    expect(getTimelineState(0, COUNT).beat).toBe(BEAT.HOOK);
+    expect(getTimelineState(ESTABLISH_START, COUNT).beat).toBe(BEAT.ESTABLISH);
+    expect(getTimelineState(WALK_START, COUNT).beat).toBe(BEAT.WALK);
+    expect(getTimelineState(ctaStart(COUNT), COUNT).beat).toBe(BEAT.CTA);
   });
-
-  it("returns intra-building progress in [0,1) during the walk", () => {
-    const s = getTimelineState(BEAT.WALK_START, 4, 0);
-    expect(s.intra).toBeGreaterThanOrEqual(0);
-    expect(s.intra).toBeLessThanOrEqual(1);
+  it("indexes buildings across WALK", () => {
+    const walkLen = ctaStart(COUNT) - WALK_START;
+    const mid = getTimelineState(WALK_START + Math.floor(walkLen / 2), COUNT);
+    expect(mid.beat).toBe(BEAT.WALK);
+    expect(mid.currentIndex).toBeGreaterThanOrEqual(0);
+    expect(mid.currentIndex).toBeLessThan(COUNT);
+    expect(mid.intra).toBeGreaterThanOrEqual(0);
+    expect(mid.intra).toBeLessThanOrEqual(1);
+  });
+  it("clamps the final WALK frame to the last building", () => {
+    const last = getTimelineState(ctaStart(COUNT) - 1, COUNT);
+    expect(last.currentIndex).toBe(COUNT - 1);
   });
 });
