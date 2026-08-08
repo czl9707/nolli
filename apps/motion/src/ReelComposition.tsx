@@ -66,18 +66,26 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
 
   if (!cfg || !st || !current) return null;
 
-  // ESTABLISH → WALK timeline crossfade: large centered timeline scales/fades out
-  // as the WALK column (with its compact timeline) fades in.
+  // ESTABLISH → WALK handoff: the large centered timeline eases toward the
+  // bottom-left (where the compact WALK timeline will live) while shrinking and
+  // fading; the WALK column fades in over the same window for a real crossfade.
   const settleEnd = WALK_START;
   const settleStart = WALK_START - Math.round(0.6 * FPS);
-  const establishTimelineOpacity = interpolate(frame, [settleStart, settleEnd], [1, 0], {
+  const settleT = interpolate(frame, [settleStart, settleEnd], [0, 1], {
     extrapolateLeft: "clamp", extrapolateRight: "clamp",
   });
-  const establishTimelineScale = interpolate(frame, [settleStart, settleEnd], [1, 0.7], {
-    extrapolateLeft: "clamp", extrapolateRight: "clamp",
-  });
+  const establishOpacity = 1 - settleT;
+  const establishScale = 1 - 0.3 * settleT;             // 1 → 0.7
+  const establishX = -474 * settleT;                    // center → bottom-left
+  const establishY = 460 * settleT;
   const showEstablishTimeline =
     st.beat === BEAT.ESTABLISH || (st.beat === BEAT.WALK && frame < WALK_START + 1);
+  const walkColumnOpacity = interpolate(
+    frame,
+    [WALK_START, WALK_START + Math.round(0.4 * FPS)],
+    [0, 1],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
 
   const isWalk = st.beat === BEAT.WALK;
 
@@ -102,7 +110,7 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
 
       {/* ESTABLISH: large centered timeline overlay */}
       {showEstablishTimeline ? (
-        <div style={{ position: "absolute", inset: 0, opacity: establishTimelineOpacity, transform: `scale(${establishTimelineScale})` }}>
+        <div style={{ position: "absolute", inset: 0, opacity: establishOpacity, transform: `translate(${establishX}px, ${establishY}px) scale(${establishScale})` }}>
           <Timeline
             slug={cfg.slug}
             buildings={buildings}
@@ -118,7 +126,7 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
         <div
           style={{
             position: "absolute", left: 24, top: 24, bottom: 24, width: "calc(50% - 36px)",
-            display: "flex", flexDirection: "column", minHeight: 0,
+            display: "flex", flexDirection: "column", minHeight: 0, opacity: walkColumnOpacity,
           }}
         >
           <Hero slug={cfg.slug} buildingSlug={current.slug} />
