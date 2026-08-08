@@ -8,7 +8,10 @@ export function lerp(a: number, b: number, t: number): number {
 
 const BUILDING_ZOOM = 15;
 // Clamp the flight arc so it never zooms out past this (maplibre's `minZoom`).
-const FLIGHT_MIN_ZOOM = 4;
+// Kept at 6 (not lower) to limit how many remote vector tiles each hop sweeps —
+// at z4 a long hop pulls a continental tile set every frame and trips the tile
+// source's rate limit, stalling the render.
+const FLIGHT_MIN_ZOOM = 6;
 // maplibre defaults: ρ (curve) and the larger render dimension of the map panel.
 const FLIGHT_CURVE = 1.42;
 const MAP_PANEL_W0 = 1032;

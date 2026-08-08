@@ -66,7 +66,7 @@ describe("viewport", () => {
     const nearMin = minZoomOver([bb(0, 0), bb(0.01, 0.01)]); // ~1.5 km
     const farMin = minZoomOver([bb(0, 0), bb(150, 0)]); // ~16000 km
     expect(farMin).toBeLessThan(nearMin);
-    expect(farMin).toBeLessThanOrEqual(5);
+    expect(farMin).toBeLessThanOrEqual(6.5);
     expect(nearMin).toBeGreaterThan(10);
   });
   it("haversine measures distance", () => {
