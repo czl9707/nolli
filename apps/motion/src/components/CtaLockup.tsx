@@ -1,4 +1,4 @@
-import { AbsoluteFill, interpolate, staticFile } from "remotion";
+import { AbsoluteFill, Img, interpolate, staticFile } from "remotion";
 import { H1 } from "@nolli/ui";
 import { FPS, CTA_LINE_S, CTA_S } from "../lib/timeline";
 
@@ -47,7 +47,8 @@ export const CtaLockup: React.FC<{ ctaFrame: number }> = ({ ctaFrame }) => {
           gap: 22,
         }}
       >
-        <img src={staticFile("favicon.svg")} style={{ width: 80, height: 80 }} alt="Nolli" />
+        {/* eslint-disable-next-line jsx-a11y/alt-text */}
+        <Img src={staticFile("favicon.svg")} style={{ width: 80, height: 80 }} />
         <H1 style={{ color: "rgb(var(--color-primary-foreground))", fontSize: 104, margin: 0 }}>Nolli</H1>
       </div>
     </AbsoluteFill>

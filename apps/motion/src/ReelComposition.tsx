@@ -70,28 +70,52 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
   const flyT = Math.min(1, st.intra / flyFrac);
   const carouselPos = Math.max(0, st.currentIndex - (1 - flyT));
 
-  // Hero/caption fade in as WALK begins (the timeline is visible from ESTABLISH).
-  const walkContentOpacity = st.beat === BEAT.WALK
-    ? interpolate(frame, [WALK_START, WALK_START + Math.round(0.4 * FPS)], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })
-    : 0;
+  // ESTABLISH → WALK transition (last ~0.8s of ESTABLISH): the centered timeline
+  // eases down toward the bottom-left and fades, while the map + cover/text fade
+  // in. During ESTABLISH proper there is no map — it appears as WALK begins.
+  const easeStart = WALK_START - Math.round(0.8 * FPS);
+  const easeT = interpolate(frame, [easeStart, WALK_START], [0, 1], {
+    extrapolateLeft: "clamp", extrapolateRight: "clamp",
+  });
+  const establishTlOpacity = 1 - easeT;
+  const establishTlY = 220 * easeT;
+  const establishTlScale = 1 - 0.35 * easeT;
+  const gridOpacity = easeT;
+  const showEstablishTimeline = st.beat === BEAT.ESTABLISH || (st.beat === BEAT.WALK && frame < WALK_START + 1);
 
   const isWalk = st.beat === BEAT.WALK;
-  const isGrid = st.beat === BEAT.ESTABLISH || isWalk;
+  const showGrid = (st.beat === BEAT.ESTABLISH || isWalk) && frame >= easeStart;
 
   return (
     <AbsoluteFill data-theme="dark" style={{ backgroundColor: "rgb(var(--color-primary-background))", padding: 24 }}>
-      {st.beat === BEAT.HOOK ? (
-        <HookTitle architect={cfg.architect} fromYear={cfg.stats.fromYear} toYear={cfg.stats.toYear} />
-      ) : null}
+      {st.beat === BEAT.HOOK ? <HookTitle architect={cfg.architect} /> : null}
 
       {st.beat === BEAT.CTA ? <CtaLockup ctaFrame={frame - ctaStart(count)} /> : null}
 
-      {/* ESTABLISH & WALK: 50/50 grid — left = cover/text/timeline, right = map. */}
-      {isGrid ? (
-        <div style={{ width: "100%", height: "100%", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, minHeight: 0 }}>
-          {/* LEFT: cover + text + timeline */}
+      {/* ESTABLISH: centered timeline, no map. Eases to bottom-left as WALK begins. */}
+      {showEstablishTimeline ? (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            opacity: establishTlOpacity,
+            transform: `translateY(${establishTlY}px) scale(${establishTlScale})`,
+          }}
+        >
+          <div style={{ width: "100%", maxWidth: 1500 }}>
+            <Timeline slug={cfg.slug} buildings={buildings} position={carouselPos} variant="establish" />
+          </div>
+        </div>
+      ) : null}
+
+      {/* WALK (fading in from late ESTABLISH): 50/50 grid — left cover/text/timeline, right map. */}
+      {showGrid ? (
+        <div style={{ width: "100%", height: "100%", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, minHeight: 0, opacity: gridOpacity }}>
           <div style={{ position: "relative", display: "flex", flexDirection: "column", minHeight: 0 }}>
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0, opacity: walkContentOpacity }}>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
               <Hero slug={cfg.slug} buildingSlug={current.slug} />
               <Caption
                 name={current.name}
@@ -100,15 +124,8 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
                 countryCode={current.countryCode}
               />
             </div>
-            <Timeline
-              slug={cfg.slug}
-              buildings={buildings}
-              position={carouselPos}
-              variant={isWalk ? "walk" : "establish"}
-            />
+            <Timeline slug={cfg.slug} buildings={buildings} position={carouselPos} variant="walk" />
           </div>
-
-          {/* RIGHT: map (world view during ESTABLISH, flying during WALK) */}
           <div style={{ position: "relative", minHeight: 0, borderRadius: "var(--size-border-radius)", overflow: "hidden" }}>
             <ArchMap
               ref={setMap}
