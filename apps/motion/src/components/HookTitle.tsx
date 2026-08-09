@@ -1,19 +1,16 @@
 import { AbsoluteFill, interpolate, useCurrentFrame } from "remotion";
 import { H1 } from "@nolli/ui";
-import { FPS, HOOK_S } from "../lib/timeline";
+import { HOOK_S, secToFrames, CLAMP } from "../lib/timeline";
+
+const TOTAL = secToFrames(HOOK_S);
+const FADE_IN = secToFrames(0.3);
+const FADE_OUT_START = TOTAL - secToFrames(0.4);
+const OPACITY_RANGE: [number, number, number, number] = [0, FADE_IN, FADE_OUT_START, TOTAL];
 
 /** HOOK beat: dark screen, just the architect name. */
 export const HookTitle: React.FC<{ architect: string }> = ({ architect }) => {
   const frame = useCurrentFrame();
-  const total = Math.round(HOOK_S * FPS);
-  const fadeIn = Math.round(0.3 * FPS);
-  const fadeOutStart = total - Math.round(0.4 * FPS);
-  const opacity = interpolate(
-    frame,
-    [0, fadeIn, fadeOutStart, total],
-    [0, 1, 1, 0],
-    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-  );
+  const opacity = interpolate(frame, OPACITY_RANGE, [0, 1, 1, 0], CLAMP);
   return (
     <AbsoluteFill
       data-theme="dark"

@@ -12,18 +12,29 @@ export const CTA_LOCKUP_S = 3.0;  // icon + Nolli hold
 export const CTA_S = CTA_LINE_S + CTA_LOCKUP_S;
 export const TIMELINE_WINDOW = 5;
 
-const f = (s: number) => Math.round(s * FPS);
+// ESTABLISH→WALK hand-off (rhythm, not layout): the timeline slides to the
+// corner over the final TL_SLIDE_LEAD_S of ESTABLISH, then the map fades in
+// over the final GRID_FADE_LEAD_S — serialized so they never overlap mid-slide.
+export const TL_SLIDE_LEAD_S = 1.4;
+export const GRID_FADE_LEAD_S = 0.4;
+
+/** Seconds → frames. The single source of truth for the S→frame conversion. */
+export const secToFrames = (s: number): number => Math.round(s * FPS);
+
+/** Shared clamp options for interpolate() — used wherever a value shouldn't
+ *  extrapolate past its domain. */
+export const CLAMP = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 
 export const HOOK_START = 0;
-export const ESTABLISH_START = f(HOOK_S);
-export const WALK_START = f(HOOK_S + ESTABLISH_S);
+export const ESTABLISH_START = secToFrames(HOOK_S);
+export const WALK_START = secToFrames(HOOK_S + ESTABLISH_S);
 
 /** CTA start depends on building count (WALK length scales with it). */
 export function ctaStart(count: number): number {
-  return WALK_START + f(count * WALK_SLOT_S);
+  return WALK_START + secToFrames(count * WALK_SLOT_S);
 }
 export function totalFrames(count: number): number {
-  return ctaStart(count) + f(CTA_S);
+  return ctaStart(count) + secToFrames(CTA_S);
 }
 
 export const BEAT = { HOOK: 0, ESTABLISH: 1, WALK: 2, CTA: 3 } as const;

@@ -1,48 +1,44 @@
+import { useMemo } from "react";
 import { Img, staticFile } from "remotion";
 import { Caption } from "@nolli/ui";
 import type { ReelBuilding } from "../lib/config";
+import { TIMELINE_WINDOW } from "../lib/timeline";
 
-type Variant = "establish" | "walk";
-
-const COVER: Record<Variant, number> = { establish: 104, walk: 60 };
-const SLOT = 20; // each slot is 20% of the container width → 5 visible
+const COVER = 64;
+const SLOT = 13; // slot width as % of container — tight pack; focused item centered at 50%
+const HALF_WINDOW = TIMELINE_WINDOW / 2; // items beyond this many slots of center are dropped
+export const TIMELINE_H = COVER + 88; // vertical chrome around the cover; ReelComposition reserves this much
 
 /**
- * Full-width carousel timeline. Every building is laid out on a horizontal
- * track; the track is translated so the focused one (continuous `position`,
- * fractional during a fly) sits in the center slot. As `position` advances the
- * items roll left like a carousel. The center item is enlarged + accented; edge
- * items fade out. A dot sits on a baseline above each square cover + year.
+ * Clean cover-photo carousel. Every building sits on a horizontal track; the
+ * track is translated so the focused one (continuous fractional `position`)
+ * lands in the center slot. As `position` advances the items roll left like a
+ * carousel. The center item is enlarged + accented; items fade out toward the
+ * edges by distance from center (5 in view).
  */
 export const Timeline: React.FC<{
   slug: string;
   buildings: ReelBuilding[];
   /** Continuous (fractional) focused index — drives the roll. */
   position: number;
-  variant: Variant;
-}> = ({ slug, buildings, position, variant }) => {
-  const cover = COVER[variant];
+}> = ({ slug, buildings, position }) => {
+  // Thumb URLs are constant per (slug, building) — cache so the per-frame map
+  // doesn't re-template + re-resolve ~5 paths every frame.
+  const thumbs = useMemo(() => {
+    const m: Record<string, string> = {};
+    for (const b of buildings) m[b.slug] = staticFile(`capture/${slug}/images/${b.slug}-thumb.jpg`);
+    return m;
+  }, [slug, buildings]);
+
   return (
-    <div style={{ position: "relative", width: "100%", height: cover + 56, overflow: "hidden" }}>
-      {/* baseline the dots rest on */}
-      <div
-        style={{
-          position: "absolute",
-          top: 5,
-          left: "10%",
-          right: "10%",
-          height: 1,
-          background: "rgb(var(--color-secondary-foreground))",
-          opacity: 0.35,
-        }}
-      />
+    <div style={{ position: "relative", width: "100%", height: TIMELINE_H, overflow: "hidden" }}>
       {buildings.map((b, i) => {
         const dist = Math.abs(i - position);
-        if (dist > 3) return null; // off-screen
-        const left = (i - position + 2) * SLOT; // center slot = 40%..60%
-        const focus = Math.max(0, 1 - dist); // 1 at center → 0 at edges
-        const scale = 1 + 0.45 * focus;
-        const opacity = 0.3 + 0.7 * focus;
+        if (dist > HALF_WINDOW) return null; // off the 5-wide window
+        const left = 50 - SLOT / 2 + (i - position) * SLOT; // focused item pinned to center
+        const focus = Math.max(0, 1 - dist / HALF_WINDOW); // 1 at center → 0 at window edge
+        const scale = 1 + 0.4 * focus;
+        const opacity = focus; // fades fully to 0 at the edge so exits don't pop
         const isCenter = dist < 0.5;
         return (
           <div
@@ -56,33 +52,24 @@ export const Timeline: React.FC<{
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
+              justifyContent: "center",
               gap: 8,
               opacity,
               transform: `scale(${scale})`,
-              transformOrigin: "top center",
+              transformOrigin: "center center",
             }}
           >
             <div
               style={{
-                width: isCenter ? 12 : 8,
-                height: isCenter ? 12 : 8,
-                borderRadius: "50%",
-                background: isCenter
-                  ? "rgb(var(--color-accent-foreground))"
-                  : "rgb(var(--color-secondary-foreground))",
-              }}
-            />
-            <div
-              style={{
-                width: cover,
-                height: cover,
+                width: COVER,
+                height: COVER,
                 borderRadius: "var(--size-border-radius)",
                 overflow: "hidden",
                 outline: isCenter ? "2px solid rgb(var(--color-accent-foreground))" : "none",
               }}
             >
               <Img
-                src={staticFile(`capture/${slug}/images/${b.slug}-thumb.jpg`)}
+                src={thumbs[b.slug]}
                 style={{ width: "100%", height: "100%", objectFit: "cover" }}
               />
             </div>
