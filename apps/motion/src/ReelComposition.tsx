@@ -8,7 +8,7 @@ import { useReelConfig } from "./lib/use-reel-config";
 import { useMapCamera } from "./lib/use-map-camera";
 import {
   getTimelineState, BEAT, WALK_START, ctaStart, FPS,
-  WALK_HOLD_S, WALK_SLOT_S, TIMELINE_WINDOW,
+  WALK_FLY_S, WALK_SLOT_S,
 } from "./lib/timeline";
 import { walkViewport, fitViewport, type MapViewport } from "./lib/viewport";
 import { Hero } from "./components/Hero";
@@ -45,8 +45,8 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
   );
 
   // World view for ESTABLISH + slot-0 fly source.
-  const worldVP = useMemo(() => (count ? fitViewport(buildings, 2) : FALLBACK_VP), [buildings, count]);
-  const holdFrac = WALK_HOLD_S / WALK_SLOT_S;
+  const worldVP = useMemo(() => (count ? fitViewport(buildings, 2) : FALLBACK_VP), [buildings]);
+  const flyFrac = WALK_FLY_S / WALK_SLOT_S;
 
   const vp = useMemo(() => {
     if (!count || !st) return FALLBACK_VP;
@@ -56,31 +56,24 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
       return { center: [last.coordinates.lng, last.coordinates.lat] as [number, number], zoom: CRUISE_ZOOM };
     }
     return walkViewport(buildings, st.currentIndex, st.intra, CRUISE_ZOOM, {
-      holdFrac,
-      fromWorld: st.currentIndex === 0,
+      flyFrac,
       worldCenter: worldVP.center,
       worldZoom: worldVP.zoom,
     });
-  }, [buildings, st, count, worldVP, holdFrac]);
+  }, [buildings, st, count, worldVP, flyFrac]);
   useMapCamera(map, vp);
 
   if (!cfg || !st || !current) return null;
 
-  // ESTABLISH → WALK handoff, WITHIN the left column: the large centered
-  // timeline eases down toward the bottom (where the compact WALK timeline
-  // lives) while shrinking and fading, as the cover/text/timeline content
-  // fades in across the same window. The map stays on the right half throughout.
-  const settleEnd = WALK_START;
-  const settleStart = WALK_START - Math.round(0.6 * FPS);
-  const settleT = interpolate(frame, [settleStart, settleEnd], [0, 1], {
-    extrapolateLeft: "clamp", extrapolateRight: "clamp",
-  });
-  const walkColumnOpacity = settleT;                    // 0 → 1 across the settle
-  const establishOpacity = 1 - settleT;                 // 1 → 0
-  const establishScale = 1 - 0.4 * settleT;             // 1 → 0.6
-  const establishY = 200 * settleT;                     // center → toward bottom
-  const showEstablishTimeline =
-    st.beat === BEAT.ESTABLISH || (st.beat === BEAT.WALK && frame < WALK_START + 1);
+  // Continuous carousel position: during each slot's fly-in it rolls from the
+  // previous building into the current one; during the hold it rests on current.
+  const flyT = Math.min(1, st.intra / flyFrac);
+  const carouselPos = Math.max(0, st.currentIndex - (1 - flyT));
+
+  // Hero/caption fade in as WALK begins (the timeline is visible from ESTABLISH).
+  const walkContentOpacity = st.beat === BEAT.WALK
+    ? interpolate(frame, [WALK_START, WALK_START + Math.round(0.4 * FPS)], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })
+    : 0;
 
   const isWalk = st.beat === BEAT.WALK;
   const isGrid = st.beat === BEAT.ESTABLISH || isWalk;
@@ -98,7 +91,7 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
         <div style={{ width: "100%", height: "100%", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, minHeight: 0 }}>
           {/* LEFT: cover + text + timeline */}
           <div style={{ position: "relative", display: "flex", flexDirection: "column", minHeight: 0 }}>
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0, opacity: walkColumnOpacity }}>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0, opacity: walkContentOpacity }}>
               <Hero slug={cfg.slug} buildingSlug={current.slug} />
               <Caption
                 name={current.name}
@@ -106,29 +99,13 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
                 city={current.city}
                 countryCode={current.countryCode}
               />
-              <div style={{ paddingTop: 8 }}>
-                <Timeline
-                  slug={cfg.slug}
-                  buildings={buildings}
-                  currentIndex={st.currentIndex}
-                  windowSize={TIMELINE_WINDOW}
-                  variant="walk"
-                />
-              </div>
             </div>
-
-            {/* ESTABLISH overlay: large centered timeline easing down as WALK fades in */}
-            {showEstablishTimeline ? (
-              <div style={{ position: "absolute", inset: 0, opacity: establishOpacity, transform: `translateY(${establishY}px) scale(${establishScale})` }}>
-                <Timeline
-                  slug={cfg.slug}
-                  buildings={buildings}
-                  currentIndex={st.currentIndex}
-                  windowSize={TIMELINE_WINDOW}
-                  variant="establish"
-                />
-              </div>
-            ) : null}
+            <Timeline
+              slug={cfg.slug}
+              buildings={buildings}
+              position={carouselPos}
+              variant={isWalk ? "walk" : "establish"}
+            />
           </div>
 
           {/* RIGHT: map (world view during ESTABLISH, flying during WALK) */}

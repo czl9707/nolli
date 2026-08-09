@@ -31,27 +31,31 @@ describe("viewport", () => {
     }
     expect(minZoom).toBeLessThan(13);
   });
-  it("walkViewport holds then flies with explicit hold fraction", () => {
+  it("walkViewport flies in from the previous building, then holds", () => {
     const buildings = [bb(0, 0), bb(10, 20), bb(20, 0)];
-    const holdFrac = 0.4;
-    const vHold = walkViewport(buildings, 1, 0.2, 15, { holdFrac });
-    const vFlyEnd = walkViewport(buildings, 1, 1, 15, { holdFrac });
-    expect(vHold.center).toEqual([10, 20]);
+    const opts = { flyFrac: 0.6, worldCenter: [0, 0] as [number, number], worldZoom: 1 };
+    const vFlyStart = walkViewport(buildings, 1, 0, 15, opts);   // start of fly-in: at building 0
+    const vHold = walkViewport(buildings, 1, 0.8, 15, opts);     // past flyFrac: held on building 1
+    expect(vFlyStart.center[0]).toBeCloseTo(0, 5);
+    expect(vHold.center[0]).toBeCloseTo(10, 5);
+    expect(vHold.center[1]).toBeCloseTo(20, 5);
     expect(vHold.zoom).toBe(15);
-    expect(vFlyEnd.center[0]).toBeCloseTo(20, 5);
-    expect(vFlyEnd.center[1]).toBeCloseTo(0, 5);
   });
-  it("walkViewport never self-flies the last building", () => {
+  it("walkViewport is continuous across slot boundaries", () => {
     const buildings = [bb(0, 0), bb(10, 20), bb(20, 0)];
-    const v = walkViewport(buildings, 2, 0.9, 15, { holdFrac: 0.4 });
-    expect(v.center).toEqual([20, 0]);
-    expect(v.zoom).toBe(15);
+    const opts = { flyFrac: 0.6, worldCenter: [0, 0] as [number, number], worldZoom: 1 };
+    // end of slot 1 (held on building 1) == start of slot 2 (fly-in from building 1)
+    const endSlot1 = walkViewport(buildings, 1, 1, 15, opts);
+    const startSlot2 = walkViewport(buildings, 2, 0, 15, opts);
+    expect(endSlot1.center[0]).toBeCloseTo(startSlot2.center[0], 5);
+    expect(endSlot1.center[1]).toBeCloseTo(startSlot2.center[1], 5);
   });
   it("walkViewport slot 0 flies world -> building[0]", () => {
     const buildings = [bb(139.76, 35.68), bb(0, 0), bb(20, 0)];
     const worldCenter: [number, number] = [70, 17];
-    const vStart = walkViewport(buildings, 0, 0, 15, { holdFrac: 0.4, fromWorld: true, worldCenter, worldZoom: 1 });
-    const vEnd = walkViewport(buildings, 0, 1, 15, { holdFrac: 0.4, fromWorld: true, worldCenter, worldZoom: 1 });
+    const opts = { flyFrac: 0.6, worldCenter, worldZoom: 1 };
+    const vStart = walkViewport(buildings, 0, 0, 15, opts);
+    const vEnd = walkViewport(buildings, 0, 1, 15, opts);
     expect(vStart.center[0]).toBeCloseTo(70, 5);
     expect(vStart.zoom).toBeCloseTo(1, 5);
     expect(vEnd.center[0]).toBeCloseTo(139.76, 3);

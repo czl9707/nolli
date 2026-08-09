@@ -182,19 +182,21 @@ export function flyViewport(
 }
 
 export type WalkOptions = {
-  /** Fraction of the slot spent holding on building[i] before flying. */
-  holdFrac: number;
-  /** Slot 0: fly from a world view down to building[0] instead of building→building. */
-  fromWorld?: boolean;
-  worldCenter?: [number, number];
-  worldZoom?: number;
+  /** Fraction of each slot spent flying IN to the building (rest is hold). */
+  flyFrac: number;
+  /** View the camera flies in from for building[0] (the world/establish view). */
+  worldCenter: [number, number];
+  worldZoom: number;
 };
 
 /**
- * Per-building camera. For slot 0 (`fromWorld`): fly world → building[0] over the
- * whole slot (no hold) — the establishing landing. Other slots HOLD on
- * building[i] for `holdFrac`, then FLY building[i]→building[i+1]. The LAST
- * building holds the whole slot (no self-fly).
+ * Per-building camera, "fly-in + hold" model. Each slot i is dedicated to
+ * building i: the camera FLIES from the previous building (or `worldCenter` for
+ * i=0) into building i over `flyFrac`, then HOLDS on building i for the rest of
+ * the slot. This makes the camera path continuous (world→b0→b1→…→bN, no jumps),
+ * gives every building a hold, and — because the panel shows building i for the
+ * whole slot — means the map starts moving toward a building exactly when the
+ * panel switches to it.
  */
 export function walkViewport(
   buildings: ReelBuilding[],
@@ -206,25 +208,22 @@ export function walkViewport(
   if (buildings.length === 0) return { center: [0, 0], zoom: 1 };
   const cur = buildings[i];
   const cruise = Math.min(maxZoom, BUILDING_ZOOM);
-  const isLast = i >= buildings.length - 1;
 
-  if (opts.fromWorld && i === 0 && !isLast) {
-    const wc = opts.worldCenter ?? [cur.coordinates.lng, cur.coordinates.lat];
-    const wz = opts.worldZoom ?? 1;
+  if (intra < opts.flyFrac) {
+    const from = i === 0
+      ? { lng: opts.worldCenter[0], lat: opts.worldCenter[1] }
+      : buildings[i - 1].coordinates;
+    const startZoom = i === 0 ? opts.worldZoom : cruise;
     const fp = flightPath({
-      from: { lng: wc[0], lat: wc[1] },
+      from,
       to: cur.coordinates,
-      startZoom: wz,
+      startZoom,
       endZoom: cruise,
-      t: FLIGHT_EASE(intra),
+      t: FLIGHT_EASE(intra / opts.flyFrac),
     });
     return { center: [fp.center.lng, fp.center.lat], zoom: fp.zoom };
   }
-
-  if (isLast || intra < opts.holdFrac) {
-    return { center: [cur.coordinates.lng, cur.coordinates.lat], zoom: cruise };
-  }
-  return flyViewport(buildings, i, (intra - opts.holdFrac) / (1 - opts.holdFrac), maxZoom);
+  return { center: [cur.coordinates.lng, cur.coordinates.lat], zoom: cruise };
 }
 
 export function fitViewport(buildings: ReelBuilding[], maxZoom: number): MapViewport {
