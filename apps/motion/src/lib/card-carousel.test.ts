@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   cyclicDistance, carouselCard,
+  overlayOpacityForDistance,
   CARD_W, CARD_H, CARD_PITCH, CARD_WINDOW, CARD_FALLOFF,
 } from "./card-carousel";
 
@@ -56,5 +57,15 @@ describe("carouselCard", () => {
     expect(CARD_H).toBe(700);
     expect(CARD_W / CARD_H).toBeCloseTo(4 / 5, 3);
     expect(CARD_WINDOW).toBe(CARD_FALLOFF);
+  });
+});
+
+describe("overlayOpacityForDistance", () => {
+  it("is 1 at center, ramps to 0 by the half-step, clamped beyond", () => {
+    expect(overlayOpacityForDistance(0)).toBe(1);
+    expect(overlayOpacityForDistance(0.25)).toBeCloseTo(0.5, 5);
+    expect(overlayOpacityForDistance(-0.5)).toBe(0);
+    expect(overlayOpacityForDistance(0.5)).toBe(0);
+    expect(overlayOpacityForDistance(1)).toBe(0); // clamped, not negative
   });
 });
