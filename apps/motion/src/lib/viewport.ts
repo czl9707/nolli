@@ -2,11 +2,15 @@ import type { ReelBuilding } from "./config";
 
 export type MapViewport = { center: [number, number]; zoom: number };
 
+/** Sentinel for an empty building set; also the camera's safe default. */
+export const FALLBACK_VP: MapViewport = { center: [0, 0], zoom: 1 };
+
+/** Cruise zoom held on each building; the composition's `maxZoom` clamps to this. */
+export const BUILDING_ZOOM = 15;
+
 export function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t;
 }
-
-const BUILDING_ZOOM = 15;
 // Clamp the flight arc so it never zooms out past this (maplibre's `minZoom`).
 // Kept at 6 (not lower) to limit how many remote vector tiles each hop sweeps —
 // at z4 a long hop pulls a continental tile set every frame and trips the tile
@@ -87,9 +91,9 @@ function projectPixel(lng: number, lat: number, worldSize: number): [number, num
   return [x, y];
 }
 
-const sinh = (n: number) => (Math.exp(n) - Math.exp(-n)) / 2;
-const cosh = (n: number) => (Math.exp(n) + Math.exp(-n)) / 2;
-const tanh = (n: number) => sinh(n) / cosh(n);
+const sinh = Math.sinh;
+const cosh = Math.cosh;
+const tanh = Math.tanh;
 
 /**
  * maplibre's flyTo flight path (Van Wijk et al. 2003), ported from
@@ -156,31 +160,6 @@ function flightPath(opts: {
   };
 }
 
-/**
- * Pure fly arc from buildings[i] -> buildings[i+1] over flyT 0..1, using
- * maplibre's flyTo math: center eases along the path, zoom arcs out and back
- * with depth driven by the hop distance (clamped to FLIGHT_MIN_ZOOM).
- */
-export function flyViewport(
-  buildings: ReelBuilding[],
-  i: number,
-  flyT: number,
-  maxZoom: number,
-): MapViewport {
-  if (buildings.length === 0) return { center: [0, 0], zoom: 1 };
-  const cur = buildings[i];
-  const next = buildings[Math.min(i + 1, buildings.length - 1)];
-  const cruise = Math.min(maxZoom, BUILDING_ZOOM);
-  const fp = flightPath({
-    from: cur.coordinates,
-    to: next.coordinates,
-    startZoom: cruise,
-    endZoom: cruise,
-    t: FLIGHT_EASE(flyT),
-  });
-  return { center: [fp.center.lng, fp.center.lat], zoom: fp.zoom };
-}
-
 export type WalkOptions = {
   /** Fraction of each slot spent flying IN to the building (rest is hold). */
   flyFrac: number;
@@ -205,7 +184,7 @@ export function walkViewport(
   maxZoom: number,
   opts: WalkOptions,
 ): MapViewport {
-  if (buildings.length === 0) return { center: [0, 0], zoom: 1 };
+  if (buildings.length === 0) return FALLBACK_VP;
   const cur = buildings[i];
   const cruise = Math.min(maxZoom, BUILDING_ZOOM);
 
@@ -227,6 +206,7 @@ export function walkViewport(
 }
 
 export function fitViewport(buildings: ReelBuilding[], maxZoom: number): MapViewport {
+  if (buildings.length === 0) return FALLBACK_VP;
   if (buildings.length === 1) return { center: [buildings[0].coordinates.lng, buildings[0].coordinates.lat], zoom: maxZoom };
   const lngs = buildings.map((b) => b.coordinates.lng);
   const lats = buildings.map((b) => b.coordinates.lat);

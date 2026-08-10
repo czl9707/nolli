@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { lerp, haversine, flyViewport, walkViewport, fitViewport } from "./viewport";
+import { lerp, haversine, walkViewport, fitViewport } from "./viewport";
 import type { ReelBuilding } from "./config";
 
 const bb = (lng: number, lat: number): ReelBuilding =>
@@ -8,28 +8,6 @@ const bb = (lng: number, lat: number): ReelBuilding =>
 describe("viewport", () => {
   it("lerps between two numbers", () => {
     expect(lerp(0, 10, 0.5)).toBe(5);
-  });
-  it("flyViewport interpolates center between consecutive buildings", () => {
-    const buildings = [bb(0, 0), bb(10, 20)];
-    const v0 = flyViewport(buildings, 0, 0, 6);
-    const v1 = flyViewport(buildings, 0, 1, 6);
-    expect(v0.center).toEqual([0, 0]);
-    expect(v1.center[0]).toBeCloseTo(10, 5);
-    expect(v1.center[1]).toBeCloseTo(20, 5);
-  });
-  it("flyViewport dips zoom mid-flight (maplibre arc)", () => {
-    const buildings = [bb(0, 0), bb(10, 20)];
-    const vStart = flyViewport(buildings, 0, 0, 14);
-    const vEnd = flyViewport(buildings, 0, 1, 14);
-    expect(vStart.zoom).toBeCloseTo(14, 5);
-    expect(vEnd.center[0]).toBeCloseTo(10, 5);
-    // Somewhere in flight the zoom dips below cruise (eased, so not at 0.5).
-    let minZoom = Infinity;
-    for (let i = 1; i < 100; i++) {
-      const z = flyViewport(buildings, 0, i / 100, 14).zoom;
-      minZoom = Math.min(minZoom, z);
-    }
-    expect(minZoom).toBeLessThan(13);
   });
   it("walkViewport flies in from the previous building, then holds", () => {
     const buildings = [bb(0, 0), bb(10, 20), bb(20, 0)];
@@ -60,18 +38,6 @@ describe("viewport", () => {
     expect(vStart.zoom).toBeCloseTo(1, 5);
     expect(vEnd.center[0]).toBeCloseTo(139.76, 3);
     expect(vEnd.zoom).toBeCloseTo(15, 5);
-  });
-  it("flyViewport dips further for longer hops", () => {
-    const minZoomOver = (bs: ReelBuilding[]) => {
-      let m = Infinity;
-      for (let i = 1; i < 100; i++) m = Math.min(m, flyViewport(bs, 0, i / 100, 15).zoom);
-      return m;
-    };
-    const nearMin = minZoomOver([bb(0, 0), bb(0.01, 0.01)]); // ~1.5 km
-    const farMin = minZoomOver([bb(0, 0), bb(150, 0)]); // ~16000 km
-    expect(farMin).toBeLessThan(nearMin);
-    expect(farMin).toBeLessThanOrEqual(6.5);
-    expect(nearMin).toBeGreaterThan(10);
   });
   it("haversine measures distance", () => {
     expect(haversine({ lng: 0, lat: 0 }, { lng: 0, lat: 0 })).toBe(0);

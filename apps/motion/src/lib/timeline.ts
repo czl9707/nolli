@@ -18,6 +18,13 @@ export const TIMELINE_WINDOW = 5;
 export const TL_SLIDE_LEAD_S = 1.4;
 export const GRID_FADE_LEAD_S = 0.4;
 
+// Per-slot motion envelope, derived from the slot seconds. Rhythm, not layout —
+// consumed by the per-frame visuals, not by the composition's geometry.
+export const FLY_FRAC = WALK_FLY_S / WALK_SLOT_S; // fraction of each slot spent flying in
+export const ROLL_FRAC = 1 / WALK_SLOT_S; // carousel rolls to the next item in 1s of the 5s slot
+export const SLOT_FADE = 0.12; // per-building cover/text fade slice at slot edges
+export const CONTENT_RAMP = [0, SLOT_FADE, 1 - SLOT_FADE, 1] as const;
+
 /** Seconds → frames. The single source of truth for the S→frame conversion. */
 export const secToFrames = (s: number): number => Math.round(s * FPS);
 
@@ -28,6 +35,10 @@ export const CLAMP = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as 
 export const HOOK_START = 0;
 export const ESTABLISH_START = secToFrames(HOOK_S);
 export const WALK_START = secToFrames(HOOK_S + ESTABLISH_S);
+
+// ESTABLISH→WALK slide/fade window frame bounds (constant for the whole video).
+export const SLIDE_START = WALK_START - secToFrames(TL_SLIDE_LEAD_S);
+export const GRID_START = WALK_START - secToFrames(GRID_FADE_LEAD_S);
 
 /** CTA start depends on building count (WALK length scales with it). */
 export function ctaStart(count: number): number {
@@ -58,7 +69,3 @@ export function getTimelineState(frame: number, count: number): TimelineState {
   }
   return { beat: BEAT.CTA, currentIndex: count - 1, intra: 0 };
 }
-
-// Back-compat aliases (composition imports these).
-export const BEAT_WALK_START = WALK_START;
-export const BEAT_WALK_END = ctaStart;

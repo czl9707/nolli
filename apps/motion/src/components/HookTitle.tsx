@@ -13,7 +13,6 @@ export const HookTitle: React.FC<{ architect: string }> = ({ architect }) => {
   const opacity = interpolate(frame, OPACITY_RANGE, [0, 1, 1, 0], CLAMP);
   return (
     <AbsoluteFill
-      data-theme="dark"
       style={{ display: "flex", alignItems: "center", justifyContent: "center", opacity }}
     >
       <H1 style={{ color: "rgb(var(--color-primary-foreground))", fontSize: 144, letterSpacing: -3, margin: 0 }}>

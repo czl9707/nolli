@@ -23,12 +23,11 @@ export const Timeline: React.FC<{
   position: number;
 }> = ({ slug, buildings, position }) => {
   // Thumb URLs are constant per (slug, building) — cache so the per-frame map
-  // doesn't re-template + re-resolve ~5 paths every frame.
-  const thumbs = useMemo(() => {
-    const m: Record<string, string> = {};
-    for (const b of buildings) m[b.slug] = staticFile(`capture/${slug}/images/${b.slug}-thumb.jpg`);
-    return m;
-  }, [slug, buildings]);
+  // doesn't re-template + re-resolve ~5 paths every frame. Indexed by slot.
+  const thumbs = useMemo(
+    () => buildings.map((b) => staticFile(`capture/${slug}/images/${b.slug}-thumb.jpg`)),
+    [slug, buildings],
+  );
 
   return (
     <div style={{ position: "relative", width: "100%", height: TIMELINE_H, overflow: "hidden" }}>
@@ -69,7 +68,7 @@ export const Timeline: React.FC<{
               }}
             >
               <Img
-                src={thumbs[b.slug]}
+                src={thumbs[i]}
                 style={{ width: "100%", height: "100%", objectFit: "cover" }}
               />
             </div>
