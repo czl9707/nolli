@@ -15,6 +15,10 @@ export const BRAND_FADE_OUT_LEAD_S = 0.4; // brand fades out as CTA begins
 // --- Fractions of a WALK slot (0..1), independent of slot length. ---
 // FLY_FRAC splits each slot: flying for FLY_FRAC, holding for the rest.
 export const FLY_FRAC = 0.625;
+// Card-carousel slide: a punchy 0.5s ease-out snap into center at each slot
+// start (decoupled from the camera fly), then the card holds.
+export const SNAP_S = 0.5;
+export const SNAP_FRAC = SNAP_S / WALK_SLOT_S;
 
 /** Seconds → frames. The single source of truth for the S→frame conversion. */
 export const secToFrames = (s: number): number => Math.round(s * FPS);

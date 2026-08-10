@@ -53,8 +53,8 @@ describe("carouselCard", () => {
     expect(below.offsetY).toBe(2 * CARD_PITCH);
   });
   it("exposes the 4:5 card geometry", () => {
-    expect(CARD_W).toBe(560);
-    expect(CARD_H).toBe(700);
+    expect(CARD_W).toBe(460);
+    expect(CARD_H).toBe(575);
     expect(CARD_W / CARD_H).toBeCloseTo(4 / 5, 3);
     expect(CARD_WINDOW).toBe(CARD_FALLOFF);
   });

@@ -1,9 +1,10 @@
 // Vertical cyclic card-carousel geometry + math (1920×1080 composition).
 // Pure: no React, no Remotion. The CardCarousel component consumes these.
 
-/** Focused card size: 4:5 portrait. */
-export const CARD_W = 560;
-export const CARD_H = 700;
+/** Focused card size: 4:5 portrait. Fits the right-side bg zone with breathing
+ *  room left of the map's ~70% edge. */
+export const CARD_W = 460;
+export const CARD_H = 575;
 /** Vertical gap between stack layers — 0.38× height → tight, heavy overlap. */
 export const CARD_PITCH = Math.round(CARD_H * 0.38);
 /** Render cards whose cyclic distance is within this. */

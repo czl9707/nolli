@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { getReelVisuals } from "./reel-visuals";
-import { BEAT, WALK_START, WALK_SLOT_S, FLY_FRAC, ctaStart, secToFrames } from "./timeline";
+import { BEAT, WALK_START, WALK_SLOT_S, FLY_FRAC, SNAP_S, ctaStart, secToFrames } from "./timeline";
 
 const COUNT = 9;
 
@@ -24,18 +24,22 @@ describe("getReelVisuals", () => {
     expect(f.chromeOpacity).toBe(0);
   });
 
-  it("carousel couples to the fly: rolls previous→current over the fly, then holds", () => {
+  it("carousel snaps into center over SNAP_S with ease-out, then holds", () => {
     const slotFrames = secToFrames(WALK_SLOT_S);
     const slotStart = WALK_START + 2 * slotFrames; // entering building index 2
     const entering = getReelVisuals(slotStart, COUNT);
     expect(entering.currentIndex).toBe(2);
-    expect(entering.carouselPos).toBeCloseTo(1, 1); // roll just begun → still on previous
+    // snap just begun → still on the previous card (tolerant of slot-boundary frame jitter)
+    expect(entering.carouselPos).toBeGreaterThanOrEqual(1);
+    expect(entering.carouselPos).toBeLessThan(1.2);
 
-    const midFly = getReelVisuals(slotStart + Math.round((FLY_FRAC / 2) * slotFrames), COUNT);
-    expect(midFly.carouselPos).toBeCloseTo(1.5, 1); // halfway through fly → halfway between 1 and 2
+    const snapped = getReelVisuals(slotStart + secToFrames(SNAP_S), COUNT);
+    expect(snapped.carouselPos).toBeCloseTo(2, 5); // 0.5s snap done → centered
 
-    const held = getReelVisuals(slotStart + Math.round(FLY_FRAC * slotFrames), COUNT);
-    expect(held.carouselPos).toBeCloseTo(2, 1); // fly complete → centered on 2
+    // ease-out: at half the snap window the card is already most of the way to center.
+    const midSnap = getReelVisuals(slotStart + Math.round(secToFrames(SNAP_S) / 2), COUNT);
+    expect(midSnap.carouselPos).toBeGreaterThan(1.7);
+    expect(midSnap.carouselPos).toBeLessThan(2);
   });
 
   it("cameraMoving is true only during a slot's fly-in, settled everywhere else", () => {

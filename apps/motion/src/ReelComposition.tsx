@@ -6,13 +6,12 @@ import { useThemeStore } from "@nolli/ui";
 import { useMemo, useState } from "react";
 import { useReelConfig } from "./lib/use-reel-config";
 import { useMapCamera } from "./lib/use-map-camera";
-import { BEAT, FLY_FRAC, WALK_SLOT_S, secToFrames } from "./lib/timeline";
+import { BEAT, FLY_FRAC, WALK_SLOT_S, SNAP_S, secToFrames } from "./lib/timeline";
 import { getReelVisuals, type ReelFrame } from "./lib/reel-visuals";
 import {
   walkViewport, fitViewport, BUILDING_ZOOM, FALLBACK_VP, type MapViewport,
 } from "./lib/viewport";
 import type { ReelBuilding } from "./lib/config";
-import { CARD_W } from "./lib/card-carousel";
 import { CardCarousel } from "./components/CardCarousel";
 import { CornerBrand } from "./components/CornerBrand";
 import { CtaLockup } from "./components/CtaLockup";
@@ -28,7 +27,8 @@ if (typeof document !== "undefined") {
 
 const BRAND_INSET = 56;            // right-edge inset for the corner brand
 const SLOT_FRAMES = secToFrames(WALK_SLOT_S);
-const FLY_FRAMES = secToFrames(FLY_FRAC * WALK_SLOT_S);
+const SNAP_FRAMES = secToFrames(SNAP_S);   // card name reveals after the 0.5s slide snap
+const MAP_WIDTH = "70%";           // map occupies the left 70%; pin centers at ~35% of screen
 
 /** Buildings-aware camera: which viewport each beat shows. Pure, module scope.
  *  WALK (incl. slot 0's world→building fly, the opener) uses walkViewport; CTA
@@ -73,46 +73,50 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
   if (!cfg || !f) return null;
 
   const inWalk = f.beat === BEAT.WALK;
-  // Name reveal for the centered card: frames since the fly completed (center crossing).
-  const centerRevealFrame = Math.max(0, Math.round(f.intra * SLOT_FRAMES) - FLY_FRAMES);
+  // Name reveal for the centered card: frames since the 0.5s slide snap completed.
+  const centerRevealFrame = Math.max(0, Math.round(f.intra * SLOT_FRAMES) - SNAP_FRAMES);
 
   return (
     <AbsoluteFill data-theme="dark" style={{ backgroundColor: "rgb(var(--color-primary-background))" }}>
-      {/* Full-bleed map (WALK only); fades out into CTA with the chrome. */}
+      {/* Map in the left 70% (WALK only); the building pin centers within it →
+          lands in the left half of the screen. Fades out into CTA with the chrome. */}
       {inWalk ? (
-        <AbsoluteFill style={{ opacity: f.chromeOpacity, zIndex: 1 }}>
-          <ArchMap
-            ref={setMap}
-            architectures={archSummaries}
-            selectedSlug={buildings[f.currentIndex].slug}
-            ready
-            capture
-          />
-        </AbsoluteFill>
+        <div style={{ position: "absolute", left: 0, top: 0, width: MAP_WIDTH, height: "100%", opacity: f.chromeOpacity, zIndex: 1 }}>
+          <AbsoluteFill>
+            <ArchMap
+              ref={setMap}
+              architectures={archSummaries}
+              selectedSlug={buildings[f.currentIndex].slug}
+              ready
+              capture
+            />
+          </AbsoluteFill>
+        </div>
       ) : null}
 
-      {/* Map → bg gradient on the right (cards + brand sit on the solid-bg side). */}
+      {/* Seam + bg zone overlay. OPAQUE (never fades) so the map's covered edge
+          stays covered through the WALK→CTA transition — no full-map flash. It
+          only softens the ~62→72% seam; everything right of 72% is solid bg. */}
       {inWalk ? (
         <AbsoluteFill
           style={{
-            opacity: f.chromeOpacity,
             zIndex: 2,
             pointerEvents: "none",
             background:
-              "linear-gradient(to right, transparent 0%, transparent 48%, rgb(var(--color-primary-background)) 66%)",
+              "linear-gradient(to right, transparent 0%, transparent 62%, rgb(var(--color-primary-background)) 72%)",
           }}
         />
       ) : null}
 
-      {/* Vertical card carousel, centered in the right bg zone. */}
+      {/* Vertical card carousel in the right bg zone (breathing room left of it). */}
       {inWalk ? (
         <div
           style={{
             position: "absolute",
-            right: "10%",
+            left: "72%",
+            right: 0,
             top: 0,
             bottom: 0,
-            width: CARD_W,
             zIndex: 4,
             opacity: f.chromeOpacity,
           }}

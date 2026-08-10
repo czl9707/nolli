@@ -1,6 +1,6 @@
 import { interpolate } from "remotion";
 import {
-  BEAT, CLAMP, FLY_FRAC,
+  BEAT, CLAMP, FLY_FRAC, SNAP_FRAC,
   WALK_START, BRAND_FADE_IN_S, BRAND_FADE_OUT_LEAD_S,
   getTimelineState, ctaStart, secToFrames,
 } from "./timeline";
@@ -35,9 +35,11 @@ export function getReelVisuals(frame: number, count: number): ReelFrame {
   const fadeOut = interpolate(frame, [cta - secToFrames(BRAND_FADE_OUT_LEAD_S), cta], [0, 1], CLAMP);
   const chromeOpacity = fadeIn * (1 - fadeOut);
 
-  // Carousel roll COUPLED to the camera fly: the focused card climbs into
-  // center over the slot's fly, arriving exactly as the camera settles on hold.
-  const rollT = Math.min(1, st.intra / FLY_FRAC);
+  // Carousel slide: a punchy 0.5s ease-out snap into center at each slot start
+  // (decoupled from the camera fly), then holds. Cubic ease-out = fast start,
+  // crisp settle.
+  const rawT = Math.min(1, st.intra / SNAP_FRAC);
+  const rollT = 1 - Math.pow(1 - rawT, 3);
   const carouselPos = Math.max(0, st.currentIndex - (1 - rollT));
 
   // Camera is mid-flight only during a WALK slot's fly-in (intra < flyFrac).

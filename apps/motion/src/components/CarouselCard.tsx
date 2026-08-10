@@ -29,8 +29,13 @@ export const CarouselCard: React.FC<{
   building: ReelBuilding;
   overlayOpacity: number;
   revealFrame: number;
-}> = ({ slug, building, overlayOpacity, revealFrame }) => {
+  /** bg-color veil over the image that grows with distance from center (1 fully
+   *  obscured → receding cards dissolve into the bg instead of going transparent,
+   *  so stacked cards don't see-through overlap). 0 at the focused card. */
+  veilOpacity: number;
+}> = ({ slug, building, overlayOpacity, revealFrame, veilOpacity }) => {
   const showOverlay = overlayOpacity > 0.001;
+  const showVeil = veilOpacity > 0.001;
   // Name reveal: fade + rise over NAME_REVEAL_F frames once the card settles (revealFrame 0 on approach).
   const nameT = interpolate(revealFrame, [0, NAME_REVEAL_F], [0, 1], CLAMP);
   const nameOpacity = overlayOpacity * nameT;
@@ -51,6 +56,17 @@ export const CarouselCard: React.FC<{
         src={staticFile(`capture/${slug}/images/${building.slug}-hero.jpg`)}
         style={{ width: "100%", height: "100%", objectFit: "cover" }}
       />
+      {showVeil ? (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundColor: "rgb(var(--color-primary-background))",
+            opacity: veilOpacity,
+            pointerEvents: "none",
+          }}
+        />
+      ) : null}
       {showOverlay ? (
         <>
           <div
