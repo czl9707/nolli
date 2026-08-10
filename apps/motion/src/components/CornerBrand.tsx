@@ -1,16 +1,25 @@
 const FG = "rgb(var(--color-primary-foreground))";
 const FG2 = "rgb(var(--color-secondary-foreground))";
 
-/** Persistent corner branding overlaid through WALK: architect name top-left,
- *  "@nolli.map" handle top-right. Fades with the shared chrome opacity. The
- *  parent positions this row (top strip, PAD-inset). */
-export const CornerBrand: React.FC<{ architect: string; opacity: number }> = ({ architect, opacity }) => (
-  <div style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "baseline", opacity }}>
-    <span style={{ fontFamily: "var(--font-playful)", fontWeight: 500, fontSize: 22, color: FG, lineHeight: 1 }}>
-      {architect}
-    </span>
-    <span style={{ fontSize: 16, letterSpacing: "0.04em", color: FG2, lineHeight: 1 }}>
+/** Persistent corner brand through WALK, split to the right edge so it sits on
+ *  the bg-color zone (never over the map). `corner="top"` = architect name;
+ *  `corner="bottom"` = the @nolli.map handle. The parent absolutely positions
+ *  each piece. Fades with the shared chrome opacity. */
+export const CornerBrand: React.FC<{
+  corner: "top" | "bottom";
+  architect: string;
+  opacity: number;
+}> = ({ corner, architect, opacity }) => {
+  if (corner === "top") {
+    return (
+      <span style={{ fontFamily: "var(--font-playful)", fontWeight: 500, fontSize: 22, color: FG, lineHeight: 1, opacity }}>
+        {architect}
+      </span>
+    );
+  }
+  return (
+    <span style={{ fontSize: 16, letterSpacing: "0.04em", color: FG2, lineHeight: 1, opacity }}>
       @nolli.map
     </span>
-  </div>
-);
+  );
+};

@@ -5,7 +5,6 @@ export const WALK_SLOT_S = 2.5;   // per-building slot; total WALK = count × th
 export const CTA_LINE_S = 1.5;    // "Explore more in"
 export const CTA_LOCKUP_S = 2.5;  // icon + Nolli hold
 export const CTA_S = CTA_LINE_S + CTA_LOCKUP_S;
-export const TIMELINE_WINDOW = 5;
 
 // Motion-first open: the reel opens ON WALK — slot 0's world→building fly is
 // the opener — so there's no HOOK/ESTABLISH beat. Corner branding (architect
@@ -16,9 +15,6 @@ export const BRAND_FADE_OUT_LEAD_S = 0.4; // brand fades out as CTA begins
 // --- Fractions of a WALK slot (0..1), independent of slot length. ---
 // FLY_FRAC splits each slot: flying for FLY_FRAC, holding for the rest.
 export const FLY_FRAC = 0.625;
-export const ROLL_FRAC = 1 / WALK_SLOT_S;   // carousel advances in ~1s of the slot
-export const SLOT_FADE_FRAC = 0.12;         // per-building cover/text fade slice at slot edges
-export const CONTENT_RAMP = [0, SLOT_FADE_FRAC, 1 - SLOT_FADE_FRAC, 1] as const;
 
 /** Seconds → frames. The single source of truth for the S→frame conversion. */
 export const secToFrames = (s: number): number => Math.round(s * FPS);

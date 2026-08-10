@@ -6,15 +6,14 @@ import { useThemeStore } from "@nolli/ui";
 import { useMemo, useState } from "react";
 import { useReelConfig } from "./lib/use-reel-config";
 import { useMapCamera } from "./lib/use-map-camera";
-import { BEAT, FLY_FRAC } from "./lib/timeline";
-import { getReelVisuals, type ReelGeometry, type ReelFrame } from "./lib/reel-visuals";
+import { BEAT, FLY_FRAC, WALK_SLOT_S, secToFrames } from "./lib/timeline";
+import { getReelVisuals, type ReelFrame } from "./lib/reel-visuals";
 import {
   walkViewport, fitViewport, BUILDING_ZOOM, FALLBACK_VP, type MapViewport,
 } from "./lib/viewport";
 import type { ReelBuilding } from "./lib/config";
-import { Hero } from "./components/Hero";
-import { Caption } from "./components/Caption";
-import { Timeline, TIMELINE_H } from "./components/Timeline";
+import { CARD_W } from "./lib/card-carousel";
+import { CardCarousel } from "./components/CardCarousel";
 import { CornerBrand } from "./components/CornerBrand";
 import { CtaLockup } from "./components/CtaLockup";
 
@@ -27,13 +26,9 @@ if (typeof document !== "undefined") {
   document.documentElement.style.colorScheme = "dark";
 }
 
-// Composition geometry (1920×1080). PAD = outer padding; GAP between the two
-// grid columns; TL_W = left-column width the timeline spans. TIMELINE_H comes
-// from the Timeline component so the corner landing lines up exactly.
-const PAD = 72;
-const GAP = 72;
-const TL_W = (1920 - 2 * PAD - GAP) / 2;
-const GEO: ReelGeometry = { PAD, TL_W, TIMELINE_H, PANEL_W: 1920, PANEL_H: 1080 };
+const BRAND_INSET = 56;            // right-edge inset for the corner brand
+const SLOT_FRAMES = secToFrames(WALK_SLOT_S);
+const FLY_FRAMES = secToFrames(FLY_FRAC * WALK_SLOT_S);
 
 /** Buildings-aware camera: which viewport each beat shows. Pure, module scope.
  *  WALK (incl. slot 0's world→building fly, the opener) uses walkViewport; CTA
@@ -57,7 +52,7 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
 
   const buildings = cfg?.buildings ?? [];
   const count = buildings.length;
-  const f = count ? getReelVisuals(frame, count, GEO) : null;
+  const f = count ? getReelVisuals(frame, count) : null;
 
   // ArchMap only reads coordinates (it doesn't render covers), so width/height
   // are zeros that just satisfy the ArchSummary cover shape.
@@ -76,74 +71,74 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
   useMapCamera(map, vp, f?.cameraMoving ?? false);
 
   if (!cfg || !f) return null;
-  const current = buildings[f.currentIndex];
+
+  const inWalk = f.beat === BEAT.WALK;
+  // Name reveal for the centered card: frames since the fly completed (center crossing).
+  const centerRevealFrame = Math.max(0, Math.round(f.intra * SLOT_FRAMES) - FLY_FRAMES);
 
   return (
-    <AbsoluteFill data-theme="dark" style={{ backgroundColor: "rgb(var(--color-primary-background))", padding: PAD }}>
-      {f.beat === BEAT.CTA ? <CtaLockup ctaFrame={f.ctaFrame} /> : null}
-
-      {/* Persistent corner brand through WALK: architect top-left, @nolli.map
-          top-right. Fades with the shared chrome opacity (in at the open, out
-          into CTA). */}
-      <div style={{ position: "absolute", top: 28, left: PAD, right: PAD, zIndex: 6, pointerEvents: "none" }}>
-        <CornerBrand architect={cfg.architect} opacity={f.tlOpacity} />
-      </div>
-
-      {/* WALK grid: 50/50 — left cover/text, right map. Bottom space is reserved
-          so the corner timeline strip never overlaps it. */}
-      {f.showGrid ? (
-        <div style={{ width: "100%", height: "100%", display: "grid", gridTemplateColumns: "1fr 1fr", gap: GAP, minHeight: 0, opacity: f.gridOpacity }}>
-          <div style={{ position: "relative", display: "flex", flexDirection: "column", minHeight: 0 }}>
-            <div
-              style={{
-                flex: 1,
-                display: "flex",
-                flexDirection: "column",
-                minHeight: 0,
-                paddingBottom: TIMELINE_H + 16,
-                opacity: f.contentOpacity,
-                transform: `translateX(${f.contentX}px)`,
-              }}
-            >
-              <Hero slug={cfg.slug} buildingSlug={current.slug} />
-              <Caption
-                name={current.name}
-                year={current.year}
-                city={current.city}
-                countryCode={current.countryCode}
-                intra={f.intra}
-              />
-            </div>
-          </div>
-          <div style={{ position: "relative", minHeight: 0, borderRadius: "var(--size-border-radius)", overflow: "hidden" }}>
-            <ArchMap
-              ref={setMap}
-              architectures={archSummaries}
-              selectedSlug={current.slug}
-              ready
-              capture
-            />
-          </div>
-        </div>
+    <AbsoluteFill data-theme="dark" style={{ backgroundColor: "rgb(var(--color-primary-background))" }}>
+      {/* Full-bleed map (WALK only); fades out into CTA with the chrome. */}
+      {inWalk ? (
+        <AbsoluteFill style={{ opacity: f.chromeOpacity, zIndex: 1 }}>
+          <ArchMap
+            ref={setMap}
+            architectures={archSummaries}
+            selectedSlug={buildings[f.currentIndex].slug}
+            ready
+            capture
+          />
+        </AbsoluteFill>
       ) : null}
 
-      {/* Corner timeline strip throughout WALK. */}
-      {f.inWalkEra ? (
+      {/* Map → bg gradient on the right (cards + brand sit on the solid-bg side). */}
+      {inWalk ? (
+        <AbsoluteFill
+          style={{
+            opacity: f.chromeOpacity,
+            zIndex: 2,
+            pointerEvents: "none",
+            background:
+              "linear-gradient(to right, transparent 0%, transparent 48%, rgb(var(--color-primary-background)) 66%)",
+          }}
+        />
+      ) : null}
+
+      {/* Vertical card carousel, centered in the right bg zone. */}
+      {inWalk ? (
         <div
           style={{
             position: "absolute",
-            left: f.tlLeft,
-            top: f.tlTop,
-            width: TL_W,
-            opacity: f.tlOpacity,
-            transform: `scale(${f.tlScale})`,
-            transformOrigin: "top left",
-            zIndex: 5,
+            right: "10%",
+            top: 0,
+            bottom: 0,
+            width: CARD_W,
+            zIndex: 4,
+            opacity: f.chromeOpacity,
           }}
         >
-          <Timeline slug={cfg.slug} buildings={buildings} position={f.carouselPos} />
+          <CardCarousel
+            slug={cfg.slug}
+            buildings={buildings}
+            position={f.carouselPos}
+            centerRevealFrame={centerRevealFrame}
+          />
         </div>
       ) : null}
+
+      {/* Corner brand on the right edge: architect top-right, @nolli.map bottom-right. */}
+      {inWalk ? (
+        <>
+          <div style={{ position: "absolute", top: 28, right: BRAND_INSET, zIndex: 6 }}>
+            <CornerBrand corner="top" architect={cfg.architect} opacity={f.chromeOpacity} />
+          </div>
+          <div style={{ position: "absolute", bottom: 28, right: BRAND_INSET, zIndex: 6 }}>
+            <CornerBrand corner="bottom" architect={cfg.architect} opacity={f.chromeOpacity} />
+          </div>
+        </>
+      ) : null}
+
+      {f.beat === BEAT.CTA ? <CtaLockup ctaFrame={f.ctaFrame} /> : null}
     </AbsoluteFill>
   );
 };
