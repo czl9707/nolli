@@ -1,17 +1,18 @@
 import { describe, it, expect } from "vitest";
 import {
-  FPS, HOOK_S, ESTABLISH_S, WALK_SLOT_S, CTA_S,
-  HOOK_START, ESTABLISH_START, WALK_START, ctaStart, totalFrames,
+  FPS, WALK_SLOT_S, CTA_S,
+  WALK_START, ctaStart, totalFrames,
   BEAT, getTimelineState,
 } from "./timeline";
 
 describe("timeline", () => {
   const COUNT = 9;
-  it("derives frame boundaries from seconds constants", () => {
-    expect(HOOK_START).toBe(0);
-    expect(ESTABLISH_START).toBe(Math.round(HOOK_S * FPS));
-    expect(WALK_START).toBe(Math.round((HOOK_S + ESTABLISH_S) * FPS));
-    expect(ctaStart(COUNT)).toBe(WALK_START + Math.round(COUNT * WALK_SLOT_S * FPS));
+  it("opens on WALK at frame 0 (motion-first; no HOOK/ESTABLISH beat)", () => {
+    expect(WALK_START).toBe(0);
+    expect(getTimelineState(0, COUNT).beat).toBe(BEAT.WALK);
+  });
+  it("derives CTA + total from the WALK length", () => {
+    expect(ctaStart(COUNT)).toBe(Math.round(COUNT * WALK_SLOT_S * FPS));
     expect(totalFrames(COUNT)).toBe(ctaStart(COUNT) + Math.round(CTA_S * FPS));
   });
   it("scales total length with building count", () => {
@@ -19,9 +20,7 @@ describe("timeline", () => {
     expect(totalFrames(9) - totalFrames(5)).toBe(Math.round(4 * WALK_SLOT_S * FPS));
   });
   it("maps frames to beats", () => {
-    expect(getTimelineState(0, COUNT).beat).toBe(BEAT.HOOK);
-    expect(getTimelineState(ESTABLISH_START, COUNT).beat).toBe(BEAT.ESTABLISH);
-    expect(getTimelineState(WALK_START, COUNT).beat).toBe(BEAT.WALK);
+    expect(getTimelineState(0, COUNT).beat).toBe(BEAT.WALK);
     expect(getTimelineState(ctaStart(COUNT), COUNT).beat).toBe(BEAT.CTA);
   });
   it("indexes buildings across WALK", () => {

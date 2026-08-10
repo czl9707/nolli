@@ -1,7 +1,7 @@
 import { interpolate } from "remotion";
 import {
   BEAT, CLAMP, CONTENT_RAMP, ROLL_FRAC, FLY_FRAC,
-  ESTABLISH_START, WALK_START, SLIDE_START, GRID_START,
+  WALK_START, BRAND_FADE_IN_S, BRAND_FADE_OUT_LEAD_S,
   getTimelineState, ctaStart, secToFrames,
 } from "./timeline";
 
@@ -21,12 +21,13 @@ export type ReelFrame = {
   intra: number;
   /** Frame relative to CTA start (negative before CTA). */
   ctaFrame: number;
-  // Single timeline layer: centered during ESTABLISH, eased to the bottom-left corner for WALK.
+  // Single timeline layer: fixed in the bottom-left corner throughout WALK.
   tlLeft: number;
   tlTop: number;
   tlScale: number;
+  /** Shared chrome opacity (timeline strip + corner brand): soft-in at the open,
+   *  out into CTA. */
   tlOpacity: number;
-  // WALK grid (cover/text + map): fades in over the tail of ESTABLISH.
   gridOpacity: number;
   showGrid: boolean;
   inWalkEra: boolean;
@@ -39,9 +40,6 @@ export type ReelFrame = {
   cameraMoving: boolean;
 };
 
-const ESTABLISH_IN_S = 0.3; // timeline fades in at the start of ESTABLISH
-const CTA_CROSSFADE_S = 0.4; // timeline crossfades out as CTA begins
-
 /**
  * Resolve the full per-frame visual state for the reel. Pure function of
  * (frame, count, geometry) — no React, no buildings — so the composition body
@@ -53,24 +51,23 @@ export function getReelVisuals(frame: number, count: number, geo: ReelGeometry):
   const st = getTimelineState(frame, count);
   const cta = ctaStart(count);
 
-  // ESTABLISH→WALK hand-off: the timeline layer eases center→corner over
-  // [SLIDE_START, GRID_START], then the grid fades in over [GRID_START, WALK_START].
-  // Serialized windows so the layer is tucked away before the map appears.
-  const tlEaseT = interpolate(frame, [SLIDE_START, GRID_START], [0, 1], CLAMP);
-  const gridOpacity = interpolate(frame, [GRID_START, WALK_START], [0, 1], CLAMP);
-  const tlLeft = interpolate(tlEaseT, [0, 1], [(geo.PANEL_W - geo.TL_W) / 2, geo.PAD], CLAMP);
-  const tlTop = interpolate(tlEaseT, [0, 1], [(geo.PANEL_H - geo.TIMELINE_H) / 2, geo.PANEL_H - geo.PAD - geo.TIMELINE_H], CLAMP);
-  const tlScale = interpolate(tlEaseT, [0, 1], [1.12, 1], CLAMP);
+  // Timeline fixed in the bottom-left corner for the whole WALK era (motion-first
+  // open: there's no centered establish beat to slide from).
+  const tlLeft = geo.PAD;
+  const tlTop = geo.PANEL_H - geo.PAD - geo.TIMELINE_H;
+  const tlScale = 1;
 
-  const establishIn = interpolate(frame, [ESTABLISH_START, ESTABLISH_START + secToFrames(ESTABLISH_IN_S)], [0, 1], CLAMP);
-  const ctaIn = interpolate(frame, [cta - secToFrames(CTA_CROSSFADE_S), cta], [0, 1], CLAMP);
-  const tlOpacity = (1 - ctaIn) * establishIn;
+  // Chrome (timeline + corner brand) soft-fades in at the open, out into CTA.
+  const brandIn = interpolate(frame, [WALK_START, WALK_START + secToFrames(BRAND_FADE_IN_S)], [0, 1], CLAMP);
+  const brandOut = interpolate(frame, [cta - secToFrames(BRAND_FADE_OUT_LEAD_S), cta], [0, 1], CLAMP);
+  const tlOpacity = (1 - brandOut) * brandIn;
 
-  const inWalkEra = st.beat === BEAT.ESTABLISH || st.beat === BEAT.WALK;
-  const showGrid = inWalkEra && frame >= GRID_START;
+  const inWalkEra = st.beat === BEAT.WALK;
+  const showGrid = inWalkEra;
+  const gridOpacity = inWalkEra ? 1 : 0;
 
-  // Carousel roll: brisk 1s advance into the next item, decoupled from the 3s
-  // map fly so the list moves while the map glides.
+  // Carousel roll: brisk 1s advance into the next item, decoupled from the map
+  // fly so the list moves while the map glides.
   const rollT = Math.min(1, st.intra / ROLL_FRAC);
   const carouselPos = Math.max(0, st.currentIndex - (1 - rollT));
 
@@ -80,7 +77,7 @@ export function getReelVisuals(frame: number, count: number, geo: ReelGeometry):
   const contentX = interpolate(st.intra, CONTENT_RAMP, [56, 0, 0, -56], CLAMP);
 
   // Camera is mid-flight only during a WALK slot's fly-in (intra < flyFrac).
-  // Everywhere else (ESTABLISH world hold, WALK hold, CTA) it has settled.
+  // Everywhere else (WALK hold, CTA) it has settled.
   const cameraMoving = st.beat === BEAT.WALK && st.intra < FLY_FRAC;
 
   return {

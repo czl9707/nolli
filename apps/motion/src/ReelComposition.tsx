@@ -15,7 +15,7 @@ import type { ReelBuilding } from "./lib/config";
 import { Hero } from "./components/Hero";
 import { Caption } from "./components/Caption";
 import { Timeline, TIMELINE_H } from "./components/Timeline";
-import { HookTitle } from "./components/HookTitle";
+import { CornerBrand } from "./components/CornerBrand";
 import { CtaLockup } from "./components/CtaLockup";
 
 // Force dark once at module load: the theme store + body attribute drive our
@@ -31,13 +31,14 @@ if (typeof document !== "undefined") {
 // grid columns; TL_W = left-column width the timeline spans. TIMELINE_H comes
 // from the Timeline component so the corner landing lines up exactly.
 const PAD = 72;
-const GAP = 48;
+const GAP = 72;
 const TL_W = (1920 - 2 * PAD - GAP) / 2;
 const GEO: ReelGeometry = { PAD, TL_W, TIMELINE_H, PANEL_W: 1920, PANEL_H: 1080 };
 
-/** Buildings-aware camera: which viewport each beat shows. Pure, module scope. */
+/** Buildings-aware camera: which viewport each beat shows. Pure, module scope.
+ *  WALK (incl. slot 0's world→building fly, the opener) uses walkViewport; CTA
+ *  holds on the last building. */
 function reelViewport(f: ReelFrame, buildings: ReelBuilding[], worldVP: MapViewport): MapViewport {
-  if (f.beat === BEAT.ESTABLISH) return worldVP;
   if (f.beat === BEAT.CTA) {
     const last = buildings[buildings.length - 1];
     return { center: [last.coordinates.lng, last.coordinates.lat], zoom: BUILDING_ZOOM };
@@ -69,7 +70,7 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
     [cfg],
   );
 
-  // World view for ESTABLISH + slot-0 fly source.
+  // World view: slot-0 fly source (the opener flies world → building[0]).
   const worldVP = useMemo(() => (count ? fitViewport(buildings, 2) : FALLBACK_VP), [buildings, count]);
   const vp = f ? reelViewport(f, buildings, worldVP) : FALLBACK_VP;
   useMapCamera(map, vp, f?.cameraMoving ?? false);
@@ -79,11 +80,17 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
 
   return (
     <AbsoluteFill data-theme="dark" style={{ backgroundColor: "rgb(var(--color-primary-background))", padding: PAD }}>
-      {f.beat === BEAT.HOOK ? <HookTitle architect={cfg.architect} /> : null}
       {f.beat === BEAT.CTA ? <CtaLockup ctaFrame={f.ctaFrame} /> : null}
 
-      {/* WALK grid (fading in from late ESTABLISH): 50/50 — left cover/text, right map.
-          Bottom space is reserved so the sliding timeline layer never overlaps it. */}
+      {/* Persistent corner brand through WALK: architect top-left, @nolli.map
+          top-right. Fades with the shared chrome opacity (in at the open, out
+          into CTA). */}
+      <div style={{ position: "absolute", top: 28, left: PAD, right: PAD, zIndex: 6, pointerEvents: "none" }}>
+        <CornerBrand architect={cfg.architect} opacity={f.tlOpacity} />
+      </div>
+
+      {/* WALK grid: 50/50 — left cover/text, right map. Bottom space is reserved
+          so the corner timeline strip never overlaps it. */}
       {f.showGrid ? (
         <div style={{ width: "100%", height: "100%", display: "grid", gridTemplateColumns: "1fr 1fr", gap: GAP, minHeight: 0, opacity: f.gridOpacity }}>
           <div style={{ position: "relative", display: "flex", flexDirection: "column", minHeight: 0 }}>
@@ -104,6 +111,7 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
                 year={current.year}
                 city={current.city}
                 countryCode={current.countryCode}
+                intra={f.intra}
               />
             </div>
           </div>
@@ -119,8 +127,7 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
         </div>
       ) : null}
 
-      {/* Single timeline layer: centered during ESTABLISH, eased to the
-          bottom-left corner as WALK begins. */}
+      {/* Corner timeline strip throughout WALK. */}
       {f.inWalkEra ? (
         <div
           style={{
