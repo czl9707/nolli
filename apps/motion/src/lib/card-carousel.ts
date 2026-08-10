@@ -67,13 +67,3 @@ export function carouselCard(i: number, position: number, count: number): Carous
     veilOpacity: Math.min(VEIL_CAP, (ad / CARD_DEPTH) * VEIL_CAP),
   };
 }
-
-/** |distance| over which the caption overlay ramps from 1 (center) → 0. */
-export const OVERLAY_HALF_STEP = 0.5;
-
-/** Caption-overlay opacity for a card at `distance` from center: 1 at the
- *  focused card, ramping to 0 by |distance| = OVERLAY_HALF_STEP. Cards beyond
- *  that render the cover only. */
-export function overlayOpacityForDistance(distance: number): number {
-  return Math.max(0, Math.min(1, (OVERLAY_HALF_STEP - Math.abs(distance)) / OVERLAY_HALF_STEP));
-}

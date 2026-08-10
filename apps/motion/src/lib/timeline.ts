@@ -1,7 +1,7 @@
 export const FPS = 45;
 
 // --- Durations in SECONDS. Frames derive via round(S * FPS). ---
-export const WALK_SLOT_S = 2.5;   // per-building slot; total WALK = count × this
+export const WALK_SLOT_S = 4.5;     // per-building slot; total WALK = count × this
 export const CTA_LINE_S = 1.5;    // "Explore more in"
 export const CTA_LOCKUP_S = 2.5;  // icon + Nolli hold
 export const CTA_S = CTA_LINE_S + CTA_LOCKUP_S;
@@ -13,8 +13,7 @@ export const BRAND_FADE_IN_S = 0.3;       // corner brand soft-in at the open
 export const BRAND_FADE_OUT_LEAD_S = 0.4; // brand fades out as CTA begins
 
 // --- Fractions of a WALK slot (0..1), independent of slot length. ---
-// FLY_FRAC splits each slot: flying for FLY_FRAC, holding for the rest.
-export const FLY_FRAC = 0.625;
+export const FLY_FRAC = 0.6;
 // Card-carousel slide: a punchy 0.5s ease-out snap into center at each slot
 // start (decoupled from the camera fly), then the card holds.
 export const SNAP_S = 0.5;

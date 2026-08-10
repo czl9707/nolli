@@ -6,13 +6,14 @@ import { useThemeStore } from "@nolli/ui";
 import { useMemo, useState } from "react";
 import { useReelConfig } from "./lib/use-reel-config";
 import { useMapCamera } from "./lib/use-map-camera";
-import { BEAT, FLY_FRAC, WALK_SLOT_S, SNAP_S, secToFrames } from "./lib/timeline";
+import { BEAT, FLY_FRAC, WALK_SLOT_S, secToFrames } from "./lib/timeline";
 import { getReelVisuals, type ReelFrame } from "./lib/reel-visuals";
 import {
   walkViewport, fitViewport, BUILDING_ZOOM, FALLBACK_VP, type MapViewport,
 } from "./lib/viewport";
 import type { ReelBuilding } from "./lib/config";
 import { CardCarousel } from "./components/CardCarousel";
+import { BuildingCaption } from "./components/BuildingCaption";
 import { CornerBrand } from "./components/CornerBrand";
 import { CtaLockup } from "./components/CtaLockup";
 
@@ -27,13 +28,12 @@ if (typeof document !== "undefined") {
 
 const BRAND_INSET = 56;            // right-edge inset for the corner brand
 const SLOT_FRAMES = secToFrames(WALK_SLOT_S);
-const SNAP_FRAMES = secToFrames(SNAP_S);   // card name reveals after the 0.5s slide snap
 
 // Map→bg layout (fractions of screen width), all tunable. Left→right the screen
 // reads: map fully visible → GRADIENT_W band fading map→bg → FULL_BG_RIGHT solid
 // bg. The image stack's center axis sits STACK_AXIS_FROM_RIGHT in from the edge.
-const FULL_BG_RIGHT = 0.30;            // right 30% is pure bg (no map bleed)
-const GRADIENT_W = 0.20;               // 20% gradient band before the full-bg zone
+const FULL_BG_RIGHT = 0.4;            // right 35% is pure bg (no map bleed)
+const GRADIENT_W = 0.25;               // 25% gradient band before the full-bg zone
 const MAP_FRAC = 1 - FULL_BG_RIGHT;            // map div spans up to the full-bg edge (70%)
 const GRADIENT_START = MAP_FRAC - GRADIENT_W;  // gradient begins here (50%)
 const STACK_AXIS_FROM_RIGHT = 0.25;            // image-stack center axis, 25% in from the right
@@ -83,8 +83,6 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
   if (!cfg || !f) return null;
 
   const inWalk = f.beat === BEAT.WALK;
-  // Name reveal for the centered card: frames since the 0.5s slide snap completed.
-  const centerRevealFrame = Math.max(0, Math.round(f.intra * SLOT_FRAMES) - SNAP_FRAMES);
 
   return (
     <AbsoluteFill data-theme="dark" style={{ backgroundColor: "rgb(var(--color-primary-background))" }}>
@@ -135,9 +133,20 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
             slug={cfg.slug}
             buildings={buildings}
             position={f.carouselPos}
-            centerRevealFrame={centerRevealFrame}
           />
         </div>
+      ) : null}
+
+      {/* Bottom-left building caption (name + year · location): fg text floating
+          over the map, soft-blur reveal after the card snap settles. Keyed by the
+          focused index so each building remounts for a fresh reveal. */}
+      {inWalk ? (
+        <BuildingCaption
+          key={f.currentIndex}
+          building={buildings[f.currentIndex]}
+          slotFrame={Math.round(f.intra * SLOT_FRAMES)}
+          opacity={f.chromeOpacity}
+        />
       ) : null}
 
       {/* Corner brand on the right edge: architect top-right, @nolli.map bottom-right. */}

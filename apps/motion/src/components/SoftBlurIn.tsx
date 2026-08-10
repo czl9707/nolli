@@ -48,10 +48,25 @@ export const SoftBlurIn: React.FC<{
     ...(exitF !== undefined && { exitF }),
   };
 
+  // Group into word / whitespace tokens so the text wraps at word boundaries.
+  // Each char-span is an atomic inline box; without word grouping a long word
+  // could split mid-word when the layout wraps. Words render as nowrap groups of
+  // char-spans; whitespace tokens are inline pre spacers that preserve width.
+  const chars = [...text];
+  const tokens: { kind: "word" | "space"; text: string; start: number }[] = [];
+  let i = 0;
+  while (i < chars.length) {
+    const isSpace = /\s/.test(chars[i]);
+    let j = i;
+    while (j < chars.length && /\s/.test(chars[j]) === isSpace) j++;
+    tokens.push({ kind: isSpace ? "space" : "word", text: chars.slice(i, j).join(""), start: i });
+    i = j;
+  }
+
   return (
     <span
       style={{
-        display: "inline-flex",
+        display: "inline-block",
         ...(fontSize !== undefined && { fontSize }),
         ...(fontWeight !== undefined && { fontWeight }),
         ...(fontFamily !== undefined && { fontFamily }),
@@ -60,21 +75,34 @@ export const SoftBlurIn: React.FC<{
         ...style,
       }}
     >
-      {[...text].map((ch, i) => {
-        const { opacity, blur: blurPx, translateY } = softBlurChar(frame, i, opts);
+      {tokens.map((tok, ti) => {
+        if (tok.kind === "space") {
+          return (
+            <span key={ti} style={{ display: "inline-block", whiteSpace: "pre" }}>
+              {tok.text}
+            </span>
+          );
+        }
         return (
-          <span
-            key={i}
-            style={{
-              display: "inline-block",
-              opacity,
-              filter: blurPx > 0.01 ? `blur(${blurPx}px)` : undefined,
-              transform: `translateY(${translateY}px)`,
-              whiteSpace: "pre",
-              willChange: "transform, filter, opacity",
-            }}
-          >
-            {ch}
+          <span key={ti} style={{ display: "inline-block", whiteSpace: "nowrap" }}>
+            {[...tok.text].map((ch, ci) => {
+              const { opacity, blur: blurPx, translateY } = softBlurChar(frame, tok.start + ci, opts);
+              return (
+                <span
+                  key={ci}
+                  style={{
+                    display: "inline-block",
+                    opacity,
+                    filter: blurPx > 0.01 ? `blur(${blurPx}px)` : undefined,
+                    transform: `translateY(${translateY}px)`,
+                    whiteSpace: "pre",
+                    willChange: "transform, filter, opacity",
+                  }}
+                >
+                  {ch}
+                </span>
+              );
+            })}
           </span>
         );
       })}
