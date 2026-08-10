@@ -3,7 +3,7 @@ import { lerp, haversine, walkViewport, fitViewport } from "./viewport";
 import type { ReelBuilding } from "./config";
 
 const bb = (lng: number, lat: number): ReelBuilding =>
-  ({ slug: "x", name: "X", year: 0, city: "c", country: "cy", countryCode: "", coordinates: { lng, lat }, coverImage: "", photoCount: 1 });
+  ({ slug: "x", name: "X", year: 0, city: "c", countryCode: "", coordinates: { lng, lat }, coverImage: "" });
 
 describe("viewport", () => {
   it("lerps between two numbers", () => {

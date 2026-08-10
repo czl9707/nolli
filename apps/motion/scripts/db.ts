@@ -55,12 +55,10 @@ type DbRow = {
   name: string;
   year: number;
   city: string | null;
-  country: string | null;
   cc: string | null;
   lat: number;
   lng: number;
   cover: string | null;
-  photos: number;
 };
 
 export type AllBuildingRow = { id: number; slug: string; name: string; lng: number; lat: number };
@@ -82,10 +80,9 @@ export function queryArchitectBuildings(dbPath: string, architectName: string): 
     .prepare(
       `
     SELECT a.slug, a.name, a.year,
-           ci.name AS city, co.name AS country, co.code AS cc,
+           ci.name AS city, co.code AS cc,
            a.latitude AS lat, a.longitude AS lng,
-           (SELECT p.image FROM architecture_photos p WHERE p.architecture_id = a.id AND p.is_cover = 1) AS cover,
-           (SELECT COUNT(*) FROM architecture_photos p WHERE p.architecture_id = a.id) AS photos
+           (SELECT p.image FROM architecture_photos p WHERE p.architecture_id = a.id AND p.is_cover = 1) AS cover
     FROM architectures a
     JOIN architects ar ON a.architect_id = ar.id
     LEFT JOIN cities ci ON a.city_id = ci.id
@@ -101,10 +98,8 @@ export function queryArchitectBuildings(dbPath: string, architectName: string): 
     name: r.name,
     year: r.year,
     city: r.city ?? "—",
-    country: r.country ?? "—",
     countryCode: r.cc ?? "",
     coordinates: { lng: r.lng, lat: r.lat },
     coverImage: r.cover ?? "",
-    photoCount: r.photos,
   }));
 }

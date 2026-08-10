@@ -2,7 +2,6 @@ import { mkdirSync, writeFileSync, existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { ensureDb, resolveArchitectName, queryArchitectBuildings, queryAllBuildings } from "./db";
 import { buildReelConfig } from "./config-builder";
-import type { ReelConfig } from "../src/lib/config";
 
 const OUT_DIR = (slug: string) => resolve("out", slug);
 
@@ -27,19 +26,14 @@ async function main() {
   console.log(`wrote ${allPath} — ${allBuildings.length} buildings`);
 
   const cfgPath = resolve(outDir, "reel.json");
-  let episode = 1;
-  if (existsSync(cfgPath)) {
-    try { episode = (JSON.parse(readFileSync(cfgPath, "utf8")) as ReelConfig).episode ?? 1; } catch { /* ignore */ }
-  }
-
   if (existsJsonShape(cfgPath)) {
     console.log(`reel.json exists at ${cfgPath}; not overwritten. Delete it to re-seed.`);
     return;
   }
 
-  const cfg = buildReelConfig({ slug, architect, buildings, episode });
+  const cfg = buildReelConfig({ slug, architect, buildings });
   writeFileSync(cfgPath, JSON.stringify(cfg, null, 2));
-  console.log(`wrote ${cfgPath} — ${cfg.buildings.length} buildings, hook=${cfg.hookSlug}`);
+  console.log(`wrote ${cfgPath} — ${cfg.buildings.length} buildings`);
 }
 
 function existsJsonShape(p: string): boolean {
