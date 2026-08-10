@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   cyclicDistance, carouselCard,
   overlayOpacityForDistance,
-  CARD_W, CARD_H, CARD_PITCH, CARD_WINDOW, CARD_FALLOFF,
+  CARD_W, CARD_H, CARD_PITCH, CARD_DEPTH, VEIL_CAP,
 } from "./card-carousel";
 
 const COUNT = 9;
@@ -28,35 +28,38 @@ describe("cyclicDistance", () => {
 });
 
 describe("carouselCard", () => {
-  it("centered card is full opacity, full scale, no offset, top z-index", () => {
+  it("centered card is full scale, no offset, top z-index, no veil", () => {
     const s = carouselCard(3, 3, COUNT);
-    expect(s.opacity).toBe(1);
     expect(s.scale).toBe(1);
     expect(s.offsetY).toBe(0);
     expect(s.zIndex).toBe(100);
     expect(s.visible).toBe(true);
+    expect(s.veilOpacity).toBe(0);
   });
-  it("opacity is 0 exactly at CARD_FALLOFF distance, still visible within the window", () => {
-    const s = carouselCard(6, 3, COUNT); // |d|=3
-    expect(s.opacity).toBe(0);
-    expect(s.visible).toBe(true); // |d| <= CARD_WINDOW(3)
-    expect(s.scale).toBeCloseTo(1 - 0.12 * 3, 5);
+  it("veil darkens with depth, capping at VEIL_CAP on the outermost card", () => {
+    expect(carouselCard(4, 3, COUNT).veilOpacity).toBeCloseTo(VEIL_CAP / 2, 5); // |d|=1 → half cap
+    expect(carouselCard(5, 3, COUNT).veilOpacity).toBeCloseTo(VEIL_CAP, 5);     // |d|=2 → cap
   });
-  it("is not visible beyond the window", () => {
-    const s = carouselCard(7, 3, COUNT); // |d|=4
-    expect(s.visible).toBe(false);
+  it("offset uses diminishing pitch: 2nd card one step, 3rd card only half a step more", () => {
+    const first = carouselCard(4, 3, COUNT);  // |d|=1 → one CARD_PITCH step
+    const second = carouselCard(5, 3, COUNT); // |d|=2 → 1.5× CARD_PITCH (half step more)
+    expect(first.offsetY).toBe(CARD_PITCH);
+    expect(second.offsetY).toBe(CARD_PITCH * 1.5);
   });
-  it("offsetY is negative above center, positive below, stepped by CARD_PITCH", () => {
-    const above = carouselCard(1, 3, COUNT); // d=-2
-    const below = carouselCard(5, 3, COUNT); // d=+2
-    expect(above.offsetY).toBe(-2 * CARD_PITCH);
-    expect(below.offsetY).toBe(2 * CARD_PITCH);
+  it("offsetY is negative above center, positive below", () => {
+    expect(carouselCard(2, 3, COUNT).offsetY).toBe(-CARD_PITCH); // d=-1
+    expect(carouselCard(4, 3, COUNT).offsetY).toBe(CARD_PITCH);  // d=+1
   });
-  it("exposes the 4:5 card geometry", () => {
-    expect(CARD_W).toBe(460);
-    expect(CARD_H).toBe(575);
+  it("is visible up to CARD_DEPTH, culled beyond (no dissolve)", () => {
+    expect(carouselCard(5, 3, COUNT).visible).toBe(true);  // |d|=2 = outermost
+    expect(carouselCard(6, 3, COUNT).visible).toBe(false); // |d|=3 → culled
+  });
+  it("exposes the 4:5 card geometry at ~70% canvas height", () => {
+    expect(CARD_W).toBe(608);
+    expect(CARD_H).toBe(760);
     expect(CARD_W / CARD_H).toBeCloseTo(4 / 5, 3);
-    expect(CARD_WINDOW).toBe(CARD_FALLOFF);
+    expect(CARD_H / 1080).toBeGreaterThanOrEqual(0.7);
+    expect(CARD_DEPTH).toBe(2);
   });
 });
 

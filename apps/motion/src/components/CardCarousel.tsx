@@ -3,12 +3,14 @@ import type { ReelBuilding } from "../lib/config";
 import { CarouselCard } from "./CarouselCard";
 
 /**
- * Vertical cyclic carousel of building cards. The fractional `position` is
- * dead-center; cards within CARD_WINDOW render stacked above/below, receding in
- * scale. Recede is a bg-color veil (growing with distance, full at CARD_FALLOFF)
- * rather than transparency, so stacked cards never see-through overlap. Only the
- * card at center carries the caption overlay (fading in over the last half-step
- * of approach); `centerRevealFrame` drives its name reveal.
+ * Vertical cyclic carousel of building cards — a receding coverflow stack. The
+ * fractional `position` is dead-center; cards within CARD_DEPTH render stacked
+ * above/below with diminishing pitch (perspective compression) and a bg-color
+ * veil that darkens with depth (capping at VEIL_CAP) for a 3D feel. Beyond
+ * CARD_DEPTH cards are hard-culled — the veil darkness hides the pop, so no
+ * dissolve is needed. Only the centered card carries the caption overlay
+ * (fading in over the last half-step of approach); `centerRevealFrame` drives
+ * its name reveal.
  */
 export const CardCarousel: React.FC<{
   slug: string;
@@ -21,11 +23,9 @@ export const CardCarousel: React.FC<{
     <div style={{ position: "relative", width: "100%", height: "100%" }}>
       {buildings.map((b, i) => {
         const s = carouselCard(i, position, count);
-        if (!s.visible || s.opacity <= 0.001) return null;
-        // bg veil grows with distance: 0 at center → fully obscured by ~1.5 steps,
-        // so only the focused card + its immediate neighbours read as photos;
-        // everything beyond dissolves into the bg (no see-through stacking).
-        const veilOpacity = Math.min(1, Math.abs(s.distance) / 1.5);
+        // Hard cull beyond CARD_DEPTH — the VEIL_CAP darkness hides the pop at
+        // the edge, so no fade/dissolve is needed.
+        if (!s.visible) return null;
         // Caption overlay only as the card nears center; 1 at center, 0 by |distance| 0.5.
         const overlayOpacity = overlayOpacityForDistance(s.distance);
         const revealFrame = overlayOpacity >= 0.999 ? centerRevealFrame : 0;
@@ -45,7 +45,7 @@ export const CardCarousel: React.FC<{
               building={b}
               overlayOpacity={overlayOpacity}
               revealFrame={revealFrame}
-              veilOpacity={veilOpacity}
+              veilOpacity={s.veilOpacity}
             />
           </div>
         );

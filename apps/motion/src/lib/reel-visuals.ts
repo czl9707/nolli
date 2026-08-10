@@ -36,10 +36,11 @@ export function getReelVisuals(frame: number, count: number): ReelFrame {
   const chromeOpacity = fadeIn * (1 - fadeOut);
 
   // Carousel slide: a punchy 0.5s ease-out snap into center at each slot start
-  // (decoupled from the camera fly), then holds. Cubic ease-out = fast start,
-  // crisp settle.
+  // (decoupled from the camera fly), then holds. Higher SNAP_EASE = harder
+  // accel out of the gate + crisper settle (speed change reads more obviously).
+  const SNAP_EASE = 10;
   const rawT = Math.min(1, st.intra / SNAP_FRAC);
-  const rollT = 1 - Math.pow(1 - rawT, 3);
+  const rollT = 1 - Math.pow(1 - rawT, SNAP_EASE);
   const carouselPos = Math.max(0, st.currentIndex - (1 - rollT));
 
   // Camera is mid-flight only during a WALK slot's fly-in (intra < flyFrac).

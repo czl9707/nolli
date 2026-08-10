@@ -29,16 +29,18 @@ describe("getReelVisuals", () => {
     const slotStart = WALK_START + 2 * slotFrames; // entering building index 2
     const entering = getReelVisuals(slotStart, COUNT);
     expect(entering.currentIndex).toBe(2);
-    // snap just begun → still on the previous card (tolerant of slot-boundary frame jitter)
+    // snap in progress at slot start (not yet centered). Exact start position
+    // depends on SNAP_EASE, so only assert it's strictly mid-slide.
     expect(entering.carouselPos).toBeGreaterThanOrEqual(1);
-    expect(entering.carouselPos).toBeLessThan(1.2);
+    expect(entering.carouselPos).toBeLessThan(2);
 
     const snapped = getReelVisuals(slotStart + secToFrames(SNAP_S), COUNT);
     expect(snapped.carouselPos).toBeCloseTo(2, 5); // 0.5s snap done → centered
 
-    // ease-out: at half the snap window the card is already most of the way to center.
+    // ease-out is front-loaded: at half the snap window the card is past halfway
+    // (carouselPos > 1.5) for any ease-out exponent ≥ 1.
     const midSnap = getReelVisuals(slotStart + Math.round(secToFrames(SNAP_S) / 2), COUNT);
-    expect(midSnap.carouselPos).toBeGreaterThan(1.7);
+    expect(midSnap.carouselPos).toBeGreaterThan(1.5);
     expect(midSnap.carouselPos).toBeLessThan(2);
   });
 
