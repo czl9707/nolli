@@ -1,7 +1,7 @@
 import { interpolate } from "remotion";
 import {
   BEAT, CLAMP, FLY_FRAC, SNAP_FRAC,
-  WALK_START, BRAND_FADE_IN_S, BRAND_FADE_OUT_LEAD_S,
+  WALK_START, WALK_CHROME_IN_S, BRAND_FADE_OUT_LEAD_S,
   getTimelineState, ctaStart, secToFrames,
 } from "./timeline";
 
@@ -14,9 +14,15 @@ export type ReelFrame = {
   ctaFrame: number;
   /** Continuous fractional focused building — drives the card carousel. */
   carouselPos: number;
-  /** Shared WALK chrome opacity (full-bleed map, gradient, carousel, corner
-   *  brand): soft-fades in at the open, out into CTA. */
+  /** Map (+gradient) opacity: full from frame 0 through WALK, fades out into
+   *  CTA. Separate from chromeOpacity so the map stays visible during HOOK and
+   *  doesn't dip at WALK_START. */
+  mapOpacity: number;
+  /** WALK chrome opacity (carousel, caption, corner brand): 0 during HOOK,
+   *  fades in across the slot-0 fly, out into CTA. */
   chromeOpacity: number;
+  /** True while the Hook title should render: through HOOK + slot-0's fly. */
+  hookTitle: boolean;
   /** True while the camera is mid-flight; false once settled on a hold. */
   cameraMoving: boolean;
 };
@@ -30,10 +36,17 @@ export function getReelVisuals(frame: number, count: number): ReelFrame {
   const st = getTimelineState(frame, count);
   const cta = ctaStart(count);
 
-  // Chrome soft-fades in at the open, out into CTA.
-  const fadeIn = interpolate(frame, [WALK_START, WALK_START + secToFrames(BRAND_FADE_IN_S)], [0, 1], CLAMP);
+  // Shared CTA fade-out (into CTA).
   const fadeOut = interpolate(frame, [cta - secToFrames(BRAND_FADE_OUT_LEAD_S), cta], [0, 1], CLAMP);
-  const chromeOpacity = fadeIn * (1 - fadeOut);
+
+  // Map is the static stage: full from frame 0 through WALK, only fades out
+  // into CTA (no fade-in, no dip at WALK_START).
+  const mapOpacity = 1 - fadeOut;
+
+  // WALK chrome (carousel, caption, brand) is off during HOOK and fades in
+  // across the slot-0 fly.
+  const chromeFadeIn = interpolate(frame, [WALK_START, WALK_START + secToFrames(WALK_CHROME_IN_S)], [0, 1], CLAMP);
+  const chromeOpacity = chromeFadeIn * (1 - fadeOut);
 
   // Carousel slide: a punchy 0.5s ease-out snap into center at each slot start
   // (decoupled from the camera fly), then holds. Higher SNAP_EASE = harder
@@ -46,11 +59,15 @@ export function getReelVisuals(frame: number, count: number): ReelFrame {
   // Camera is mid-flight only during a WALK slot's fly-in (intra < flyFrac).
   const cameraMoving = st.beat === BEAT.WALK && st.intra < FLY_FRAC;
 
+  const hookTitle = st.beat === BEAT.HOOK || (st.beat === BEAT.WALK && st.currentIndex === 0 && st.intra < FLY_FRAC);
+
   return {
     ...st,
     ctaFrame: frame - cta,
     carouselPos,
+    mapOpacity,
     chromeOpacity,
+    hookTitle,
     cameraMoving,
   };
 }
