@@ -2,7 +2,7 @@ export const FPS = 45;
 
 // --- Durations in SECONDS. Frames derive via round(S * FPS). ---
 export const WALK_SLOT_S = 4.5;     // per-building slot; total WALK = count × this
-export const HOOK_S = 2.5;          // held world-map + title opener
+export const HOOK_S = 1.5;          // held world-map + title opener
 export const WALK_CHROME_IN_S = 0.5; // WALK chrome fade-in across the slot-0 fly
 export const CTA_LINE_S = 1.5;    // "Explore more in"
 export const CTA_LOCKUP_S = 2.5;  // icon + Nolli hold

@@ -12,6 +12,7 @@ import {
   walkViewport, fitViewport, BUILDING_ZOOM, FALLBACK_VP, type MapViewport,
 } from "./lib/viewport";
 import { reelTitle, type ReelBuilding } from "./lib/config";
+import { useAllBuildings } from "./lib/use-all-buildings";
 import { CardCarousel } from "./components/CardCarousel";
 import { BuildingCaption } from "./components/BuildingCaption";
 import { CornerBrand } from "./components/CornerBrand";
@@ -27,8 +28,8 @@ if (typeof document !== "undefined") {
   document.documentElement.style.colorScheme = "dark";
 }
 
-const BRAND_INSET = 56;            // right-edge inset for the corner brand
-const BRAND_VERT = 56;             // top/bottom inset for the corner brand
+const BRAND_INSET = 48;            // right-edge inset for the corner brand
+const BRAND_VERT = 36;             // top/bottom inset for the corner brand
 // HOOK title sits in the right zone, left-anchored just past the gradient so it
 // reads into the same lane the carousel will occupy. Tunable.
 const HOOK_TITLE_LEFT = "55%";   // left edge of the title block
@@ -65,6 +66,7 @@ function reelViewport(f: ReelFrame, buildings: ReelBuilding[], worldVP: MapViewp
 export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
   const frame = useCurrentFrame();
   const cfg = useReelConfig(slug);
+  const allBuildings = useAllBuildings();
   const [map, setMap] = useState<MapRef | null>(null);
 
   const buildings = cfg?.buildings ?? [];
@@ -82,8 +84,29 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
     [cfg],
   );
 
-  // World view: HOOK's held map, and slot-0's fly source (world → building[0]).
-  const worldVP = useMemo(() => (count ? fitViewport(buildings, 2) : FALLBACK_VP), [buildings, count]);
+  // The full Nolli DB as map pins (HOOK only). The map reads just slug/name/
+  // coordinates, so the unused ArchSummary fields are stubbed.
+  const allSummaries = useMemo<ArchSummary[]>(
+    () =>
+      (allBuildings ?? []).map((b) => ({
+        id: b.id, slug: b.slug, name: b.name, architect: "", year: 0,
+        coordinates: b.coordinates, cover: { image: "", width: 0, height: 0 },
+      })),
+    [allBuildings],
+  );
+
+  // World view: HOOK's held map (the whole Nolli DB) + slot-0's fly source.
+  // Prefer the full DB fit so HOOK scatters every building; fall back to the
+  // architect footprint if the global list hasn't loaded yet.
+  const worldVP = useMemo(
+    () =>
+      allBuildings && allBuildings.length
+        ? fitViewport(allBuildings, 2)
+        : count
+          ? fitViewport(buildings, 2)
+          : FALLBACK_VP,
+    [allBuildings, buildings, count],
+  );
   const vp = f ? reelViewport(f, buildings, worldVP) : FALLBACK_VP;
   useMapCamera(map, vp, f?.cameraMoving ?? false);
 
@@ -94,15 +117,17 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
 
   return (
     <AbsoluteFill data-theme="dark" style={{ backgroundColor: "rgb(var(--color-primary-background))" }}>
-      {/* Map in the left 70% (HOOK + WALK); the building pin centers within it →
-          lands in the left half of the screen. During HOOK no pin is selected so
-          all architects show at equal weight; fades out into CTA. */}
+      {/* Map in the left 70% (HOOK + WALK). During HOOK (+ the slot-0 fly) the pin
+          field is the whole Nolli DB, none selected; once the fly settles it
+          switches to this architect's buildings with the focused one highlighted.
+          The switch lands at fly-end when we're zoomed in, so the dropped pins are
+          off-screen. Fades out into CTA. */}
       {showMap ? (
         <div style={{ position: "absolute", left: 0, top: 0, width: `${MAP_FRAC * 100}%`, height: "100%", opacity: f.mapOpacity, zIndex: 1 }}>
           <AbsoluteFill>
             <ArchMap
               ref={setMap}
-              architectures={archSummaries}
+              architectures={f.hookTitle ? allSummaries : archSummaries}
               selectedSlug={inWalk ? buildings[f.currentIndex].slug : undefined}
               ready
               capture
@@ -125,10 +150,23 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
         />
       ) : null}
 
-      {/* HOOK title: descriptive title on the right, soft-blur reveal, blur-out exit
-          across the slot-0 fly (synced via exitStart = WALK_START). */}
+      {/* HOOK title: descriptive title, present from frame 0 (no entrance), right-
+          aligned + vertically centered in the right zone; blur-out exit across
+          the slot-0 fly (synced via exitStart = WALK_START). */}
       {f.hookTitle ? (
-        <div style={{ position: "absolute", left: HOOK_TITLE_LEFT, right: HOOK_TITLE_RIGHT, top: 0, bottom: 0, zIndex: 5 }}>
+        <div
+          style={{
+            position: "absolute",
+            left: HOOK_TITLE_LEFT,
+            right: HOOK_TITLE_RIGHT,
+            top: 0,
+            bottom: 0,
+            zIndex: 5,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+          }}
+        >
           <HookLockup title={reelTitle(cfg.architect)} frame={frame} exitStart={WALK_START} />
         </div>
       ) : null}

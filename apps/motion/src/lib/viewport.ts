@@ -205,7 +205,10 @@ export function walkViewport(
   return { center: [cur.coordinates.lng, cur.coordinates.lat], zoom: cruise };
 }
 
-export function fitViewport(buildings: ReelBuilding[], maxZoom: number): MapViewport {
+export function fitViewport<P extends { coordinates: { lng: number; lat: number } }>(
+  buildings: P[],
+  maxZoom: number,
+): MapViewport {
   if (buildings.length === 0) return FALLBACK_VP;
   if (buildings.length === 1) return { center: [buildings[0].coordinates.lng, buildings[0].coordinates.lat], zoom: maxZoom };
   const lngs = buildings.map((b) => b.coordinates.lng);
