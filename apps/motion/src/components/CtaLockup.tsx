@@ -1,4 +1,4 @@
-import { AbsoluteFill, Img, interpolate, staticFile } from "remotion";
+import { AbsoluteFill, Img, interpolate, staticFile, useCurrentFrame } from "remotion";
 import { CTA_LINE_S, secToFrames, CLAMP } from "../lib/timeline";
 import { SoftBlurIn } from "./SoftBlurIn";
 
@@ -12,14 +12,15 @@ const LOCK_START = LINE_END; // "Nolli" + mark reveal right as the line exits
 const MARK_IN: [number, number] = [LOCK_START, LOCK_START + secToFrames(0.3)];
 
 /**
- * CTA beat. `ctaFrame` is frame-relative-to-CTA-start.
+ * CTA beat. `useCurrentFrame()` is frame-relative-to-CTA-start (this component renders inside a CTA `<Sequence>`).
  * Beat 1 (CTA_LINE_S): "Explore more in" — soft-blur reveal, hold, blur-out-up exit.
  * Beat 2 (rest): favicon mark (scale+fade) + "Nolli" (soft-blur reveal), held to the end.
  *
  * The favicon renders cream via the document-level forced dark color-scheme
  * (see ReelComposition) — its @media (prefers-color-scheme: dark) branch applies.
  */
-export const CtaLockup: React.FC<{ ctaFrame: number }> = ({ ctaFrame }) => {
+export const CtaLockup: React.FC = () => {
+  const ctaFrame = useCurrentFrame();
   const markScale = interpolate(ctaFrame, MARK_IN, [0.6, 1], CLAMP);
   const markOpacity = interpolate(ctaFrame, MARK_IN, [0, 1], CLAMP);
   const FG = "rgb(var(--color-primary-foreground))";
