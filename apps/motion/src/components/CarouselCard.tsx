@@ -2,6 +2,11 @@ import { Img, staticFile } from "remotion";
 import type { ReelBuilding } from "../lib/config";
 import { CARD_W, CARD_H } from "../lib/card-carousel";
 
+// Soft drop shadow so the cover-photo cards lift off the bg and read as stacked
+// layers (it shows most where cards overlap and at the lower edge). Large + soft
+// because the cards float over a near-black bg, where a tight shadow would vanish.
+const CARD_SHADOW = "0 36px 80px -20px rgba(0, 0, 0, 0.7)";
+
 /**
  * One carousel card: cover photo with a bg-color veil that grows with distance
  * from center (depth darkening for the coverflow stack; 0 on the focused card,
@@ -26,6 +31,7 @@ export const CarouselCard: React.FC<{
         height: CARD_H,
         borderRadius: "var(--size-border-radius)",
         overflow: "hidden",
+        boxShadow: CARD_SHADOW,
         lineHeight: 0,
         backgroundColor: "rgb(var(--color-secondary-background))",
       }}

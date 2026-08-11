@@ -27,13 +27,14 @@ if (typeof document !== "undefined") {
 }
 
 const BRAND_INSET = 56;            // right-edge inset for the corner brand
+const BRAND_VERT = 56;             // top/bottom inset for the corner brand
 const SLOT_FRAMES = secToFrames(WALK_SLOT_S);
 
 // Map→bg layout (fractions of screen width), all tunable. Left→right the screen
 // reads: map fully visible → GRADIENT_W band fading map→bg → FULL_BG_RIGHT solid
 // bg. The image stack's center axis sits STACK_AXIS_FROM_RIGHT in from the edge.
-const FULL_BG_RIGHT = 0.4;            // right 35% is pure bg (no map bleed)
-const GRADIENT_W = 0.25;               // 25% gradient band before the full-bg zone
+const FULL_BG_RIGHT = 0.25;            // right 35% is pure bg (no map bleed)
+const GRADIENT_W = 0.35;               // 25% gradient band before the full-bg zone
 const MAP_FRAC = 1 - FULL_BG_RIGHT;            // map div spans up to the full-bg edge (70%)
 const GRADIENT_START = MAP_FRAC - GRADIENT_W;  // gradient begins here (50%)
 const STACK_AXIS_FROM_RIGHT = 0.25;            // image-stack center axis, 25% in from the right
@@ -152,10 +153,10 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
       {/* Corner brand on the right edge: architect top-right, @nolli.map bottom-right. */}
       {inWalk ? (
         <>
-          <div style={{ position: "absolute", top: 28, right: BRAND_INSET, zIndex: 6 }}>
+          <div style={{ position: "absolute", top: BRAND_VERT, right: BRAND_INSET, zIndex: 6 }}>
             <CornerBrand corner="top" architect={cfg.architect} opacity={f.chromeOpacity} />
           </div>
-          <div style={{ position: "absolute", bottom: 28, right: BRAND_INSET, zIndex: 6 }}>
+          <div style={{ position: "absolute", bottom: BRAND_VERT, right: BRAND_INSET, zIndex: 6 }}>
             <CornerBrand corner="bottom" architect={cfg.architect} opacity={f.chromeOpacity} />
           </div>
         </>

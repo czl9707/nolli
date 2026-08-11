@@ -93,10 +93,13 @@ export const SoftBlurIn: React.FC<{
                   style={{
                     display: "inline-block",
                     opacity,
-                    filter: blurPx > 0.01 ? `blur(${blurPx}px)` : undefined,
-                    transform: `translateY(${translateY}px)`,
+                    // Snap transform + blur to whole pixels. Fractional-pixel
+                    // translateY re-antialiases glyphs to different rows every
+                    // frame → reads as a constant vertical "shake" during the
+                    // reveal. Integer snapping keeps the motion stable.
+                    filter: blurPx > 0.01 ? `blur(${Math.round(blurPx)}px)` : undefined,
+                    transform: `translateY(${Math.round(translateY)}px)`,
                     whiteSpace: "pre",
-                    willChange: "transform, filter, opacity",
                   }}
                 >
                   {ch}
