@@ -47,8 +47,8 @@ const STACK_AXIS = 1 - STACK_AXIS_FROM_RIGHT;          // axis as fraction from 
 const STACK_LEFT = Math.max(0, 2 * STACK_AXIS - 1);    // div left (right:0) so center = axis
 
 /** Buildings-aware camera: which viewport each beat shows. Pure, module scope.
- *  WALK (incl. slot 0's world→building fly, the opener) uses walkViewport; CTA
- *  holds on the last building. */
+ *  HOOK holds the world fit; WALK (incl. slot 0's world→building fly) uses
+ *  walkViewport; CTA holds on the last building. */
 function reelViewport(f: ReelFrame, buildings: ReelBuilding[], worldVP: MapViewport): MapViewport {
   if (f.beat === BEAT.HOOK) return worldVP;
   if (f.beat === BEAT.CTA) {
@@ -82,7 +82,7 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
     [cfg],
   );
 
-  // World view: slot-0 fly source (the opener flies world → building[0]).
+  // World view: HOOK's held map, and slot-0's fly source (world → building[0]).
   const worldVP = useMemo(() => (count ? fitViewport(buildings, 2) : FALLBACK_VP), [buildings, count]);
   const vp = f ? reelViewport(f, buildings, worldVP) : FALLBACK_VP;
   useMapCamera(map, vp, f?.cameraMoving ?? false);

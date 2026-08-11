@@ -11,8 +11,7 @@ export const CTA_S = CTA_LINE_S + CTA_LOCKUP_S;
 // The reel opens on HOOK: world map (left) + descriptive title (right). Slot 0's
 // world→building fly then bridges HOOK→WALK (the title overlays its exit across
 // that fly). Corner branding (architect title + @handle) overlays through WALK.
-export const BRAND_FADE_IN_S = 0.3;       // corner brand soft-in at the open
-export const BRAND_FADE_OUT_LEAD_S = 0.4; // brand fades out as CTA begins
+export const BRAND_FADE_OUT_LEAD_S = 0.4; // map/chrome fade-out lead into CTA
 
 // --- Fractions of a WALK slot (0..1), independent of slot length. ---
 export const FLY_FRAC = 0.6;
