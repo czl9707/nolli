@@ -6,16 +6,17 @@ import { useThemeStore } from "@nolli/ui";
 import { useMemo, useState } from "react";
 import { useReelConfig } from "./lib/use-reel-config";
 import { useMapCamera } from "./lib/use-map-camera";
-import { BEAT, FLY_FRAC, WALK_SLOT_S, secToFrames } from "./lib/timeline";
+import { BEAT, FLY_FRAC, WALK_SLOT_S, WALK_START, secToFrames } from "./lib/timeline";
 import { getReelVisuals, type ReelFrame } from "./lib/reel-visuals";
 import {
   walkViewport, fitViewport, BUILDING_ZOOM, FALLBACK_VP, type MapViewport,
 } from "./lib/viewport";
-import type { ReelBuilding } from "./lib/config";
+import { reelTitle, type ReelBuilding } from "./lib/config";
 import { CardCarousel } from "./components/CardCarousel";
 import { BuildingCaption } from "./components/BuildingCaption";
 import { CornerBrand } from "./components/CornerBrand";
 import { CtaLockup } from "./components/CtaLockup";
+import { HookLockup } from "./components/HookLockup";
 
 // Force dark once at module load: the theme store + body attribute drive our
 // CSS variables, and `colorScheme` flips the browser media feature so embedded
@@ -28,6 +29,10 @@ if (typeof document !== "undefined") {
 
 const BRAND_INSET = 56;            // right-edge inset for the corner brand
 const BRAND_VERT = 56;             // top/bottom inset for the corner brand
+// HOOK title sits in the right zone, left-anchored just past the gradient so it
+// reads into the same lane the carousel will occupy. Tunable.
+const HOOK_TITLE_LEFT = "55%";   // left edge of the title block
+const HOOK_TITLE_RIGHT = "8%";   // right inset
 const SLOT_FRAMES = secToFrames(WALK_SLOT_S);
 
 // Map→bg layout (fractions of screen width), all tunable. Left→right the screen
@@ -45,6 +50,7 @@ const STACK_LEFT = Math.max(0, 2 * STACK_AXIS - 1);    // div left (right:0) so 
  *  WALK (incl. slot 0's world→building fly, the opener) uses walkViewport; CTA
  *  holds on the last building. */
 function reelViewport(f: ReelFrame, buildings: ReelBuilding[], worldVP: MapViewport): MapViewport {
+  if (f.beat === BEAT.HOOK) return worldVP;
   if (f.beat === BEAT.CTA) {
     const last = buildings[buildings.length - 1];
     return { center: [last.coordinates.lng, last.coordinates.lat], zoom: BUILDING_ZOOM };
@@ -84,18 +90,20 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
   if (!cfg || !f) return null;
 
   const inWalk = f.beat === BEAT.WALK;
+  const showMap = f.beat === BEAT.HOOK || f.beat === BEAT.WALK;
 
   return (
     <AbsoluteFill data-theme="dark" style={{ backgroundColor: "rgb(var(--color-primary-background))" }}>
-      {/* Map in the left 70% (WALK only); the building pin centers within it →
-          lands in the left half of the screen. Fades out into CTA with the chrome. */}
-      {inWalk ? (
-        <div style={{ position: "absolute", left: 0, top: 0, width: `${MAP_FRAC * 100}%`, height: "100%", opacity: f.chromeOpacity, zIndex: 1 }}>
+      {/* Map in the left 70% (HOOK + WALK); the building pin centers within it →
+          lands in the left half of the screen. During HOOK no pin is selected so
+          all architects show at equal weight; fades out into CTA. */}
+      {showMap ? (
+        <div style={{ position: "absolute", left: 0, top: 0, width: `${MAP_FRAC * 100}%`, height: "100%", opacity: f.mapOpacity, zIndex: 1 }}>
           <AbsoluteFill>
             <ArchMap
               ref={setMap}
               architectures={archSummaries}
-              selectedSlug={buildings[f.currentIndex].slug}
+              selectedSlug={inWalk ? buildings[f.currentIndex].slug : undefined}
               ready
               capture
             />
@@ -107,7 +115,7 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
           stays covered through the WALK→CTA transition — no full-map flash. The
           gradient band (GRADIENT_START→MAP_FRAC) softens the map edge into bg;
           everything right of MAP_FRAC is solid bg. */}
-      {inWalk ? (
+      {showMap ? (
         <AbsoluteFill
           style={{
             zIndex: 2,
@@ -115,6 +123,14 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
             background: `linear-gradient(to right, transparent 0%, transparent ${GRADIENT_START * 100}%, rgb(var(--color-primary-background)) ${MAP_FRAC * 100}%)`,
           }}
         />
+      ) : null}
+
+      {/* HOOK title: descriptive title on the right, soft-blur reveal, blur-out exit
+          across the slot-0 fly (synced via exitStart = WALK_START). */}
+      {f.hookTitle ? (
+        <div style={{ position: "absolute", left: HOOK_TITLE_LEFT, right: HOOK_TITLE_RIGHT, top: 0, bottom: 0, zIndex: 5 }}>
+          <HookLockup title={reelTitle(cfg.architect)} frame={frame} exitStart={WALK_START} />
+        </div>
       ) : null}
 
       {/* Vertical card carousel, centered on the bg zone (STACK_AXIS). */}
