@@ -2,13 +2,15 @@ export const FPS = 45;
 
 // --- Durations in SECONDS. Frames derive via round(S * FPS). ---
 export const WALK_SLOT_S = 4.5;     // per-building slot; total WALK = count × this
+export const HOOK_S = 2.5;          // held world-map + title opener
+export const WALK_CHROME_IN_S = 0.5; // WALK chrome fade-in across the slot-0 fly
 export const CTA_LINE_S = 1.5;    // "Explore more in"
 export const CTA_LOCKUP_S = 2.5;  // icon + Nolli hold
 export const CTA_S = CTA_LINE_S + CTA_LOCKUP_S;
 
-// Motion-first open: the reel opens ON WALK — slot 0's world→building fly is
-// the opener — so there's no HOOK/ESTABLISH beat. Corner branding (architect
-// name + @handle) is overlaid through WALK and fades into CTA.
+// The reel opens on HOOK: world map (left) + descriptive title (right). Slot 0's
+// world→building fly then bridges HOOK→WALK (the title overlays its exit across
+// that fly). Corner branding (architect title + @handle) overlays through WALK.
 export const BRAND_FADE_IN_S = 0.3;       // corner brand soft-in at the open
 export const BRAND_FADE_OUT_LEAD_S = 0.4; // brand fades out as CTA begins
 
@@ -26,8 +28,8 @@ export const secToFrames = (s: number): number => Math.round(s * FPS);
  *  extrapolate past its domain. */
 export const CLAMP = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 
-// WALK begins at frame 0 (motion-first open).
-export const WALK_START = 0;
+// HOOK opens the reel (world map + descriptive title); WALK begins after HOOK_S.
+export const WALK_START = secToFrames(HOOK_S);
 
 /** CTA start depends on building count (WALK length scales with it). */
 export function ctaStart(count: number): number {
@@ -37,7 +39,7 @@ export function totalFrames(count: number): number {
   return ctaStart(count) + secToFrames(CTA_S);
 }
 
-export const BEAT = { WALK: 0, CTA: 1 } as const;
+export const BEAT = { HOOK: 0, WALK: 1, CTA: 2 } as const;
 
 export type TimelineState = { beat: number; currentIndex: number; intra: number };
 
@@ -47,6 +49,9 @@ function clamp(n: number, lo: number, hi: number): number {
 
 /** Resolve the beat + building index + intra-slot progress for a given frame. */
 export function getTimelineState(frame: number, count: number): TimelineState {
+  if (frame < WALK_START) {
+    return { beat: BEAT.HOOK, currentIndex: 0, intra: 0 };
+  }
   const cta = ctaStart(count);
   if (frame < cta) {
     const t = (frame - WALK_START) / (cta - WALK_START);
