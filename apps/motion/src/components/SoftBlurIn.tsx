@@ -1,52 +1,18 @@
-import { softBlurChar, SOFT_BLUR_DEFAULTS, type SoftBlurOpts } from "../lib/text-anim";
+import { useCurrentFrame } from "remotion";
+import { softBlurChar, type Phase } from "../lib/text-anim";
 
 /** Per-character soft-blur reveal (entrance) with an optional blur-out-up exit.
- *  Driven by an explicit `frame` prop rather than `useCurrentFrame` so it stays
- *  controllable from the timeline (e.g. CtaLockup's cta-relative frame).
- *
- *  Typography (fontSize / fontWeight / color) is optional and inherited from the
- *  surrounding element when omitted — wrap in an <H3> etc. to match its scale. */
+ *  Reads its own `useCurrentFrame()` — every caller renders inside a `<Sequence>`,
+ *  so the local frame is the right clock. Timing is two `Phase` objects
+ *  (`start` = entrance, `end` = exit); typography (fontSize / fontWeight /
+ *  fontFamily / color / textAlign / …) travels via `style`, merged last. */
 export const SoftBlurIn: React.FC<{
   text: string;
-  frame: number;
-  start?: number;
-  exitStart?: number;
-  blur?: number;
-  risePx?: number;
-  revealF?: number;
-  staggerF?: number;
-  exitF?: number;
-  fontSize?: number;
-  fontWeight?: number;
-  fontFamily?: string;
-  color?: string;
+  start: Phase;
+  end: Phase;
   style?: React.CSSProperties;
-}> = ({
-  text,
-  frame,
-  start,
-  exitStart,
-  blur,
-  risePx,
-  revealF,
-  staggerF,
-  exitF,
-  fontSize,
-  fontWeight,
-  fontFamily,
-  color,
-  style,
-}) => {
-  const opts: SoftBlurOpts = {
-    ...SOFT_BLUR_DEFAULTS,
-    ...(start !== undefined && { start }),
-    ...(exitStart !== undefined && { exitStart }),
-    ...(blur !== undefined && { blurPx: blur }),
-    ...(risePx !== undefined && { risePx }),
-    ...(revealF !== undefined && { revealF }),
-    ...(staggerF !== undefined && { staggerF }),
-    ...(exitF !== undefined && { exitF }),
-  };
+}> = ({ text, start, end, style }) => {
+  const frame = useCurrentFrame();
 
   // Group into word / whitespace tokens so the text wraps at word boundaries.
   // Each char-span is an atomic inline box; without word grouping a long word
@@ -64,17 +30,7 @@ export const SoftBlurIn: React.FC<{
   }
 
   return (
-    <span
-      style={{
-        display: "inline-block",
-        ...(fontSize !== undefined && { fontSize }),
-        ...(fontWeight !== undefined && { fontWeight }),
-        ...(fontFamily !== undefined && { fontFamily }),
-        ...(color !== undefined && { color }),
-        lineHeight: 1.1,
-        ...style,
-      }}
-    >
+    <span style={{ display: "inline-block", lineHeight: 1.1, ...style }}>
       {tokens.map((tok, ti) => {
         if (tok.kind === "space") {
           return (
@@ -86,7 +42,8 @@ export const SoftBlurIn: React.FC<{
         return (
           <span key={ti} style={{ display: "inline-block", whiteSpace: "nowrap" }}>
             {[...tok.text].map((ch, ci) => {
-              const { opacity, blur: blurPx, translateY } = softBlurChar(frame, tok.start + ci, opts);
+              const charIndex = tok.start + ci; // absolute index across the whole text
+              const { opacity, blur: blurPx, translateY } = softBlurChar(frame, charIndex, chars.length, start, end);
               return (
                 <span
                   key={ci}
