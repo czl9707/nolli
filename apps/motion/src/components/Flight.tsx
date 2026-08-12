@@ -1,6 +1,6 @@
-import { useContext, useEffect } from "react";
+import { useEffect } from "react";
 import { useCurrentFrame } from "remotion";
-import { MapContext } from "./MapProvider";
+import { useMapContext } from "./MapProvider";
 import { useMapFrame } from "../lib/use-map-frame";
 import { flightPath, FLIGHT_EASE } from "../lib/viewport";
 import type { MapViewport } from "../lib/viewport";
@@ -18,10 +18,9 @@ export const Flight: React.FC<{
   durationInFrames: number;
 }> = ({ from, to, selectedSlug, durationInFrames }) => {
   const frame = useCurrentFrame();
-  const ctx = useContext(MapContext);
-  const setSegmentState = ctx?.setSegmentState;
+  const { map, setSegmentState } = useMapContext();
   useEffect(() => {
-    if (setSegmentState) setSegmentState({ selectedSlug });
+    setSegmentState({ selectedSlug });
   }, [selectedSlug, setSegmentState]);
 
   const t = durationInFrames > 0 ? frame / durationInFrames : 1;
@@ -33,6 +32,6 @@ export const Flight: React.FC<{
     t: FLIGHT_EASE(Math.min(1, Math.max(0, t))),
   });
   const vp: MapViewport = { center: [fp.center.lng, fp.center.lat], zoom: fp.zoom };
-  useMapFrame(ctx?.map ?? null, vp, true);
+  useMapFrame(map, vp, true);
   return null;
 };
