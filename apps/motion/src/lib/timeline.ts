@@ -43,26 +43,3 @@ export function ctaStart(count: number): number {
 export function totalFrames(count: number): number {
   return ctaStart(count) + secToFrames(CTA_S);
 }
-
-export const BEAT = { HOOK: 0, WALK: 1, CTA: 2 } as const;
-
-export type TimelineState = { beat: number; currentIndex: number; intra: number };
-
-function clamp(n: number, lo: number, hi: number): number {
-  return Math.max(lo, Math.min(hi, n));
-}
-
-/** Resolve the beat + building index + intra-slot progress for a given frame. */
-export function getTimelineState(frame: number, count: number): TimelineState {
-  if (frame < WALK_START) {
-    return { beat: BEAT.HOOK, currentIndex: 0, intra: 0 };
-  }
-  const cta = ctaStart(count);
-  if (frame < cta) {
-    const t = (frame - WALK_START) / (cta - WALK_START);
-    const scaled = t * count;
-    const idx = clamp(Math.floor(scaled), 0, count - 1);
-    return { beat: BEAT.WALK, currentIndex: idx, intra: scaled - idx };
-  }
-  return { beat: BEAT.CTA, currentIndex: count - 1, intra: 0 };
-}

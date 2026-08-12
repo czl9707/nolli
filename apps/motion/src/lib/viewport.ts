@@ -1,5 +1,3 @@
-import type { ReelBuilding } from "./config";
-
 export type MapViewport = { center: [number, number]; zoom: number };
 
 /** Sentinel for an empty building set; also the camera's safe default. */
@@ -158,51 +156,6 @@ export function flightPath(opts: {
     center: lerp2(from, to, centerFactor),
     zoom: startZoom + Math.log2(scale),
   };
-}
-
-export type WalkOptions = {
-  /** Fraction of each slot spent flying IN to the building (rest is hold). */
-  flyFrac: number;
-  /** View the camera flies in from for building[0] (the world/establish view). */
-  worldCenter: [number, number];
-  worldZoom: number;
-};
-
-/**
- * Per-building camera, "fly-in + hold" model. Each slot i is dedicated to
- * building i: the camera FLIES from the previous building (or `worldCenter` for
- * i=0) into building i over `flyFrac`, then HOLDS on building i for the rest of
- * the slot. This makes the camera path continuous (world→b0→b1→…→bN, no jumps),
- * gives every building a hold, and — because the panel shows building i for the
- * whole slot — means the map starts moving toward a building exactly when the
- * panel switches to it.
- */
-export function walkViewport(
-  buildings: ReelBuilding[],
-  i: number,
-  intra: number,
-  maxZoom: number,
-  opts: WalkOptions,
-): MapViewport {
-  if (buildings.length === 0) return FALLBACK_VP;
-  const cur = buildings[i];
-  const cruise = Math.min(maxZoom, BUILDING_ZOOM);
-
-  if (intra < opts.flyFrac) {
-    const from = i === 0
-      ? { lng: opts.worldCenter[0], lat: opts.worldCenter[1] }
-      : buildings[i - 1].coordinates;
-    const startZoom = i === 0 ? opts.worldZoom : cruise;
-    const fp = flightPath({
-      from,
-      to: cur.coordinates,
-      startZoom,
-      endZoom: cruise,
-      t: FLIGHT_EASE(intra / opts.flyFrac),
-    });
-    return { center: [fp.center.lng, fp.center.lat], zoom: fp.zoom };
-  }
-  return { center: [cur.coordinates.lng, cur.coordinates.lat], zoom: cruise };
 }
 
 export function fitViewport<P extends { coordinates: { lng: number; lat: number } }>(
