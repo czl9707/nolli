@@ -23,6 +23,12 @@ export const SNAP_FRAC = SNAP_S / WALK_SLOT_S;
 /** Seconds → frames. The single source of truth for the S→frame conversion. */
 export const secToFrames = (s: number): number => Math.round(s * FPS);
 
+/** Frames in one WALK slot. The single source of truth for per-slot length —
+ *  ctaStart and the WALK span both derive from count * SLOT_FRAMES so the
+ *  captions <Series> (count slots of SLOT_FRAMES) exactly fills the WALK
+ *  <Sequence> with no rounding mismatch. */
+export const SLOT_FRAMES = secToFrames(WALK_SLOT_S);
+
 /** Shared clamp options for interpolate() — used wherever a value shouldn't
  *  extrapolate past its domain. */
 export const CLAMP = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
@@ -32,7 +38,7 @@ export const WALK_START = secToFrames(HOOK_S);
 
 /** CTA start depends on building count (WALK length scales with it). */
 export function ctaStart(count: number): number {
-  return WALK_START + secToFrames(count * WALK_SLOT_S);
+  return WALK_START + count * SLOT_FRAMES;
 }
 export function totalFrames(count: number): number {
   return ctaStart(count) + secToFrames(CTA_S);

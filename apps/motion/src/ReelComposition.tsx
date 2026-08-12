@@ -6,7 +6,7 @@ import { useThemeStore } from "@nolli/ui";
 import { useMemo, useState } from "react";
 import { useReelConfig } from "./lib/use-reel-config";
 import { useMapCamera } from "./lib/use-map-camera";
-import { BEAT, FLY_FRAC, WALK_SLOT_S, CTA_S, WALK_START, ctaStart, secToFrames } from "./lib/timeline";
+import { BEAT, FLY_FRAC, SLOT_FRAMES, CTA_S, WALK_START, ctaStart, secToFrames } from "./lib/timeline";
 import { getReelVisuals, type ReelFrame } from "./lib/reel-visuals";
 import {
   walkViewport, fitViewport, BUILDING_ZOOM, FALLBACK_VP, type MapViewport,
@@ -34,9 +34,8 @@ const BRAND_VERT = 36;             // top/bottom inset for the corner brand
 // reads into the same lane the carousel will occupy. Tunable.
 const HOOK_TITLE_LEFT = "55%";   // left edge of the title block
 const HOOK_TITLE_RIGHT = "8%";   // right inset
-const SLOT_FRAMES = secToFrames(WALK_SLOT_S);
 // WALK span length, used by the WALK <Sequence>.
-const walkFrames = (count: number) => secToFrames(count * WALK_SLOT_S);
+const walkFrames = (count: number) => count * SLOT_FRAMES;
 // HOOK title Sequence runs HOOK + its blur-out exit tail (the exit crosses WALK_START).
 const HOOK_EXIT_TAIL = 8; // matches HookLockup EXIT_F
 
