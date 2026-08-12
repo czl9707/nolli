@@ -24,7 +24,7 @@ const META_REVEAL_LAST = 20 + META_START; // meta's window starts at META_START
 // blurred behind (the halo) and the fg copy on top. Unlike a div plate, the
 // halo travels with the letters and only darkens the map right around the
 // glyphs, so white text stays legible over the dark map's light water without a
-// visible rectangular pad. Both copies share the same SoftBlurIn opts, so they
+// visible rectangular pad. Both copies share the same Phases, so they
 // reveal and move char-for-char in lockstep.
 const HALO_COLOR = "rgb(var(--color-primary-background))"; // near-black in dark theme
 const HALO_BLUR_PX = 8; // blur spread — the halo's soft reach
