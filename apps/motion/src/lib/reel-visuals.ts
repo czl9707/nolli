@@ -10,8 +10,6 @@ export type ReelFrame = {
   beat: number;
   currentIndex: number;
   intra: number;
-  /** Frame relative to CTA start (negative before CTA). */
-  ctaFrame: number;
   /** Continuous fractional focused building — drives the card carousel. */
   carouselPos: number;
   /** Map (+gradient) opacity: full from frame 0 through WALK, fades out into
@@ -21,8 +19,6 @@ export type ReelFrame = {
   /** WALK chrome opacity (carousel, caption, corner brand): 0 during HOOK,
    *  fades in across the slot-0 fly, out into CTA. */
   chromeOpacity: number;
-  /** True while the Hook title should render: through HOOK + slot-0's fly. */
-  hookTitle: boolean;
   /** True while the camera is mid-flight; false once settled on a hold. */
   cameraMoving: boolean;
 };
@@ -59,15 +55,11 @@ export function getReelVisuals(frame: number, count: number): ReelFrame {
   // Camera is mid-flight only during a WALK slot's fly-in (intra < flyFrac).
   const cameraMoving = st.beat === BEAT.WALK && st.intra < FLY_FRAC;
 
-  const hookTitle = st.beat === BEAT.HOOK || (st.beat === BEAT.WALK && st.currentIndex === 0 && st.intra < FLY_FRAC);
-
   return {
     ...st,
-    ctaFrame: frame - cta,
     carouselPos,
     mapOpacity,
     chromeOpacity,
-    hookTitle,
     cameraMoving,
   };
 }
