@@ -1,4 +1,4 @@
-import { AbsoluteFill, useCurrentFrame } from "remotion";
+import { AbsoluteFill, Sequence, Series, useCurrentFrame } from "remotion";
 import { ArchMap } from "@nolli/map";
 import type { MapRef } from "@nolli/map";
 import type { ArchSummary } from "@nolli/data";
@@ -6,7 +6,7 @@ import { useThemeStore } from "@nolli/ui";
 import { useMemo, useState } from "react";
 import { useReelConfig } from "./lib/use-reel-config";
 import { useMapCamera } from "./lib/use-map-camera";
-import { BEAT, FLY_FRAC, WALK_SLOT_S, WALK_START, secToFrames } from "./lib/timeline";
+import { BEAT, FLY_FRAC, WALK_SLOT_S, CTA_S, WALK_START, ctaStart, secToFrames } from "./lib/timeline";
 import { getReelVisuals, type ReelFrame } from "./lib/reel-visuals";
 import {
   walkViewport, fitViewport, BUILDING_ZOOM, FALLBACK_VP, type MapViewport,
@@ -35,6 +35,10 @@ const BRAND_VERT = 36;             // top/bottom inset for the corner brand
 const HOOK_TITLE_LEFT = "55%";   // left edge of the title block
 const HOOK_TITLE_RIGHT = "8%";   // right inset
 const SLOT_FRAMES = secToFrames(WALK_SLOT_S);
+// WALK span length, used by the WALK <Sequence>.
+const walkFrames = (count: number) => secToFrames(count * WALK_SLOT_S);
+// HOOK title Sequence runs HOOK + its blur-out exit tail (the exit crosses WALK_START).
+const HOOK_EXIT_TAIL = 8; // matches HookLockup EXIT_F
 
 // Map→bg layout (fractions of screen width), all tunable. Left→right the screen
 // reads: map fully visible → GRADIENT_W band fading map→bg → FULL_BG_RIGHT solid
@@ -114,6 +118,8 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
 
   const inWalk = f.beat === BEAT.WALK;
   const showMap = f.beat === BEAT.HOOK || f.beat === BEAT.WALK;
+  // Map pin field = whole DB during HOOK + slot-0's world→b0 fly (was ReelFrame.hookTitle).
+  const hookPinField = f.beat === BEAT.HOOK || (inWalk && f.currentIndex === 0 && f.intra < FLY_FRAC);
 
   return (
     <AbsoluteFill data-theme="dark" style={{ backgroundColor: "rgb(var(--color-primary-background))" }}>
@@ -127,7 +133,7 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
           <AbsoluteFill>
             <ArchMap
               ref={setMap}
-              architectures={f.hookTitle ? allSummaries : archSummaries}
+              architectures={hookPinField ? allSummaries : archSummaries}
               selectedSlug={inWalk ? buildings[f.currentIndex].slug : undefined}
               ready
               capture
@@ -150,10 +156,11 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
         />
       ) : null}
 
-      {/* HOOK title: descriptive title, present from frame 0 (no entrance), right-
-          aligned + vertically centered in the right zone; blur-out exit across
-          the slot-0 fly (synced via exitStart = WALK_START). */}
-      {f.hookTitle ? (
+      {/* HOOK title: descriptive title, present from the Sequence's first frame
+          (no entrance), right-aligned + vertically centered in the right zone;
+          blur-out exit across the slot-0 fly. The Sequence spans HOOK + the exit
+          tail so the full settled→exit lifecycle lives in one local clock. */}
+      <Sequence from={0} durationInFrames={WALK_START + HOOK_EXIT_TAIL} layout="none">
         <div
           style={{
             position: "absolute",
@@ -167,12 +174,20 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
             justifyContent: "flex-end",
           }}
         >
-          <HookLockup title={reelTitle(cfg.architect)} frame={frame} exitStart={WALK_START} />
+          <HookLockup title={reelTitle(cfg.architect)} />
         </div>
-      ) : null}
+      </Sequence>
 
-      {/* Vertical card carousel, centered on the bg zone (STACK_AXIS). */}
-      {inWalk ? (
+      {/* WALK beat. One Sequence over the whole WALK span: the carousel is a
+          continuous child (its scroll position is a single value across WALK,
+          driven by f.carouselPos from the absolute-frame resolver), and the
+          building captions are a <Series> of per-building Series.Sequences —
+          each gives its caption a fresh slot-relative clock via useCurrentFrame.
+          Corner brand overlays through WALK on the bg zone. The Sequence handles
+          WALK presence (mounts only during WALK); chromeOpacity still drives the
+          slot-0 fade-in. */}
+      <Sequence from={WALK_START} durationInFrames={walkFrames(count)} layout="none">
+        {/* Continuous vertical card carousel, centered on the bg zone. */}
         <div
           style={{
             position: "absolute",
@@ -184,39 +199,36 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
             opacity: f.chromeOpacity,
           }}
         >
-          <CardCarousel
-            slug={cfg.slug}
-            buildings={buildings}
-            position={f.carouselPos}
-          />
+          <CardCarousel slug={cfg.slug} buildings={buildings} position={f.carouselPos} />
         </div>
-      ) : null}
 
-      {/* Bottom-left building caption (name + year · location): fg text floating
-          over the map, soft-blur reveal after the card snap settles. Keyed by the
-          focused index so each building remounts for a fresh reveal. */}
-      {inWalk ? (
-        <BuildingCaption
-          key={f.currentIndex}
-          building={buildings[f.currentIndex]}
-          slotFrame={Math.round(f.intra * SLOT_FRAMES)}
-          opacity={f.chromeOpacity}
-        />
-      ) : null}
+        {/* Per-building captions: one Series.Sequence per building, each a fresh
+            slot-relative clock. The natural per-instance remount replaces the old
+            key={currentIndex} remount. */}
+        <div style={{ position: "absolute", inset: 0, zIndex: 5, pointerEvents: "none" }}>
+          <Series>
+            {buildings.map((b) => (
+              <Series.Sequence key={b.slug} durationInFrames={SLOT_FRAMES} layout="none">
+                <BuildingCaption building={b} opacity={f.chromeOpacity} />
+              </Series.Sequence>
+            ))}
+          </Series>
+        </div>
 
-      {/* Corner brand on the right edge: architect top-right, @nolli.map bottom-right. */}
-      {inWalk ? (
-        <>
-          <div style={{ position: "absolute", top: BRAND_VERT, right: BRAND_INSET, zIndex: 6 }}>
-            <CornerBrand corner="top" architect={cfg.architect} opacity={f.chromeOpacity} />
-          </div>
-          <div style={{ position: "absolute", bottom: BRAND_VERT, right: BRAND_INSET, zIndex: 6 }}>
-            <CornerBrand corner="bottom" architect={cfg.architect} opacity={f.chromeOpacity} />
-          </div>
-        </>
-      ) : null}
+        {/* Corner brand on the right edge: architect top-right, @nolli.map bottom-right. */}
+        <div style={{ position: "absolute", top: BRAND_VERT, right: BRAND_INSET, zIndex: 6 }}>
+          <CornerBrand corner="top" architect={cfg.architect} opacity={f.chromeOpacity} />
+        </div>
+        <div style={{ position: "absolute", bottom: BRAND_VERT, right: BRAND_INSET, zIndex: 6 }}>
+          <CornerBrand corner="bottom" architect={cfg.architect} opacity={f.chromeOpacity} />
+        </div>
+      </Sequence>
 
-      {f.beat === BEAT.CTA ? <CtaLockup ctaFrame={f.ctaFrame} /> : null}
+      {/* CTA beat. One Sequence from ctaStart; CtaLockup reads useCurrentFrame()
+          for its CTA-relative clock. */}
+      <Sequence from={ctaStart(count)} durationInFrames={secToFrames(CTA_S)} layout="none">
+        <CtaLockup />
+      </Sequence>
     </AbsoluteFill>
   );
 };
