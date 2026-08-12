@@ -17,7 +17,7 @@ import { CardCarousel } from "./components/CardCarousel";
 import { BuildingCaption } from "./components/BuildingCaption";
 import { CornerBrand } from "./components/CornerBrand";
 import { CtaLockup } from "./components/CtaLockup";
-import { HookLockup } from "./components/HookLockup";
+import { HookLockup, HOOK_EXIT_F } from "./components/HookLockup";
 
 // Force dark once at module load: the theme store + body attribute drive our
 // CSS variables, and `colorScheme` flips the browser media feature so embedded
@@ -37,7 +37,6 @@ const HOOK_TITLE_RIGHT = "8%";   // right inset
 // WALK span length, used by the WALK <Sequence>.
 const walkFrames = (count: number) => count * SLOT_FRAMES;
 // HOOK title Sequence runs HOOK + its blur-out exit tail (the exit crosses WALK_START).
-const HOOK_EXIT_TAIL = 8; // matches HookLockup EXIT_F
 
 // Map→bg layout (fractions of screen width), all tunable. Left→right the screen
 // reads: map fully visible → GRADIENT_W band fading map→bg → FULL_BG_RIGHT solid
@@ -159,7 +158,7 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
           (no entrance), right-aligned + vertically centered in the right zone;
           blur-out exit across the slot-0 fly. The Sequence spans HOOK + the exit
           tail so the full settled→exit lifecycle lives in one local clock. */}
-      <Sequence from={0} durationInFrames={WALK_START + HOOK_EXIT_TAIL} layout="none">
+      <Sequence from={0} durationInFrames={WALK_START + HOOK_EXIT_F} layout="none">
         <div
           style={{
             position: "absolute",

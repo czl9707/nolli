@@ -10,13 +10,16 @@ const FAMILY = "var(--font-playful)"; // match the CTA lockup
 // is charIndex * staggerF; -100 covers any realistic title length), so the text
 // reads as statically settled, then blur-out-up exits at WALK_START.
 const SETTLED_START = -100;
-const EXIT_F = 8; // standard SoftBlurIn exit (matches CTA + BuildingCaption)
+/** HOOK title blur-out exit length (frames). Exported so the HOOK `<Sequence>`'s
+ *  duration tail stays in lockstep with this exit — tuning it can't silently
+ *  desync the Sequence window. */
+export const HOOK_EXIT_F = 8;
 
 /** HOOK beat title — the reel's descriptive title (`"<architect>'s work over
  *  time"`), one SoftBlurIn block. Present from the HOOK Sequence's first frame
  *  (no entrance anim), vertically centered and right-aligned within the right
  *  (bg) zone by its parent flex container. Blur-out-up exits across
- *  `[WALK_START, WALK_START + EXIT_F]` — the standard exit, synced to the slot-0
+ *  `[WALK_START, WALK_START + HOOK_EXIT_F]` — the standard exit, synced to the slot-0
  *  fly. `useCurrentFrame()` is HOOK-local (0 at HOOK start). minWidth:0 lets the
  *  block wrap at the zone edge. */
 export const HookLockup: React.FC<{ title: string }> = ({ title }) => {
@@ -28,7 +31,7 @@ export const HookLockup: React.FC<{ title: string }> = ({ title }) => {
       frame={frame}
       start={SETTLED_START}
       exitStart={WALK_START}
-      exitF={EXIT_F}
+      exitF={HOOK_EXIT_F}
       fontSize={FONT_SIZE}
       fontFamily={FAMILY}
       color={FG}

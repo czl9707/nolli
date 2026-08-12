@@ -1,6 +1,6 @@
 import { useCurrentFrame } from "remotion";
 import { SoftBlurIn } from "./SoftBlurIn";
-import { secToFrames, WALK_SLOT_S } from "../lib/timeline";
+import { SLOT_FRAMES } from "../lib/timeline";
 import type { ReelBuilding } from "../lib/config";
 
 const FG = "rgb(var(--color-primary-foreground))";
@@ -12,7 +12,6 @@ const CAPTION_BOTTOM = 96;
 const CAPTION_MAX_W = "50%"; // wrap long names before they reach the card stack
 const EXIT_F = 8; // blur-out-up length at slot end
 
-const SLOT_FRAMES = secToFrames(WALK_SLOT_S);
 const REVEAL_START = 0; // begin the blur-in at slot start (concurrent with the slide)
 const META_START = 12; // meta trails the title so the two lines step in, not stack
 const EXIT_START = SLOT_FRAMES - EXIT_F; // both lines blur out at slot end
