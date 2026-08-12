@@ -29,13 +29,9 @@ export const CtaLockup: React.FC = () => {
       <div style={{ position: "absolute" }}>
         <SoftBlurIn
           text="Explore more in"
-          frame={ctaFrame}
-          start={LINE_REVEAL_START}
-          exitStart={LINE_EXIT_START}
-          exitF={EXIT_F}
-          fontSize={FONT_SIZE}
-          fontFamily={FAMILY}
-          color={FG}
+          start={{ when: LINE_REVEAL_START, last: LINE_REVEAL_START + 36, enabled: true }}
+          end={{ when: LINE_EXIT_START, last: LINE_EXIT_START + EXIT_F, enabled: true }}
+          style={{ fontSize: FONT_SIZE, fontFamily: FAMILY, color: FG }}
         />
       </div>
       <div style={{ position: "absolute", display: "flex", alignItems: "center", gap: 22 }}>
@@ -45,11 +41,9 @@ export const CtaLockup: React.FC = () => {
         </div>
         <SoftBlurIn
           text="Nolli"
-          frame={ctaFrame}
-          start={LOCK_START}
-          fontSize={FONT_SIZE}
-          fontFamily={FAMILY}
-          color={FG}
+          start={{ when: LOCK_START, last: LOCK_START + 16, enabled: true }}
+          end={{ when: 0, last: 0, enabled: false }}
+          style={{ fontSize: FONT_SIZE, fontFamily: FAMILY, color: FG }}
         />
       </div>
     </AbsoluteFill>
