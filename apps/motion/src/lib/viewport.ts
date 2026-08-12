@@ -81,7 +81,7 @@ function unitBezier(p1x: number, p1y: number, p2x: number, p2y: number): (t: num
   };
   return (t) => sampleY(solveX(t));
 }
-const FLIGHT_EASE = unitBezier(0.25, 0.1, 0.25, 1);
+export const FLIGHT_EASE = unitBezier(0.25, 0.1, 0.25, 1);
 
 /** Project lng/lat to CSS pixels at the given world size (Web Mercator). */
 function projectPixel(lng: number, lat: number, worldSize: number): [number, number] {
@@ -103,7 +103,7 @@ const tanh = Math.tanh;
  * The zoom-out depth is determined NATURALLY by the path length (so it's
  * distance-aware without a hand-tuned floor) and clamped by `minZoom`.
  */
-function flightPath(opts: {
+export function flightPath(opts: {
   from: { lng: number; lat: number };
   to: { lng: number; lat: number };
   startZoom: number;
