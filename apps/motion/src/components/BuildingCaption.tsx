@@ -1,3 +1,4 @@
+import { useCurrentFrame } from "remotion";
 import { SoftBlurIn } from "./SoftBlurIn";
 import { secToFrames, WALK_SLOT_S } from "../lib/timeline";
 import type { ReelBuilding } from "../lib/config";
@@ -76,14 +77,15 @@ const CaptionLine: React.FC<{
  *  bound halo so it stays legible over the dark map's light water. Reveals per
  *  slot with the same per-char soft-blur as the CTA, starting at slot start (a
  *  faster variant tuned for reading time), wraps at CAPTION_MAX_W, and blurs out
- *  at slot end. Remount per building (key={currentIndex} upstream) so each gets a
- *  fresh reveal. Fades with the shared chrome opacity. */
+ *  at slot end. Renders inside a per-building `<Series.Sequence>`, so
+ *  `useCurrentFrame()` is slot-relative (0 at each slot start) and each building
+ *  gets a fresh reveal via natural Sequence remount. Fades with the shared chrome
+ *  opacity. */
 export const BuildingCaption: React.FC<{
   building: ReelBuilding;
-  /** Frames elapsed in the current slot — drives the reveal/exit timing. */
-  slotFrame: number;
   opacity: number;
-}> = ({ building, slotFrame, opacity }) => {
+}> = ({ building, opacity }) => {
+  const slotFrame = useCurrentFrame();
   const meta = `${building.year} · ${building.city}${building.countryCode ? `, ${building.countryCode}` : ""}`;
   const line = { frame: slotFrame, exitStart: EXIT_START, exitF: EXIT_F, revealF: REVEAL_F, staggerF: STAGGER_F };
   return (
