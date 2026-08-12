@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { carouselPosFromWalkFrame } from "./carousel";
-import { secToFrames, SLOT_FRAMES, WALK_SLOT_S } from "./timeline";
+import { SLOT_FRAMES, WALK_SLOT_S } from "./timeline";
 
 const COUNT = 9;
 const WALK_FRAMES = COUNT * SLOT_FRAMES;
@@ -21,6 +21,10 @@ describe("carouselPosFromWalkFrame", () => {
     const snapFrames = Math.round(0.5 / WALK_SLOT_S * SLOT_FRAMES); // SNAP window in frames
     const snapped = carouselPosFromWalkFrame(slotStart + snapFrames, COUNT);
     expect(snapped).toBeCloseTo(2, 5); // snap done → centered
+
+    // then holds: well past the snap window, still centered on 2
+    const held = carouselPosFromWalkFrame(slotStart + snapFrames + 30, COUNT);
+    expect(held).toBeCloseTo(2, 5);
 
     // ease-out front-loaded: at half-snap, past halfway
     const midSnap = carouselPosFromWalkFrame(slotStart + Math.round(snapFrames / 2), COUNT);
