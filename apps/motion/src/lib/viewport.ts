@@ -1,10 +1,12 @@
 export type MapViewport = { center: [number, number]; zoom: number };
 
-/** Sentinel for an empty building set; also the camera's safe default. */
-export const FALLBACK_VP: MapViewport = { center: [0, 0], zoom: 1 };
-
 /** Cruise zoom held on each building; the composition's `maxZoom` clamps to this. */
 export const BUILDING_ZOOM = 15;
+
+/** Fixed opener framing: the whole-globe world view held across the HOOK beat
+ *  (and the origin the first flight flies out of). The reel centers on a static
+ *  world map, not the architect's building centroid. */
+export const WORLD_VP: MapViewport = { center: [0, 0], zoom: 1 };
 
 export function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t;
@@ -156,20 +158,4 @@ export function flightPath(opts: {
     center: lerp2(from, to, centerFactor),
     zoom: startZoom + Math.log2(scale),
   };
-}
-
-export function fitViewport<P extends { coordinates: { lng: number; lat: number } }>(
-  buildings: P[],
-  maxZoom: number,
-): MapViewport {
-  if (buildings.length === 0) return FALLBACK_VP;
-  if (buildings.length === 1) return { center: [buildings[0].coordinates.lng, buildings[0].coordinates.lat], zoom: maxZoom };
-  const lngs = buildings.map((b) => b.coordinates.lng);
-  const lats = buildings.map((b) => b.coordinates.lat);
-  const west = Math.min(...lngs), east = Math.max(...lngs);
-  const south = Math.min(...lats), north = Math.max(...lats);
-  const center: [number, number] = [(west + east) / 2, (south + north) / 2];
-  const lngSpan = Math.max(east - west, 0.01);
-  const zoom = Math.min(maxZoom, Math.max(1, Math.log2(360 / lngSpan)));
-  return { center, zoom };
 }

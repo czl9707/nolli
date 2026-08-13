@@ -1,13 +1,11 @@
 import { AbsoluteFill, interpolate, Sequence, Series, useCurrentFrame } from "remotion";
-import { useMemo } from "react";
 import { useReelConfig } from "./lib/use-reel-config";
 import {
   SLOT_FRAMES, CTA_S, WALK_START,
   ctaStart, secToFrames, BRAND_FADE_OUT_LEAD_S, CLAMP,
 } from "./lib/timeline";
-import { fitViewport, FALLBACK_VP } from "./lib/viewport";
+import { WORLD_VP } from "./lib/viewport";
 import { reelTitle, type ReelBuilding } from "./lib/config";
-import { useAllBuildings } from "./lib/use-all-buildings";
 import { CardCarousel } from "./components/CardCarousel";
 import { BuildingCaption } from "./components/BuildingCaption";
 import { CornerBrand } from "./components/CornerBrand";
@@ -29,18 +27,8 @@ const STACK_LEFT = Math.max(0, 2 * STACK_AXIS - 1);
 
 export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
   const cfg = useReelConfig(slug);
-  const allBuildings = useAllBuildings();
-
   const buildings = cfg?.buildings ?? [];
   const count = buildings.length;
-
-  const worldVP = useMemo(
-    () =>
-      allBuildings && allBuildings.length
-        ? fitViewport(allBuildings, 2)
-        : count ? fitViewport(buildings, 2) : FALLBACK_VP,
-    [allBuildings, buildings, count],
-  );
 
   if (!cfg) return null;
 
@@ -50,7 +38,7 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
         {/* Camera-segment chain — drives the shared map instance. Sibling to the
             beat Sequences; spans all beats (world→b0 crosses HOOK→WALK; last Hold
             crosses into CTA). */}
-        <CameraSeries buildings={buildings} worldVP={worldVP} />
+        <CameraSeries buildings={buildings} worldVP={WORLD_VP} />
 
         {/* HOOK title (unchanged). */}
         <Sequence from={0} durationInFrames={WALK_START + HOOK_EXIT_F} layout="none">
