@@ -33,10 +33,16 @@ export const SoftBlurIn: React.FC<{
     <span style={{ display: "inline-block", lineHeight: 1.1, ...style }}>
       {tokens.map((tok, ti) => {
         if (tok.kind === "space") {
+          // Whitespace between words. Rendered as plain collapsible inline text
+          // (NOT an inline-block box): an inline-block space is an atomic box
+          // that CSS won't strip at a line-wrap boundary, so any wrap that
+          // lands the space at the start of line 2 would show a visible leading
+          // indent (e.g. "New Museum of Contemporary Art" → line 2 " Art").
+          // The per-char animation only animates word chars, so the space needs
+          // no char spans — a normal text node lets the browser collapse it at
+          // line edges and preserve its full width between words.
           return (
-            <span key={ti} style={{ display: "inline-block", whiteSpace: "pre" }}>
-              {tok.text}
-            </span>
+            <span key={ti}>{tok.text}</span>
           );
         }
         return (
