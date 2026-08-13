@@ -1,4 +1,4 @@
-import { secToFrames, SLOT_FRAMES, FLY_FRAC, CTA_S, WALK_START } from "./timeline";
+import { secToFrames, SLOT_FRAMES, CTA_S, WALK_START } from "./timeline";
 import type { MapViewport } from "./viewport";
 import type { ReelBuilding } from "./config";
 
@@ -24,6 +24,7 @@ export type Segment = HoldSegment | FlightSegment;
 /** Frame counts derived from the global constants — same source of truth as the
  *  beat durations, so the camera chain and the content Sequences stay in lockstep
  *  (no independent rounding; the WALK-duration lesson). */
+export const FLY_FRAC = 0.6;                  // fraction of a WALK slot spent flying
 const HOOK_FRAMES = WALK_START;               // HOOK holds the world view (== WALK_START)
 const FLY_FRAMES = Math.round(FLY_FRAC * SLOT_FRAMES);
 const HOLD_FRAMES = SLOT_FRAMES - FLY_FRAMES;

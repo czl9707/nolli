@@ -18,9 +18,6 @@ export const BRAND_FADE_OUT_LEAD_S = 0.4; // map/chrome fade-out lead into CTA
 export const SNAP_S = 0.5;
 export const SNAP_FRAC = SNAP_S / WALK_SLOT_S;
 
-// Fraction of a WALK slot spent flying between buildings (camera-segment chain).
-export const FLY_FRAC = 0.6;
-
 /** Seconds → frames. The single source of truth for the S→frame conversion. */
 export const secToFrames = (s: number): number => Math.round(s * FPS);
 
