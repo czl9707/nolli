@@ -3,7 +3,7 @@ import { reelTitle } from "./config";
 
 describe("reelTitle", () => {
   it("appends the chronological-walk tagline to the architect name", () => {
-    expect(reelTitle("SANAA")).toBe("SANAA's work over time");
-    expect(reelTitle("Tadao Ando")).toBe("Tadao Ando's work over time");
+    expect(reelTitle("SANAA")).toBe("SANAA over time");
+    expect(reelTitle("Tadao Ando")).toBe("Tadao Ando over time");
   });
 });

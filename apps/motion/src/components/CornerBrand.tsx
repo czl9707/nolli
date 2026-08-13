@@ -5,7 +5,7 @@ const FG2 = "rgb(var(--color-secondary-foreground))";
 
 /** Persistent corner brand through WALK, split to the right edge so it sits on
  *  the bg-color zone (never over the map). `corner="top"` = the reel's
- *  descriptive title (e.g. "SANAA's work over time"); `corner="bottom"` = the
+ *  descriptive title (e.g. "SANAA over time"); `corner="bottom"` = the
  *  @nolli.map handle. The parent absolutely positions each piece. Fades with
  *  the shared chrome opacity. */
 export const CornerBrand: React.FC<{
