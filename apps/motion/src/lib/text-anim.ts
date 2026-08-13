@@ -13,21 +13,16 @@ export type Phase = {
 
 export type CharStyle = { opacity: number; blur: number; translateY: number };
 
-// Fixed physics — internal, not tunable per call. None of the prior call sites
-// overrode these; centralizing them removes a class of prop bloat.
-const CHAR_REVEAL_F = 8;     // per-char blur-resolve duration
-const ENTRANCE_BLUR_PX = 14; // entrance blur radius (decays to 0)
-const ENTRANCE_RISE_PX = 14; // entrance upward offset (decays to 0)
+// Fixed physics — internal, not call-tunable.
+const CHAR_REVEAL_F = 8;
+const ENTRANCE_BLUR_PX = 14;
+const ENTRANCE_RISE_PX = 14;
 
-/** Per-character "soft blur in" entrance + blur-out-up exit. Pure function of
- *  (frame, charIndex, charCount, start, end) — stays unit-testable.
- *
- *  Entrance is per-char staggered: char `i` begins at `start.when + i*staggerF`
- *  and resolves `CHAR_REVEAL_F` later, where `staggerF` is DERIVED from the
- *  entrance window so the last char settles exactly at `start.last`:
- *    staggerF = max(0, (start.last - start.when - CHAR_REVEAL_F) / (charCount - 1))
- *  Exit is synchronous: all chars exit together over `[end.when, end.last]`.
- *  A disabled phase is a no-op (`start` disabled ⇒ settled; `end` disabled ⇒ hold). */
+/** Per-character "soft blur in" entrance + blur-out-up exit. Entrance is
+ *  per-char staggered: char `i` begins at `start.when + i*staggerF` and resolves
+ *  `CHAR_REVEAL_F` later, where `staggerF` is DERIVED from the entrance window
+ *  so the last char settles exactly at `start.last`. Exit is synchronous; a
+ *  disabled phase is a no-op. */
 export function softBlurChar(
   frame: number,
   charIndex: number,
@@ -52,7 +47,7 @@ export function softBlurChar(
 
   return {
     opacity: pIn * (1 - pOut),
-    blur: ENTRANCE_BLUR_PX * (1 - pIn) + ENTRANCE_BLUR_PX * pOut,
-    translateY: ENTRANCE_RISE_PX * (1 - pIn) - ENTRANCE_RISE_PX * pOut,
+    blur: ENTRANCE_BLUR_PX * (1 - pIn + pOut),
+    translateY: ENTRANCE_RISE_PX * (1 - pIn - pOut),
   };
 }

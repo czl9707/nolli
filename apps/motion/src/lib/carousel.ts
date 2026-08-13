@@ -1,15 +1,8 @@
 import { SLOT_FRAMES, SNAP_FRAC } from "./timeline";
 
-/**
- * Continuous carousel scroll position for a given WALK-local frame.
- *
- * The carousel is the one continuous consumer of WALK timing: it maps the
- * WALK-local frame to a fractional focused-building and applies a punchy
- * ease-out snap (decoupled from the camera fly) into center at each slot start,
- * then holds. Lifted from the dissolved `getReelVisuals`.
- *
- * Pure function of (walkFrame, count) — unit-tested in isolation.
- */
+/** Continuous carousel scroll position for a WALK-local frame: maps the frame
+ *  to a fractional focused-building, ease-out snapping into center at each slot
+ *  start (decoupled from the camera fly), then holding. */
 export function carouselPosFromWalkFrame(walkFrame: number, count: number): number {
   const walkFrames = count * SLOT_FRAMES;
   const t = Math.min(1, Math.max(0, walkFrame / walkFrames));

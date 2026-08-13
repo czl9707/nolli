@@ -4,12 +4,9 @@ import { useMapFrame } from "../lib/use-map-frame";
 import { flightPath, FLIGHT_EASE } from "../lib/viewport";
 import type { MapViewport } from "../lib/viewport";
 
-/**
- * Moving camera segment: flies `from`→`to` over its duration. moving=true →
- * fast-release capture gate (tile holes mid-flight are imperceptible).
- * Publishes its destination `selectedSlug` at flight start (highlight moves to
- * the destination when the flight begins) via the useSelectedSlug hook.
- */
+/** Moving camera segment: flies `from`→`to` over its duration. Publishes the
+ *  destination `selectedSlug` at flight start so the highlight moves when the
+ *  flight begins, not on arrival. */
 export const Flight: React.FC<{
   from: MapViewport;
   to: MapViewport;

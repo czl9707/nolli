@@ -3,24 +3,20 @@ import { secToFrames, CLAMP } from "../lib/timeline";
 import { SoftBlurIn } from "./SoftBlurIn";
 
 const FONT_SIZE = 104;
-const FAMILY = "var(--font-playful)"; // match the H1 the lockup previously used
-// CTA beat split (local to this lockup — the parts have no other consumer).
-const CTA_LINE_S = 1.5;   // "Explore more in"
-const CTA_LOCKUP_S = 2.5; // icon + Nolli hold
+const FAMILY = "var(--font-playful)";
+const CTA_LINE_S = 1.5;
+const CTA_LOCKUP_S = 2.5;
 const LINE_END = secToFrames(CTA_LINE_S);
-const EXIT_F = 8; // blur-out-up length (frames)
+const EXIT_F = 8;
 const LINE_REVEAL_START = secToFrames(0.1);
-const LINE_EXIT_START = LINE_END - EXIT_F; // line fully gone exactly as the lockup begins
-const LOCK_START = LINE_END; // "Nolli" + mark reveal right as the line exits
+const LINE_EXIT_START = LINE_END - EXIT_F;
+const LOCK_START = LINE_END;
 const MARK_IN: [number, number] = [LOCK_START, LOCK_START + secToFrames(0.3)];
 
 /**
- * CTA beat. `useCurrentFrame()` is frame-relative-to-CTA-start (this component renders inside a CTA `<Sequence>`).
- * Beat 1 (CTA_LINE_S): "Explore more in" — soft-blur reveal, hold, blur-out-up exit.
- * Beat 2 (rest): favicon mark (scale+fade) + "Nolli" (soft-blur reveal), held to the end.
- *
- * The favicon renders cream via the document-level forced dark color-scheme
- * (see ReelComposition) — its @media (prefers-color-scheme: dark) branch applies.
+ * CTA beat. The favicon renders cream via the document-level forced dark
+ * color-scheme (see MapProvider) — its @media (prefers-color-scheme: dark)
+ * branch applies.
  */
 export const CtaLockup: React.FC = () => {
   const ctaFrame = useCurrentFrame();

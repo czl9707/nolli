@@ -7,21 +7,15 @@ import { useThemeStore } from "@nolli/ui";
 import { CLAMP, ctaStart, secToFrames, BRAND_FADE_OUT_LEAD_S } from "../lib/timeline";
 import { useAllBuildings } from "../lib/use-all-buildings";
 
-// Force dark once at module load (moved from ReelComposition — the map's theming
-// lives with the map now). colorScheme flips the browser media feature so embedded
-// SVGs render dark under headless Chrome (which defaults to light).
+// Force dark once at module load. colorScheme flips the browser media feature so
+// embedded SVGs render dark under headless Chrome (which defaults to light).
 useThemeStore.setState({ theme: "dark", resolvedTheme: "dark" });
 if (typeof document !== "undefined") {
   document.body.dataset.theme = "dark";
   document.documentElement.style.colorScheme = "dark";
 }
 
-/** What a camera segment publishes to the map. Callers (Flight/Hold) MUST
- *  invoke `setSegmentState` from a `useEffect` (NOT during render) — calling a
- *  parent's state setter during render trips React's "cannot update a component
- *  while rendering a different component" warning at each value change. */
 export type MapSegmentState = {
-  /** Slug to highlight (undefined = none). Set by the active Flight/Hold. */
   selectedSlug?: string;
 };
 
@@ -32,16 +26,16 @@ type MapContextValue = {
 
 export const MapContext = createContext<MapContextValue | null>(null);
 
-/** For camera segments (Flight/Hold) to read the map ref + publish selectedSlug. */
 export function useMapContext(): MapContextValue {
   const ctx = useContext(MapContext);
   if (!ctx) throw new Error("useMapContext must be used inside <MapProvider>");
   return ctx;
 }
 
-/** Publish `selectedSlug` to the map from a Flight/Hold. Encapsulates the
- *  MapSegmentState contract (MUST publish from a useEffect, never during render)
- *  so the two segment components can't drift from it. */
+/** Publish `selectedSlug` to the map from a Flight/Hold. MUST be called from a
+ *  useEffect (never during render) — a parent state setter during render trips
+ *  React's "cannot update a component while rendering a different component"
+ *  warning. Encapsulated here so the two segment components can't drift. */
 export function useSelectedSlug(selectedSlug?: string): void {
   const { setSegmentState } = useMapContext();
   useEffect(() => {
@@ -49,23 +43,16 @@ export function useSelectedSlug(selectedSlug?: string): void {
   }, [selectedSlug, setSegmentState]);
 }
 
-// Map→bg layout (fractions of screen width).
-const FULL_BG_RIGHT = 0.25;       // right 25% is pure bg (no map bleed)
-const GRADIENT_W = 0.35;          // 35% gradient band before the full-bg zone
-const MAP_FRAC = 1 - FULL_BG_RIGHT;        // map div spans up to the full-bg edge (0.75)
-const GRADIENT_START = MAP_FRAC - GRADIENT_W;  // gradient begins here (0.4)
+// Map→bg layout (fractions of screen width): map spans the left 75%, a 35%
+// gradient band, then a pure-bg right 25%.
+const FULL_BG_RIGHT = 0.25;
+const GRADIENT_W = 0.35;
+const MAP_FRAC = 1 - FULL_BG_RIGHT;
+const GRADIENT_START = MAP_FRAC - GRADIENT_W;
 
-/**
- * Mounts the ONE <ArchMap> instance for the whole reel and exposes its ref +
- * the active segment's selectedSlug via context. A context provider ONLY — not
- * a layout/positioning wrapper for children (children render as-is; z-index
- * stacking of beats/title/carousel is unchanged).
- *
- * Pin field is ALWAYS the full Nolli DB (no world/architect switching). Only
- * selectedSlug is dynamic (segment-published). Owns mapOpacity (fade-out into
- * CTA) from its own useCurrentFrame(). Renders the map + the opaque gradient
- * overlay; hides both once CTA begins (frame >= cta).
- */
+/** Mounts the ONE <ArchMap> for the whole reel and exposes its ref + the active
+ *  segment's selectedSlug via context. The pin field is always the full Nolli
+ *  DB; only selectedSlug is dynamic. Fades out into CTA. */
 export const MapProvider: React.FC<{
   count: number;
   children: ReactNode;

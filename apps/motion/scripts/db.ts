@@ -39,15 +39,37 @@ async function downloadDb(dest: string): Promise<void> {
   }
 }
 
-export function resolveArchitectName(dbPath: string, slug: string): string {
+/** Run a query against a single readonly connection, then close it. */
+function withDb<T>(dbPath: string, fn: (db: Database.Database) => T): T {
   const db = new Database(dbPath, { readonly: true });
+  try {
+    return fn(db);
+  } finally {
+    db.close();
+  }
+}
+
+export function resolveArchitectName(dbPath: string, slug: string): string {
   const key = slug.replace(/-/g, " ").toLowerCase();
-  const row = db.prepare("SELECT name FROM architects WHERE lower(name) = ?").get(key) as
-    | { name: string }
-    | undefined;
-  db.close();
+  const row = withDb(dbPath, (db) =>
+    db.prepare("SELECT name FROM architects WHERE lower(name) = ?").get(key) as
+      | { name: string }
+      | undefined,
+  );
   if (!row) throw new Error(`No architect matches slug "${slug}".`);
   return row.name;
+}
+
+export type AllBuildingRow = { id: number; slug: string; name: string; lng: number; lat: number };
+
+export function queryAllBuildings(dbPath: string): AllBuildingRow[] {
+  return withDb(dbPath, (db) =>
+    db.prepare(`
+      SELECT a.id, a.slug, a.name, a.latitude AS lat, a.longitude AS lng
+      FROM architectures a
+      ORDER BY a.id ASC
+    `).all() as AllBuildingRow[],
+  );
 }
 
 type DbRow = {
@@ -61,38 +83,25 @@ type DbRow = {
   cover: string | null;
 };
 
-export type AllBuildingRow = { id: number; slug: string; name: string; lng: number; lat: number };
-
-export function queryAllBuildings(dbPath: string): AllBuildingRow[] {
-  const db = new Database(dbPath, { readonly: true });
-  const rows = db.prepare(`
-    SELECT a.id, a.slug, a.name, a.latitude AS lat, a.longitude AS lng
-    FROM architectures a
-    ORDER BY a.id ASC
-  `).all() as AllBuildingRow[];
-  db.close();
-  return rows;
-}
-
 export function queryArchitectBuildings(dbPath: string, architectName: string): ReelBuilding[] {
-  const db = new Database(dbPath, { readonly: true });
-  const rows = db
-    .prepare(
-      `
-    SELECT a.slug, a.name, a.year,
-           ci.name AS city, co.code AS cc,
-           a.latitude AS lat, a.longitude AS lng,
-           (SELECT p.image FROM architecture_photos p WHERE p.architecture_id = a.id AND p.is_cover = 1) AS cover
-    FROM architectures a
-    JOIN architects ar ON a.architect_id = ar.id
-    LEFT JOIN cities ci ON a.city_id = ci.id
-    LEFT JOIN countries co ON ci.country_id = co.id
-    WHERE ar.name = ?
-    ORDER BY a.year ASC
-  `,
-    )
-    .all(architectName) as DbRow[];
-  db.close();
+  const rows = withDb(dbPath, (db) =>
+    db
+      .prepare(
+        `
+      SELECT a.slug, a.name, a.year,
+             ci.name AS city, co.code AS cc,
+             a.latitude AS lat, a.longitude AS lng,
+             (SELECT p.image FROM architecture_photos p WHERE p.architecture_id = a.id AND p.is_cover = 1) AS cover
+      FROM architectures a
+      JOIN architects ar ON a.architect_id = ar.id
+      LEFT JOIN cities ci ON a.city_id = ci.id
+      LEFT JOIN countries co ON ci.country_id = co.id
+      WHERE ar.name = ?
+      ORDER BY a.year ASC
+    `,
+      )
+      .all(architectName) as DbRow[],
+  );
   return rows.map((r) => ({
     slug: r.slug,
     name: r.name,

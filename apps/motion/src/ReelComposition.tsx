@@ -20,10 +20,8 @@ const HOOK_TITLE_LEFT = "55%";
 const HOOK_TITLE_RIGHT = "8%";
 const walkFrames = (count: number) => count * SLOT_FRAMES;
 
-// Card-stack axis (carousel), fraction of screen width from left/right.
-const STACK_AXIS_FROM_RIGHT = 0.25;
-const STACK_AXIS = 1 - STACK_AXIS_FROM_RIGHT;
-const STACK_LEFT = Math.max(0, 2 * STACK_AXIS - 1);
+// Carousel sits at left=50% — the map spans the left 75%, the bg zone the right 25%.
+const STACK_LEFT = 0.5;
 
 export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
   const cfg = useReelConfig(slug);
@@ -35,24 +33,18 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
   return (
     <AbsoluteFill data-theme="dark" style={{ backgroundColor: "rgb(var(--color-primary-background))" }}>
       <MapProvider count={count}>
-        {/* Camera-segment chain — drives the shared map instance. Sibling to the
-            beat Sequences; spans all beats (world→b0 crosses HOOK→WALK; last Hold
-            crosses into CTA). */}
         <CameraSeries buildings={buildings} worldVP={WORLD_VP} />
 
-        {/* HOOK title (unchanged). */}
         <Sequence from={0} durationInFrames={WALK_START + HOOK_EXIT_F} layout="none">
           <div style={{ position: "absolute", left: HOOK_TITLE_LEFT, right: HOOK_TITLE_RIGHT, top: 0, bottom: 0, zIndex: 5, display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
             <HookLockup title={reelTitle(cfg.architect)} />
           </div>
         </Sequence>
 
-        {/* WALK beat. chromeOpacity + carouselPos computed from the WALK-local frame. */}
         <Sequence from={WALK_START} durationInFrames={walkFrames(count)} layout="none">
           <WalkChrome buildings={buildings} slug={cfg.slug} architect={cfg.architect} />
         </Sequence>
 
-        {/* CTA beat (unchanged). */}
         <Sequence from={ctaStart(count)} durationInFrames={secToFrames(CTA_S)} layout="none">
           <CtaLockup />
         </Sequence>
@@ -61,9 +53,8 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
   );
 };
 
-/** WALK-local chrome: carousel, captions, brand. Reads its own useCurrentFrame()
- *  (WALK-local). chromeOpacity fades in over CHROME_IN_S at slot-0, fades out
- *  into CTA; the carousel reads the same frame to drive its own card snap. */
+/** WALK-local chrome: carousel, captions, brand. `chromeOpacity` fades in over
+ *  slot-0's fly and out into CTA. */
 const WalkChrome: React.FC<{
   buildings: ReelBuilding[];
   slug: string;
@@ -73,7 +64,7 @@ const WalkChrome: React.FC<{
   const count = buildings.length;
   const walkLen = walkFrames(count);
   const lead = secToFrames(BRAND_FADE_OUT_LEAD_S);
-  const CHROME_IN_S = 0.5; // WALK chrome fade-in across the slot-0 fly
+  const CHROME_IN_S = 0.5;
   const fadeIn = interpolate(frame, [0, secToFrames(CHROME_IN_S)], [0, 1], CLAMP);
   const fadeOut = interpolate(frame, [walkLen - lead, walkLen], [0, 1], CLAMP);
   const chromeOpacity = fadeIn * (1 - fadeOut);

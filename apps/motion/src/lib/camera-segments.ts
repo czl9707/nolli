@@ -21,11 +21,9 @@ export type FlightSegment = {
 
 export type Segment = HoldSegment | FlightSegment;
 
-/** Frame counts derived from the global constants — same source of truth as the
- *  beat durations, so the camera chain and the content Sequences stay in lockstep
- *  (no independent rounding; the WALK-duration lesson). */
-export const FLY_FRAC = 0.6;                  // fraction of a WALK slot spent flying
-const HOOK_FRAMES = WALK_START;               // HOOK holds the world view (== WALK_START)
+/** Fraction of a WALK slot spent flying. Frame counts derive from the global
+ *  constants so the camera chain and the content Sequences stay in lockstep. */
+export const FLY_FRAC = 0.6;
 const FLY_FRAMES = Math.round(FLY_FRAC * SLOT_FRAMES);
 const HOLD_FRAMES = SLOT_FRAMES - FLY_FRAMES;
 const CTA_FRAMES = secToFrames(CTA_S);
@@ -35,13 +33,7 @@ const CTA_FRAMES = secToFrames(CTA_S);
  *   Hold(world) → Flight(world→b0) → Hold(b0) → Flight(b0→b1) → … → Hold(bN)
  * Contiguity is by REFERENCE: each Flight's `from` is the same object as the
  * preceding Hold's `at`, and each Hold's `at` is the same object as the
- * preceding Flight's `to`. Total duration === ctaStart(count) + CTA_FRAMES
- * (HOOK + WALK + CTA); the last Hold(bN) extends across the CTA beat so the
- * camera holds on the final building through CTA.
- *
- * `selectedSlug`: world segments → undefined (no highlight); per-building
- * segments → that building's slug (the highlight moves to the destination at
- * flight start).
+ * preceding Flight's `to`. The last Hold(bN) extends across the CTA beat.
  */
 export function buildCameraSegments(
   buildings: ReelBuilding[],
@@ -50,27 +42,24 @@ export function buildCameraSegments(
 ): Segment[] {
   const segs: Segment[] = [];
 
-  // Leading Hold(world): full HOOK duration. No highlight on the world stage.
-  segs.push({ kind: "hold", at: worldVP, durationInFrames: HOOK_FRAMES });
+  segs.push({ kind: "hold", at: worldVP, durationInFrames: WALK_START });
 
   for (let i = 0; i < buildings.length; i++) {
     const b = buildings[i];
     const vp: MapViewport = { center: [b.coordinates.lng, b.coordinates.lat], zoom: cruiseZoom };
-    // Flight from the previous segment's "to"/"at" (reference equality) into b[i].
     const prev = segs[segs.length - 1];
     const from = prev.kind === "flight" ? prev.to : prev.at;
     segs.push({
       kind: "flight",
-      from,             // === prev's viewport (reference)
-      to: vp,           // === the Hold we push next's `at` (reference)
+      from,
+      to: vp,
       selectedSlug: b.slug,
       durationInFrames: FLY_FRAMES,
     });
-    // The final building's Hold extends through CTA.
     const isLast = i === buildings.length - 1;
     segs.push({
       kind: "hold",
-      at: vp,           // === the Flight's `to` (reference)
+      at: vp,
       selectedSlug: b.slug,
       durationInFrames: isLast ? HOLD_FRAMES + CTA_FRAMES : HOLD_FRAMES,
     });

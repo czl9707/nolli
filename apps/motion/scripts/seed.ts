@@ -1,21 +1,17 @@
-import { mkdirSync, writeFileSync, existsSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { ensureDb, resolveArchitectName, queryArchitectBuildings, queryAllBuildings } from "./db";
 import { buildReelConfig } from "./config-builder";
+import { runCli } from "./runCli";
+import { outDir, reelConfigPath, allBuildingsPath } from "./paths";
+import { reelConfigExists } from "./staging";
 
-const OUT_DIR = (slug: string) => resolve("out", slug);
-
-async function main() {
-  const slug = process.argv[2];
-  if (!slug) throw new Error("Usage: seed <architect-slug>");
-
+runCli("seed", async (slug) => {
   const dbPath = await ensureDb();
   const architect = resolveArchitectName(dbPath, slug);
   const buildings = queryArchitectBuildings(dbPath, architect);
-  const outDir = OUT_DIR(slug);
-  mkdirSync(outDir, { recursive: true });
+  mkdirSync(outDir(slug), { recursive: true });
 
-  const allPath = resolve("out", "all-buildings.json");
+  const allPath = allBuildingsPath();
   const allBuildings = queryAllBuildings(dbPath).map((r) => ({
     id: r.id,
     slug: r.slug,
@@ -25,8 +21,8 @@ async function main() {
   writeFileSync(allPath, JSON.stringify(allBuildings));
   console.log(`wrote ${allPath} — ${allBuildings.length} buildings`);
 
-  const cfgPath = resolve(outDir, "reel.json");
-  if (existsJsonShape(cfgPath)) {
+  const cfgPath = reelConfigPath(slug);
+  if (reelConfigExists(slug)) {
     console.log(`reel.json exists at ${cfgPath}; not overwritten. Delete it to re-seed.`);
     return;
   }
@@ -34,11 +30,4 @@ async function main() {
   const cfg = buildReelConfig({ slug, architect, buildings });
   writeFileSync(cfgPath, JSON.stringify(cfg, null, 2));
   console.log(`wrote ${cfgPath} — ${cfg.buildings.length} buildings`);
-}
-
-function existsJsonShape(p: string): boolean {
-  if (!existsSync(p)) return false;
-  try { JSON.parse(readFileSync(p, "utf8")); return true; } catch { return false; }
-}
-
-main().catch((e) => { console.error(e); process.exit(1); });
+});
