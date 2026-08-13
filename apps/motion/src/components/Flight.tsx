@@ -1,6 +1,5 @@
-import { useEffect } from "react";
 import { useCurrentFrame } from "remotion";
-import { useMapContext } from "./MapProvider";
+import { useMapContext, useSelectedSlug } from "./MapProvider";
 import { useMapFrame } from "../lib/use-map-frame";
 import { flightPath, FLIGHT_EASE } from "../lib/viewport";
 import type { MapViewport } from "../lib/viewport";
@@ -9,7 +8,7 @@ import type { MapViewport } from "../lib/viewport";
  * Moving camera segment: flies `from`→`to` over its duration. moving=true →
  * fast-release capture gate (tile holes mid-flight are imperceptible).
  * Publishes its destination `selectedSlug` at flight start (highlight moves to
- * the destination when the flight begins) via context from a useEffect.
+ * the destination when the flight begins) via the useSelectedSlug hook.
  */
 export const Flight: React.FC<{
   from: MapViewport;
@@ -18,10 +17,8 @@ export const Flight: React.FC<{
   durationInFrames: number;
 }> = ({ from, to, selectedSlug, durationInFrames }) => {
   const frame = useCurrentFrame();
-  const { map, setSegmentState } = useMapContext();
-  useEffect(() => {
-    setSegmentState({ selectedSlug });
-  }, [selectedSlug, setSegmentState]);
+  const { map } = useMapContext();
+  useSelectedSlug(selectedSlug);
 
   const t = durationInFrames > 0 ? frame / durationInFrames : 1;
   const fp = flightPath({

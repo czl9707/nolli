@@ -3,22 +3,23 @@ export const FPS = 45;
 // --- Durations in SECONDS. Frames derive via round(S * FPS). ---
 export const WALK_SLOT_S = 4.5;     // per-building slot; total WALK = count × this
 export const HOOK_S = 1.5;          // held world-map + title opener
-export const WALK_CHROME_IN_S = 0.5; // WALK chrome fade-in across the slot-0 fly
-export const CTA_LINE_S = 1.5;    // "Explore more in"
-export const CTA_LOCKUP_S = 2.5;  // icon + Nolli hold
-export const CTA_S = CTA_LINE_S + CTA_LOCKUP_S;
+// CTA = "Explore more in" line reveal (1.5s) + Nolli mark/wordmark hold (2.5s).
+// The line/lockup split belongs to CtaLockup (the only consumer of the parts);
+// only the total is shared with the beat Sequences + camera chain.
+export const CTA_S = 1.5 + 2.5;
 
 // The reel opens on HOOK: world map (left) + descriptive title (right). Slot 0's
 // world→building fly then bridges HOOK→WALK (the title overlays its exit across
 // that fly). Corner branding (architect title + @handle) overlays through WALK.
 export const BRAND_FADE_OUT_LEAD_S = 0.4; // map/chrome fade-out lead into CTA
 
-// --- Fractions of a WALK slot (0..1), independent of slot length. ---
-export const FLY_FRAC = 0.6;
 // Card-carousel slide: a punchy 0.5s ease-out snap into center at each slot
 // start (decoupled from the camera fly), then the card holds.
 export const SNAP_S = 0.5;
 export const SNAP_FRAC = SNAP_S / WALK_SLOT_S;
+
+// Fraction of a WALK slot spent flying between buildings (camera-segment chain).
+export const FLY_FRAC = 0.6;
 
 /** Seconds → frames. The single source of truth for the S→frame conversion. */
 export const secToFrames = (s: number): number => Math.round(s * FPS);

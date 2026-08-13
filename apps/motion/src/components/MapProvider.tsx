@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { AbsoluteFill, interpolate, useCurrentFrame } from "remotion";
 import { ArchMap } from "@nolli/map";
 import type { MapRef } from "@nolli/map";
@@ -39,8 +39,17 @@ export function useMapContext(): MapContextValue {
   return ctx;
 }
 
-// Map→bg layout (fractions of screen width). These mirror the layout constants
-// in ReelComposition (the source of truth until Task 6 deletes them there).
+/** Publish `selectedSlug` to the map from a Flight/Hold. Encapsulates the
+ *  MapSegmentState contract (MUST publish from a useEffect, never during render)
+ *  so the two segment components can't drift from it. */
+export function useSelectedSlug(selectedSlug?: string): void {
+  const { setSegmentState } = useMapContext();
+  useEffect(() => {
+    setSegmentState({ selectedSlug });
+  }, [selectedSlug, setSegmentState]);
+}
+
+// Map→bg layout (fractions of screen width).
 const FULL_BG_RIGHT = 0.25;       // right 25% is pure bg (no map bleed)
 const GRADIENT_W = 0.35;          // 35% gradient band before the full-bg zone
 const MAP_FRAC = 1 - FULL_BG_RIGHT;        // map div spans up to the full-bg edge (0.75)

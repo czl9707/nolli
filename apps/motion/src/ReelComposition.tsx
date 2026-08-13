@@ -1,9 +1,8 @@
-import { AbsoluteFill, Sequence, Series, useCurrentFrame } from "remotion";
-import { interpolate } from "remotion";
+import { AbsoluteFill, interpolate, Sequence, Series, useCurrentFrame } from "remotion";
 import { useMemo } from "react";
 import { useReelConfig } from "./lib/use-reel-config";
 import {
-  SLOT_FRAMES, CTA_S, WALK_START, WALK_CHROME_IN_S,
+  SLOT_FRAMES, CTA_S, WALK_START,
   ctaStart, secToFrames, BRAND_FADE_OUT_LEAD_S, CLAMP,
 } from "./lib/timeline";
 import { carouselPosFromWalkFrame } from "./lib/carousel";
@@ -63,7 +62,7 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
 
         {/* WALK beat. chromeOpacity + carouselPos computed from the WALK-local frame. */}
         <Sequence from={WALK_START} durationInFrames={walkFrames(count)} layout="none">
-          <WalkChrome buildings={buildings} slug={cfg.slug} architect={cfg.architect} count={count} />
+          <WalkChrome buildings={buildings} slug={cfg.slug} architect={cfg.architect} />
         </Sequence>
 
         {/* CTA beat (unchanged). */}
@@ -76,18 +75,19 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
 };
 
 /** WALK-local chrome: carousel, captions, brand. Reads its own useCurrentFrame()
- *  (WALK-local). chromeOpacity fades in over WALK_CHROME_IN_S at slot-0, fades out
+ *  (WALK-local). chromeOpacity fades in over CHROME_IN_S at slot-0, fades out
  *  into CTA; carouselPos drives the continuous card snap. */
 const WalkChrome: React.FC<{
   buildings: ReelBuilding[];
   slug: string;
   architect: string;
-  count: number;
-}> = ({ buildings, slug, architect, count }) => {
+}> = ({ buildings, slug, architect }) => {
   const frame = useCurrentFrame();
+  const count = buildings.length;
   const walkLen = walkFrames(count);
   const lead = secToFrames(BRAND_FADE_OUT_LEAD_S);
-  const fadeIn = interpolate(frame, [0, secToFrames(WALK_CHROME_IN_S)], [0, 1], CLAMP);
+  const CHROME_IN_S = 0.5; // WALK chrome fade-in across the slot-0 fly
+  const fadeIn = interpolate(frame, [0, secToFrames(CHROME_IN_S)], [0, 1], CLAMP);
   const fadeOut = interpolate(frame, [walkLen - lead, walkLen], [0, 1], CLAMP);
   const chromeOpacity = fadeIn * (1 - fadeOut);
   const carouselPos = carouselPosFromWalkFrame(frame, count);

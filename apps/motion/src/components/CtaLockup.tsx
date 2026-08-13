@@ -1,9 +1,12 @@
 import { AbsoluteFill, Img, interpolate, staticFile, useCurrentFrame } from "remotion";
-import { CTA_LINE_S, secToFrames, CLAMP } from "../lib/timeline";
+import { secToFrames, CLAMP } from "../lib/timeline";
 import { SoftBlurIn } from "./SoftBlurIn";
 
 const FONT_SIZE = 104;
 const FAMILY = "var(--font-playful)"; // match the H1 the lockup previously used
+// CTA beat split (local to this lockup — the parts have no other consumer).
+const CTA_LINE_S = 1.5;   // "Explore more in"
+const CTA_LOCKUP_S = 2.5; // icon + Nolli hold
 const LINE_END = secToFrames(CTA_LINE_S);
 const EXIT_F = 8; // blur-out-up length (frames)
 const LINE_REVEAL_START = secToFrames(0.1);
