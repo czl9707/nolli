@@ -5,7 +5,6 @@ import {
   SLOT_FRAMES, CTA_S, WALK_START,
   ctaStart, secToFrames, BRAND_FADE_OUT_LEAD_S, CLAMP,
 } from "./lib/timeline";
-import { carouselPosFromWalkFrame } from "./lib/carousel";
 import { fitViewport, FALLBACK_VP } from "./lib/viewport";
 import { reelTitle, type ReelBuilding } from "./lib/config";
 import { useAllBuildings } from "./lib/use-all-buildings";
@@ -76,7 +75,7 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
 
 /** WALK-local chrome: carousel, captions, brand. Reads its own useCurrentFrame()
  *  (WALK-local). chromeOpacity fades in over CHROME_IN_S at slot-0, fades out
- *  into CTA; carouselPos drives the continuous card snap. */
+ *  into CTA; the carousel reads the same frame to drive its own card snap. */
 const WalkChrome: React.FC<{
   buildings: ReelBuilding[];
   slug: string;
@@ -90,12 +89,11 @@ const WalkChrome: React.FC<{
   const fadeIn = interpolate(frame, [0, secToFrames(CHROME_IN_S)], [0, 1], CLAMP);
   const fadeOut = interpolate(frame, [walkLen - lead, walkLen], [0, 1], CLAMP);
   const chromeOpacity = fadeIn * (1 - fadeOut);
-  const carouselPos = carouselPosFromWalkFrame(frame, count);
 
   return (
     <>
       <div style={{ position: "absolute", left: `${STACK_LEFT * 100}%`, right: 0, top: 0, bottom: 0, zIndex: 4, opacity: chromeOpacity }}>
-        <CardCarousel slug={slug} buildings={buildings} position={carouselPos} />
+        <CardCarousel slug={slug} buildings={buildings} />
       </div>
       <div style={{ position: "absolute", inset: 0, zIndex: 5, pointerEvents: "none" }}>
         <Series>
