@@ -12,7 +12,7 @@ job is **discovery**: make a viewer who has never heard of the architect care
 about them through their body of work. Nolli is the "go deeper" destination,
 named at the end.
 
-This replaces the previous `apps/motion` pipeline (Playwright live-journey
+This replaces the previous `apps/video-gen` (formerly `apps/motion`) pipeline (Playwright live-journey
 capture + Remotion concat), which is archived on
 `origin/archive/motion-live-capture`. The new app is built fresh on this branch.
 

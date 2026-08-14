@@ -33,7 +33,7 @@ pnpm-debug.log*
 
 # generated patterns
 apps/nolli/public/patterns/
-apps/motion/public/patterns/
+apps/video-gen/public/patterns/
 docs/plans
 docs/superpowers
 docs/agents
