@@ -9,7 +9,7 @@ const FALLBACK_COUNT = 9; // pre-metadata duration; calculateMetadata overrides 
  *  building count (HOOK + count×SLOT + CTA), so the duration must be derived per
  *  architect — not fixed at registration time. */
 const reelDurationInFrames = async (slug: string): Promise<number> => {
-  const res = await fetch(staticFile(`capture/${slug}/reel.json`));
+  const res = await fetch(staticFile(`data/${slug}/reel.json`));
   const cfg = (await res.json()) as ReelConfig;
   return totalFrames(cfg.buildings.length);
 };

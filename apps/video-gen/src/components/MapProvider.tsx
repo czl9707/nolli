@@ -67,7 +67,7 @@ export const MapProvider: React.FC<{
   children: ReactNode;
 }> = ({ count, children }) => {
   const frame = useCurrentFrame();
-  const allPins = useStaticJson<ArchPin[]>("capture/all-arch.json", "load all-arch.json");
+  const allPins = useStaticJson<ArchPin[]>("data/all-arch.json", "load all-arch.json");
   const [map, setMap] = useState<MapRef | null>(null);
   const [segmentState, setSegmentState] = useState<MapSegmentState>({});
 

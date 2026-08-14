@@ -3,7 +3,7 @@ import { join } from "node:path";
 import sharp from "sharp";
 import type { ReelBuilding } from "../src/lib/config";
 import { runCli } from "./runCli";
-import { captureDir } from "./paths";
+import { dataDir } from "./paths";
 import { loadReelConfig } from "./staging";
 
 async function stageBuilding(slug: string, b: ReelBuilding): Promise<void> {
@@ -11,7 +11,7 @@ async function stageBuilding(slug: string, b: ReelBuilding): Promise<void> {
     console.warn(`  ${b.slug}: no cover image; skipping`);
     return;
   }
-  const dir = join(captureDir(slug), "images");
+  const dir = join(dataDir(slug), "images");
   mkdirSync(dir, { recursive: true });
   const heroPath = join(dir, `${b.slug}-hero.jpg`);
   const thumbPath = join(dir, `${b.slug}-thumb.jpg`);
@@ -33,7 +33,7 @@ const CONCURRENCY = 6;
 
 runCli("assets", async (slug) => {
   const cfg = loadReelConfig(slug);
-  mkdirSync(captureDir(slug), { recursive: true });
+  mkdirSync(dataDir(slug), { recursive: true });
 
   let cursor = 0;
   const workers = Array.from({ length: Math.min(CONCURRENCY, cfg.buildings.length) }, async () => {
@@ -46,5 +46,5 @@ runCli("assets", async (slug) => {
     }
   });
   await Promise.all(workers);
-  console.log(`done -> public/capture/${cfg.slug}/`);
+  console.log(`done -> public/data/${cfg.slug}/`);
 });

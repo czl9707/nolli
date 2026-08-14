@@ -24,7 +24,7 @@ const walkFrames = (count: number) => count * SLOT_FRAMES;
 const STACK_LEFT = 0.5;
 
 export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
-  const cfg = useStaticJson<ReelConfig>(`capture/${slug}/reel.json`, "load reel.json");
+  const cfg = useStaticJson<ReelConfig>(`data/${slug}/reel.json`, "load reel.json");
   const buildings = cfg?.buildings ?? [];
   const count = buildings.length;
 

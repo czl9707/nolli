@@ -48,18 +48,21 @@ background markers for the world map).
 ### `assets <slug>`
 
 HTTP-fetches each building's cover image and writes two derivatives per building
-via sharp into `public/capture/<slug>/images/`:
+via sharp into `public/data/<slug>/images/`:
 `<slug>-hero.jpg` (1600×1000) and `<slug>-thumb.jpg` (240×240). Pure download —
 no browser. Skips buildings with no cover image; warns on download failure.
 
 ### `render <slug>`
 
-Stages `reel.json` into `public/capture/<slug>/`, bundles the Remotion entry,
+Stages `reel.json` into `public/data/<slug>/`, bundles the Remotion entry,
 and renders the `reel` composition (1920×1080, h264) to `out/<slug>/<slug>.mp4`.
 
 The composition reads its config **browser-side** via `staticFile` + `fetch`
 (gated on `delayRender`), not `readFileSync` — Remotion runs in a browser, where
-`node:fs` doesn't exist.
+`node:fs` doesn't exist. This is also why there are two output dirs: `out/` is
+the node-side build dir (seed output + final mp4), while `public/data/` is the
+staged runtime copy Remotion *serves* to the browser — `render` copies the
+config from `out/` into `public/data/` so the composition can fetch it.
 
 #### Render env vars
 
@@ -82,10 +85,10 @@ sets this via `chromiumOptions: { gl: "angle" }`.
 | --- | --- |
 | `out/<slug>/reel.json` | Seed-generated config (the render's source of truth). |
 | `out/all-arch.json` | Background world-map markers. |
-| `public/capture/<slug>/images/` | Hero + thumb cover derivatives. |
+| `public/data/<slug>/images/` | Hero + thumb cover derivatives. |
 | `out/<slug>/<slug>.mp4` | The rendered 16:9 master. |
 
-`out/`, `public/capture/`, and `public/patterns/` are all gitignored — nothing
+`out/`, `public/data/`, and `public/patterns/` are all gitignored — nothing
 generated is committed.
 
 ## Dev

@@ -106,7 +106,7 @@ const CarouselCard: React.FC<{
       }}
     >
       <Img
-        src={staticFile(`capture/${slug}/images/${building.slug}-hero.jpg`)}
+        src={staticFile(`data/${slug}/images/${building.slug}-hero.jpg`)}
         style={{ width: "100%", height: "100%", objectFit: "cover" }}
       />
       {showVeil ? (
