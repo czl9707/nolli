@@ -7,13 +7,13 @@ const FG2 = "rgb(var(--color-secondary-foreground))";
  *  = the reel's descriptive title; `corner="bottom"` = the @nolli.map handle. */
 export const CornerBrand: React.FC<{
   corner: "top" | "bottom";
-  architect: string;
+  title?: string; // top only; the bottom handle ignores it
   opacity: number;
-}> = ({ corner, architect, opacity }) => {
+}> = ({ corner, title, opacity }) => {
   if (corner === "top") {
     return (
       <span style={{ fontFamily: "var(--font-playful)", fontWeight: 500, fontSize: 22, color: FG, lineHeight: 1, opacity }}>
-        {reelTitle(architect)}
+        {title}
       </span>
     );
   }

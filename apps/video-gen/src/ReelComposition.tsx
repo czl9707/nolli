@@ -5,7 +5,7 @@ import {
   ctaStart, secToFrames, BRAND_FADE_OUT_LEAD_S, CLAMP,
 } from "./lib/timeline";
 import { WORLD_VP } from "./lib/viewport";
-import { reelTitle, type ReelBuilding, type ReelConfig } from "./lib/config";
+import { reelTitle, yearRange, type ReelBuilding, type ReelConfig } from "./lib/config";
 import { CardCarousel } from "./components/CardCarousel";
 import { BuildingCaption } from "./components/BuildingCaption";
 import { CornerBrand } from "./components/CornerBrand";
@@ -37,12 +37,12 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
 
         <Sequence from={0} durationInFrames={WALK_START + HOOK_EXIT_F} layout="none">
           <div style={{ position: "absolute", left: HOOK_TITLE_LEFT, right: HOOK_TITLE_RIGHT, top: 0, bottom: 0, zIndex: 5, display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
-            <HookLockup title={reelTitle(cfg.architect)} />
+            <HookLockup architect={cfg.architect} subtitle={yearRange(cfg)} />
           </div>
         </Sequence>
 
         <Sequence from={WALK_START} durationInFrames={walkFrames(count)} layout="none">
-          <WalkChrome buildings={buildings} slug={cfg.slug} architect={cfg.architect} />
+          <WalkChrome buildings={buildings} slug={cfg.slug} title={reelTitle(cfg)} />
         </Sequence>
 
         <Sequence from={ctaStart(count)} durationInFrames={secToFrames(CTA_S)} layout="none">
@@ -58,8 +58,8 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
 const WalkChrome: React.FC<{
   buildings: ReelBuilding[];
   slug: string;
-  architect: string;
-}> = ({ buildings, slug, architect }) => {
+  title: string;
+}> = ({ buildings, slug, title }) => {
   const frame = useCurrentFrame();
   const count = buildings.length;
   const walkLen = walkFrames(count);
@@ -84,10 +84,10 @@ const WalkChrome: React.FC<{
         </Series>
       </div>
       <div style={{ position: "absolute", top: BRAND_VERT, right: BRAND_INSET, zIndex: 6 }}>
-        <CornerBrand corner="top" architect={architect} opacity={chromeOpacity} />
+        <CornerBrand corner="top" title={title} opacity={chromeOpacity} />
       </div>
       <div style={{ position: "absolute", bottom: BRAND_VERT, right: BRAND_INSET, zIndex: 6 }}>
-        <CornerBrand corner="bottom" architect={architect} opacity={chromeOpacity} />
+        <CornerBrand corner="bottom" opacity={chromeOpacity} />
       </div>
     </>
   );

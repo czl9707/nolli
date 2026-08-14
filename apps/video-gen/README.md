@@ -41,9 +41,10 @@ pnpm --filter video-gen render <slug>    # 3. bundle + render to mp4
 
 Resolves the architect + their buildings (joining `architecture_photos` for the
 cover image) from the cached sqlite snapshot, computes stats, and writes
-`out/<slug>/reel.json`. **Non-destructive** — an existing `reel.json` is never
-overwritten; delete it to re-seed. Also writes `out/all-arch.json` (the
-background markers for the world map).
+`out/<slug>/reel.json`. **Non-destructive** by default — an existing
+`reel.json` is not overwritten. `seed <slug> --fresh` re-downloads the DB
+snapshot (`db.nolli-map.com/latest.db`) and regenerates `reel.json` in one go.
+Also writes `out/all-arch.json` (the background markers for the world map).
 
 ### `assets <slug>`
 

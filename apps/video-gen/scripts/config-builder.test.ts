@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { buildReelConfig } from "./config-builder";
+import { reelTitle, yearRange } from "../src/lib/config";
 import type { ReelBuilding } from "../src/lib/config";
 
 const buildings: ReelBuilding[] = [
@@ -15,5 +16,11 @@ describe("buildReelConfig", () => {
 
   it("throws if fewer than 2 buildings", () => {
     expect(() => buildReelConfig({ slug: "x", architect: "X", buildings: [buildings[0]] })).toThrow();
+  });
+
+  it("derives the title from the sorted year range", () => {
+    const cfg = buildReelConfig({ slug: "mies", architect: "Mies", buildings });
+    expect(yearRange(cfg)).toBe("1928–1958");
+    expect(reelTitle(cfg)).toBe("Mies 1928–1958");
   });
 });

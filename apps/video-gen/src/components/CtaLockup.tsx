@@ -2,7 +2,7 @@ import { AbsoluteFill, Img, interpolate, staticFile, useCurrentFrame } from "rem
 import { secToFrames, CLAMP } from "../lib/timeline";
 import { SoftBlurIn } from "./SoftBlurIn";
 
-const FONT_SIZE = 104;
+const FONT_SIZE = 96;
 const FAMILY = "var(--font-playful)";
 const CTA_LINE_S = 1.5;
 const CTA_LOCKUP_S = 2.5;

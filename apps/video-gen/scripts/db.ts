@@ -1,5 +1,5 @@
 import Database from "better-sqlite3";
-import { existsSync, mkdirSync, createWriteStream, rename, unlink } from "node:fs";
+import { existsSync, mkdirSync, createWriteStream, rename, unlink, rmSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import type { ReelBuilding } from "../src/lib/config";
@@ -8,8 +8,9 @@ const DB_URL = "https://db.nolli-map.com/latest.db";
 const CACHE_DIR = process.env.NOLLI_DB_DIR ?? join(homedir(), ".nolli");
 const CACHE_PATH = join(CACHE_DIR, "latest.db");
 
-export async function ensureDb(): Promise<string> {
-  if (!existsSync(CACHE_PATH)) {
+export async function ensureDb(fresh = false): Promise<string> {
+  if (fresh || !existsSync(CACHE_PATH)) {
+    if (existsSync(CACHE_PATH)) rmSync(CACHE_PATH);
     mkdirSync(CACHE_DIR, { recursive: true });
     await downloadDb(CACHE_PATH);
   }

@@ -16,6 +16,12 @@ export type ReelConfig = {
   buildings: ReelBuilding[];
 };
 
-/** The reel's descriptive title — a pure template so the seed can generate it
- *  without a per-architect config field. */
-export const reelTitle = (architect: string): string => `${architect} over time`;
+/** The reel's year range, from its (already chronologically sorted) buildings. */
+export const yearRange = (cfg: ReelConfig): string => {
+  const years = cfg.buildings.map((b) => b.year);
+  return `${Math.min(...years)}–${Math.max(...years)}`;
+};
+
+/** The reel's descriptive title — pure templates over ReelConfig so the seed
+ *  needs no per-architect config fields. */
+export const reelTitle = (cfg: ReelConfig): string => `${cfg.architect} ${yearRange(cfg)}`;

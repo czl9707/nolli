@@ -5,8 +5,8 @@ import { runCli } from "./runCli";
 import { outDir, reelConfigPath, allArchPath } from "./paths";
 import { reelConfigExists } from "./staging";
 
-runCli("seed", async (slug) => {
-  const dbPath = await ensureDb();
+runCli("seed", async (slug, { fresh }) => {
+  const dbPath = await ensureDb(fresh);
   const architect = resolveArchitectName(dbPath, slug);
   const buildings = queryArchitectBuildings(dbPath, architect);
   mkdirSync(outDir(slug), { recursive: true });
@@ -22,8 +22,8 @@ runCli("seed", async (slug) => {
   console.log(`wrote ${allPath} — ${allPins.length} pins`);
 
   const cfgPath = reelConfigPath(slug);
-  if (reelConfigExists(slug)) {
-    console.log(`reel.json exists at ${cfgPath}; not overwritten. Delete it to re-seed.`);
+  if (!fresh && reelConfigExists(slug)) {
+    console.log(`reel.json exists at ${cfgPath}; not overwritten. Re-run with --fresh to re-seed.`);
     return;
   }
 
