@@ -42,7 +42,7 @@ pnpm --filter video-gen render <slug>    # 3. bundle + render to mp4
 Resolves the architect + their buildings (joining `architecture_photos` for the
 cover image) from the cached sqlite snapshot, computes stats, and writes
 `out/<slug>/reel.json`. **Non-destructive** — an existing `reel.json` is never
-overwritten; delete it to re-seed. Also writes `out/all-buildings.json` (the
+overwritten; delete it to re-seed. Also writes `out/all-arch.json` (the
 background markers for the world map).
 
 ### `assets <slug>`
@@ -81,7 +81,7 @@ sets this via `chromiumOptions: { gl: "angle" }`.
 | File | Description |
 | --- | --- |
 | `out/<slug>/reel.json` | Seed-generated config (the render's source of truth). |
-| `out/all-buildings.json` | Background world-map markers. |
+| `out/all-arch.json` | Background world-map markers. |
 | `public/capture/<slug>/images/` | Hero + thumb cover derivatives. |
 | `out/<slug>/<slug>.mp4` | The rendered 16:9 master. |
 

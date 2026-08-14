@@ -3,7 +3,7 @@ import { renderMedia, selectComposition } from "@remotion/renderer";
 import { existsSync, mkdirSync, copyFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { runCli } from "./runCli";
-import { outDir, captureDir, captureAllBuildingsPath, allBuildingsPath, reelConfigPath } from "./paths";
+import { outDir, captureDir, captureAllArchPath, allArchPath, reelConfigPath } from "./paths";
 
 const BROWSER =
   process.env.REMOTION_BROWSER_EXECUTABLE ??
@@ -13,10 +13,10 @@ function stageAssets(slug: string): void {
   const capDir = captureDir(slug);
   mkdirSync(capDir, { recursive: true });
   copyFileSync(reelConfigPath(slug), resolve(capDir, "reel.json"));
-  if (existsSync(allBuildingsPath())) {
-    copyFileSync(allBuildingsPath(), captureAllBuildingsPath());
+  if (existsSync(allArchPath())) {
+    copyFileSync(allArchPath(), captureAllArchPath());
   } else {
-    console.warn("Warning: out/all-buildings.json missing — map will show no background markers. Run seed.");
+    console.warn("Warning: out/all-arch.json missing — map will show no background markers. Run seed.");
   }
   if (!existsSync(resolve(capDir, "images"))) {
     console.warn(`Warning: public/capture/${slug}/images missing — run 'assets ${slug}' or hero/thumb images will 404.`);

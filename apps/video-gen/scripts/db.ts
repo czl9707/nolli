@@ -60,15 +60,15 @@ export function resolveArchitectName(dbPath: string, slug: string): string {
   return row.name;
 }
 
-export type AllBuildingRow = { id: number; slug: string; name: string; lng: number; lat: number };
+export type ArchPinRow = { id: number; slug: string; name: string; lng: number; lat: number };
 
-export function queryAllBuildings(dbPath: string): AllBuildingRow[] {
+export function queryAllArchPins(dbPath: string): ArchPinRow[] {
   return withDb(dbPath, (db) =>
     db.prepare(`
       SELECT a.id, a.slug, a.name, a.latitude AS lat, a.longitude AS lng
       FROM architectures a
       ORDER BY a.id ASC
-    `).all() as AllBuildingRow[],
+    `).all() as ArchPinRow[],
   );
 }
 

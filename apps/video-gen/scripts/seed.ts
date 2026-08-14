@@ -1,8 +1,8 @@
 import { mkdirSync, writeFileSync } from "node:fs";
-import { ensureDb, resolveArchitectName, queryArchitectBuildings, queryAllBuildings } from "./db";
+import { ensureDb, resolveArchitectName, queryArchitectBuildings, queryAllArchPins } from "./db";
 import { buildReelConfig } from "./config-builder";
 import { runCli } from "./runCli";
-import { outDir, reelConfigPath, allBuildingsPath } from "./paths";
+import { outDir, reelConfigPath, allArchPath } from "./paths";
 import { reelConfigExists } from "./staging";
 
 runCli("seed", async (slug) => {
@@ -11,15 +11,15 @@ runCli("seed", async (slug) => {
   const buildings = queryArchitectBuildings(dbPath, architect);
   mkdirSync(outDir(slug), { recursive: true });
 
-  const allPath = allBuildingsPath();
-  const allBuildings = queryAllBuildings(dbPath).map((r) => ({
+  const allPath = allArchPath();
+  const allPins = queryAllArchPins(dbPath).map((r) => ({
     id: r.id,
     slug: r.slug,
     name: r.name,
     coordinates: { lng: r.lng, lat: r.lat },
   }));
-  writeFileSync(allPath, JSON.stringify(allBuildings));
-  console.log(`wrote ${allPath} — ${allBuildings.length} buildings`);
+  writeFileSync(allPath, JSON.stringify(allPins));
+  console.log(`wrote ${allPath} — ${allPins.length} pins`);
 
   const cfgPath = reelConfigPath(slug);
   if (reelConfigExists(slug)) {

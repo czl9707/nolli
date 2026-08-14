@@ -7,9 +7,9 @@ import { useThemeStore } from "@nolli/ui";
 import { CLAMP, ctaStart, secToFrames, BRAND_FADE_OUT_LEAD_S } from "../lib/timeline";
 import { useStaticJson } from "../lib/use-static-json";
 
-/** Minimal building shape from the seed-generated `all-buildings.json` (every
- *  building in the DB), used to scatter the full pin field on the HOOK map. */
-type AllBuilding = {
+/** One architecture pin from the seed-generated `all-arch.json` (every
+ *  architecture in the DB), used to scatter the full pin field on the HOOK map. */
+type ArchPin = {
   id: number;
   slug: string;
   name: string;
@@ -67,7 +67,7 @@ export const MapProvider: React.FC<{
   children: ReactNode;
 }> = ({ count, children }) => {
   const frame = useCurrentFrame();
-  const allBuildings = useStaticJson<AllBuilding[]>("capture/all-buildings.json", "load all-buildings.json");
+  const allPins = useStaticJson<ArchPin[]>("capture/all-arch.json", "load all-arch.json");
   const [map, setMap] = useState<MapRef | null>(null);
   const [segmentState, setSegmentState] = useState<MapSegmentState>({});
 
@@ -78,11 +78,11 @@ export const MapProvider: React.FC<{
 
   const allSummaries = useMemo<ArchSummary[]>(
     () =>
-      (allBuildings ?? []).map((b) => ({
-        id: b.id, slug: b.slug, name: b.name, architect: "", year: 0,
-        coordinates: b.coordinates, cover: { image: "", width: 0, height: 0 },
+      (allPins ?? []).map((p) => ({
+        id: p.id, slug: p.slug, name: p.name, architect: "", year: 0,
+        coordinates: p.coordinates, cover: { image: "", width: 0, height: 0 },
       })),
-    [allBuildings],
+    [allPins],
   );
 
   const ctx = useMemo<MapContextValue>(() => ({ map, setSegmentState }), [map]);
