@@ -1,7 +1,6 @@
-import { SoftBlurIn } from "./SoftBlurIn";
+import { SoftBlurIn, type Phase } from "./SoftBlurIn";
 import { SLOT_FRAMES } from "../lib/timeline";
 import type { ReelBuilding } from "../lib/config";
-import type { Phase } from "../lib/text-anim";
 
 const FG = "rgb(var(--color-primary-foreground))";
 

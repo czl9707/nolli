@@ -5,7 +5,16 @@ import type { MapRef } from "@nolli/map";
 import type { ArchSummary } from "@nolli/data";
 import { useThemeStore } from "@nolli/ui";
 import { CLAMP, ctaStart, secToFrames, BRAND_FADE_OUT_LEAD_S } from "../lib/timeline";
-import { useAllBuildings } from "../lib/use-all-buildings";
+import { useStaticJson } from "../lib/use-static-json";
+
+/** Minimal building shape from the seed-generated `all-buildings.json` (every
+ *  building in the DB), used to scatter the full pin field on the HOOK map. */
+type AllBuilding = {
+  id: number;
+  slug: string;
+  name: string;
+  coordinates: { lng: number; lat: number };
+};
 
 // Force dark once at module load. colorScheme flips the browser media feature so
 // embedded SVGs render dark under headless Chrome (which defaults to light).
@@ -58,7 +67,7 @@ export const MapProvider: React.FC<{
   children: ReactNode;
 }> = ({ count, children }) => {
   const frame = useCurrentFrame();
-  const allBuildings = useAllBuildings();
+  const allBuildings = useStaticJson<AllBuilding[]>("capture/all-buildings.json", "load all-buildings.json");
   const [map, setMap] = useState<MapRef | null>(null);
   const [segmentState, setSegmentState] = useState<MapSegmentState>({});
 

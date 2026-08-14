@@ -1,8 +1,7 @@
 import { useMemo } from "react";
 import { Series } from "remotion";
 import { buildCameraSegments } from "../lib/camera-segments";
-import { Flight } from "./Flight";
-import { Hold } from "./Hold";
+import { Flight, Hold } from "./Flight";
 import { BUILDING_ZOOM, type MapViewport } from "../lib/viewport";
 import type { ReelBuilding } from "../lib/config";
 

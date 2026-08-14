@@ -1,3 +1,5 @@
+import { Easing } from "remotion";
+
 export type MapViewport = { center: [number, number]; zoom: number };
 
 /** Cruise zoom held on each building; the composition's `maxZoom` clamps to this. */
@@ -48,40 +50,8 @@ export function haversine(
 }
 
 // maplibre's default flyTo easing = CSS `ease` (cubic-bezier(0.25, 0.1, 0.25, 1)).
-function unitBezier(p1x: number, p1y: number, p2x: number, p2y: number): (t: number) => number {
-  const cx = 3 * p1x;
-  const bx = 3 * (p2x - p1x) - cx;
-  const ax = 1 - cx - bx;
-  const cy = 3 * p1y;
-  const by = 3 * (p2y - p1y) - cy;
-  const ay = 1 - cy - by;
-  const sampleX = (t: number) => ((ax * t + bx) * t + cx) * t;
-  const sampleY = (t: number) => ((ay * t + by) * t + cy) * t;
-  const sampleDX = (t: number) => (3 * ax * t + 2 * bx) * t + cx;
-  const solveX = (x: number): number => {
-    let t = x;
-    for (let i = 0; i < 8; i++) {
-      const d = sampleDX(t);
-      if (Math.abs(d) < 1e-6) break;
-      const next = t - (sampleX(t) - x) / d;
-      if (Math.abs(next - t) < 1e-6) return next;
-      t = next;
-    }
-    let lo = 0;
-    let hi = 1;
-    let tt = x;
-    for (let i = 0; i < 24; i++) {
-      const xv = sampleX(tt);
-      if (Math.abs(xv - x) < 1e-6) return tt;
-      if (x > xv) lo = tt;
-      else hi = tt;
-      tt = (lo + hi) / 2;
-    }
-    return tt;
-  };
-  return (t) => sampleY(solveX(t));
-}
-export const FLIGHT_EASE = unitBezier(0.25, 0.1, 0.25, 1);
+// Remotion's Easing.bezier implements the same unit-bezier solve.
+export const FLIGHT_EASE = Easing.bezier(0.25, 0.1, 0.25, 1);
 
 /** Project lng/lat to CSS pixels at the given world size (Web Mercator). */
 function projectPixel(lng: number, lat: number, worldSize: number): [number, number] {

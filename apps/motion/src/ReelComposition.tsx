@@ -1,11 +1,11 @@
 import { AbsoluteFill, interpolate, Sequence, Series, useCurrentFrame } from "remotion";
-import { useReelConfig } from "./lib/use-reel-config";
+import { useStaticJson } from "./lib/use-static-json";
 import {
   SLOT_FRAMES, CTA_S, WALK_START,
   ctaStart, secToFrames, BRAND_FADE_OUT_LEAD_S, CLAMP,
 } from "./lib/timeline";
 import { WORLD_VP } from "./lib/viewport";
-import { reelTitle, type ReelBuilding } from "./lib/config";
+import { reelTitle, type ReelBuilding, type ReelConfig } from "./lib/config";
 import { CardCarousel } from "./components/CardCarousel";
 import { BuildingCaption } from "./components/BuildingCaption";
 import { CornerBrand } from "./components/CornerBrand";
@@ -24,7 +24,7 @@ const walkFrames = (count: number) => count * SLOT_FRAMES;
 const STACK_LEFT = 0.5;
 
 export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
-  const cfg = useReelConfig(slug);
+  const cfg = useStaticJson<ReelConfig>(`capture/${slug}/reel.json`, "load reel.json");
   const buildings = cfg?.buildings ?? [];
   const count = buildings.length;
 

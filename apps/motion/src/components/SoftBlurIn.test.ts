@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { softBlurChar, type Phase } from "./text-anim";
+import { softBlurChar, type Phase } from "./SoftBlurIn";
 
 // CHAR_REVEAL_F is an internal constant (8) — the per-char resolve duration.
 const REVEAL = 8;
