@@ -118,7 +118,6 @@ per-architect copy, a different story template) belong here, not in a new app.
 ## History
 
 The original Playwright live-capture pipeline (CDP screencast + slow-mo clock) is
-archived on `origin/archive/motion-live-capture`. Design spec:
-`docs/specs/2026-08-07-architect-spotlight-reel-design.md`. This app was renamed
-from `motion` to `video-gen` to reflect that it is the home for all video output,
-not only motion-captured content.
+archived on `origin/archive/motion-live-capture`. This app was renamed from
+`motion` to `video-gen` to reflect that it is the home for all video output, not
+only motion-captured content.
