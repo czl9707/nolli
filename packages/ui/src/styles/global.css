@@ -30,10 +30,6 @@ textarea {
     font: inherit;
 }
 
-::placeholder {
-    font-family: var(--font-playful);
-}
-
 p,
 h1,
 h2,
