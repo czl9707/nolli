@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 import { SidebarCard } from "@/components/card/sidebar-card"
 import { FilterPanel } from "@nolli/ui/composition"
-import { Body2 } from "@nolli/ui"
+import { Note } from "@nolli/ui"
 import { useFilterOptions, useFilterStore } from "@nolli/data"
 import { ArchScrollList } from "../arch-summary/arch-card-list"
 import { toast } from "sonner"
@@ -60,17 +60,17 @@ function FilterResults() {
 
   if (!hasFilters || filterLoading) {
     return (
-      <Body2 className={styles.emptyState}>
+      <Note className={styles.emptyState}>
         {filterLoading ? "Loading..." : "No filters applied."}
-      </Body2>
+      </Note>
     )
   }
 
   if (filteredArchs.length === 0) {
     return (
-      <Body2 className={styles.emptyState}>
+      <Note className={styles.emptyState}>
         No architectures match your filters
-      </Body2>
+      </Note>
     )
   }
 

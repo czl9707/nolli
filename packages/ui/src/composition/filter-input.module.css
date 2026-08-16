@@ -38,7 +38,6 @@
     outline: none;
     background: transparent;
     font-size: 0.875rem;
-    font-family: var(--font-sans);
     color: rgb(var(--color-primary-foreground));
     padding: 0;
 }

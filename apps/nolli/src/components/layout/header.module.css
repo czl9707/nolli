@@ -20,9 +20,7 @@
 }
 
 .title {
-    height: 1.125rem;
-    font-size: 1.125rem;
-    font-weight: 800;
+    height: 1.25rem;
     user-select: none;
     cursor: pointer;
 

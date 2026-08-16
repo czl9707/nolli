@@ -13,7 +13,6 @@
     outline: none;
     user-select: none;
     cursor: pointer;
-    font-family: var(--font-sans);
 }
 
 .button:focus-visible {

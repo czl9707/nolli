@@ -36,5 +36,6 @@ const Body1 = createTypography("p", "body1")
 const Body2 = createTypography("p", "body2")
 const Body3 = createTypography("p", "body3")
 const Caption = createTypography("span", "caption")
+const Note = createTypography("span", "note")
 
-export { H1, H2, H3, H4, H5, H6, Body1, Body2, Body3, Caption }
+export { H1, H2, H3, H4, H5, H6, Body1, Body2, Body3, Caption, Note }
