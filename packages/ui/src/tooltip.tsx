@@ -1,7 +1,7 @@
 import * as React from "react"
 import { Tooltip as T } from "radix-ui"
 import styles from "./tooltip.module.css"
-import { Body2 } from "./typography"
+import { Body1 } from "./typography"
 
 function TooltipProvider({ delayDuration = 0, ...props}: React.ComponentProps<typeof T.Provider>) {
   return <T.Provider data-slot="tooltip-provider" delayDuration={delayDuration} {...props} />
@@ -29,9 +29,9 @@ function TooltipContent({
         className={`${styles.content} ${className ?? ""}`}
         {...props}
       >
-        <Body2>
+        <Body1>
           {children}
-        </Body2>
+        </Body1>
         <T.Arrow className={styles.arrow} />
       </T.Content>
     </T.Portal>
