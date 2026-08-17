@@ -1,9 +1,8 @@
 import { AbsoluteFill, Img, interpolate, staticFile, useCurrentFrame } from "remotion";
 import { secToFrames, CLAMP } from "../lib/timeline";
+import { REEL_TYPE } from "../lib/type";
 import { SoftBlurIn } from "./SoftBlurIn";
 
-const FONT_SIZE = 96;
-const FAMILY = "var(--font-playful)";
 const CTA_LINE_S = 1.5;
 const CTA_LOCKUP_S = 2.5;
 const LINE_END = secToFrames(CTA_LINE_S);
@@ -30,7 +29,7 @@ export const CtaLockup: React.FC = () => {
           text="Explore more in"
           start={{ when: LINE_REVEAL_START, last: LINE_REVEAL_START + 36, enabled: true }}
           end={{ when: LINE_EXIT_START, last: LINE_EXIT_START + EXIT_F, enabled: true }}
-          style={{ fontSize: FONT_SIZE, fontFamily: FAMILY, color: FG }}
+          style={{ ...REEL_TYPE.ctaLead, color: FG }}
         />
       </div>
       <div style={{ position: "absolute", display: "flex", alignItems: "center", gap: 22 }}>
@@ -42,7 +41,7 @@ export const CtaLockup: React.FC = () => {
           text="Nolli"
           start={{ when: LOCK_START, last: LOCK_START + 16, enabled: true }}
           end={{ when: 0, last: 0, enabled: false }}
-          style={{ fontSize: FONT_SIZE, fontFamily: FAMILY, color: FG }}
+          style={{ ...REEL_TYPE.ctaWordmark, color: FG }}
         />
       </div>
     </AbsoluteFill>

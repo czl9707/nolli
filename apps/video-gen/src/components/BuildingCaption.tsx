@@ -1,11 +1,10 @@
 import { SoftBlurIn, type Phase } from "./SoftBlurIn";
 import { SLOT_FRAMES } from "../lib/timeline";
+import { REEL_TYPE, type TypeRole } from "../lib/type";
 import type { ReelBuilding } from "../lib/config";
 
 const FG = "rgb(var(--color-primary-foreground))";
 
-const TITLE_SIZE = 64;
-const META_SIZE = 28;
 const CAPTION_LEFT = 64;
 const CAPTION_BOTTOM = 96;
 const CAPTION_MAX_W = "50%"; // wrap long names before they reach the card stack
@@ -19,15 +18,15 @@ const EXIT_START = SLOT_FRAMES - EXIT_F; // both lines blur out at slot end
 const REVEAL_LAST = 20;
 const META_REVEAL_LAST = 20 + META_START; // meta's window starts at META_START
 
-// Glyph-bound halo: each line is rendered twice — a dark, heavier-weight copy
-// blurred behind (the halo) and the fg copy on top. Unlike a div plate, the
-// halo travels with the letters and only darkens the map right around the
-// glyphs, so white text stays legible over the dark map's light water without a
-// visible rectangular pad. Both copies share the same Phases, so they
-// reveal and move char-for-char in lockstep.
+// Glyph-bound halo: each line is rendered twice — a dark copy blurred behind
+// (the halo) and the fg copy on top. Both copies share the role's weight
+// (Quicksand Variable covers 300–700 natively — no synthetic boost) so they
+// reveal and move char-for-char in lockstep. Unlike a div plate, the halo
+// travels with the letters and only darkens the map right around the glyphs,
+// so white text stays legible over the dark map's light water without a
+// visible rectangular pad.
 const HALO_COLOR = "rgb(var(--color-primary-background))"; // near-black in dark theme
 const HALO_BLUR_PX = 8; // blur spread — the halo's soft reach
-const HALO_WEIGHT_BOOST = 200; // extra weight so halo glyphs bleed past the fg
 
 /** One caption line: a blurred dark halo copy stacked behind the fg copy. Both
  *  share the same Phases so they reveal and move char-for-char in lockstep. */
@@ -35,15 +34,14 @@ const CaptionLine: React.FC<{
   text: string;
   start: Phase;
   end: Phase;
-  fontSize: number;
-  fontWeight: number;
+  role: TypeRole;
   style?: React.CSSProperties;
   marginTop?: number;
-}> = ({ text, start, end, fontSize, fontWeight, style, marginTop }) => {
+}> = ({ text, start, end, role, style, marginTop }) => {
   const shared = { text, start, end };
   return (
     <div style={{ position: "relative", marginTop }}>
-      {/* Halo: same text, dark, heavier, blurred — absolutely filled so it wraps
+      {/* Halo: same text, dark, blurred — absolutely filled so it wraps
           identically to the fg line. */}
       <div
         style={{
@@ -56,13 +54,13 @@ const CaptionLine: React.FC<{
       >
         <SoftBlurIn
           {...shared}
-          style={{ fontSize, fontFamily: "var(--font-playful)", fontWeight: fontWeight + HALO_WEIGHT_BOOST, color: HALO_COLOR, ...style }}
+          style={{ ...role, color: HALO_COLOR, ...style }}
         />
       </div>
       <div style={{ position: "relative", zIndex: 1 }}>
         <SoftBlurIn
           {...shared}
-          style={{ fontSize, fontFamily: "var(--font-playful)", fontWeight, color: FG, ...style }}
+          style={{ ...role, color: FG, ...style }}
         />
       </div>
     </div>
@@ -99,17 +97,15 @@ export const BuildingCaption: React.FC<{
         text={building.name}
         start={{ when: REVEAL_START, last: REVEAL_LAST, enabled: true }}
         end={end}
-        fontSize={TITLE_SIZE}
-        fontWeight={700}
+        role={REEL_TYPE.captionTitle}
       />
       <CaptionLine
         text={meta}
         start={{ when: META_START, last: META_REVEAL_LAST, enabled: true }}
         end={end}
-        fontSize={META_SIZE}
-        fontWeight={500}
+        role={REEL_TYPE.captionMeta}
         marginTop={10}
-        style={{ opacity: 0.8, letterSpacing: "0.02em" }}
+        style={{ opacity: 0.8 }}
       />
     </div>
   );
