@@ -1,7 +1,7 @@
 import type { UseFormReturn } from "react-hook-form"
 import { useFieldArray } from "react-hook-form"
 import { X } from "lucide-react"
-import { Button, Note, ScrollArea } from "@nolli/ui"
+import { Body2, Button, ScrollArea } from "@nolli/ui"
 import { hashId, jitter } from "@nolli/board"
 import type { FormValues } from "./shape-payload"
 import styles from "./note-editor.module.css"
@@ -17,7 +17,7 @@ export function NoteEditor({ form }: { form: UseFormReturn<FormValues> }) {
           className={styles.addNote}
           onClick={() => append({ text: "" })}
         >
-          <Note>Add note</Note>
+          <Body2>Add note</Body2>
         </button>
         {fields.map((f, i) => (
           <div

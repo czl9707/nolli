@@ -3,7 +3,7 @@ import type { UseFormReturn } from "react-hook-form"
 import { useFieldArray } from "react-hook-form"
 import { Loader2, X } from "lucide-react"
 import { toast } from "sonner"
-import { Body3, Button, Note, ScrollArea } from "@nolli/ui"
+import { Body2, Body3, Button, Caption, ScrollArea } from "@nolli/ui"
 import { hashId, jitter } from "@nolli/board"
 import type { FormValues } from "./shape-payload"
 import styles from "./photo-uploader.module.css"
@@ -80,7 +80,7 @@ export function PhotoUploader({ form }: { form: UseFormReturn<FormValues> }) {
         ))}
 
         {fields.length === 0 && (
-          <Note className={styles.hint}>At least one photo is required.</Note>
+          <Caption className={styles.hint}>At least one photo is required.</Caption>
         )}
       </div>
     </ScrollArea>
@@ -149,7 +149,7 @@ function PhotoDropZone({ onAdd }: { onAdd: (entries: DecodedPhoto[]) => void }) 
         addFiles(e.dataTransfer.files)
       }}
     >
-      {reading ? <Loader2 size={20} className={styles.spin} /> : <Note>Add photo</Note>}
+      {reading ? <Loader2 size={20} className={styles.spin} /> : <Body2>Add photo</Body2>}
       <input
         ref={inputRef}
         type="file"
