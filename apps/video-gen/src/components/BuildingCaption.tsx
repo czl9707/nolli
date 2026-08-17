@@ -105,7 +105,6 @@ export const BuildingCaption: React.FC<{
         end={end}
         role={REEL_TYPE.captionMeta}
         marginTop={10}
-        style={{ opacity: 0.8 }}
       />
     </div>
   );

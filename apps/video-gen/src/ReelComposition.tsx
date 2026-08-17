@@ -17,7 +17,7 @@ import { CameraSeries } from "./components/CameraSeries";
 const BRAND_INSET = 48;
 const BRAND_VERT = 36;
 const HOOK_TITLE_LEFT = "55%";
-const HOOK_TITLE_RIGHT = "8%";
+const HOOK_TITLE_RIGHT = "6%";
 const walkFrames = (count: number) => count * SLOT_FRAMES;
 
 // Carousel sits at left=50% — the map spans the left 75%, the bg zone the right 25%.
