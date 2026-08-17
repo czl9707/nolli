@@ -3,6 +3,8 @@
   border-radius: var(--size-border-radius);
   background-color: rgb(var(--color-primary-foreground));
   color: rgb(var(--color-primary-background));
+  font-size: 0.875rem;
+  font-weight: 500;
   padding: 0.25rem 0.5rem;
   box-shadow: var(--shadow-sm), var(--shadow-ring);
   transform-origin: var(--radix-tooltip-content-transform-origin);

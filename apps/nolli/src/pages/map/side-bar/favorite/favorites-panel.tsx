@@ -4,7 +4,7 @@ import { useAuthStore } from "@/stores/auth"
 import { useFavoritesStore } from "@/stores/favorites"
 import type { ArchSummary } from "@nolli/data"
 import { ArchScrollList } from "../arch-summary/arch-card-list"
-import { Body2, H5 } from "@nolli/ui"
+import { H5, Note } from "@nolli/ui"
 import styles from "./favorites-panel.module.css"
 
 export function FavoritesPanel() {
@@ -45,20 +45,20 @@ export function FavoritesPanel() {
   // Guest state: prompt sign-in.
   if (!user) {
     content= (
-      <Body2 className={styles.message}>
+      <Note className={styles.message}>
         Sign in to save and view your favorite architectures.
-      </Body2>
+      </Note>
     )
   }
 
   if (summaries.length === 0){
     if ((loading || loadingSummaries)) {
-      content = <Body2 className={styles.message}>Loading...</Body2>
+      content = <Note className={styles.message}>Loading...</Note>
     } else {
       content = (
-        <Body2 className={styles.message}>
+        <Note className={styles.message}>
           No favorites yet — tap the ♥ on any architecture to save it here.
-        </Body2>
+        </Note>
       )
     }
   } else {

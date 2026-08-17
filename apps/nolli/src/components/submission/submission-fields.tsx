@@ -5,7 +5,7 @@ import {
   type Control,
   type UseFormReturn,
 } from "react-hook-form"
-import { Input, Caption, Body1, Body3 } from "@nolli/ui"
+import { Input, Caption, H6, Body3 } from "@nolli/ui"
 import { slugify, buildGoogleMapsUrl, useFilterOptions } from "@nolli/data"
 import { PhotoUploader } from "./photo-uploader"
 import { NoteEditor } from "./note-editor"
@@ -67,7 +67,7 @@ export function SubmissionFields({ form }: { form: UseFormReturn<FormValues> }) 
   return (
     <div className={styles.columns}>
       <section className={styles.section}>
-        <Body1 className={styles.sectionTitle}>Details</Body1>
+        <H6 className={styles.sectionTitle}>Details</H6>
         <div className={styles.section1Fields}>
           <label className={styles.field}>
             <Caption>Name</Caption>
@@ -190,18 +190,18 @@ export function SubmissionFields({ form }: { form: UseFormReturn<FormValues> }) 
       </section>
 
       <section className={styles.section}>
-        <Body1 className={styles.sectionTitle}>Photos</Body1>
+        <H6 className={styles.sectionTitle}>Photos</H6>
         <PhotoUploader form={form} />
       </section>
 
       <section className={styles.section}>
-        <Body1 className={styles.sectionTitle}>Notes</Body1>
+        <H6 className={styles.sectionTitle}>Notes</H6>
         {form.formState.errors.notes && <FieldError message="Each note must not be empty." />}
         <NoteEditor form={form} />
       </section>
 
       <section className={styles.section}>
-        <Body1 className={styles.sectionTitle}>Links</Body1>
+        <H6 className={styles.sectionTitle}>Links</H6>
         {form.formState.errors.links && <FieldError message="Each link needs a valid URL." />}
         <LinkEditor form={form} />
       </section>

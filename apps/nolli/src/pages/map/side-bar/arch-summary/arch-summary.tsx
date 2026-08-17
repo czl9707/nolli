@@ -1,7 +1,7 @@
 import { useRef, useState } from "react"
 import { useArchDetailStore } from "@/stores/arch-detail"
 import { useNavigate } from "react-router"
-import { H4, Body1, Skeleton } from "@nolli/ui"
+import { Body1, Skeleton } from "@nolli/ui"
 import { Button } from "@nolli/ui"
 import { ArrowRight, ChevronLeft, MapPin, User } from "lucide-react"
 import { SidebarCard } from "@/components/card/sidebar-card"
@@ -49,7 +49,7 @@ export function ArchSummary() {
             </div>
             <Cover key={current.slug} src={cover} alt={current.name} />
             <div className={styles.coverOverlay} />
-            <H4 className={styles.title}>{current.name}</H4>
+            <Body1 className={styles.title}>{current.name}</Body1>
           </div>
 
           <div className={styles.info}>

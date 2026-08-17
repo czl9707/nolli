@@ -59,8 +59,10 @@
   border: none;
   background: transparent;
   color: inherit;
-  font: inherit;
-  font-size: 0.875rem;
+  font-family: var(--typography-note-fontFamily);
+  font-weight: var(--typography-note-fontWeight);
+  font-size: var(--typography-note-fontSize);
+  line-height: var(--typography-note-lineHeight);
 
   scrollbar-width: none;
   -ms-overflow-style: none;

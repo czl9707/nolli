@@ -1,5 +1,5 @@
 @import "@fontsource/architects-daughter/400.css";
-@import '@fontsource-variable/inter/wght.css';
+@import "@fontsource-variable/quicksand/wght.css";
 
 a {
     color: inherit;
@@ -23,6 +23,13 @@ code {
     font-family: unset;
 }
 
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
 p,
 h1,
 h2,
@@ -40,6 +47,7 @@ body {
     height: 100vh;
     margin: 0;
     padding: 0;
+    font-family: var(--font-sans);
 }
 
 body {
@@ -54,22 +62,27 @@ body {
     --breakpoint-lg: 1440px;
 
     --font-playful: "Architects Daughter";
-    --font-default: 'Inter Variable', sans-serif;
+    --font-sans: 'Quicksand Variable', sans-serif;
 
-    --typography-body1-fontFamily: var(--font-playful);
-    --typography-body1-fontWeight: 400;
+    --typography-body1-fontFamily: var(--font-sans);
+    --typography-body1-fontWeight: 500;
     --typography-body1-fontSize: 1rem;
     --typography-body1-lineHeight: 1.25;
 
-    --typography-body2-fontFamily: var(--font-playful);
+    --typography-body2-fontFamily: var(--font-sans);
     --typography-body2-fontWeight: 300;
     --typography-body2-fontSize: 0.875rem;
     --typography-body2-lineHeight: 1.25;
 
-    --typography-body3-fontFamily: var(--font-playful);
+    --typography-body3-fontFamily: var(--font-sans);
     --typography-body3-fontWeight: 300;
     --typography-body3-fontSize: 0.75rem;
     --typography-body3-lineHeight: 1.25;
+
+    --typography-caption-fontFamily: var(--font-sans);
+    --typography-caption-fontWeight: 500;
+    --typography-caption-fontSize: 0.75rem;
+    --typography-caption-lineHeight: 1.5;
 
     --typography-h1-fontFamily: var(--font-playful);
     --typography-h1-fontWeight: 600;
@@ -101,10 +114,10 @@ body {
     --typography-h6-fontSize: 1.25rem;
     --typography-h6-lineHeight: 1.6;
 
-    --typography-caption-fontFamily: var(--font-playful);
-    --typography-caption-fontWeight: 500;
-    --typography-caption-fontSize: 0.75rem;
-    --typography-caption-lineHeight: 1.5;
+    --typography-note-fontFamily: var(--font-playful);
+    --typography-note-fontWeight: 400;
+    --typography-note-fontSize: 0.875rem;
+    --typography-note-lineHeight: 1.4;
 
     --transition-instant: 0.15s;
     --transition-short: .6s;
@@ -177,7 +190,6 @@ body[data-theme='dark'] {
     background-color: rgb(var(--color-primary-background));
     color: rgb(var(--color-primary-foreground));
     z-index: 0;
-    font-family: var(--font-playful);
 }
 
 /* Map related */

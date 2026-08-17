@@ -1,6 +1,6 @@
 import { useState } from "react"
 import type { PlacedArchItem } from "./pin-board-layout"
-import { Body2 } from "@nolli/ui"
+import { Note } from "@nolli/ui"
 import { BoardItem } from "./board-item"
 import { BoardModal } from "./board-modal"
 import styles from "./photo-item.module.css"
@@ -23,7 +23,7 @@ export function PhotoItem({ photo, position, delay }: PhotoItemProps) {
         <img src={photo.image} alt="" className={styles.photo} crossOrigin="anonymous"/>
         {photo.caption && (
           <div className={styles.caption}>
-            <Body2>{photo.caption}</Body2>
+            <Note>{photo.caption}</Note>
           </div>
         )}
       </BoardItem>
@@ -39,7 +39,7 @@ export function PhotoItem({ photo, position, delay }: PhotoItemProps) {
           <img src={photo.image} alt="" className={styles.photo} crossOrigin="anonymous"/>
           {photo.caption && (
             <div className={styles.caption}>
-              <Body2>{photo.caption}</Body2>
+              <Note>{photo.caption}</Note>
             </div>
           )}
         </div>
