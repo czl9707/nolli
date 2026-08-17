@@ -8,8 +8,9 @@
 }
 
 .metaWrapper .architect {
-  margin-top: 0.5rem;
-  font-size: 1rem;
+  display: block;
+  margin-top: .5rem;
+  font-size: 1.25rem;
 }
 
 .metaWrapper .address {

@@ -117,7 +117,7 @@ body {
     --typography-note-fontFamily: var(--font-playful);
     --typography-note-fontWeight: 400;
     --typography-note-fontSize: 0.875rem;
-    --typography-note-lineHeight: 1.25;
+    --typography-note-lineHeight: 1.4;
 
     --transition-instant: 0.15s;
     --transition-short: .6s;
