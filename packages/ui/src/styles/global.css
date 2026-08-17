@@ -65,7 +65,7 @@ body {
     --font-sans: 'Quicksand Variable', sans-serif;
 
     --typography-body1-fontFamily: var(--font-sans);
-    --typography-body1-fontWeight: 400;
+    --typography-body1-fontWeight: 500;
     --typography-body1-fontSize: 1rem;
     --typography-body1-lineHeight: 1.25;
 
@@ -78,6 +78,11 @@ body {
     --typography-body3-fontWeight: 300;
     --typography-body3-fontSize: 0.75rem;
     --typography-body3-lineHeight: 1.25;
+
+    --typography-caption-fontFamily: var(--font-sans);
+    --typography-caption-fontWeight: 500;
+    --typography-caption-fontSize: 0.75rem;
+    --typography-caption-lineHeight: 1.5;
 
     --typography-h1-fontFamily: var(--font-playful);
     --typography-h1-fontWeight: 600;
@@ -109,15 +114,10 @@ body {
     --typography-h6-fontSize: 1.25rem;
     --typography-h6-lineHeight: 1.6;
 
-    --typography-caption-fontFamily: var(--font-sans);
-    --typography-caption-fontWeight: 500;
-    --typography-caption-fontSize: 0.75rem;
-    --typography-caption-lineHeight: 1.5;
-
     --typography-note-fontFamily: var(--font-playful);
     --typography-note-fontWeight: 400;
     --typography-note-fontSize: 0.875rem;
-    --typography-note-lineHeight: 1.6;
+    --typography-note-lineHeight: 1.25;
 
     --transition-instant: 0.15s;
     --transition-short: .6s;
