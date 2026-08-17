@@ -1,7 +1,7 @@
 import type { PlacedArchItem } from "@nolli/board"
 import { BoardItem } from "@nolli/board"
 import styles from "./metadata-item.module.css"
-import { Body1, H3, H6 } from "@nolli/ui"
+import { H3, Note } from "@nolli/ui"
 import { useArchDetailStore } from "@/stores/arch-detail"
 
 type MetadataItemProps = Extract<PlacedArchItem, { kind: "metadata" }> & {
@@ -26,15 +26,15 @@ export function MetadataItem({
     >
       <H3 className={styles.name}>{name}</H3>
       <div className={styles.meta}>
-        <H6 className={styles.architect}>
+        <Note className={styles.architect}>
           <span style={{ opacity: 0.5 }}>By </span>
           {architect}
           <span style={{ opacity: 0.5 }}>, In </span>
           {year}
-        </H6>
+        </Note>
       </div>
       <span style={{ flex: "1 1" }}></span>
-      <Body1 className={styles.address}>{address}</Body1>
+      <Note className={styles.address}>{address}</Note>
     </BoardItem>
   )
 }

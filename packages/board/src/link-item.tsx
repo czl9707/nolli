@@ -2,7 +2,7 @@ import type { PlacedArchItem } from "./pin-board-layout"
 import { BoardItem } from "./board-item"
 import { ExternalLink } from "lucide-react"
 import styles from "./link-item.module.css"
-import { Body1 } from "@nolli/ui"
+import { Note } from "@nolli/ui"
 
 type LinkEntry = {
   url: string
@@ -43,7 +43,7 @@ export function LinkItem({ links, position, delay }: LinkItemProps) {
           className={styles.link}
         >
           <ExternalLink size={12} className={styles.icon} />
-          <Body1 className={styles.label}>{entry.label}</Body1>
+          <Note className={styles.label}>{entry.label}</Note>
         </a>
       ))}
     </BoardItem>

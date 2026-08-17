@@ -68,6 +68,7 @@
   left: var(--spacing-paragraph);
   right: var(--spacing-paragraph);
   bottom: var(--spacing-paragraph);
+  font-size: 1.5rem;
   color: rgb(var(--color-paper-background));
   pointer-events: none;
   display: -webkit-box;

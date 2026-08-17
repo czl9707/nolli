@@ -30,7 +30,6 @@
     color: rgb(var(--color-primary-foreground));
     padding: var(--spacing-paragraph);
     font-size: var(--typography-body2-fontSize);
-    font-family: var(--font-playful);
     box-shadow: var(--shadow-md), var(--shadow-ring);
     outline: none;
 }

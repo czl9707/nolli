@@ -5,7 +5,7 @@
   margin: var(--spacing-component);
   pointer-events: none;
   color: rgb(var(--color-primary-foreground));
-  font-family: var(--font-default);
+  font-family: var(--font-sans);
   text-shadow: var(--shadow-sm);
 }
 
