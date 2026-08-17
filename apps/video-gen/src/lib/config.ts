@@ -22,6 +22,6 @@ export const yearRange = (cfg: ReelConfig): string => {
   return `${Math.min(...years)}–${Math.max(...years)}`;
 };
 
-/** The reel's descriptive title — pure templates over ReelConfig so the seed
+/** The reel's corner title — pure templates over ReelConfig so the seed
  *  needs no per-architect config fields. */
-export const reelTitle = (cfg: ReelConfig): string => `${cfg.architect} ${yearRange(cfg)}`;
+export const reelTitle = (cfg: ReelConfig): string => cfg.architect;
