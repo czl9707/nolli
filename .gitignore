@@ -33,6 +33,7 @@ pnpm-debug.log*
 
 # generated patterns
 apps/nolli/public/patterns/
+apps/video-gen/public/patterns/
 docs/plans
 docs/superpowers
 docs/agents
@@ -62,3 +63,6 @@ apps/nolli/scripts/_schema.mjs
 
 # playwright mcp artifacts
 .playwright-mcp
+.claude/skills/remotion-*
+.agents/skills/remotion-*
+.superpowers

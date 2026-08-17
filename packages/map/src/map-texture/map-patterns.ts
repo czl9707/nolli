@@ -12,7 +12,13 @@ const MAP_PATTERNS = [
 ]
 
 function patternUrl(pattern: string, theme: Theme): string {
-  return `/patterns/${theme}/${pattern}.png`
+  // Remotion serves the public/ dir under a static base (e.g. "/public");
+  // Vite serves it at the origin root. Honour whichever is active.
+  const base =
+    typeof window !== "undefined"
+      ? (window as { remotion_staticBase?: string }).remotion_staticBase ?? ""
+      : ""
+  return `${base}/patterns/${theme}/${pattern}.png`
 }
 
 function applyImage(map: MapLibreGL.Map, id: string, data: CachedImage): void {
