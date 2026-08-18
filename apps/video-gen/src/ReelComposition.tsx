@@ -1,5 +1,6 @@
 import { AbsoluteFill, interpolate, Sequence, Series, useCurrentFrame } from "remotion";
 import { useStaticJson } from "./lib/use-static-json";
+import { useFontsReady } from "./lib/use-fonts";
 import {
   SLOT_FRAMES, CTA_S, WALK_START,
   ctaStart, secToFrames, BRAND_FADE_OUT_LEAD_S, CLAMP,
@@ -24,6 +25,7 @@ const walkFrames = (count: number) => count * SLOT_FRAMES;
 const STACK_LEFT = 0.5;
 
 export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
+  useFontsReady();
   const cfg = useStaticJson<ReelConfig>(`data/${slug}/reel.json`, "load reel.json");
   const buildings = cfg?.buildings ?? [];
   const count = buildings.length;
