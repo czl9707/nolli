@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync, existsSync } from "node:fs";
+import { mkdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import sharp from "sharp";
 import type { ReelBuilding } from "../src/lib/config";
@@ -14,18 +14,13 @@ async function stageBuilding(slug: string, b: ReelBuilding): Promise<void> {
   const dir = join(dataDir(slug), "images");
   mkdirSync(dir, { recursive: true });
   const heroPath = join(dir, `${b.slug}-hero.jpg`);
-  const thumbPath = join(dir, `${b.slug}-thumb.jpg`);
   if (!existsSync(heroPath)) {
     const raw = await fetch(b.coverImage).then((r) => (r.ok ? r.arrayBuffer() : null));
     if (!raw) {
       console.warn(`  ${b.slug}: download failed`);
       return;
     }
-    const buf = Buffer.from(raw);
-    await Promise.all([
-      sharp(buf).resize(1600, 1000, { fit: "cover" }).jpeg({ quality: 88 }).toFile(heroPath),
-      sharp(buf).resize(240, 240, { fit: "cover" }).jpeg({ quality: 80 }).toFile(thumbPath),
-    ]);
+    await sharp(Buffer.from(raw)).rotate().jpeg({ quality: 92 }).toFile(heroPath);
   }
 }
 
@@ -46,5 +41,5 @@ runCli("assets", async (slug) => {
     }
   });
   await Promise.all(workers);
-  console.log(`done -> public/data/${cfg.slug}/`);
+  console.log(`done -> public/data/${slug}/`);
 });

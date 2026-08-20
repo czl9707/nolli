@@ -19,7 +19,7 @@ function stageAssets(slug: string): void {
     console.warn("Warning: out/all-arch.json missing — map will show no background markers. Run seed.");
   }
   if (!existsSync(resolve(data, "images"))) {
-    console.warn(`Warning: public/data/${slug}/images missing — run 'assets ${slug}' or hero/thumb images will 404.`);
+    console.warn(`Warning: public/data/${slug}/images missing — run 'assets ${slug}' or hero images will 404.`);
   }
 }
 
