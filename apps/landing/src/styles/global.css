@@ -858,14 +858,20 @@ body {
 
 /* Mirror of the hero's diagonal grade: dark bottom-left, fading to top-right.
    Layout and type match hero D — the two scenes bookend uniformly. */
+.cta-bookend {
+  position: absolute;
+  inset: 0;
+  color: rgb(var(--color-primary-background));
+}
+
 .cta-bookend__grade {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     to top right,
-    #1e1e1e 0%,
-    rgba(30, 30, 30, 0.9) 28%,
-    rgba(30, 30, 30, 0.55) 50%,
+    rgb(var(--color-primary-foreground) / 0.92) 0%,
+    rgb(var(--color-primary-foreground) / 0.9) 28%,
+    rgb(var(--color-primary-foreground) / 0.55) 50%,
     transparent 72%
   );
 }
@@ -920,15 +926,15 @@ body {
   display: inline-block;
   margin-top: 2rem;
   padding: 0.85rem 2rem;
-  border: 1px solid #edeae1;
+  border: 1px solid rgb(var(--color-primary-background));
   border-radius: 999px;
   font-weight: 600;
   font-size: 1rem;
 }
 
 .cta-bookend__btn:hover {
-  background: #edeae1;
-  color: #1e1e1e;
+  background: rgb(var(--color-primary-background));
+  color: rgb(var(--color-primary-foreground));
 }
 
 /* ---------- CTA B — poster ---------- */

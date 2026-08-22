@@ -5,6 +5,7 @@ import { IndexPhotoCards } from "@/components/index-photo-cards"
 import { HeroScene } from "@/scenes/hero"
 import { IndexScene } from "@/scenes/index-scene"
 import { CloseupScene } from "@/scenes/closeup"
+import { CtaScene } from "@/scenes/cta"
 import type { SceneId } from "@/lib/spine"
 
 function SceneStub({ label }: { label: string }) {
@@ -33,7 +34,7 @@ export function App() {
     hero: <HeroScene key="hero" data={data} />,
     index: <IndexScene key="index" data={data} />,
     closeup: <CloseupScene key="closeup" data={data} />,
-    cta: <SceneStub key="cta" label="cta" />,
+    cta: <CtaScene key="cta" data={data} />,
     footer: <SceneStub key="footer" label="footer" />,
   }
   return (
