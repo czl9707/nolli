@@ -4,7 +4,10 @@
   "private": true,
   "type": "module",
   "exports": { ".": "./src/index.ts" },
-  "scripts": { "typecheck": "tsc -p tsconfig.json --noEmit" },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
   "dependencies": {
     "maplibre-gl": "*",
     "framer-motion": "*",
@@ -22,7 +25,8 @@
     "@types/supercluster": "*",
     "sharp": "*",
     "typescript": "*",
-    "vite": "*"
+    "vite": "*",
+    "vitest": "^4.1.10"
   },
   "peerDependencies": { "react": "*", "react-dom": "*" }
 }
