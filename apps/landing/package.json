@@ -7,7 +7,6 @@
     "dev": "vite",
     "build": "pnpm run generate:patterns && vite build",
     "generate:patterns": "tsx --tsconfig tsconfig.vite.json ../../packages/map/scripts/generate-patterns.ts",
-    "gen:data": "tsx --tsconfig tsconfig.vite.json scripts/gen-landing-data.ts",
     "typecheck": "tsc -p tsconfig.vite.json --noEmit",
     "lint": "eslint",
     "test": "vitest run"
@@ -26,11 +25,9 @@
   },
   "devDependencies": {
     "@csstools/postcss-global-data": "^4.0.0",
-    "@types/better-sqlite3": "^7.6.13",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
-    "better-sqlite3": "^12.10.0",
     "eslint": "^10.5.0",
     "postcss": "^8",
     "postcss-custom-media": "^12.0.1",
