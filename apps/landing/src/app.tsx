@@ -6,23 +6,8 @@ import { HeroScene } from "@/scenes/hero"
 import { IndexScene } from "@/scenes/index-scene"
 import { CloseupScene } from "@/scenes/closeup"
 import { CtaScene } from "@/scenes/cta"
+import { FooterScene } from "@/scenes/footer"
 import type { SceneId } from "@/lib/spine"
-
-function SceneStub({ label }: { label: string }) {
-  return (
-    <div
-      style={{
-        position: "absolute",
-        inset: 0,
-        display: "grid",
-        placeItems: "center",
-        pointerEvents: "none",
-      }}
-    >
-      {label}
-    </div>
-  )
-}
 
 export function App() {
   const { status, data, error } = useLandingData()
@@ -35,7 +20,7 @@ export function App() {
     index: <IndexScene key="index" data={data} />,
     closeup: <CloseupScene key="closeup" data={data} />,
     cta: <CtaScene key="cta" data={data} />,
-    footer: <SceneStub key="footer" label="footer" />,
+    footer: <FooterScene key="footer" data={data} />,
   }
   return (
     <main>
