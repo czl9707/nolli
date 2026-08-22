@@ -126,9 +126,11 @@ export function CloseupScene({ data }: { data: LandingData }) {
           {boardCtaLabel(data.summaries, arch)}
         </a>
         <div className="closeup-board__links">
-          <a href={arch.links?.wikipedia} target="_blank" rel="noreferrer">
-            wikipedia ↗
-          </a>
+          {arch.links?.wikipedia && (
+            <a href={arch.links.wikipedia} target="_blank" rel="noreferrer">
+              wikipedia ↗
+            </a>
+          )}
           <a href={arch.links?.googleMaps} target="_blank" rel="noreferrer">
             google maps ↗
           </a>

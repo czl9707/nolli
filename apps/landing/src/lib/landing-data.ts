@@ -28,9 +28,8 @@ export function useLandingData() {
         const summaries = await dataSource.getAllArchitectures()
         const options = await dataSource.getFilterOptions()
         const cityId = cityIdByName(options, CLUSTER_CITY)
-        const cluster = cityId
-          ? await dataSource.getAllArchitectures({ cityIds: [cityId] })
-          : []
+        if (!cityId) throw new Error(`cluster city "${CLUSTER_CITY}" not found`)
+        const cluster = await dataSource.getAllArchitectures({ cityIds: [cityId] })
         const hero = await dataSource.getArchBySlug(HERO_SLUG)
         if (!hero) throw new Error(`hero architecture "${HERO_SLUG}" not found`)
         const boardSet = await Promise.all(BOARD_SLUGS.map((s) => dataSource.getArchBySlug(s)))

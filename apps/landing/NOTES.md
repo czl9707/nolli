@@ -31,6 +31,9 @@ fetches `/latest.db` from Vite instead of R2. The db and generated
 - footer copy + link set (placeholders point at `#`)
 - CJK font for 世界的尽头 — currently falls back from the handwriting face
 - closeup micro-CTA deep-link format (`shape.ts` `boardCtaLabel` → `APP_URL`)
+- prerendered shell / static first-paint for hero — REQUIRED before deploy
+  (live db load means no-JS crawlers and slow links see only "loading the
+  map…")
 
 ## Known accepted pause
 

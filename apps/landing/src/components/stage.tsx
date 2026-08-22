@@ -103,8 +103,11 @@ export function LandingStage({
     (l) => `translate(${l.x * 100}vw, ${l.y * 100}vh) scale(${l.scale})`,
   )
 
-  // Clock 2 — cinematic flights on target-scene change
-  const target = useTransform(scrollYProgress, (p) => cameraTargetAt(scenesTable, p))
+  // Clock 2 — cinematic flights on target-scene change. Quantized in snap
+  // mode so the camera holds the same keyframe the (snapped) layer shows.
+  const target = useTransform(scrollYProgress, (p) =>
+    cameraTargetAt(scenesTable, snapMode ? snap(scenesTable, p) : p),
+  )
   const lastTarget = useRef<SceneDef | null>(null)
   const flyTo = (camera: SceneCamera) => {
     const map = mapRef.current
@@ -138,7 +141,8 @@ export function LandingStage({
   }, [])
   useEffect(() => {
     if (!mapReady) return
-    const scene = cameraTargetAt(scenesTable, scrollYProgress.get())
+    const p = scrollYProgress.get()
+    const scene = cameraTargetAt(scenesTable, snapMode ? snap(scenesTable, p) : p)
     lastTarget.current = scene
     mapRef.current?.jumpTo({ center: scene.camera.center, zoom: scene.camera.zoom })
     // fire once per map instance
