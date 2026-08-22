@@ -1,5 +1,6 @@
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -74,7 +75,8 @@ export function LandingStage({ data, scenes }: { data: LandingData; scenes: Reco
     () =>
       SCENES.map((s) => {
         if (s.id === "index") return { ...s, layer: layerTargetFor(INDEX_SLOT, vp.w, vp.h) }
-        if (s.id === "closeup") return { ...s, camera: data.heroCamera }
+        if (s.id === "closeup")
+          return { ...s, camera: data.heroCamera, layer: layerTargetFor(CLOSEUP_SLOT, vp.w, vp.h) }
         return s
       }),
     [data, vp],
@@ -101,11 +103,37 @@ export function LandingStage({ data, scenes }: { data: LandingData; scenes: Reco
     else flyToSceneCinematic(map, camera)
   }
   useMotionValueEvent(target, "change", (scene) => {
-    // Debounce identical targets (cameraTargetAt returns stable refs from the table)
-    if (lastTarget.current === scene) return
+    // Debounce by camera VALUE: table entries are rebuilt on resize (new identity)
+    const last = lastTarget.current
+    if (
+      last &&
+      last.camera.center[0] === scene.camera.center[0] &&
+      last.camera.center[1] === scene.camera.center[1] &&
+      last.camera.zoom === scene.camera.zoom
+    ) {
+      lastTarget.current = scene
+      return
+    }
     lastTarget.current = scene
     flyTo(scene.camera)
   })
+  // Initial placement: jump (not fly) to the camera the spine targets right now,
+  // so a fresh load starts on the hero camera and a mid-page reload lands on
+  // the current scene. Gated on map readiness — the MapLibre instance arrives
+  // asynchronously inside Map.
+  const [mapReady, setMapReady] = useState(false)
+  const setMapRef = useCallback((m: MapRef | null) => {
+    mapRef.current = m
+    setMapReady(!!m)
+  }, [])
+  useEffect(() => {
+    if (!mapReady) return
+    const scene = cameraTargetAt(scenesTable, scrollYProgress.get())
+    lastTarget.current = scene
+    mapRef.current?.jumpTo({ center: scene.camera.center, zoom: scene.camera.zoom })
+    // fire once per map instance
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapReady])
 
   // Per-scene fade MotionValues for overlays
   const fadeHero = useTransform(scrollYProgress, (p) => sceneFade(scenesTable, "hero", p))
@@ -133,7 +161,7 @@ export function LandingStage({ data, scenes }: { data: LandingData; scenes: Reco
           style={{ position: "sticky", top: 0, height: "100svh", overflow: "hidden", ...slotVars }}
         >
           <motion.div style={{ position: "absolute", inset: 0, willChange: "transform", transform: mapTransform }}>
-            <LandingMap ref={mapRef} summaries={data.summaries} initial={data.heroCamera} />
+            <LandingMap ref={setMapRef} summaries={data.summaries} />
           </motion.div>
           {Object.entries(scenes).map(([id, node]) => (
             <motion.div key={id} style={{ position: "absolute", inset: 0, opacity: fades[id as SceneId] }}>
