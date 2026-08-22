@@ -1,6 +1,7 @@
 import type { ReactNode } from "react"
 import { useLandingData } from "@/lib/landing-data"
 import { LandingStage } from "@/components/stage"
+import { HeroScene } from "@/scenes/hero"
 import type { SceneId } from "@/lib/spine"
 
 function SceneStub({ label }: { label: string }) {
@@ -14,7 +15,7 @@ export function App() {
     return <main><p className="boot-msg boot-msg--err">{error?.message ?? "failed to load map data"}</p></main>
   }
   const scenes: Record<SceneId, ReactNode> = {
-    hero: <SceneStub key="hero" label="hero" />,
+    hero: <HeroScene key="hero" data={data} />,
     index: <SceneStub key="index" label="index" />,
     closeup: <SceneStub key="closeup" label="closeup" />,
     cta: <SceneStub key="cta" label="cta" />,

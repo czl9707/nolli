@@ -1048,14 +1048,20 @@ body {
 
 /* ---------- hero D — diagonal grade (dark top-left, fading to bottom-right) ---------- */
 
+.hero-leftgrade {
+  position: absolute;
+  inset: 0;
+  color: rgb(var(--color-primary-background));
+}
+
 .hero-leftgrade__grade {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     to bottom right,
-    #1e1e1e 0%,
-    rgba(30, 30, 30, 0.85) 20%,
-    rgba(30, 30, 30, 0.45) 42%,
+    rgb(var(--color-primary-foreground) / 0.92) 0%,
+    rgb(var(--color-primary-foreground) / 0.85) 20%,
+    rgb(var(--color-primary-foreground) / 0.45) 42%,
     transparent 66%
   );
 }
