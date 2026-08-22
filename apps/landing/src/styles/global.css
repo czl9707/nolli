@@ -1046,6 +1046,95 @@ body {
   font-weight: 700;
 }
 
+/* ---------- index winner — light app mode (production) ---------- */
+
+/* Light page with the card slot punched out: the frame's page-shadow fills
+   everything outside the slot, so the stage's map layer shows through the
+   frame exactly. Slot vars come from the stage (INDEX_SLOT fractions). */
+.index-scene__frame {
+  position: absolute;
+  left: calc((var(--slot-index-x) - var(--slot-index-w) / 2) * 100%);
+  top: calc((var(--slot-index-y) - var(--slot-index-h) / 2) * 100%);
+  width: calc(var(--slot-index-w) * 100%);
+  height: calc(var(--slot-index-h) * 100%);
+  border: var(--border);
+  border-radius: var(--size-border-radius);
+  box-shadow: 0 0 0 200vmax rgb(var(--color-primary-background));
+  pointer-events: none;
+}
+
+.index-scene__copy {
+  position: absolute;
+  left: calc((var(--slot-index-x) - var(--slot-index-w) / 2) * 100%);
+  bottom: calc(
+    (1 - (var(--slot-index-y) - var(--slot-index-h) / 2)) * 100% + clamp(1.25rem, 3dvh, 2.25rem)
+  );
+  max-width: min(44ch, calc(var(--slot-index-w) * 100%));
+  color: rgb(var(--color-primary-foreground));
+  z-index: 1;
+}
+
+.index-scene__overline {
+  font-size: clamp(0.95rem, 1vw + 0.45dvh, 1.15rem);
+  opacity: 0.85;
+  margin-bottom: 0.6rem;
+}
+
+.index-scene__statement {
+  font-weight: 300;
+  font-size: clamp(1.05rem, 1.1vw + 0.7dvh, 1.9rem);
+  line-height: 1.35;
+}
+
+.index-scene__statement strong {
+  font-weight: 700;
+}
+
+/* photo cards inside the map layer */
+.index-cards {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.index-cards__card {
+  position: absolute;
+  background: rgb(var(--color-accent-background));
+  color: rgb(var(--color-primary-foreground));
+  border-radius: 2px;
+  box-shadow: 0 6px 24px rgb(var(--color-primary-foreground) / 0.3);
+}
+
+.index-cards__card img {
+  display: block;
+  width: 100%;
+  object-fit: cover;
+  border-radius: 2px 2px 0 0;
+}
+
+.index-cards__caption {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* pin dot at the map coord (the card bottom hovers just above its point) */
+.index-cards__card::after {
+  content: "";
+  position: absolute;
+  top: calc(100% - 2px);
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  border-radius: 50%;
+  background: rgb(var(--color-accent-foreground));
+  box-shadow: 0 2px 4px rgb(var(--color-primary-foreground) / 0.5);
+}
+
 /* ---------- hero D — diagonal grade (dark top-left, fading to bottom-right) ---------- */
 
 .hero-leftgrade {

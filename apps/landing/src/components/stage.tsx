@@ -57,7 +57,17 @@ const slotVars = {
  * Mobile/reduced-motion swap scrub for snapped keyframes. Scene overlays
  * mount as absolutely-positioned children faded per sceneFade.
  */
-export function LandingStage({ data, scenes }: { data: LandingData; scenes: Record<SceneId, ReactNode> }) {
+export function LandingStage({
+  data,
+  scenes,
+  mapChildren,
+}: {
+  data: LandingData
+  scenes: Record<SceneId, ReactNode>
+  /** Extra content inside the map layer (ArchMap children) — e.g. overlays
+   * pinned to map coords. Renders after the map mounts. */
+  mapChildren?: ReactNode
+}) {
   const wrapperRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapRef | null>(null)
   const reduced = useReducedMotion()
@@ -161,7 +171,9 @@ export function LandingStage({ data, scenes }: { data: LandingData; scenes: Reco
           style={{ position: "sticky", top: 0, height: "100svh", overflow: "hidden", ...slotVars }}
         >
           <motion.div style={{ position: "absolute", inset: 0, willChange: "transform", transform: mapTransform }}>
-            <LandingMap ref={setMapRef} summaries={data.summaries} />
+            <LandingMap ref={setMapRef} summaries={data.summaries}>
+              {mapChildren}
+            </LandingMap>
           </motion.div>
           {Object.entries(scenes).map(([id, node]) => (
             <motion.div key={id} style={{ position: "absolute", inset: 0, opacity: fades[id as SceneId] }}>

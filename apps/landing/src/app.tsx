@@ -1,7 +1,9 @@
 import type { ReactNode } from "react"
 import { useLandingData } from "@/lib/landing-data"
 import { LandingStage } from "@/components/stage"
+import { IndexPhotoCards } from "@/components/index-photo-cards"
 import { HeroScene } from "@/scenes/hero"
+import { IndexScene } from "@/scenes/index-scene"
 import type { SceneId } from "@/lib/spine"
 
 function SceneStub({ label }: { label: string }) {
@@ -16,14 +18,18 @@ export function App() {
   }
   const scenes: Record<SceneId, ReactNode> = {
     hero: <HeroScene key="hero" data={data} />,
-    index: <SceneStub key="index" label="index" />,
+    index: <IndexScene key="index" data={data} />,
     closeup: <SceneStub key="closeup" label="closeup" />,
     cta: <SceneStub key="cta" label="cta" />,
     footer: <SceneStub key="footer" label="footer" />,
   }
   return (
     <main>
-      <LandingStage data={data} scenes={scenes} />
+      <LandingStage
+        data={data}
+        scenes={scenes}
+        mapChildren={<IndexPhotoCards picks={data.indexPhotos} />}
+      />
     </main>
   )
 }
