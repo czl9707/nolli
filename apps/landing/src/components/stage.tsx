@@ -188,19 +188,21 @@ export function LandingStage({
               {mapChildren}
             </LandingMap>
           </motion.div>
-          {Object.entries(scenes).map(([id, node]) => (
-            <motion.div
-              key={id}
-              style={{
-                position: "absolute",
-                inset: 0,
-                opacity: fades[id as SceneId],
-                pointerEvents: pointerEvents[id as SceneId],
-              }}
-            >
-              {node}
-            </motion.div>
-          ))}
+          {Object.entries(scenes)
+            .filter(([id]) => id !== "footer")
+            .map(([id, node]) => (
+              <motion.div
+                key={id}
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  opacity: fades[id as SceneId],
+                  pointerEvents: pointerEvents[id as SceneId],
+                }}
+              >
+                {node}
+              </motion.div>
+            ))}
         </div>
         {/* spacers: scroll length for the spine scenes (footer gets none — its
             heightVh exists only for camera/fade math; the real block follows) */}

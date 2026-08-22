@@ -1945,14 +1945,7 @@ body {
 
 /* ---------- footer G — end of the map (production, normal-flow block) ---------- */
 
-/* The stage mounts scenes.footer twice: as a faded overlay inside the sticky
-   stage and as the real block after the spacers. Only the in-flow instance
-   (direct child of the stage wrapper) renders; the overlay copy stays hidden. */
 .footer-scene {
-  display: none;
-}
-
-main > div > .footer-scene {
   display: flex;
   position: relative;
   z-index: 1;
