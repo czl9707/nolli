@@ -1,0 +1,124 @@
+import { describe, expect, it } from "vitest"
+import { SCENES, cameraTargetAt, sceneFade, snap, spineAt } from "./spine"
+
+const s = SCENES // hero 180 / index 200 / closeup 240 / cta 160 / footer 80
+const total = SCENES.reduce((sum, sc) => sum + sc.heightVh, 0)
+const range = (i: number) => ({
+  start: SCENES.slice(0, i).reduce((sum, sc) => sum + sc.heightVh, 0) / total,
+  end: SCENES.slice(0, i + 1).reduce((sum, sc) => sum + sc.heightVh, 0) / total,
+})
+
+describe("spineAt morph", () => {
+  it("holds the scene keyframe through dwell", () => {
+    const p = (180 * 0.5) / total // mid hero dwell
+    expect(spineAt(s, p)).toEqual(s[0].layer)
+  })
+  it("interpolates toward the next keyframe across the transition", () => {
+    const p = (180 + 200 * 0.8) / total // 80% through index's local range → inside transition
+    const mid = spineAt(s, p)
+    // index (0.55) scales DOWN toward closeup (0.28) — mid sits strictly between
+    expect(mid.scale).toBeLessThan(s[1].layer.scale)
+    expect(mid.scale).toBeGreaterThan(s[2].layer.scale)
+  })
+  it("last scene dwells to the end", () => {
+    expect(spineAt(s, 1)).toEqual(s.at(-1)!.layer)
+  })
+  it("reaches the next keyframe exactly at the scene boundary", () => {
+    const p = (180 + 200) / total // end of index range
+    expect(spineAt(s, p).scale).toBeCloseTo(s[2].layer.scale, 6)
+  })
+  it("applies easeInOutCubic, not linear, during transition", () => {
+    const p = (180 + 200 * 0.7) / total // index local 0.7 → t = 0.25 → eased 0.0625
+    const eased = 0.0625
+    const expected = s[1].layer.scale + eased * (s[2].layer.scale - s[1].layer.scale)
+    expect(spineAt(s, p).scale).toBeCloseTo(expected, 6)
+  })
+  it("clamps out-of-range progress", () => {
+    expect(spineAt(s, -0.2)).toEqual(s[0].layer)
+    expect(spineAt(s, 1.2)).toEqual(s.at(-1)!.layer)
+  })
+})
+
+describe("cameraTargetAt", () => {
+  it("targets current scene during dwell, next scene during transition", () => {
+    expect(cameraTargetAt(s, 0).id).toBe("hero")
+    const inTransition = (180 * 0.8) / total
+    expect(cameraTargetAt(s, inTransition).id).toBe("index")
+    expect(cameraTargetAt(s, 1).id).toBe("footer")
+  })
+  it("targets a scene in the table at every step of the spine", () => {
+    for (let p = 0; p <= 1.0001; p += 0.01) {
+      expect(s).toContain(cameraTargetAt(s, p))
+    }
+  })
+})
+
+describe("sceneFade", () => {
+  it("first scene visible from 0", () => expect(sceneFade(s, "hero", 0)).toBe(1))
+  it("middle scenes ramp 0→1→0", () => {
+    expect(sceneFade(s, "index", 0.1)).toBe(0)
+    expect(sceneFade(s, "index", range(1).start + (200 / total) * 0.3)).toBe(1) // mid dwell
+    expect(sceneFade(s, "index", 0.95)).toBe(0)
+  })
+  it("last scene holds 1", () => expect(sceneFade(s, "footer", 1)).toBe(1))
+  it("fades in over the quarter-scene approach before the scene starts", () => {
+    const { start } = range(1)
+    const len = 200 / total
+    expect(sceneFade(s, "index", start - len * 0.3)).toBe(0)
+    expect(sceneFade(s, "index", start - len * 0.125)).toBeCloseTo(0.5)
+    expect(sceneFade(s, "index", start + 0.01)).toBe(1)
+  })
+  it("boundary exactness: dwellEnd -> 1, fadeEnd -> 0", () => {
+    const { start } = range(1)
+    const len = 200 / total
+    expect(sceneFade(s, "index", start + len * 0.6)).toBe(1)
+    expect(sceneFade(s, "index", start + len * 0.8)).toBe(0)
+  })
+  it("last scene is 0 before its approach window", () => {
+    const { start } = range(4)
+    const len = 80 / total
+    expect(sceneFade(s, "footer", start - len * 0.3)).toBe(0)
+  })
+  it("at most the active scene plus one cross-fading neighbor is visible", () => {
+    for (let p = 0; p <= 1.0001; p += 0.01) {
+      const visible = s.filter((sc) => sceneFade(s, sc.id, p) > 0)
+      expect(visible.length).toBeLessThanOrEqual(2)
+      if (visible.length === 2) {
+        expect(s.indexOf(visible[1]) - s.indexOf(visible[0])).toBe(1)
+      }
+    }
+  })
+  it("neighbor handoff leaves no dead zone over 1.5% of scroll", () => {
+    // gap = 0.2*cur.len - 0.25*next.len; the short 80vh footer approach leaves ~1.4%
+    for (let i = 0; i < s.length - 1; i++) {
+      const cur = range(i)
+      const next = range(i + 1)
+      const curGone = cur.start + (cur.end - cur.start) * 0.8
+      const nextIn = next.start - (next.end - next.start) * 0.25
+      expect(nextIn - curGone).toBeLessThanOrEqual(0.015)
+    }
+  })
+})
+
+describe("snap", () => {
+  it("quantizes to scene starts", () => {
+    expect(snap(s, 0.5)).toBeLessThan(0.5)
+    expect(snap(s, 0)).toBe(0)
+  })
+  it("returns the containing scene's range start", () => {
+    const r = range(2)
+    expect(snap(s, (r.start + r.end) / 2)).toBe(r.start)
+  })
+  it("returns the previous scene's start just below a boundary", () => {
+    expect(snap(s, range(1).start - 1e-9)).toBe(0)
+    expect(snap(s, range(2).start - 1e-9)).toBe(range(1).start)
+  })
+  it("returns 1 at the end of the scroll", () => {
+    expect(snap(s, 1)).toBe(1)
+  })
+  it("snapped progress dwells exactly on scene keyframes", () => {
+    for (const p of [0, 0.1, 0.3, 0.5, 0.7, 0.9, 1]) {
+      expect(s.map((sc) => sc.layer)).toContain(spineAt(s, snap(s, p)))
+    }
+  })
+})
