@@ -89,14 +89,25 @@ describe("sceneFade", () => {
     }
   })
   it("neighbor handoff leaves no dead zone over 1.5% of scroll", () => {
-    // gap = 0.2*cur.len - 0.25*next.len; the short 80vh footer approach leaves ~1.4%
-    for (let i = 0; i < s.length - 1; i++) {
+    // overlay pairs crossfade: gap = 0.2*cur.len - 0.25*next.len; the short
+    // 80vh footer approach would leave ~1.4%, but the cta pair is excluded
+    // (see the flow-handoff test below) so only overlay pairs are checked here
+    for (let i = 0; i < s.length - 2; i++) {
       const cur = range(i)
       const next = range(i + 1)
       const curGone = cur.start + (cur.end - cur.start) * 0.8
       const nextIn = next.start - (next.end - next.start) * 0.25
       expect(nextIn - curGone).toBeLessThanOrEqual(0.015)
     }
+  })
+  it("cta hands off to the flow-mounted footer at the scene boundary", () => {
+    // no overlay crossfade against the footer: cta copy lingers across its
+    // whole outgoing transition and is gone exactly when the footer block
+    // arrives (~footer.start in scroll space)
+    const cta = range(3)
+    expect(sceneFade(s, "cta", cta.start + (cta.end - cta.start) * 0.8)).toBeCloseTo(0.5, 6)
+    expect(sceneFade(s, "cta", cta.end - 1e-9)).toBeGreaterThan(0)
+    expect(sceneFade(s, "cta", cta.end)).toBe(0)
   })
 })
 

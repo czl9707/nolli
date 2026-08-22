@@ -22,7 +22,8 @@ export function CloseupScene({ data }: { data: LandingData }) {
   const { flyTo, mode, fade } = useLandingStage()
   const set = data.boardSet
   const [i, setI] = useState(0)
-  const [visible, setVisible] = useState(false)
+  // init from the fade so a restored-scroll mount starts in the right state
+  const [visible, setVisible] = useState(() => fade("closeup").get() > 0.5)
   const slugRef = useRef<string | null>(null)
 
   const go = useCallback(
@@ -71,7 +72,6 @@ export function CloseupScene({ data }: { data: LandingData }) {
         } as CSSProperties
       }
     >
-      <div className="closeup-rot__bg" />
       <div className="closeup-board__map">
         <span className="closeup-board__maplabel hand" key={`label-${arch.slug}`}>
           site — {arch.address}

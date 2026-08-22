@@ -2,8 +2,8 @@ import { APP_URL } from "@/lib/constants"
 import type { LandingData } from "@/lib/landing-data"
 
 /** Footer (prototype G "end of the map") — normal-flow cream block after the
- * stage spacers, rising over the pinned south ocean. The stage mounts this
- * scene in its overlay slot too; CSS keeps only the in-flow instance visible. */
+ * stage spacers, rising over the pinned south ocean. Excluded from the
+ * stage's overlay loop: it has no pinned copy, only this in-flow block. */
 export function FooterScene({ data }: { data: LandingData }) {
   return (
     <section className="footer-scene">

@@ -10,6 +10,6 @@
       "@nolli/ui": ["../../packages/ui/src/index.ts"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "scripts/**/*.ts"],
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": ["node_modules"]
 }

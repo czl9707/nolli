@@ -106,14 +106,17 @@ export function cameraTargetAt(scenes: SceneDef[], p: number): SceneDef {
 /** Scene copy visibility over the spine: 0 before the approach, fade in over
  * the quarter-scene before the scene starts, 1 through dwell, fade out across
  * the outgoing transition's first half. The first scene is 1 from p=0; the
- * last holds 1 to the end (no fade-out, matching spineAt's last-scene dwell). */
+ * last holds 1 to the end (no fade-out, matching spineAt's last-scene dwell).
+ * The LAST-BUT-ONE scene also fades out late — across its whole transition —
+ * because the last scene (footer) is flow-mounted: no overlay crossfades
+ * against it, and its block arrives at the scene boundary. */
 export function sceneFade(scenes: SceneDef[], id: SceneId, p: number): number {
   const idx = scenes.findIndex((s) => s.id === id)
   if (idx === -1) throw new Error(`unknown scene ${id}`)
   const { start, end } = sceneRange(scenes, id)
   const len = end - start
   const dwellEnd = start + len * DWELL_RATIO
-  const fadeEnd = dwellEnd + (len * (1 - DWELL_RATIO)) / 2
+  const fadeEnd = idx === scenes.length - 2 ? end : dwellEnd + (len * (1 - DWELL_RATIO)) / 2
   if (idx > 0) {
     const inStart = start - len * 0.25
     if (p < inStart) return 0

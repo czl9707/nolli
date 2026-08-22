@@ -159,17 +159,16 @@ export function LandingStage({
     footer: fadeFooter,
   }
   // Faded overlays must not eat clicks meant for the scene below them
+  // (footer is flow-mounted, not an overlay — no binding needed)
   const heroPe = useTransform(fadeHero, (v): string => (v < 0.5 ? "none" : "auto"))
   const indexPe = useTransform(fadeIndex, (v): string => (v < 0.5 ? "none" : "auto"))
   const closeupPe = useTransform(fadeCloseup, (v): string => (v < 0.5 ? "none" : "auto"))
   const ctaPe = useTransform(fadeCta, (v): string => (v < 0.5 ? "none" : "auto"))
-  const footerPe = useTransform(fadeFooter, (v): string => (v < 0.5 ? "none" : "auto"))
-  const pointerEvents: Record<SceneId, MotionValue<string>> = {
+  const pointerEvents: Record<Exclude<SceneId, "footer">, MotionValue<string>> = {
     hero: heroPe,
     index: indexPe,
     closeup: closeupPe,
     cta: ctaPe,
-    footer: footerPe,
   }
 
   const ctx = useMemo<StageCtx>(
@@ -197,7 +196,7 @@ export function LandingStage({
                   position: "absolute",
                   inset: 0,
                   opacity: fades[id as SceneId],
-                  pointerEvents: pointerEvents[id as SceneId],
+                  pointerEvents: pointerEvents[id as Exclude<SceneId, "footer">],
                 }}
               >
                 {node}
