@@ -158,6 +158,19 @@ export function LandingStage({
     cta: fadeCta,
     footer: fadeFooter,
   }
+  // Faded overlays must not eat clicks meant for the scene below them
+  const heroPe = useTransform(fadeHero, (v): string => (v < 0.5 ? "none" : "auto"))
+  const indexPe = useTransform(fadeIndex, (v): string => (v < 0.5 ? "none" : "auto"))
+  const closeupPe = useTransform(fadeCloseup, (v): string => (v < 0.5 ? "none" : "auto"))
+  const ctaPe = useTransform(fadeCta, (v): string => (v < 0.5 ? "none" : "auto"))
+  const footerPe = useTransform(fadeFooter, (v): string => (v < 0.5 ? "none" : "auto"))
+  const pointerEvents: Record<SceneId, MotionValue<string>> = {
+    hero: heroPe,
+    index: indexPe,
+    closeup: closeupPe,
+    cta: ctaPe,
+    footer: footerPe,
+  }
 
   const ctx = useMemo<StageCtx>(
     () => ({ flyTo, mode: snapMode ? "snap" : "scrub", fade: (id) => fades[id] }),
@@ -176,7 +189,15 @@ export function LandingStage({
             </LandingMap>
           </motion.div>
           {Object.entries(scenes).map(([id, node]) => (
-            <motion.div key={id} style={{ position: "absolute", inset: 0, opacity: fades[id as SceneId] }}>
+            <motion.div
+              key={id}
+              style={{
+                position: "absolute",
+                inset: 0,
+                opacity: fades[id as SceneId],
+                pointerEvents: pointerEvents[id as SceneId],
+              }}
+            >
               {node}
             </motion.div>
           ))}

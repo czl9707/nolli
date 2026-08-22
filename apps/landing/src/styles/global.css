@@ -791,6 +791,69 @@ body {
   margin-top: 0.55rem;
 }
 
+/* ---------- closeup A — rotating board (production, on the stage slot) ---------- */
+
+/* Cream quilt page around a transparent map window: the stage's map layer
+   settles into CLOSEUP_SLOT and shows through the window. The window's
+   page-fill shadow (index-scene pattern) replaces the prototype's opaque
+   bg div — a full-bleed backing would cover the stage's map layer. */
+.closeup-scene {
+  position: absolute;
+  inset: 0;
+  color: rgb(var(--color-primary-foreground));
+}
+
+.closeup-scene .closeup-rot__bg {
+  display: none;
+}
+
+.closeup-scene .card {
+  background: rgb(var(--color-accent-background));
+  color: rgb(var(--color-primary-foreground));
+  box-shadow: 0 6px 24px rgb(var(--color-primary-foreground) / 0.22);
+}
+
+.closeup-scene .pin::after {
+  background: rgb(var(--color-accent-foreground));
+  box-shadow: 0 2px 4px rgb(var(--color-primary-foreground) / 0.5);
+}
+
+/* the map card becomes a bare window pinned to the slot geometry — no
+   backing, no scatter: the map layer beneath doesn't move with the board */
+.closeup-scene .closeup-board__map {
+  left: calc((var(--slot-closeup-x) - var(--slot-closeup-w) / 2) * 100%);
+  top: calc((var(--slot-closeup-y) - var(--slot-closeup-h) / 2) * 100%);
+  width: calc(var(--slot-closeup-w) * 100%);
+  height: calc(var(--slot-closeup-h) * 100%);
+  bottom: auto;
+  aspect-ratio: auto;
+  transform: none;
+  border: var(--border);
+  border-radius: var(--size-border-radius);
+  box-shadow: 0 0 0 200vmax rgb(var(--color-primary-background));
+}
+
+.closeup-scene .closeup-board__maplabel {
+  color: rgb(var(--color-primary-background));
+}
+
+.closeup-scene .closeup-board__mapfade {
+  background: rgb(var(--color-primary-foreground));
+}
+
+.closeup-scene .closeup-board__carousel button {
+  border: var(--border);
+}
+
+.closeup-scene .closeup-board__carousel button:hover {
+  background: rgb(var(--color-secondary-background));
+}
+
+.closeup-scene .closeup-board__cta,
+.closeup-scene .closeup-board__links {
+  border-top: 1px solid rgb(var(--color-primary-foreground) / 0.15);
+}
+
 /* ---------- CTA A — bookend ---------- */
 
 /* Mirror of the hero's diagonal grade: dark bottom-left, fading to top-right.
