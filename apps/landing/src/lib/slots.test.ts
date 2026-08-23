@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { CLOSEUP_SLOT, INDEX_SLOT, slotRect } from "./slots"
+import { CLOSEUP_SLOT, INDEX_SLOT, INDEX_SLOT_MAX_W, indexSlot, slotRect } from "./slots"
 
 describe("slotRect", () => {
   it("converts center/size to top-left edges", () => {
@@ -20,5 +20,12 @@ describe("slotRect", () => {
       expect(r.x + r.w / 2).toBeCloseTo(slot.cx, 12)
       expect(r.y + r.h / 2).toBeCloseTo(slot.cy, 12)
     }
+  })
+  it("indexSlot caps the plate px width at the container max", () => {
+    // narrow viewport: proportional, under the cap
+    expect(indexSlot(1200).w).toBeCloseTo(0.42, 10)
+    expect(indexSlot(1200).w * 1200).toBeLessThan(INDEX_SLOT_MAX_W)
+    // wide viewport: capped
+    expect(indexSlot(2400).w * 2400).toBeCloseTo(INDEX_SLOT_MAX_W, 10)
   })
 })

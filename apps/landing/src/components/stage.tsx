@@ -11,6 +11,7 @@ import {
 } from "react"
 import {
   motion,
+  useMotionValue,
   useMotionValueEvent,
   useReducedMotion,
   useScroll,
@@ -19,8 +20,17 @@ import {
 } from "framer-motion"
 import { flyToSceneCinematic, type MapRef, type SceneCamera } from "@nolli/map"
 import type { LandingData } from "@/lib/landing-data"
-import { cameraTargetAt, sceneFade, SCENES, snap, spineAt, type SceneDef, type SceneId } from "@/lib/spine"
-import { CLOSEUP_SLOT, INDEX_SLOT } from "@/lib/slots"
+import {
+  cameraTargetAt,
+  sceneFade,
+  SCENES,
+  snap,
+  spineAt,
+  type LayerKey,
+  type SceneDef,
+  type SceneId,
+} from "@/lib/spine"
+import { CLOSEUP_SLOT, indexSlot, slotRect, type Slot } from "@/lib/slots"
 import { useIsMobile } from "@/lib/use-is-mobile"
 import { LandingMap } from "./landing-map"
 
@@ -38,18 +48,22 @@ export const useLandingStage = () => {
   return ctx
 }
 
-/** Slot boxes as unitless viewport fractions on the stage — consuming CSS
+/** Slot vars as unitless viewport fractions on the stage — consuming CSS
  * multiplies by 100vw/100vh; edges via calc(cx - w/2). */
-const slotVars = {
-  "--slot-index-x": INDEX_SLOT.cx,
-  "--slot-index-y": INDEX_SLOT.cy,
-  "--slot-index-w": INDEX_SLOT.w,
-  "--slot-index-h": INDEX_SLOT.h,
-  "--slot-closeup-x": CLOSEUP_SLOT.cx,
-  "--slot-closeup-y": CLOSEUP_SLOT.cy,
-  "--slot-closeup-w": CLOSEUP_SLOT.w,
-  "--slot-closeup-h": CLOSEUP_SLOT.h,
-} as CSSProperties
+const FULL_LAYER: LayerKey = { x: 0, y: 0, w: 1, h: 1 }
+
+function slotVarsFor(idxSlot: Slot) {
+  return {
+    "--slot-index-x": idxSlot.cx,
+    "--slot-index-y": idxSlot.cy,
+    "--slot-index-w": idxSlot.w,
+    "--slot-index-h": idxSlot.h,
+    "--slot-closeup-x": CLOSEUP_SLOT.cx,
+    "--slot-closeup-y": CLOSEUP_SLOT.cy,
+    "--slot-closeup-w": CLOSEUP_SLOT.w,
+    "--slot-closeup-h": CLOSEUP_SLOT.h,
+  } as CSSProperties
+}
 
 /**
  * Landing spine driver. One sticky dark map layer, scrub-morphed by scroll
@@ -73,28 +87,48 @@ export function LandingStage({
   const reduced = useReducedMotion()
   const snapMode = useIsMobile() || !!reduced
 
-  // Runtime scene table: index camera fit to the photo-marker picks,
-  // closeup camera from data.heroCamera
+  // Index plate capped like the app's content container; recompute on resize
+  const [vw, setVw] = useState(() => window.innerWidth)
+  useEffect(() => {
+    const onResize = () => setVw(window.innerWidth)
+    window.addEventListener("resize", onResize)
+    return () => window.removeEventListener("resize", onResize)
+  }, [])
+  const idxSlot = useMemo(() => indexSlot(vw), [vw])
+  const slotVars = useMemo(() => slotVarsFor(idxSlot), [idxSlot])
+
+  // Runtime scene table: index camera fit to the photo-marker picks and the
+  // index layer at the capped slot, closeup camera from data.heroCamera
   const scenesTable: SceneDef[] = useMemo(
     () =>
       SCENES.map((s) =>
         s.id === "index"
-          ? { ...s, camera: data.indexCamera }
+          ? { ...s, camera: data.indexCamera, layer: slotRect(idxSlot) }
           : s.id === "closeup"
             ? { ...s, camera: data.heroCamera }
             : s,
       ),
-    [data],
+    [data, idxSlot],
   )
 
   const { scrollYProgress } = useScroll({ target: wrapperRef, offset: ["start start", "end end"] })
 
   // Clock 1 — scrub morph (freezes mid-state when scrolling stops). Rect
   // written as real container geometry (% of the sticky stage = viewport);
-  // MapLibre's trackResize re-renders the canvas natively.
-  const layer = useTransform(scrollYProgress, (p) =>
-    spineAt(scenesTable, snapMode ? snap(scenesTable, p) : p),
+  // MapLibre's trackResize re-renders the canvas natively. Written manually
+  // (not useTransform) so a slot change on resize re-applies without needing
+  // a scroll event to recompute.
+  const layer = useMotionValue<LayerKey>(FULL_LAYER)
+  const applyLayer = useCallback(
+    (p: number) => {
+      layer.set(spineAt(scenesTable, snapMode ? snap(scenesTable, p) : p))
+    },
+    [layer, scenesTable, snapMode],
   )
+  useMotionValueEvent(scrollYProgress, "change", applyLayer)
+  useEffect(() => {
+    applyLayer(scrollYProgress.get())
+  }, [applyLayer])
   const layerLeft = useTransform(layer, (l) => `${l.x * 100}%`)
   const layerTop = useTransform(layer, (l) => `${l.y * 100}%`)
   const layerWidth = useTransform(layer, (l) => `${l.w * 100}%`)
@@ -115,26 +149,31 @@ export function LandingStage({
       return
     }
     flyToSceneCinematic(map, camera)
-    // MapLibre mis-lands camera animations when the container resizes under
-    // them (clock 1 morphs the layer in the same scroll window) — the flight
-    // ends offset by half the width delta. Verify on moveend and ease the
-    // short remaining hop to the exact keyframe. Token: skip if a newer
-    // target superseded this flight while it ran.
-    const token = ++flightSeq.current
-    const onEnd = () => {
-      map.off("moveend", onEnd)
-      if (token !== flightSeq.current) return
-      const c = map.getCenter()
-      if (
-        Math.abs(c.lng - camera.center[0]) < 1e-4 &&
-        Math.abs(c.lat - camera.center[1]) < 1e-4
-      ) {
-        return
-      }
-      flyTo(camera)
-    }
-    map.on("moveend", onEnd)
   }
+  // A flight started while clock 1 is still morphing the container lands
+  // off-target (see flyTo) — so wait for the layer geometry to settle
+  // (~120ms without a layer write) and fly once, directly. During a dwell
+  // spineAt returns the same rect object, the layer goes quiet, and the
+  // flight leaves right at scene arrival; if the user stops mid-transition,
+  // the layer is frozen and the flight still fires on a static container.
+  const pendingFlight = useRef<{ token: number; timer: number | null; camera: SceneCamera } | null>(
+    null,
+  )
+  const clearPendingFlight = () => {
+    if (pendingFlight.current?.timer) window.clearTimeout(pendingFlight.current.timer)
+    pendingFlight.current = null
+  }
+  useMotionValueEvent(layer, "change", () => {
+    const pending = pendingFlight.current
+    if (!pending) return
+    if (pending.timer) window.clearTimeout(pending.timer)
+    pending.timer = window.setTimeout(() => {
+      if (!pendingFlight.current || pendingFlight.current.token !== pending.token) return
+      const camera = pendingFlight.current.camera
+      clearPendingFlight()
+      flyTo(camera)
+    }, 120)
+  })
   useMotionValueEvent(target, "change", (scene) => {
     // Debounce by camera VALUE: the table rebuilds (new identity) on data change
     const last = lastTarget.current
@@ -148,7 +187,21 @@ export function LandingStage({
       return
     }
     lastTarget.current = scene
-    flyTo(scene.camera)
+    if (snapMode) {
+      flyTo(scene.camera)
+      return
+    }
+    flightSeq.current++
+    clearPendingFlight()
+    pendingFlight.current = { token: flightSeq.current, timer: null, camera: scene.camera }
+    // arm the timer here too: if the layer is already quiet (e.g. resize
+    // rebuilt the table), the layer-change handler never fires
+    pendingFlight.current.timer = window.setTimeout(() => {
+      if (!pendingFlight.current || pendingFlight.current.token !== flightSeq.current) return
+      const camera = pendingFlight.current.camera
+      clearPendingFlight()
+      flyTo(camera)
+    }, 120)
   })
   // Initial placement: jump (not fly) to the camera the spine targets right now,
   // so a fresh load starts on the hero camera and a mid-page reload lands on

@@ -9,6 +9,7 @@
 }
 
 .frame {
+  box-sizing: border-box;
   position: absolute;
   left: calc((var(--slot-index-x) - var(--slot-index-w) / 2) * 100%);
   top: calc((var(--slot-index-y) - var(--slot-index-h) / 2) * 100%);

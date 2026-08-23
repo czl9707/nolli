@@ -3,7 +3,7 @@ import { useDbStore, type Arch, type ArchSummary } from "@nolli/data"
 import type { SceneCamera } from "@nolli/map"
 import { BOARD_SLUGS, CLUSTER_CITY, HERO_SLUG, SITE_ZOOM } from "./constants"
 import { fitCamera } from "./camera"
-import { INDEX_SLOT } from "./slots"
+import { indexSlot } from "./slots"
 import { cityIdByName, computeStats, pickIndexPhotos } from "./shape"
 
 export type LandingData = {
@@ -48,12 +48,12 @@ export function useLandingData() {
           stats: computeStats(summaries),
           heroCamera: { center: [hero.coordinates.lng, hero.coordinates.lat], zoom: SITE_ZOOM },
           // fit the picks into the plate the map settles into at index dwell
-          // (INDEX_SLOT fractions of the viewport, measured at load time)
+          // (indexSlot fractions of the viewport, measured at load time)
           indexCamera: fitCamera(
             indexPhotos.map((p) => p.coordinates),
             {
-              width: window.innerWidth * INDEX_SLOT.w,
-              height: window.innerHeight * INDEX_SLOT.h,
+              width: window.innerWidth * indexSlot(window.innerWidth).w,
+              height: window.innerHeight * indexSlot(window.innerWidth).h,
             },
           ),
         })
