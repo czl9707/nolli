@@ -1,3 +1,4 @@
+import styles from "./index-scene.module.css"
 import type { LandingData } from "@/lib/landing-data"
 
 /** Index overlay (prototype E "light app mode"): light page around the card
@@ -6,11 +7,11 @@ import type { LandingData } from "@/lib/landing-data"
 export function IndexScene({ data }: { data: LandingData }) {
   void data
   return (
-    <section className="index-scene">
-      <div className="index-scene__frame" />
-      <div className="index-scene__copy">
-        <p className="hand index-scene__overline">The Index</p>
-        <h2 className="index-scene__statement">
+    <section className={styles.scene}>
+      <div className={styles.frame} />
+      <div className={styles.copy}>
+        <p className={`hand ${styles.overline}`}>The Index</p>
+        <h2 className={styles.statement}>
           Google Maps has all the pins.
           <br />
           ArchDaily has all the information.

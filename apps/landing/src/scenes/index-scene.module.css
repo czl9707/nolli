@@ -1,0 +1,47 @@
+/* Index — light app mode around the card slot. Light page around the card
+   slot: the map plate resizes into the slot at dwell, so the frame only draws
+   its border — the cream page behind is the surround. Slot vars come from the
+   stage (INDEX_SLOT fractions). */
+
+.scene {
+  position: absolute;
+  inset: 0;
+}
+
+.frame {
+  position: absolute;
+  left: calc((var(--slot-index-x) - var(--slot-index-w) / 2) * 100%);
+  top: calc((var(--slot-index-y) - var(--slot-index-h) / 2) * 100%);
+  width: calc(var(--slot-index-w) * 100%);
+  height: calc(var(--slot-index-h) * 100%);
+  border: var(--border);
+  border-radius: var(--size-border-radius);
+  pointer-events: none;
+}
+
+.copy {
+  position: absolute;
+  left: calc((var(--slot-index-x) - var(--slot-index-w) / 2) * 100%);
+  bottom: calc(
+    (1 - (var(--slot-index-y) - var(--slot-index-h) / 2)) * 100% + clamp(1.25rem, 3dvh, 2.25rem)
+  );
+  max-width: min(44ch, calc(var(--slot-index-w) * 100%));
+  color: rgb(var(--color-primary-foreground));
+  z-index: 1;
+}
+
+.overline {
+  font-size: clamp(0.95rem, 1vw + 0.45dvh, 1.15rem);
+  opacity: 0.85;
+  margin-bottom: 0.6rem;
+}
+
+.statement {
+  font-weight: 300;
+  font-size: clamp(1.05rem, 1.1vw + 0.7dvh, 1.9rem);
+  line-height: 1.35;
+}
+
+.statement strong {
+  font-weight: 700;
+}

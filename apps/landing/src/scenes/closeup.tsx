@@ -1,3 +1,4 @@
+import styles from "./closeup.module.css"
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react"
 import { useMotionValueEvent } from "framer-motion"
 import { BoardItem } from "@nolli/board"
@@ -68,7 +69,7 @@ export function CloseupScene({ data }: { data: LandingData }) {
 
   return (
     <section
-      className="closeup-scene closeup-rot"
+      className={`${styles.scene} ${styles.rot}`}
       style={
         {
           "--b-dx": `${s.dx}px`,
@@ -77,54 +78,54 @@ export function CloseupScene({ data }: { data: LandingData }) {
         } as CSSProperties
       }
     >
-      <div className="closeup-board__map">
-        <Note className="closeup-board__maplabel" key={`label-${arch.slug}`}>
+      <div className={styles.mapCard}>
+        <Note className={styles.mapLabel} key={`label-${arch.slug}`}>
           site — {arch.address}
         </Note>
-        {mode === "snap" && <div className="closeup-board__mapfade" key={`fade-${arch.slug}`} />}
+        {mode === "snap" && <div className={styles.mapFade} key={`fade-${arch.slug}`} />}
       </div>
-      <div className="closeup-board__note">
+      <div className={styles.note}>
         <BoardItem
           id="closeup-note"
           position={{ x: 0, y: 0, width: 300, height: 0, rotation: -2 }}
-          className="closeup-board__pad--note"
+          className={styles.padNote}
         >
-          <Note className="closeup-board__notehand">want to dig more?</Note>
-          <Note className="closeup-board__noteline">each architecture is a story.</Note>
+          <Note className={styles.noteHand}>want to dig more?</Note>
+          <Note className={styles.noteLine}>each architecture is a story.</Note>
         </BoardItem>
       </div>
-      <div className="closeup-board__carousel">
+      <div className={styles.carousel}>
         <BoardItem
           id="closeup-carousel"
           position={{ x: 0, y: 0, width: 300, height: 0, rotation: -1.4 }}
           delay={1}
-          className="closeup-board__pad--carousel"
+          className={styles.padCarousel}
         >
           <button type="button" onClick={() => go(-1)} aria-label="previous architecture">
             ←
           </button>
-          <Note className="closeup-board__carouselname">{arch.name}</Note>
+          <Note className={styles.carouselName}>{arch.name}</Note>
           <button type="button" onClick={() => go(1)} aria-label="next architecture">
             →
           </button>
-          <span className="closeup-board__counter">
+          <span className={styles.counter}>
             {i + 1} / {set.length}
           </span>
         </BoardItem>
       </div>
-      <figure className="closeup-board__photo closeup-board__photo--1">
+      <figure className={`${styles.photo} ${styles.photo1}`}>
         <BoardItem
           id={`${arch.slug}-photo-1`}
           position={{ x: 0, y: 0, width: 330, height: 0, rotation: 2 + s.r }}
           delay={2}
         >
           <img key={arch.slug} src={arch.photos[0].image} alt={arch.name} />
-          <Note className="closeup-board__photocaption" key={`${arch.slug}-c`}>
+          <Note className={styles.photoCaption} key={`${arch.slug}-c`}>
             {arch.name} · {arch.year}
           </Note>
         </BoardItem>
       </figure>
-      <figure className="closeup-board__photo closeup-board__photo--2">
+      <figure className={`${styles.photo} ${styles.photo2}`}>
         <BoardItem
           id={`${arch.slug}-photo-2`}
           position={{ x: 0, y: 0, width: 185, height: 250, rotation: -2 + s.r }}
@@ -133,7 +134,7 @@ export function CloseupScene({ data }: { data: LandingData }) {
           <img key={arch.slug} src={arch.photos[1].image} alt={arch.name} />
         </BoardItem>
       </figure>
-      <figure className="closeup-board__photo closeup-board__photo--3">
+      <figure className={`${styles.photo} ${styles.photo3}`}>
         <BoardItem
           id={`${arch.slug}-photo-3`}
           position={{ x: 0, y: 0, width: 245, height: 165, rotation: -1 + s.r }}
@@ -142,14 +143,14 @@ export function CloseupScene({ data }: { data: LandingData }) {
           <img key={arch.slug} src={arch.photos[2].image} alt={arch.name} />
         </BoardItem>
       </figure>
-      <div className="closeup-board__meta">
+      <div className={styles.meta}>
         <BoardItem
           id={`${arch.slug}-meta`}
           position={{ x: 0, y: 0, width: 295, height: 0, rotation: 1.2 + s.r }}
           delay={5}
-          className="closeup-board__pad--meta"
+          className={styles.padMeta}
         >
-          <div className="closeup-board__name">{arch.name}</div>
+          <div className={styles.name}>{arch.name}</div>
           <dl>
             <div>
               <dt>architect</dt>
@@ -164,17 +165,17 @@ export function CloseupScene({ data }: { data: LandingData }) {
               <dd>{arch.address}</dd>
             </div>
           </dl>
-          <a className="closeup-board__cta" href={APP_URL}>
+          <a className={styles.cta} href={APP_URL}>
             {boardCtaLabel(data.summaries, arch)}
           </a>
-          <div className="closeup-board__links">
+          <div className={styles.links}>
             {arch.links?.wikipedia && (
               <a href={arch.links.wikipedia} target="_blank" rel="noreferrer">
-                <Note className="closeup-board__link">wikipedia ↗</Note>
+                <Note className={styles.link}>wikipedia ↗</Note>
               </a>
             )}
             <a href={arch.links?.googleMaps} target="_blank" rel="noreferrer">
-              <Note className="closeup-board__link">google maps ↗</Note>
+              <Note className={styles.link}>google maps ↗</Note>
             </a>
           </div>
         </BoardItem>

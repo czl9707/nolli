@@ -1,0 +1,63 @@
+/* CTA — hero-mirror grade. Mirror of the hero's diagonal grade: dark
+   bottom-left, fading to top-right. Layout and type match the hero — the two
+   scenes bookend uniformly. */
+
+.bookend {
+  position: absolute;
+  inset: 0;
+  color: rgb(var(--color-primary-background));
+}
+
+.grade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top right,
+    rgb(var(--color-primary-foreground) / 0.92) 0%,
+    rgb(var(--color-primary-foreground) / 0.9) 28%,
+    rgb(var(--color-primary-foreground) / 0.55) 50%,
+    transparent 72%
+  );
+}
+
+.copy {
+  position: absolute;
+  left: 6vw;
+  top: 56%;
+  transform: translateY(-50%);
+  max-width: 42ch;
+  z-index: 5;
+}
+
+.overline {
+  font-size: clamp(1rem, 1.4vw, 1.2rem);
+  opacity: 0.85;
+  margin-bottom: 0.75rem;
+}
+
+.h2 {
+  font-weight: 700;
+  font-size: clamp(2.5rem, 5.5vw, 4.2rem);
+  line-height: 1.05;
+}
+
+.sub {
+  margin-top: 1rem;
+  font-weight: 300;
+  opacity: 0.8;
+}
+
+.btn {
+  display: inline-block;
+  margin-top: 2rem;
+  padding: 0.85rem 2rem;
+  border: 1px solid rgb(var(--color-primary-background));
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.btn:hover {
+  background: rgb(var(--color-primary-background));
+  color: rgb(var(--color-primary-foreground));
+}

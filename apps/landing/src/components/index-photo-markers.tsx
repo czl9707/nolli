@@ -2,11 +2,12 @@ import { useEffect } from "react"
 import { PhotoMarker, useMap } from "@nolli/map"
 import type { ArchSummary } from "@nolli/data"
 import { useLandingStage } from "@/components/stage"
+import styles from "./index-photo-markers.module.css"
 
 /** Photo markers pinned at real coords — MapMarker tracks the camera natively.
  * Marker contents portal into the map container, outside any fade wrapper, so
  * the stage fade is written onto the container as a CSS var the markers
- * consume (see global.css). */
+ * consume (see index-photo-markers.module.css). */
 export function IndexPhotoMarkers({ picks }: { picks: ArchSummary[] }) {
   const { fade } = useLandingStage()
   const opacity = fade("index")
@@ -32,7 +33,7 @@ export function IndexPhotoMarkers({ picks }: { picks: ArchSummary[] }) {
   return (
     <>
       {picks.map((a) => (
-        <PhotoMarker key={a.slug} building={a} className="index-photo-marker" />
+        <PhotoMarker key={a.slug} building={a} className={styles.marker} />
       ))}
     </>
   )

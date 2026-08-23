@@ -1,0 +1,93 @@
+/* Footer — end of the map, normal-flow block rising over the pinned south
+   ocean. */
+
+.scene {
+  display: flex;
+  position: relative;
+  z-index: 1;
+  flex-direction: column;
+  min-height: 72vh;
+  background: rgb(var(--color-primary-background));
+  color: rgb(var(--color-primary-foreground));
+}
+
+.annotation {
+  position: absolute;
+  left: 6vw;
+  bottom: calc(100% + 4vh);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: clamp(1.4rem, 2.4vw, 2rem);
+  color: rgb(var(--color-primary-background));
+  text-shadow:
+    0 1px 2px rgb(var(--color-primary-foreground) / 0.9),
+    0 2px 20px rgb(var(--color-primary-foreground) / 0.85);
+}
+
+.coords {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  opacity: 0.55;
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4rem;
+  padding: 7vh 6vw 5vh;
+  flex: 1;
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.wordmark {
+  font-size: clamp(3rem, 6vw, 4.5rem);
+  line-height: 1;
+}
+
+.tagline {
+  font-size: 0.9rem;
+  letter-spacing: 0.12em;
+  opacity: 0.7;
+}
+
+.cols {
+  display: flex;
+  gap: clamp(2.5rem, 6vw, 6rem);
+}
+
+.colhead {
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.5;
+  margin-bottom: 0.75rem;
+}
+
+.cols a {
+  display: block;
+  font-weight: 300;
+  font-size: 0.95rem;
+  padding: 0.3rem 0;
+  opacity: 0.85;
+}
+
+.cols a:hover {
+  opacity: 1;
+}
+
+.legal {
+  display: flex;
+  justify-content: space-between;
+  padding: 1.25rem 6vw;
+  border-top: 1px solid rgb(var(--color-primary-foreground) / 0.15);
+  font-size: 0.8rem;
+  opacity: 0.6;
+}

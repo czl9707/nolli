@@ -1,0 +1,320 @@
+/* Closeup — rotating quilt board on the stage slot. Cream quilt page around a
+   transparent map window: the stage's map layer settles into CLOSEUP_SLOT and
+   shows through the window — the window draws only its border; the cream page
+   behind is the surround. Paper items are BoardItem surfaces; these anchors
+   only place them. */
+
+.scene {
+  position: absolute;
+  inset: 0;
+  color: rgb(var(--color-primary-foreground));
+}
+
+.note {
+  position: absolute;
+  left: 8%;
+  top: 9dvh;
+  width: 300px;
+}
+
+/* Note's own size is 0.875rem — the .scene prefix keeps the scene's sizes
+   winning regardless of bundle order */
+.scene .noteHand {
+  display: block;
+  font-size: 1.7rem;
+  line-height: 1.2;
+}
+
+.scene .noteLine {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+.padNote {
+  padding: 1.4rem 1.6rem;
+}
+
+.carousel {
+  position: absolute;
+  left: 8%;
+  top: calc(9dvh + 10rem);
+  width: 300px;
+}
+
+.padCarousel {
+  padding: 0.55rem 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.scene .carouselName {
+  flex: 1;
+  text-align: center;
+  font-size: 1.15rem;
+  line-height: 1.15;
+}
+
+.carousel button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 1px solid rgba(30, 30, 30, 0.25);
+  border-radius: var(--size-border-radius);
+  width: 30px;
+  height: 30px;
+  flex: none;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.carousel button:hover {
+  background: #e6e1d2;
+}
+
+.counter {
+  font-size: 0.72rem;
+  opacity: 0.55;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+/* the map card is a bare window pinned to the slot geometry — no backing,
+   no scatter: the map layer beneath doesn't move with the board */
+.scene .mapCard {
+  position: absolute;
+  box-sizing: border-box;
+  left: calc((var(--slot-closeup-x) - var(--slot-closeup-w) / 2) * 100%);
+  top: calc((var(--slot-closeup-y) - var(--slot-closeup-h) / 2) * 100%);
+  width: calc(var(--slot-closeup-w) * 100%);
+  height: calc(var(--slot-closeup-h) * 100%);
+  padding: 10px;
+  border: var(--border);
+  border-radius: var(--size-border-radius);
+}
+
+.mapLabel {
+  position: absolute;
+  left: 14px;
+  bottom: 12px;
+  color: #edeae1;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  z-index: 6;
+}
+
+.scene .mapLabel {
+  color: rgb(var(--color-primary-background));
+  font-size: 0.9rem;
+}
+
+/* masks the map's jumpTo between arches (controlled viewport is instant) */
+.mapFade {
+  position: absolute;
+  inset: 10px;
+  background: #24211b;
+  animation: closeupMapFade 0.7s ease both;
+  pointer-events: none;
+  z-index: 5;
+}
+
+@keyframes closeupMapFade {
+  from {
+    opacity: 0.95;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.scene .mapFade {
+  background: rgb(var(--color-primary-foreground));
+}
+
+.scene .carousel button {
+  border: var(--border);
+}
+
+.scene .carousel button:hover {
+  background: rgb(var(--color-secondary-background));
+}
+
+.photo {
+  position: absolute;
+}
+
+.photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo1 {
+  right: 21%;
+  top: 8dvh;
+  width: 330px;
+}
+
+.photo1 img {
+  height: auto;
+  aspect-ratio: 3 / 2;
+}
+
+.photo2 {
+  right: 6%;
+  top: 15dvh;
+  width: 185px;
+  height: 250px;
+}
+
+/* BoardItem's minHeight doesn't cap a taller natural image — clamp the
+   surface so fixed-height photos crop (object-fit: cover) like the figure
+   overflow they replaced */
+.photo2 > div > div {
+  max-height: 250px;
+}
+
+.photo3 {
+  right: 31%;
+  bottom: 13dvh;
+  width: 245px;
+  height: 165px;
+}
+
+.photo3 > div > div {
+  max-height: 165px;
+}
+
+/* board re-settles per arch (--b-dx/--b-dy set from JS — no var() fallbacks:
+   postcss-custom-properties bakes fallbacks in statically): translate on the
+   anchors, the scatter rotation on the BoardItem child — same easing so the
+   composed move reads as one settle */
+.rot .photo1,
+.rot .photo2,
+.rot .photo3 {
+  transform: translate(var(--b-dx), var(--b-dy));
+  transition: transform 0.65s cubic-bezier(0.22, 0.9, 0.3, 1);
+}
+
+.photo > div,
+.meta > div {
+  transition: transform 0.65s cubic-bezier(0.22, 0.9, 0.3, 1);
+}
+
+/* bottom-anchored, content-sized card: the meta wrapper holds only an
+   absolute BoardItem so its height collapses to 0 — bottom-align the item
+   so the card grows up from the anchor like before */
+.meta > div {
+  top: auto !important;
+  bottom: 0;
+}
+
+.rot .photo img,
+.rot .photoCaption,
+.rot .mapLabel {
+  animation: closeupRotIn 0.5s ease both;
+}
+
+@keyframes closeupRotIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.scene .photoCaption {
+  display: block;
+  padding: 6px 8px 7px;
+  font-size: 0.95rem;
+}
+
+.meta {
+  position: absolute;
+  right: 5%;
+  bottom: 9dvh;
+  width: 295px;
+}
+
+.padMeta {
+  padding: 1.25rem 1.4rem;
+}
+
+.rot .meta {
+  transform: translate(var(--b-dx), var(--b-dy));
+  transition: transform 0.65s cubic-bezier(0.22, 0.9, 0.3, 1);
+}
+
+.name {
+  font-weight: 700;
+  font-size: 1.15rem;
+  line-height: 1.2;
+}
+
+.meta dl {
+  margin-top: 0.9rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.meta dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.82rem;
+}
+
+.meta dt {
+  opacity: 0.55;
+}
+
+.meta dd {
+  font-weight: 600;
+  text-align: right;
+}
+
+.rot .meta dl {
+  margin-top: 0.7rem;
+}
+
+.cta {
+  display: block;
+  margin-top: 0.8rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid rgba(30, 30, 30, 0.15);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.links {
+  margin-top: 0.9rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid rgba(30, 30, 30, 0.15);
+  display: flex;
+  gap: 1.25rem;
+  font-size: 0.8rem;
+}
+
+.rot .links {
+  margin-top: 0.55rem;
+}
+
+.links a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.scene .link {
+  font-size: 0.8rem;
+}
+
+.scene .cta,
+.scene .links {
+  border-top: 1px solid rgb(var(--color-primary-foreground) / 0.15);
+}

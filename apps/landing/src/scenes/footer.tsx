@@ -1,3 +1,4 @@
+import styles from "./footer.module.css"
 import { APP_URL } from "@/lib/constants"
 import type { LandingData } from "@/lib/landing-data"
 
@@ -6,30 +7,30 @@ import type { LandingData } from "@/lib/landing-data"
  * stage's overlay loop: it has no pinned copy, only this in-flow block. */
 export function FooterScene({ data }: { data: LandingData }) {
   return (
-    <section className="footer-scene">
-      <div className="footer-scene__annotation hand">
+    <section className={styles.scene}>
+      <div className={`hand ${styles.annotation}`}>
         <span>end of the map · 世界的尽头</span>
-        <span className="footer-scene__coords">74° S · no pins from here on</span>
+        <span className={styles.coords}>74° S · no pins from here on</span>
       </div>
-      <div className="footer-scene__inner">
-        <div className="footer-scene__brand">
-          <span className="hand footer-scene__wordmark">Nolli</span>
-          <span className="footer-scene__tagline">the architecture map</span>
+      <div className={styles.inner}>
+        <div className={styles.brand}>
+          <span className={`hand ${styles.wordmark}`}>Nolli</span>
+          <span className={styles.tagline}>the architecture map</span>
         </div>
-        <nav className="footer-scene__cols">
+        <nav className={styles.cols}>
           <div>
-            <p className="footer-scene__colhead">explore</p>
+            <p className={styles.colhead}>explore</p>
             <a href={APP_URL}>the map</a>
             <a href="#">the reel</a>
           </div>
           <div>
-            <p className="footer-scene__colhead">elsewhere</p>
+            <p className={styles.colhead}>elsewhere</p>
             <a href="#">instagram</a>
             <a href="#">contact</a>
           </div>
         </nav>
       </div>
-      <div className="footer-scene__legal">
+      <div className={styles.legal}>
         <span>
           © 2026 Nolli · {data.stats.architectures} works · {data.stats.architects} architects
         </span>
