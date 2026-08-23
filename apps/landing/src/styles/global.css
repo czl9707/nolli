@@ -29,34 +29,6 @@ body {
   font-family: var(--font-playful);
 }
 
-/* ---------- shared card / pin ---------- */
-
-.card {
-  background: #f4f0e6;
-  color: #1e1e1e;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
-  border-radius: 2px;
-}
-
-.card img {
-  display: block;
-  width: 100%;
-  object-fit: cover;
-}
-
-.pin::after {
-  content: "";
-  position: absolute;
-  top: -7px;
-  left: 50%;
-  width: 12px;
-  height: 12px;
-  margin-left: -6px;
-  border-radius: 50%;
-  background: #b5432e;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
 /* ---------- hero — diagonal grade ---------- */
 
 .hero-leftgrade {
@@ -200,37 +172,34 @@ body {
 /* Cream quilt page around a transparent map window: the stage's map layer
    settles into CLOSEUP_SLOT and shows through the window. The window's
    page-fill shadow (index-scene pattern) covers everything outside it —
-   a full-bleed backing would hide the stage's map layer. */
-.closeup-scene .card {
-  background: rgb(var(--color-accent-background));
-  color: rgb(var(--color-primary-foreground));
-  box-shadow: 0 6px 24px rgb(var(--color-primary-foreground) / 0.22);
-}
-
-.closeup-scene .pin::after {
-  background: rgb(var(--color-accent-foreground));
-  box-shadow: 0 2px 4px rgb(var(--color-primary-foreground) / 0.5);
-}
+   a full-bleed backing would hide the stage's map layer. Paper items are
+   BoardItem surfaces; these anchors only place them. */
 
 .closeup-board__note {
   position: absolute;
   left: 8%;
   top: 9dvh;
   width: 300px;
-  padding: 1.4rem 1.6rem;
-  transform: rotate(-2deg);
 }
 
-.closeup-board__notehand {
+/* Note's own size is 0.875rem — the .closeup-scene prefix keeps the scene's
+   sizes winning regardless of bundle order */
+.closeup-scene .closeup-board__notehand {
+  display: block;
   font-size: 1.7rem;
   line-height: 1.2;
 }
 
-.closeup-board__noteline {
+.closeup-scene .closeup-board__noteline {
+  display: block;
   margin-top: 0.35rem;
   font-size: 0.95rem;
   font-weight: 500;
   opacity: 0.8;
+}
+
+.closeup-board__pad--note {
+  padding: 1.4rem 1.6rem;
 }
 
 .closeup-board__carousel {
@@ -238,14 +207,16 @@ body {
   left: 8%;
   top: calc(9dvh + 10rem);
   width: 300px;
+}
+
+.closeup-board__pad--carousel {
   padding: 0.55rem 0.8rem;
-  transform: rotate(-1.4deg);
   display: flex;
   align-items: center;
   gap: 0.65rem;
 }
 
-.closeup-board__carouselname {
+.closeup-scene .closeup-board__carouselname {
   flex: 1;
   text-align: center;
   font-size: 1.15rem;
@@ -295,7 +266,6 @@ body {
   position: absolute;
   left: 14px;
   bottom: 12px;
-  font-size: 0.9rem;
   color: #edeae1;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
   z-index: 6;
@@ -303,6 +273,7 @@ body {
 
 .closeup-scene .closeup-board__maplabel {
   color: rgb(var(--color-primary-background));
+  font-size: 0.9rem;
 }
 
 /* masks the map's jumpTo between arches (controlled viewport is instant) */
@@ -337,19 +308,20 @@ body {
 }
 
 .closeup-board__photo {
-  overflow: hidden;
   position: absolute;
 }
 
 .closeup-board__photo img {
+  display: block;
+  width: 100%;
   height: 100%;
+  object-fit: cover;
 }
 
 .closeup-board__photo--1 {
   right: 21%;
   top: 8dvh;
   width: 330px;
-  transform: rotate(2deg);
 }
 
 .closeup-board__photo--1 img {
@@ -362,7 +334,13 @@ body {
   top: 15dvh;
   width: 185px;
   height: 250px;
-  transform: rotate(-2deg);
+}
+
+/* BoardItem's minHeight doesn't cap a taller natural image — clamp the
+   surface so fixed-height photos crop (object-fit: cover) like the figure
+   overflow they replaced */
+.closeup-board__photo--2 > div > div {
+  max-height: 250px;
 }
 
 .closeup-board__photo--3 {
@@ -370,23 +348,34 @@ body {
   bottom: 13dvh;
   width: 245px;
   height: 165px;
-  transform: rotate(-1deg);
 }
 
-/* board re-settles per arch (--b-r/--b-dx/--b-dy set from JS) */
-.closeup-rot .closeup-board__photo--1 {
-  transform: translate(var(--b-dx, 0px), var(--b-dy, 0px)) rotate(calc(2deg + var(--b-r, 0deg)));
-  transition: transform 0.65s cubic-bezier(0.22, 0.9, 0.3, 1);
+.closeup-board__photo--3 > div > div {
+  max-height: 165px;
 }
 
-.closeup-rot .closeup-board__photo--2 {
-  transform: translate(var(--b-dx, 0px), var(--b-dy, 0px)) rotate(calc(-2deg + var(--b-r, 0deg)));
-  transition: transform 0.65s cubic-bezier(0.22, 0.9, 0.3, 1);
-}
-
+/* board re-settles per arch (--b-dx/--b-dy set from JS — no var() fallbacks:
+   postcss-custom-properties bakes fallbacks in statically): translate on the
+   anchors, the scatter rotation on the BoardItem child — same easing so the
+   composed move reads as one settle */
+.closeup-rot .closeup-board__photo--1,
+.closeup-rot .closeup-board__photo--2,
 .closeup-rot .closeup-board__photo--3 {
-  transform: translate(var(--b-dx, 0px), var(--b-dy, 0px)) rotate(calc(-1deg + var(--b-r, 0deg)));
+  transform: translate(var(--b-dx), var(--b-dy));
   transition: transform 0.65s cubic-bezier(0.22, 0.9, 0.3, 1);
+}
+
+.closeup-board__photo > div,
+.closeup-board__meta > div {
+  transition: transform 0.65s cubic-bezier(0.22, 0.9, 0.3, 1);
+}
+
+/* bottom-anchored, content-sized card: the meta wrapper holds only an
+   absolute BoardItem so its height collapses to 0 — bottom-align the item
+   so the card grows up from the anchor like before */
+.closeup-board__meta > div {
+  top: auto !important;
+  bottom: 0;
 }
 
 .closeup-rot .closeup-board__photo img,
@@ -404,7 +393,8 @@ body {
   }
 }
 
-.closeup-board__photocaption {
+.closeup-scene .closeup-board__photocaption {
+  display: block;
   padding: 6px 8px 7px;
   font-size: 0.95rem;
 }
@@ -414,12 +404,14 @@ body {
   right: 5%;
   bottom: 9dvh;
   width: 295px;
+}
+
+.closeup-board__pad--meta {
   padding: 1.25rem 1.4rem;
-  transform: rotate(1.2deg);
 }
 
 .closeup-rot .closeup-board__meta {
-  transform: translate(var(--b-dx, 0px), var(--b-dy, 0px)) rotate(calc(1.2deg + var(--b-r, 0deg)));
+  transform: translate(var(--b-dx), var(--b-dy));
   transition: transform 0.65s cubic-bezier(0.22, 0.9, 0.3, 1);
 }
 
@@ -482,6 +474,10 @@ body {
 .closeup-board__links a {
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+.closeup-scene .closeup-board__link {
+  font-size: 0.8rem;
 }
 
 .closeup-scene .closeup-board__cta,
