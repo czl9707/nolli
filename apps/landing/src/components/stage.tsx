@@ -191,7 +191,7 @@ export function LandingStage({
             </LandingMap>
           </motion.div>
           {Object.entries(scenes)
-            .filter(([id]) => id !== "footer")
+            .filter(([id]) => id !== "hero" && id !== "footer")
             .map(([id, node]) => (
               <motion.div
                 key={id}
@@ -199,13 +199,19 @@ export function LandingStage({
                   position: "absolute",
                   inset: 0,
                   opacity: fades[id as SceneId],
-                  pointerEvents: pointerEvents[id as Exclude<SceneId, "footer">],
+                  pointerEvents: pointerEvents[id as Exclude<SceneId, "footer" | "hero">],
                 }}
               >
                 {node}
               </motion.div>
             ))}
         </div>
+        {/* hero scene: real flow block pulled up over the pinned map (its own
+            -100svh margin nets zero height) — gradient + copy scroll out the
+            top naturally while the map stays sticky. Spacers below keep their
+            full heightVh: the hero block overlays the sticky stage rather
+            than adding scroll room. */}
+        {scenes.hero}
         {/* spacers: scroll length for the spine scenes (footer gets none — its
             heightVh exists only for camera/fade math; the real block follows) */}
         {SCENES.filter((s) => s.id !== "footer").map((s) => (
