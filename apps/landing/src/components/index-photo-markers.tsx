@@ -32,7 +32,7 @@ export function IndexPhotoMarkers({ picks }: { picks: ArchSummary[] }) {
   return (
     <>
       {picks.map((a) => (
-        <PhotoMarker key={a.slug} building={a} />
+        <PhotoMarker key={a.slug} building={a} className="index-photo-marker" />
       ))}
     </>
   )

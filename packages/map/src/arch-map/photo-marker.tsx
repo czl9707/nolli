@@ -11,11 +11,14 @@ export function PhotoMarker({
   building,
   maxWidth = 160,
   maxHeight = 175,
+  className,
   onClick,
 }: {
   building: ArchSummary
   maxWidth?: number
   maxHeight?: number
+  /** Extra class on the marker content — lets consumers target it (e.g. fades). */
+  className?: string
   onClick?: () => void
 }) {
   const { lng, lat } = building.coordinates
@@ -44,7 +47,7 @@ export function PhotoMarker({
       style={{ zIndex: Math.round(lat * 1000) }}
       onClick={onClick}
     >
-      <MarkerContent>
+      <MarkerContent className={className}>
         <div
           className={styles.wrap}
           style={{ transform: `rotate(${rotate}deg)` }}

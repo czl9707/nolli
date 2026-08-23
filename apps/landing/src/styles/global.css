@@ -177,14 +177,15 @@ body {
 
 /* index photo markers inside the map layer — their marker contents portal
    into the map container, so the stage fade reaches them via a CSS var that
-   IndexPhotoMarkers sets on it. Opacity targets the content child (maplibre
-   writes its own inline opacity on the marker root); the pin img scopes the
-   rules to PhotoMarkers (ArchMap's own pins are svg icons). */
-.maplibregl-marker:has(img[src="/images/pin.png"]) > div {
+   IndexPhotoMarkers sets on it. Opacity needs the CSS-var route (no fallback
+   value — Vite 8/lightningcss substitutes var() fallbacks statically) and
+   must target the content div, not the marker root (maplibre writes its own
+   inline opacity there). */
+.index-photo-marker {
   opacity: var(--index-photo-o);
 }
 
-[data-photo-markers="off"] .maplibregl-marker:has(img[src="/images/pin.png"]) {
+[data-photo-markers="off"] .index-photo-marker {
   visibility: hidden;
 }
 
