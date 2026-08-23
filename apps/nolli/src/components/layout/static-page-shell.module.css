@@ -4,7 +4,7 @@
 }
 
 .container {
-  max-width: 42rem;
+  max-width: var(--size-content-max);
   margin: 0 auto;
   padding: var(--spacing-group) var(--spacing-component);
   display: flex;

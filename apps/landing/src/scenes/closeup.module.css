@@ -21,14 +21,14 @@
    winning regardless of bundle order */
 .scene .noteHand {
   display: block;
-  font-size: 1.7rem;
+  font-size: var(--typography-h3-fontSize);
   line-height: 1.2;
 }
 
 .scene .noteLine {
   display: block;
   margin-top: 0.35rem;
-  font-size: 0.95rem;
+  font-size: var(--typography-note-fontSize);
   font-weight: 500;
   opacity: 0.8;
 }
@@ -54,7 +54,7 @@
 .scene .carouselName {
   flex: 1;
   text-align: center;
-  font-size: 1.15rem;
+  font-size: var(--typography-h5-fontSize);
   line-height: 1.15;
 }
 
@@ -62,7 +62,7 @@
   font: inherit;
   color: inherit;
   background: none;
-  border: 1px solid rgba(30, 30, 30, 0.25);
+  border: var(--border);
   border-radius: var(--size-border-radius);
   width: 30px;
   height: 30px;
@@ -72,11 +72,11 @@
 }
 
 .carousel button:hover {
-  background: #e6e1d2;
+  background: rgb(var(--color-secondary-background));
 }
 
 .counter {
-  font-size: 0.72rem;
+  font-size: var(--typography-body3-fontSize);
   opacity: 0.55;
   letter-spacing: 0.05em;
   white-space: nowrap;
@@ -100,21 +100,21 @@
   position: absolute;
   left: 14px;
   bottom: 12px;
-  color: #edeae1;
+  color: rgb(var(--color-paper-background));
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
   z-index: 6;
 }
 
 .scene .mapLabel {
   color: rgb(var(--color-primary-background));
-  font-size: 0.9rem;
+  font-size: var(--typography-body2-fontSize);
 }
 
 /* masks the map's jumpTo between arches (controlled viewport is instant) */
 .mapFade {
   position: absolute;
   inset: 10px;
-  background: #24211b;
+  background: rgb(var(--color-primary-foreground));
   animation: closeupMapFade 0.7s ease both;
   pointer-events: none;
   z-index: 5;
@@ -127,18 +127,6 @@
   to {
     opacity: 0;
   }
-}
-
-.scene .mapFade {
-  background: rgb(var(--color-primary-foreground));
-}
-
-.scene .carousel button {
-  border: var(--border);
-}
-
-.scene .carousel button:hover {
-  background: rgb(var(--color-secondary-background));
 }
 
 .photo {
@@ -230,7 +218,7 @@
 .scene .photoCaption {
   display: block;
   padding: 6px 8px 7px;
-  font-size: 0.95rem;
+  font-size: var(--typography-body2-fontSize);
 }
 
 .meta {
@@ -251,7 +239,7 @@
 
 .name {
   font-weight: 700;
-  font-size: 1.15rem;
+  font-size: var(--typography-h5-fontSize);
   line-height: 1.2;
 }
 
@@ -264,8 +252,8 @@
 .meta dl div {
   display: flex;
   justify-content: space-between;
-  gap: 1rem;
-  font-size: 0.82rem;
+  gap: var(--spacing-paragraph);
+  font-size: var(--typography-body2-fontSize);
 }
 
 .meta dt {
@@ -285,8 +273,8 @@
   display: block;
   margin-top: 0.8rem;
   padding-top: 0.7rem;
-  border-top: 1px solid rgba(30, 30, 30, 0.15);
-  font-size: 0.9rem;
+  border-top: 1px solid rgb(var(--color-primary-foreground) / 0.15);
+  font-size: var(--typography-body2-fontSize);
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -295,10 +283,10 @@
 .links {
   margin-top: 0.9rem;
   padding-top: 0.7rem;
-  border-top: 1px solid rgba(30, 30, 30, 0.15);
+  border-top: 1px solid rgb(var(--color-primary-foreground) / 0.15);
   display: flex;
-  gap: 1.25rem;
-  font-size: 0.8rem;
+  gap: var(--spacing-paragraph);
+  font-size: var(--typography-body2-fontSize);
 }
 
 .rot .links {
@@ -311,10 +299,6 @@
 }
 
 .scene .link {
-  font-size: 0.8rem;
+  font-size: var(--typography-body2-fontSize);
 }
 
-.scene .cta,
-.scene .links {
-  border-top: 1px solid rgb(var(--color-primary-foreground) / 0.15);
-}

@@ -34,7 +34,7 @@
 .overline {
   font-size: var(--landing-type-overline);
   opacity: 0.85;
-  margin-bottom: 0.6rem;
+  margin-bottom: var(--spacing-paragraph);
 }
 
 .statement {

@@ -34,7 +34,7 @@
 .overline {
   font-size: var(--landing-type-overline);
   opacity: 0.85;
-  margin-bottom: 0.75rem;
+  margin-bottom: var(--spacing-paragraph);
 }
 
 .h1 {
@@ -44,7 +44,7 @@
 }
 
 .sub {
-  margin-top: 1.25rem;
+  margin-top: var(--spacing-paragraph);
   font-weight: 300;
   font-size: var(--landing-type-sub);
   line-height: 1.5;
