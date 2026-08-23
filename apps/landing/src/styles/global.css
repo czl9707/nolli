@@ -100,9 +100,9 @@ body {
 
 /* ---------- index — light app mode around the card slot ---------- */
 
-/* Light page with the card slot punched out: the frame's page-shadow fills
-   everything outside the slot, so the stage's map layer shows through the
-   frame exactly. Slot vars come from the stage (INDEX_SLOT fractions). */
+/* Light page around the card slot: the map plate resizes into the slot at
+   dwell, so the frame only draws its border — the cream page behind is the
+   surround. Slot vars come from the stage (INDEX_SLOT fractions). */
 .index-scene {
   position: absolute;
   inset: 0;
@@ -116,7 +116,6 @@ body {
   height: calc(var(--slot-index-h) * 100%);
   border: var(--border);
   border-radius: var(--size-border-radius);
-  box-shadow: 0 0 0 200vmax rgb(var(--color-primary-background));
   pointer-events: none;
 }
 
@@ -170,9 +169,8 @@ body {
 }
 
 /* Cream quilt page around a transparent map window: the stage's map layer
-   settles into CLOSEUP_SLOT and shows through the window. The window's
-   page-fill shadow (index-scene pattern) covers everything outside it —
-   a full-bleed backing would hide the stage's map layer. Paper items are
+   settles into CLOSEUP_SLOT and shows through the window — the window draws
+   only its border; the cream page behind is the surround. Paper items are
    BoardItem surfaces; these anchors only place them. */
 
 .closeup-board__note {
@@ -259,7 +257,6 @@ body {
   padding: 10px;
   border: var(--border);
   border-radius: var(--size-border-radius);
-  box-shadow: 0 0 0 200vmax rgb(var(--color-primary-background));
 }
 
 .closeup-board__maplabel {

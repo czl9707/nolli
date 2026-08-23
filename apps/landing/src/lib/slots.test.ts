@@ -1,17 +1,24 @@
 import { describe, expect, it } from "vitest"
-import { layerTargetFor } from "./slots"
+import { CLOSEUP_SLOT, INDEX_SLOT, slotRect } from "./slots"
 
-describe("layerTargetFor", () => {
-  it("covers the slot in both axes and centers it", () => {
-    const slot = { cx: 0.7, cy: 0.4, w: 0.4, h: 0.6 }
-    const t = layerTargetFor(slot, 1280, 800)
-    expect(t.scale).toBe(0.6) // the larger dimension drives cover
-    expect(t.x).toBeCloseTo(0.2)
-    expect(t.y).toBeCloseTo(-0.1)
-    // covered width in px: scale*vw = 0.6*1280 = 768 ≥ slot.w*vw = 512 ✓
+describe("slotRect", () => {
+  it("converts center/size to top-left edges", () => {
+    const idx = slotRect(INDEX_SLOT)
+    expect(idx.x).toBeCloseTo(0.41, 10)
+    expect(idx.y).toBeCloseTo(0.22, 10)
+    expect(idx.w).toBe(0.42)
+    expect(idx.h).toBe(0.66)
+    const cl = slotRect(CLOSEUP_SLOT)
+    expect(cl.x).toBeCloseTo(0.17, 10)
+    expect(cl.y).toBeCloseTo(0.33, 10)
+    expect(cl.w).toBe(0.26)
+    expect(cl.h).toBe(0.34)
   })
-  it("never scales above 1", () => {
-    const t = layerTargetFor({ cx: 0.5, cy: 0.5, w: 1.4, h: 0.5 }, 1000, 1000)
-    expect(t.scale).toBeLessThanOrEqual(1) // slots are viewport-fraction sized; clamp here
+  it("is an exact inverse of the frame CSS calc (cx - w/2 etc.)", () => {
+    for (const slot of [INDEX_SLOT, CLOSEUP_SLOT]) {
+      const r = slotRect(slot)
+      expect(r.x + r.w / 2).toBeCloseTo(slot.cx, 12)
+      expect(r.y + r.h / 2).toBeCloseTo(slot.cy, 12)
+    }
   })
 })

@@ -20,7 +20,7 @@ import {
 import { flyToSceneCinematic, type MapRef, type SceneCamera } from "@nolli/map"
 import type { LandingData } from "@/lib/landing-data"
 import { cameraTargetAt, sceneFade, SCENES, snap, spineAt, type SceneDef, type SceneId } from "@/lib/spine"
-import { CLOSEUP_SLOT, INDEX_SLOT, layerTargetFor } from "@/lib/slots"
+import { CLOSEUP_SLOT, INDEX_SLOT } from "@/lib/slots"
 import { useIsMobile } from "@/lib/use-is-mobile"
 import { LandingMap } from "./landing-map"
 
@@ -73,35 +73,24 @@ export function LandingStage({
   const reduced = useReducedMotion()
   const snapMode = useIsMobile() || !!reduced
 
-  const [vp, setVp] = useState({ w: window.innerWidth, h: window.innerHeight })
-  useEffect(() => {
-    const onResize = () => setVp({ w: window.innerWidth, h: window.innerHeight })
-    window.addEventListener("resize", onResize)
-    return () => window.removeEventListener("resize", onResize)
-  }, [])
-
-  // Runtime scene table: merge viewport-dependent slot targets + live hero camera
+  // Runtime scene table: closeup camera overridden from data.heroCamera
   const scenesTable: SceneDef[] = useMemo(
-    () =>
-      SCENES.map((s) => {
-        if (s.id === "index") return { ...s, layer: layerTargetFor(INDEX_SLOT, vp.w, vp.h) }
-        if (s.id === "closeup")
-          return { ...s, camera: data.heroCamera, layer: layerTargetFor(CLOSEUP_SLOT, vp.w, vp.h) }
-        return s
-      }),
-    [data, vp],
+    () => SCENES.map((s) => (s.id === "closeup" ? { ...s, camera: data.heroCamera } : s)),
+    [data],
   )
 
   const { scrollYProgress } = useScroll({ target: wrapperRef, offset: ["start start", "end end"] })
 
-  // Clock 1 — scrub morph (freezes mid-state when scrolling stops)
+  // Clock 1 — scrub morph (freezes mid-state when scrolling stops). Rect
+  // written as real container geometry (% of the sticky stage = viewport);
+  // MapLibre's trackResize re-renders the canvas natively.
   const layer = useTransform(scrollYProgress, (p) =>
     spineAt(scenesTable, snapMode ? snap(scenesTable, p) : p),
   )
-  const mapTransform = useTransform(
-    layer,
-    (l) => `translate(${l.x * 100}vw, ${l.y * 100}vh) scale(${l.scale})`,
-  )
+  const layerLeft = useTransform(layer, (l) => `${l.x * 100}%`)
+  const layerTop = useTransform(layer, (l) => `${l.y * 100}%`)
+  const layerWidth = useTransform(layer, (l) => `${l.w * 100}%`)
+  const layerHeight = useTransform(layer, (l) => `${l.h * 100}%`)
 
   // Clock 2 — cinematic flights on target-scene change. Quantized in snap
   // mode so the camera holds the same keyframe the (snapped) layer shows.
@@ -116,7 +105,7 @@ export function LandingStage({
     else flyToSceneCinematic(map, camera)
   }
   useMotionValueEvent(target, "change", (scene) => {
-    // Debounce by camera VALUE: table entries are rebuilt on resize (new identity)
+    // Debounce by camera VALUE: the table rebuilds (new identity) on data change
     const last = lastTarget.current
     if (
       last &&
@@ -186,7 +175,17 @@ export function LandingStage({
         <div
           style={{ position: "sticky", top: 0, height: "100svh", overflow: "hidden", ...slotVars }}
         >
-          <motion.div style={{ position: "absolute", inset: 0, willChange: "transform", transform: mapTransform }}>
+          <motion.div
+            style={{
+              position: "absolute",
+              left: layerLeft,
+              top: layerTop,
+              width: layerWidth,
+              height: layerHeight,
+              borderRadius: "var(--size-border-radius)",
+              overflow: "hidden",
+            }}
+          >
             <LandingMap ref={setMapRef} summaries={data.summaries}>
               {mapChildren}
             </LandingMap>

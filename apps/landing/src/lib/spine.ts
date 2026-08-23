@@ -1,5 +1,6 @@
 import type { SceneCamera } from "@nolli/map"
 import { CLUSTER_CAMERA, SITE_ZOOM, SOUTH_CAMERA, WORLD_CAMERA } from "@/lib/constants"
+import { CLOSEUP_SLOT, INDEX_SLOT, slotRect, type SlotRect } from "./slots"
 
 /**
  * Scroll spine (clock 1): maps container scroll progress (0..1) to layer
@@ -9,7 +10,10 @@ import { CLUSTER_CAMERA, SITE_ZOOM, SOUTH_CAMERA, WORLD_CAMERA } from "@/lib/con
  * The last scene dwells to the end.
  */
 
-export type LayerKey = { scale: number; x: number; y: number }
+/** Layer geometry: viewport fractions, x/y = top-left edges. The stage writes
+ * these as % left/top/width/height — real container geometry, MapLibre
+ * resizes natively. */
+export type LayerKey = SlotRect
 
 export type SceneId = "hero" | "index" | "closeup" | "cta" | "footer"
 
@@ -22,19 +26,20 @@ export type SceneDef = {
 
 export const DWELL_RATIO = 0.6
 
+const FULL: LayerKey = { x: 0, y: 0, w: 1, h: 1 }
+
 export const SCENES: SceneDef[] = [
-  { id: "hero", heightVh: 180, camera: WORLD_CAMERA, layer: { scale: 1, x: 0, y: 0 } },
-  // index/closeup layer keys are placeholders; stage merges layerTargetFor(slot) at runtime
-  { id: "index", heightVh: 200, camera: CLUSTER_CAMERA, layer: { scale: 0.55, x: 0.2, y: -0.1 } },
+  { id: "hero", heightVh: 180, camera: WORLD_CAMERA, layer: FULL },
+  { id: "index", heightVh: 200, camera: CLUSTER_CAMERA, layer: slotRect(INDEX_SLOT) },
   // closeup camera: static fallback — stage overrides from data.heroCamera at runtime
   {
     id: "closeup",
     heightVh: 240,
     camera: { center: [2.3522, 48.8606], zoom: SITE_ZOOM },
-    layer: { scale: 0.28, x: -0.1, y: 0 },
+    layer: slotRect(CLOSEUP_SLOT),
   },
-  { id: "cta", heightVh: 160, camera: WORLD_CAMERA, layer: { scale: 1, x: 0, y: 0 } },
-  { id: "footer", heightVh: 80, camera: SOUTH_CAMERA, layer: { scale: 1, x: 0, y: 0 } },
+  { id: "cta", heightVh: 160, camera: WORLD_CAMERA, layer: FULL },
+  { id: "footer", heightVh: 80, camera: SOUTH_CAMERA, layer: FULL },
 ]
 
 function easeInOutCubic(t: number): number {
@@ -47,9 +52,10 @@ function lerp(a: number, b: number, t: number): number {
 
 function lerpLayer(a: LayerKey, b: LayerKey, t: number): LayerKey {
   return {
-    scale: lerp(a.scale, b.scale, t),
     x: lerp(a.x, b.x, t),
     y: lerp(a.y, b.y, t),
+    w: lerp(a.w, b.w, t),
+    h: lerp(a.h, b.h, t),
   }
 }
 
