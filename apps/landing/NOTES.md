@@ -3,8 +3,11 @@
 One-page scroll landing for the architecture map. A single sticky dark map
 layer is driven by two clocks:
 
-1. **Scrub morph** (`src/lib/spine.ts`) — layer scale/offset is a pure
-   function of scroll progress; stopping anywhere freezes a valid frame.
+1. **Scrub morph** (`src/lib/spine.ts`) — the layer's real % left/top/width/height
+   is a pure function of scroll progress (container-geometry morph, the app
+   technique); MapLibre `trackResize` re-renders natively. Stopping anywhere
+   freezes a valid frame. Canvas trails the container ~1 frame during scrub
+   (ResizeObserver async) — clipped by overflow hidden, invisible in practice.
 2. **Cinematic flights** (`stage.tsx` + `@nolli/map` `flyToSceneCinematic`) —
    fired when the spine's target scene changes, per-frame-source cameras from
    live data (`landing-data.ts`, `constants.ts`).
