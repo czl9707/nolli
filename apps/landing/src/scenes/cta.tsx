@@ -1,4 +1,5 @@
 import styles from "./cta.module.css"
+import { Body1 } from "@nolli/ui"
 import { APP_URL } from "@/lib/constants"
 import type { LandingData } from "@/lib/landing-data"
 
@@ -13,9 +14,11 @@ export function CtaScene({ data }: { data: LandingData }) {
         </p>
         <h2 className={styles.h2}>Open the Map.</h2>
         <p className={styles.sub}>free</p>
-        <a className={styles.btn} href={APP_URL}>
-          Open Nolli →
-        </a>
+        <Body1 asChild>
+          <a className={styles.btn} href={APP_URL}>
+            Open Nolli →
+          </a>
+        </Body1>
       </div>
     </section>
   )

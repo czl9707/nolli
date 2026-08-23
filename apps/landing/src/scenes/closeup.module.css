@@ -17,19 +17,12 @@
   width: 300px;
 }
 
-/* Note's own size is 0.875rem — the .scene prefix keeps the scene's sizes
-   winning regardless of bundle order */
 .scene .noteHand {
   display: block;
-  font-size: var(--typography-h3-fontSize);
-  line-height: 1.2;
 }
 
 .scene .noteLine {
-  display: block;
   margin-top: 0.35rem;
-  font-size: var(--typography-note-fontSize);
-  font-weight: 500;
   opacity: 0.8;
 }
 
@@ -54,8 +47,6 @@
 .scene .carouselName {
   flex: 1;
   text-align: center;
-  font-size: var(--typography-h5-fontSize);
-  line-height: 1.15;
 }
 
 .carousel button {
@@ -76,7 +67,6 @@
 }
 
 .counter {
-  font-size: var(--typography-body3-fontSize);
   opacity: 0.55;
   letter-spacing: 0.05em;
   white-space: nowrap;
@@ -107,7 +97,6 @@
 
 .scene .mapLabel {
   color: rgb(var(--color-primary-background));
-  font-size: var(--typography-body2-fontSize);
 }
 
 /* masks the map's jumpTo between arches (controlled viewport is instant) */
@@ -218,7 +207,6 @@
 .scene .photoCaption {
   display: block;
   padding: 6px 8px 7px;
-  font-size: var(--typography-body2-fontSize);
 }
 
 .meta {
@@ -239,8 +227,6 @@
 
 .name {
   font-weight: 700;
-  font-size: var(--typography-h5-fontSize);
-  line-height: 1.2;
 }
 
 .meta dl {
@@ -274,7 +260,6 @@
   margin-top: 0.8rem;
   padding-top: 0.7rem;
   border-top: 1px solid rgb(var(--color-primary-foreground) / 0.15);
-  font-size: var(--typography-body2-fontSize);
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -286,7 +271,6 @@
   border-top: 1px solid rgb(var(--color-primary-foreground) / 0.15);
   display: flex;
   gap: var(--spacing-paragraph);
-  font-size: var(--typography-body2-fontSize);
 }
 
 .rot .links {
@@ -296,9 +280,5 @@
 .links a {
   text-decoration: underline;
   text-underline-offset: 3px;
-}
-
-.scene .link {
-  font-size: var(--typography-body2-fontSize);
 }
 

@@ -26,8 +26,6 @@
 }
 
 .coords {
-  font-family: var(--font-sans);
-  font-size: var(--typography-body2-fontSize);
   letter-spacing: 0.12em;
   opacity: 0.55;
 }
@@ -53,7 +51,6 @@
 }
 
 .tagline {
-  font-size: var(--typography-body2-fontSize);
   letter-spacing: 0.12em;
   opacity: 0.7;
 }
@@ -64,7 +61,6 @@
 }
 
 .colhead {
-  font-size: var(--typography-caption-fontSize);
   letter-spacing: 0.18em;
   text-transform: uppercase;
   opacity: 0.5;
@@ -73,8 +69,6 @@
 
 .cols a {
   display: block;
-  font-weight: 300;
-  font-size: var(--typography-body1-fontSize);
   padding: 0.3rem 0;
   opacity: 0.85;
 }
@@ -88,6 +82,5 @@
   justify-content: space-between;
   padding: var(--spacing-paragraph) 6vw;
   border-top: 1px solid rgb(var(--color-primary-foreground) / 0.15);
-  font-size: var(--typography-body2-fontSize);
   opacity: 0.6;
 }

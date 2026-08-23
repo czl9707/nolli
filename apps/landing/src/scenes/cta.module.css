@@ -56,7 +56,6 @@
   border-color: rgb(var(--color-primary-background));
   border-radius: 999px;
   font-weight: 600;
-  font-size: var(--typography-body1-fontSize);
 }
 
 .btn:hover {

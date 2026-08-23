@@ -1,4 +1,5 @@
 import styles from "./footer.module.css"
+import { Body1, Body2, Caption } from "@nolli/ui"
 import { APP_URL } from "@/lib/constants"
 import type { LandingData } from "@/lib/landing-data"
 
@@ -10,32 +11,46 @@ export function FooterScene({ data }: { data: LandingData }) {
     <section className={styles.scene}>
       <div className={`hand ${styles.annotation}`}>
         <span>end of the map · 世界的尽头</span>
-        <span className={styles.coords}>74° S · no pins from here on</span>
+        <Body2 asChild>
+          <span className={styles.coords}>74° S · no pins from here on</span>
+        </Body2>
       </div>
       <div className={styles.inner}>
         <div className={styles.brand}>
           <span className={`hand ${styles.wordmark}`}>Nolli</span>
-          <span className={styles.tagline}>the architecture map</span>
+          <Body2 asChild>
+            <span className={styles.tagline}>the architecture map</span>
+          </Body2>
         </div>
         <nav className={styles.cols}>
           <div>
-            <p className={styles.colhead}>explore</p>
-            <a href={APP_URL}>the map</a>
-            <a href="#">the reel</a>
+            <Caption className={styles.colhead}>explore</Caption>
+            <Body1 asChild>
+              <a href={APP_URL}>the map</a>
+            </Body1>
+            <Body1 asChild>
+              <a href="#">the reel</a>
+            </Body1>
           </div>
           <div>
-            <p className={styles.colhead}>elsewhere</p>
-            <a href="#">instagram</a>
-            <a href="#">contact</a>
+            <Caption className={styles.colhead}>elsewhere</Caption>
+            <Body1 asChild>
+              <a href="#">instagram</a>
+            </Body1>
+            <Body1 asChild>
+              <a href="#">contact</a>
+            </Body1>
           </div>
         </nav>
       </div>
-      <div className={styles.legal}>
-        <span>
-          © 2026 Nolli · {data.stats.architectures} works · {data.stats.architects} architects
-        </span>
-        <span>one map, many roles</span>
-      </div>
+      <Body2 asChild>
+        <div className={styles.legal}>
+          <span>
+            © 2026 Nolli · {data.stats.architectures} works · {data.stats.architects} architects
+          </span>
+          <span>one map, many roles</span>
+        </div>
+      </Body2>
     </section>
   )
 }

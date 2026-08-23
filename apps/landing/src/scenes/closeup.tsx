@@ -2,7 +2,7 @@ import styles from "./closeup.module.css"
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react"
 import { useMotionValueEvent } from "framer-motion"
 import { BoardItem } from "@nolli/board"
-import { Note } from "@nolli/ui"
+import { Body2, Body3, H3, H5, Note } from "@nolli/ui"
 import { useLandingStage } from "@/components/stage"
 import { APP_URL, SITE_ZOOM } from "@/lib/constants"
 import { boardCtaLabel } from "@/lib/shape"
@@ -90,7 +90,7 @@ export function CloseupScene({ data }: { data: LandingData }) {
           position={{ x: 0, y: 0, width: 300, height: 0, rotation: -2 }}
           className={styles.padNote}
         >
-          <Note className={styles.noteHand}>want to dig more?</Note>
+          <H3 className={styles.noteHand}>want to dig more?</H3>
           <Note className={styles.noteLine}>each architecture is a story.</Note>
         </BoardItem>
       </div>
@@ -104,13 +104,15 @@ export function CloseupScene({ data }: { data: LandingData }) {
           <button type="button" onClick={() => go(-1)} aria-label="previous architecture">
             ←
           </button>
-          <Note className={styles.carouselName}>{arch.name}</Note>
+          <H5 className={styles.carouselName}>{arch.name}</H5>
           <button type="button" onClick={() => go(1)} aria-label="next architecture">
             →
           </button>
-          <span className={styles.counter}>
-            {i + 1} / {set.length}
-          </span>
+          <Body3 asChild>
+            <span className={styles.counter}>
+              {i + 1} / {set.length}
+            </span>
+          </Body3>
         </BoardItem>
       </div>
       <figure className={`${styles.photo} ${styles.photo1}`}>
@@ -150,7 +152,7 @@ export function CloseupScene({ data }: { data: LandingData }) {
           delay={5}
           className={styles.padMeta}
         >
-          <div className={styles.name}>{arch.name}</div>
+          <H5 className={styles.name}>{arch.name}</H5>
           <dl>
             <div>
               <dt>architect</dt>
@@ -165,9 +167,11 @@ export function CloseupScene({ data }: { data: LandingData }) {
               <dd>{arch.address}</dd>
             </div>
           </dl>
-          <a className={styles.cta} href={APP_URL}>
-            {boardCtaLabel(data.summaries, arch)}
-          </a>
+          <Body2 asChild>
+            <a className={styles.cta} href={APP_URL}>
+              {boardCtaLabel(data.summaries, arch)}
+            </a>
+          </Body2>
           <div className={styles.links}>
             {arch.links?.wikipedia && (
               <a href={arch.links.wikipedia} target="_blank" rel="noreferrer">
