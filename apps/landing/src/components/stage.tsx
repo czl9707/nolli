@@ -151,16 +151,14 @@ export function LandingStage({
     flyToSceneCinematic(map, camera)
   }
   // A flight started while clock 1 is still morphing the container lands
-  // off-target (see flyTo) — so fly only when it's safe: either the layer
-  // has REACHED the target scene's rect (normal path — fires right at scene
-  // arrival), or the layer has been frozen for a while (user stopped
-  // mid-transition; a static container flies true as well). Quiet-time alone
-  // is not enough: slow wheel scrolling leaves >150ms gaps between layer
-  // writes, and a timer fires mid-morph.
+  // off-target (see flyTo) — so a flight fires ONLY once the layer rect has
+  // arrived at the target scene's slot: shape settles first, then the camera
+  // flies on a static container. If the user stops mid-transition the flight
+  // simply waits; it leaves when the morph is completed (or is superseded by
+  // a newer target).
   const pendingFlight = useRef<{
     token: number
     timer: number | null
-    lastLayerWrite: number
     targetLayer: LayerKey
     camera: SceneCamera
   } | null>(null)
@@ -179,9 +177,7 @@ export function LandingStage({
   const tryFirePendingFlight = useCallback(() => {
     const pending = pendingFlight.current
     if (!pending) return
-    const arrived = rectsClose(layerRef.current.get(), pending.targetLayer)
-    const frozen = performance.now() - pending.lastLayerWrite > 700
-    if (!arrived && !frozen) {
+    if (!rectsClose(layerRef.current.get(), pending.targetLayer)) {
       pending.timer = window.setTimeout(tryFirePendingFlight, 150)
       return
     }
@@ -197,7 +193,6 @@ export function LandingStage({
       pendingFlight.current = {
         token: flightSeq.current,
         timer: null,
-        lastLayerWrite: performance.now(),
         targetLayer: scene.layer,
         camera: scene.camera,
       }
@@ -206,9 +201,9 @@ export function LandingStage({
     [tryFirePendingFlight],
   )
   useMotionValueEvent(layer, "change", () => {
+    // re-evaluate on each geometry write: fires the moment the rect lands
     const pending = pendingFlight.current
     if (!pending) return
-    pending.lastLayerWrite = performance.now()
     if (pending.timer) window.clearTimeout(pending.timer)
     pending.timer = window.setTimeout(tryFirePendingFlight, 150)
   })
