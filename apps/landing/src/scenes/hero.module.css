@@ -4,7 +4,7 @@
 
 .hero {
   position: relative;
-  height: 100svh;
+  height: 200svh;
   margin-top: -100svh;
   z-index: 2;
   pointer-events: none;
@@ -15,18 +15,17 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(
-    to bottom right,
-    rgb(var(--color-primary-foreground) / 0.92) 0%,
-    rgb(var(--color-primary-foreground) / 0.85) 38%,
-    rgb(var(--color-primary-foreground) / 0.45) 76%,
-    transparent 100%
+    165deg,
+    rgb(var(--color-primary-foreground) / 0.95) 20%,
+    rgb(var(--color-primary-foreground) / 0.45) 55%,
+    transparent 80%
   );
 }
 
 .copy {
   position: absolute;
   left: 6vw;
-  top: 56%;
+  top: 50svh;
   transform: translateY(-50%);
   max-width: 42ch;
   z-index: 5;

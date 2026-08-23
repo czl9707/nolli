@@ -7,6 +7,10 @@ body,
 }
 
 body {
+  /* @nolli/ui sets width: 100vw, which includes the scrollbar — page-wide
+     children (the stage) then overflow by the scrollbar width and the browser
+     grows a horizontal scrollbar. 100% tracks the scrollbar-less html width. */
+  width: 100%;
   background: rgb(var(--color-primary-background));
   color: rgb(var(--color-primary-foreground));
   overscroll-behavior-y: none;

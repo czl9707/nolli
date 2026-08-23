@@ -207,15 +207,19 @@ export function LandingStage({
             ))}
         </div>
         {/* hero scene: real flow block pulled up over the pinned map (its own
-            -100svh margin nets zero height) — gradient + copy scroll out the
-            top naturally while the map stays sticky. Spacers below keep their
-            full heightVh: the hero block overlays the sticky stage rather
-            than adding scroll room. */}
+            -100svh margin) — gradient + copy scroll out the top naturally
+            while the map stays sticky. The block nets +100svh of flow, so the
+            hero spacer gives back 100vh to keep the spine's scroll length
+            (and every scene boundary) where sceneRange expects it. */}
         {scenes.hero}
         {/* spacers: scroll length for the spine scenes (footer gets none — its
             heightVh exists only for camera/fade math; the real block follows) */}
         {SCENES.filter((s) => s.id !== "footer").map((s) => (
-          <section key={s.id} style={{ height: `${s.heightVh}vh` }} data-scene={s.id} />
+          <section
+            key={s.id}
+            style={{ height: `${s.id === "hero" ? s.heightVh - 100 : s.heightVh}vh` }}
+            data-scene={s.id}
+          />
         ))}
         {/* footer scene: real block, scrolls up over the pinned stage */}
         {scenes.footer}
