@@ -21,11 +21,11 @@ describe("slotRect", () => {
       expect(r.y + r.h / 2).toBeCloseTo(slot.cy, 12)
     }
   })
-  it("indexSlot caps the plate px width at the container max", () => {
-    // narrow viewport: proportional, under the cap
-    expect(indexSlot(1200).w).toBeCloseTo(0.42, 10)
-    expect(indexSlot(1200).w * 1200).toBeLessThan(INDEX_SLOT_MAX_W)
-    // wide viewport: capped
+  it("indexSlot behaves like a content container: max width, component padding", () => {
+    // desktop: holds the max width
+    expect(indexSlot(1200).w * 1200).toBeCloseTo(INDEX_SLOT_MAX_W, 10)
     expect(indexSlot(2400).w * 2400).toBeCloseTo(INDEX_SLOT_MAX_W, 10)
+    // narrow viewport: full width minus component padding per side
+    expect(indexSlot(500).w * 500).toBeCloseTo(500 - 64, 10)
   })
 })
