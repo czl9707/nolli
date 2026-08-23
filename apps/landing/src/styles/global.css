@@ -21,7 +21,7 @@ body {
 
 @media (--larger-than-lg) {
   body {
-    --landing-plate-max: 63rem;
+    --landing-plate-max: 80rem;
   }
 }
 
