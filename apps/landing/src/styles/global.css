@@ -15,14 +15,9 @@ body {
   color: rgb(var(--color-primary-foreground));
   overscroll-behavior-y: none;
   /* index plate container rule — slots.ts reads this (getComputedStyle) so
-     CSS and the spine share one definition; 1.5x max on large screens */
-  --landing-plate-max: 42rem;
-}
-
-@media (--larger-than-lg) {
-  body {
-    --landing-plate-max: 80rem;
-  }
+     CSS and the spine share one definition. Flat max; the padding rule in
+     indexSlot shrinks it intact on narrow viewports. */
+  --landing-plate-max: 80rem;
 }
 
 .boot-msg {
