@@ -1,25 +1,32 @@
 import { useMemo } from "react"
-import { MapMarker, MarkerContent } from "@nolli/map"
+import { MapMarker, MarkerContent } from "../map-core/map"
 import type { ArchSummary } from "@nolli/data"
-import { hashId, jitter } from "../shared/paper-clip"
-import styles from "./photo-marker.module.css"
+import { hashId, jitter } from "@nolli/board"
 import { Body2, Body3 } from "@nolli/ui"
+import styles from "./photo-marker.module.css"
 
-// Cap the cover image so oversized photos don't dominate the poster — both
+// Cap the cover image so oversized photos don't dominate the map — both
 // dimensions are bounded, fitting the intrinsic aspect ratio inside the box.
-const MAX_PHOTO_W = 160
-const MAX_PHOTO_H = 175
-
-export function PhotoMarker({ building }: { building: ArchSummary }) {
+export function PhotoMarker({
+  building,
+  maxWidth = 160,
+  maxHeight = 175,
+  onClick,
+}: {
+  building: ArchSummary
+  maxWidth?: number
+  maxHeight?: number
+  onClick?: () => void
+}) {
   const { lng, lat } = building.coordinates
 
   const { rotate, width, height } = useMemo(() => {
     const s = hashId(building.slug)
     const ratio = building.cover.width / building.cover.height
-    let w = MAX_PHOTO_W
+    let w = maxWidth
     let h = Math.round(w / ratio)
-    if (h > MAX_PHOTO_H) {
-      h = MAX_PHOTO_H
+    if (h > maxHeight) {
+      h = maxHeight
       w = Math.round(h * ratio)
     }
     return {
@@ -27,7 +34,7 @@ export function PhotoMarker({ building }: { building: ArchSummary }) {
       width: w,
       height: h,
     }
-  }, [building.slug, building.cover.width, building.cover.height])
+  }, [building.slug, building.cover.width, building.cover.height, maxWidth, maxHeight])
 
   return (
     <MapMarker
@@ -35,13 +42,14 @@ export function PhotoMarker({ building }: { building: ArchSummary }) {
       latitude={lat}
       anchor="top"
       style={{ zIndex: Math.round(lat * 1000) }}
+      onClick={onClick}
     >
       <MarkerContent>
         <div
           className={styles.wrap}
           style={{ transform: `rotate(${rotate}deg)` }}
         >
-          <div className={styles.card} style={{ }}>
+          <div className={styles.card}>
             <img
               className={styles.photo}
               src={building.cover.image}

@@ -16,7 +16,8 @@
     "supercluster": "*",
     "zustand": "*",
     "@nolli/ui": "workspace:*",
-    "@nolli/data": "workspace:*"
+    "@nolli/data": "workspace:*",
+    "@nolli/board": "workspace:*"
   },
   "devDependencies": {
     "@types/geojson": "*",

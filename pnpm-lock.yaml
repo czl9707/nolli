@@ -433,6 +433,9 @@ importers:
 
   packages/map:
     dependencies:
+      '@nolli/board':
+        specifier: workspace:*
+        version: link:../board
       '@nolli/data':
         specifier: workspace:*
         version: link:../data

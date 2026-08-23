@@ -1,6 +1,6 @@
 import { useSelectionStore } from "@/stores/selection"
 import type { ArchSummary } from "@nolli/data"
-import { PhotoMarker } from "./photo-marker"
+import { PhotoMarker } from "@nolli/map"
 
 /**
  * Photo cards for every pinned (selected) building. The summaries are resolved
