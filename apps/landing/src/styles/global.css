@@ -175,49 +175,17 @@ body {
   font-weight: 700;
 }
 
-/* photo cards inside the map layer */
-.index-cards {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
+/* index photo markers inside the map layer — their marker contents portal
+   into the map container, so the stage fade reaches them via a CSS var that
+   IndexPhotoMarkers sets on it. Opacity targets the content child (maplibre
+   writes its own inline opacity on the marker root); the pin img scopes the
+   rules to PhotoMarkers (ArchMap's own pins are svg icons). */
+.maplibregl-marker:has(img[src="/images/pin.png"]) > div {
+  opacity: var(--index-photo-o);
 }
 
-.index-cards__card {
-  position: absolute;
-  background: rgb(var(--color-accent-background));
-  color: rgb(var(--color-primary-foreground));
-  border-radius: 2px;
-  box-shadow: 0 6px 24px rgb(var(--color-primary-foreground) / 0.3);
-}
-
-.index-cards__card img {
-  display: block;
-  width: 100%;
-  object-fit: cover;
-  border-radius: 2px 2px 0 0;
-}
-
-.index-cards__caption {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 4px 6px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* pin dot at the map coord (the card bottom hovers just above its point) */
-.index-cards__card::after {
-  content: "";
-  position: absolute;
-  top: calc(100% - 2px);
-  left: 50%;
-  width: 12px;
-  height: 12px;
-  margin-left: -6px;
-  border-radius: 50%;
-  background: rgb(var(--color-accent-foreground));
-  box-shadow: 0 2px 4px rgb(var(--color-primary-foreground) / 0.5);
+[data-photo-markers="off"] .maplibregl-marker:has(img[src="/images/pin.png"]) {
+  visibility: hidden;
 }
 
 /* ---------- closeup — rotating quilt board on the stage slot ---------- */

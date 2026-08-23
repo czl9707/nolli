@@ -1,7 +1,7 @@
 import type { ReactNode } from "react"
 import { useLandingData } from "@/lib/landing-data"
 import { LandingStage } from "@/components/stage"
-import { IndexPhotoCards } from "@/components/index-photo-cards"
+import { IndexPhotoMarkers } from "@/components/index-photo-markers"
 import { HeroScene } from "@/scenes/hero"
 import { IndexScene } from "@/scenes/index-scene"
 import { CloseupScene } from "@/scenes/closeup"
@@ -27,7 +27,7 @@ export function App() {
       <LandingStage
         data={data}
         scenes={scenes}
-        mapChildren={<IndexPhotoCards picks={data.indexPhotos} />}
+        mapChildren={<IndexPhotoMarkers picks={data.indexPhotos} />}
       />
     </main>
   )
