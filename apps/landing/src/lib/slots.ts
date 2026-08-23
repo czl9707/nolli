@@ -2,7 +2,7 @@ export type Slot = { cx: number; cy: number; w: number; h: number }
 
 export type SlotRect = { x: number; y: number; w: number; h: number }
 
-export const INDEX_SLOT: Slot = { cx: 0.62, cy: 0.55, w: 0.42, h: 0.66 }
+export const INDEX_SLOT: Slot = { cx: 0.5, cy: 0.55, w: 0.42, h: 0.66 }
 
 export const CLOSEUP_SLOT: Slot = { cx: 0.3, cy: 0.5, w: 0.26, h: 0.34 }
 

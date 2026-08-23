@@ -22,7 +22,7 @@ describe("spineAt morph", () => {
     eqRect(spineAt(s, p), full)
   })
   it("dwells exactly on the slot rect for index and closeup", () => {
-    eqRect(spineAt(s, (180 + 200 * 0.5) / total), { x: 0.41, y: 0.22, w: 0.42, h: 0.66 })
+    eqRect(spineAt(s, (180 + 200 * 0.5) / total), { x: 0.29, y: 0.22, w: 0.42, h: 0.66 })
     eqRect(spineAt(s, (180 + 200 + 240 * 0.5) / total), { x: 0.17, y: 0.33, w: 0.26, h: 0.34 })
   })
   it("last scene dwells to the end", () => {
@@ -37,7 +37,7 @@ describe("spineAt morph", () => {
     const e = 0.0625
     const lerp = (a: number, b: number) => a + e * (b - a)
     eqRect(spineAt(s, p), {
-      x: lerp(0.41, 0.17),
+      x: lerp(0.29, 0.17),
       y: lerp(0.22, 0.33),
       w: lerp(0.42, 0.26),
       h: lerp(0.66, 0.34),

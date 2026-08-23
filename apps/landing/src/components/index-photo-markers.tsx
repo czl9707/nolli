@@ -7,7 +7,8 @@ import styles from "./index-photo-markers.module.css"
 /** Photo markers pinned at real coords — MapMarker tracks the camera natively.
  * Marker contents portal into the map container, outside any fade wrapper, so
  * the stage fade is written onto the container as a CSS var the markers
- * consume (see index-photo-markers.module.css). */
+ * consume (see index-photo-markers.module.css). While the photo markers are
+ * on screen, the container also flags the normal pin/cluster markers off. */
 export function IndexPhotoMarkers({ picks }: { picks: ArchSummary[] }) {
   const { fade } = useLandingStage()
   const opacity = fade("index")
@@ -20,6 +21,9 @@ export function IndexPhotoMarkers({ picks }: { picks: ArchSummary[] }) {
       el.style.setProperty("--index-photo-o", String(o))
       const state = o > 0 ? "on" : "off"
       if (el.dataset.photoMarkers !== state) el.dataset.photoMarkers = state
+      // while the photo markers own the screen, the normal pins stand down
+      const archState = o > 0 ? "off" : "on"
+      if (el.dataset.archMarkers !== archState) el.dataset.archMarkers = archState
     }
     apply(opacity.get())
     const un = opacity.on("change", apply)
@@ -27,6 +31,7 @@ export function IndexPhotoMarkers({ picks }: { picks: ArchSummary[] }) {
       un()
       el.style.removeProperty("--index-photo-o")
       delete el.dataset.photoMarkers
+      delete el.dataset.archMarkers
     }
   }, [map, opacity])
 

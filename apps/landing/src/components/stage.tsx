@@ -73,9 +73,17 @@ export function LandingStage({
   const reduced = useReducedMotion()
   const snapMode = useIsMobile() || !!reduced
 
-  // Runtime scene table: closeup camera overridden from data.heroCamera
+  // Runtime scene table: index camera fit to the photo-marker picks,
+  // closeup camera from data.heroCamera
   const scenesTable: SceneDef[] = useMemo(
-    () => SCENES.map((s) => (s.id === "closeup" ? { ...s, camera: data.heroCamera } : s)),
+    () =>
+      SCENES.map((s) =>
+        s.id === "index"
+          ? { ...s, camera: data.indexCamera }
+          : s.id === "closeup"
+            ? { ...s, camera: data.heroCamera }
+            : s,
+      ),
     [data],
   )
 
@@ -98,11 +106,34 @@ export function LandingStage({
     cameraTargetAt(scenesTable, snapMode ? snap(scenesTable, p) : p),
   )
   const lastTarget = useRef<SceneDef | null>(null)
+  const flightSeq = useRef(0)
   const flyTo = (camera: SceneCamera) => {
     const map = mapRef.current
     if (!map) return
-    if (snapMode) map.jumpTo({ center: camera.center, zoom: camera.zoom })
-    else flyToSceneCinematic(map, camera)
+    if (snapMode) {
+      map.jumpTo({ center: camera.center, zoom: camera.zoom })
+      return
+    }
+    flyToSceneCinematic(map, camera)
+    // MapLibre mis-lands camera animations when the container resizes under
+    // them (clock 1 morphs the layer in the same scroll window) — the flight
+    // ends offset by half the width delta. Verify on moveend and ease the
+    // short remaining hop to the exact keyframe. Token: skip if a newer
+    // target superseded this flight while it ran.
+    const token = ++flightSeq.current
+    const onEnd = () => {
+      map.off("moveend", onEnd)
+      if (token !== flightSeq.current) return
+      const c = map.getCenter()
+      if (
+        Math.abs(c.lng - camera.center[0]) < 1e-4 &&
+        Math.abs(c.lat - camera.center[1]) < 1e-4
+      ) {
+        return
+      }
+      flyTo(camera)
+    }
+    map.on("moveend", onEnd)
   }
   useMotionValueEvent(target, "change", (scene) => {
     // Debounce by camera VALUE: the table rebuilds (new identity) on data change

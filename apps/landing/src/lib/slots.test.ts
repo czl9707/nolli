@@ -4,7 +4,7 @@ import { CLOSEUP_SLOT, INDEX_SLOT, slotRect } from "./slots"
 describe("slotRect", () => {
   it("converts center/size to top-left edges", () => {
     const idx = slotRect(INDEX_SLOT)
-    expect(idx.x).toBeCloseTo(0.41, 10)
+    expect(idx.x).toBeCloseTo(0.29, 10)
     expect(idx.y).toBeCloseTo(0.22, 10)
     expect(idx.w).toBe(0.42)
     expect(idx.h).toBe(0.66)

@@ -9,6 +9,21 @@
   opacity: var(--index-photo-o);
 }
 
+/* captions in the playful hand — Body2/Body3 hardcode font-family via
+   --typography-bodyX-fontFamily, which postcss bakes to the sans stack at
+   build, so a var override on the marker can't reach it; out-specify the
+   module class instead (figcaption is the photo-marker caption block) */
+.marker :global(figcaption p) {
+  font-family: var(--font-playful);
+}
+
 :global([data-photo-markers="off"]) .marker {
+  visibility: hidden;
+}
+
+/* normal pins/clusters stand down while the photo markers own the screen —
+   hide every maplibre marker root except the ones carrying a photo marker
+   content (.marker is module-scoped, so :has() here matches only ours) */
+:global([data-arch-markers="off"]) :global(.maplibregl-marker):not(:has(.marker)) {
   visibility: hidden;
 }
