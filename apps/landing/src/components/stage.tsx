@@ -151,28 +151,66 @@ export function LandingStage({
     flyToSceneCinematic(map, camera)
   }
   // A flight started while clock 1 is still morphing the container lands
-  // off-target (see flyTo) — so wait for the layer geometry to settle
-  // (~120ms without a layer write) and fly once, directly. During a dwell
-  // spineAt returns the same rect object, the layer goes quiet, and the
-  // flight leaves right at scene arrival; if the user stops mid-transition,
-  // the layer is frozen and the flight still fires on a static container.
-  const pendingFlight = useRef<{ token: number; timer: number | null; camera: SceneCamera } | null>(
-    null,
-  )
+  // off-target (see flyTo) — so fly only when it's safe: either the layer
+  // has REACHED the target scene's rect (normal path — fires right at scene
+  // arrival), or the layer has been frozen for a while (user stopped
+  // mid-transition; a static container flies true as well). Quiet-time alone
+  // is not enough: slow wheel scrolling leaves >150ms gaps between layer
+  // writes, and a timer fires mid-morph.
+  const pendingFlight = useRef<{
+    token: number
+    timer: number | null
+    lastLayerWrite: number
+    targetLayer: LayerKey
+    camera: SceneCamera
+  } | null>(null)
+  const layerRef = useRef(layer)
+  layerRef.current = layer
   const clearPendingFlight = () => {
     if (pendingFlight.current?.timer) window.clearTimeout(pendingFlight.current.timer)
     pendingFlight.current = null
   }
+  useEffect(() => clearPendingFlight, [])
+  const rectsClose = (a: LayerKey, b: LayerKey) =>
+    Math.abs(a.x - b.x) < 0.002 &&
+    Math.abs(a.y - b.y) < 0.002 &&
+    Math.abs(a.w - b.w) < 0.002 &&
+    Math.abs(a.h - b.h) < 0.002
+  const tryFirePendingFlight = useCallback(() => {
+    const pending = pendingFlight.current
+    if (!pending) return
+    const arrived = rectsClose(layerRef.current.get(), pending.targetLayer)
+    const frozen = performance.now() - pending.lastLayerWrite > 700
+    if (!arrived && !frozen) {
+      pending.timer = window.setTimeout(tryFirePendingFlight, 150)
+      return
+    }
+    const camera = pending.camera
+    clearPendingFlight()
+    flyTo(camera)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [snapMode])
+  const armPendingFlight = useCallback(
+    (scene: SceneDef) => {
+      flightSeq.current++
+      clearPendingFlight()
+      pendingFlight.current = {
+        token: flightSeq.current,
+        timer: null,
+        lastLayerWrite: performance.now(),
+        targetLayer: scene.layer,
+        camera: scene.camera,
+      }
+      pendingFlight.current.timer = window.setTimeout(tryFirePendingFlight, 150)
+    },
+    [tryFirePendingFlight],
+  )
   useMotionValueEvent(layer, "change", () => {
     const pending = pendingFlight.current
     if (!pending) return
+    pending.lastLayerWrite = performance.now()
     if (pending.timer) window.clearTimeout(pending.timer)
-    pending.timer = window.setTimeout(() => {
-      if (!pendingFlight.current || pendingFlight.current.token !== pending.token) return
-      const camera = pendingFlight.current.camera
-      clearPendingFlight()
-      flyTo(camera)
-    }, 120)
+    pending.timer = window.setTimeout(tryFirePendingFlight, 150)
   })
   useMotionValueEvent(target, "change", (scene) => {
     // Debounce by camera VALUE: the table rebuilds (new identity) on data change
@@ -191,17 +229,7 @@ export function LandingStage({
       flyTo(scene.camera)
       return
     }
-    flightSeq.current++
-    clearPendingFlight()
-    pendingFlight.current = { token: flightSeq.current, timer: null, camera: scene.camera }
-    // arm the timer here too: if the layer is already quiet (e.g. resize
-    // rebuilt the table), the layer-change handler never fires
-    pendingFlight.current.timer = window.setTimeout(() => {
-      if (!pendingFlight.current || pendingFlight.current.token !== flightSeq.current) return
-      const camera = pendingFlight.current.camera
-      clearPendingFlight()
-      flyTo(camera)
-    }, 120)
+    armPendingFlight(scene)
   })
   // Initial placement: jump (not fly) to the camera the spine targets right now,
   // so a fresh load starts on the hero camera and a mid-page reload lands on
