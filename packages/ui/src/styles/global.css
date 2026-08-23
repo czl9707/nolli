@@ -180,44 +180,6 @@ body[data-theme='dark'] {
 @custom-media --smaller-than-lg (max-width: 1440px);
 @custom-media --larger-than-lg (min-width: 1440px);
 
-/* Shared content-container max width (static pages, landing plate). */
-body {
-    --size-content-max: 42rem;
-}
-
-/* Landing marketing type scale — stepped at the breakpoints above instead of
-   fluid vw clamps; landing scene CSS consumes these. */
-body {
-    --landing-type-overline: 1.2rem;
-    --landing-type-display: 4.2rem;
-    --landing-type-sub: 1.1rem;
-    --landing-type-statement: 1.9rem;
-    --landing-type-annotation: 2rem;
-    --landing-type-wordmark: 4.5rem;
-}
-
-@media (--smaller-than-md) {
-    body {
-        --landing-type-overline: 1.05rem;
-        --landing-type-display: 3.4rem;
-        --landing-type-sub: 1rem;
-        --landing-type-statement: 1.5rem;
-        --landing-type-annotation: 1.7rem;
-        --landing-type-wordmark: 3.75rem;
-    }
-}
-
-@media (--smaller-than-sm) {
-    body {
-        --landing-type-overline: 1rem;
-        --landing-type-display: 2.6rem;
-        --landing-type-sub: 0.95rem;
-        --landing-type-statement: 1.2rem;
-        --landing-type-annotation: 1.4rem;
-        --landing-type-wordmark: 3rem;
-    }
-}
-
 #root {
     width: 100%;
     height: 100%;

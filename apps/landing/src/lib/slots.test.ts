@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { CLOSEUP_SLOT, INDEX_SLOT, INDEX_SLOT_MAX_W, indexSlot, slotRect } from "./slots"
+import { CLOSEUP_SLOT, INDEX_SLOT, indexSlot, slotRect } from "./slots"
 
 describe("slotRect", () => {
   it("converts center/size to top-left edges", () => {
@@ -22,9 +22,9 @@ describe("slotRect", () => {
     }
   })
   it("indexSlot behaves like a content container: max width, component padding", () => {
-    // desktop: holds the max width
-    expect(indexSlot(1200).w * 1200).toBeCloseTo(INDEX_SLOT_MAX_W, 10)
-    expect(indexSlot(2400).w * 2400).toBeCloseTo(INDEX_SLOT_MAX_W, 10)
+    // no window in tests — the CSS-var fallbacks (672 max, 32 pad) apply
+    expect(indexSlot(1200).w * 1200).toBeCloseTo(672, 10)
+    expect(indexSlot(2400).w * 2400).toBeCloseTo(672, 10)
     // narrow viewport: full width minus component padding per side
     expect(indexSlot(500).w * 500).toBeCloseTo(500 - 64, 10)
   })

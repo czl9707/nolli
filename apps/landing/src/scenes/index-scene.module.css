@@ -26,20 +26,21 @@
   bottom: calc(
     (1 - (var(--slot-index-y) - var(--slot-index-h) / 2)) * 100% + clamp(1.25rem, 3dvh, 2.25rem)
   );
-  max-width: min(44ch, calc(var(--slot-index-w) * 100%));
+  /* same width as the map plate above — aligned edges */
+  width: calc(var(--slot-index-w) * 100%);
   color: rgb(var(--color-primary-foreground));
   z-index: 1;
 }
 
 .overline {
-  font-size: var(--landing-type-overline);
+  font-size: var(--typography-note-fontSize);
   opacity: 0.85;
   margin-bottom: var(--spacing-paragraph);
 }
 
 .statement {
   font-weight: 300;
-  font-size: var(--landing-type-statement);
+  font-size: var(--typography-h3-fontSize);
   line-height: 1.35;
 }
 

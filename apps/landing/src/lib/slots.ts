@@ -16,16 +16,14 @@ function cssVarPx(name: string, fallback: number): number {
   return parseFloat(m[1]) * root
 }
 
-/** Index plate sizing like the app's content container (--size-content-max,
- * --spacing-component from @nolli/ui): full width minus component padding
- * per side, capped at the max. Holds the max on desktop, shrinks with
- * padding intact on narrow viewports. */
-export const INDEX_SLOT_MAX_W = cssVarPx("--size-content-max", 672)
-export const INDEX_SLOT_PAD = cssVarPx("--spacing-component", 32)
-
-/** INDEX_SLOT with the container rule applied at a given viewport width. */
+/** Index plate sizing like the app's content container: full width minus
+ * component padding per side, capped at --landing-plate-max (landing
+ * global.css — 42rem, 1.5x above the lg breakpoint). Read per call so
+ * crossing the breakpoint re-applies on resize. */
 export function indexSlot(vw: number): Slot {
-  return { ...INDEX_SLOT, w: Math.min((vw - INDEX_SLOT_PAD * 2) / vw, INDEX_SLOT_MAX_W / vw) }
+  const max = cssVarPx("--landing-plate-max", 672)
+  const pad = cssVarPx("--spacing-component", 32)
+  return { ...INDEX_SLOT, w: Math.min((vw - pad * 2) / vw, max / vw) }
 }
 
 export const CLOSEUP_SLOT: Slot = { cx: 0.3, cy: 0.5, w: 0.26, h: 0.34 }
