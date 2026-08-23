@@ -2,10 +2,19 @@
    bottom-left, fading to top-right. Layout and type match the hero — the two
    scenes bookend uniformly. */
 
+/* Flow-mounted bookend: sticky fullscreen inside its scroll range (the
+   stage wraps this in the range div) — scrolls in from below, dwells while
+   the cta range passes, exits the top. */
 .bookend {
-  position: absolute;
-  inset: 0;
+  position: sticky;
+  top: 0;
+  height: 100svh;
   color: rgb(var(--color-primary-background));
+}
+
+/* the flow wrapper is pointer-events: none — re-enable the button */
+.btn {
+  pointer-events: auto;
 }
 
 .grade {

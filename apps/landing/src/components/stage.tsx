@@ -1,5 +1,6 @@
 import {
   createContext,
+  Fragment,
   useCallback,
   useContext,
   useEffect,
@@ -68,16 +69,26 @@ function slotVarsFor(idxSlot: Slot) {
 /**
  * Landing spine driver. One sticky dark map layer, scrub-morphed by scroll
  * (clock 1) with cinematic flights fired on target-scene change (clock 2).
- * Mobile/reduced-motion swap scrub for snapped keyframes. Scene overlays
- * mount as absolutely-positioned children faded per sceneFade.
+ * Mobile/reduced-motion swap scrub for snapped keyframes. Map-attached
+ * chrome (frames, markers) mounts as faded overlays inside the sticky stage;
+ * scene copy lives in flow wrappers after it — each wrapper is a tall scroll
+ * range whose sticky content scrolls in from below, dwells while the range
+ * passes, and exits the top.
  */
 export function LandingStage({
   data,
   scenes,
+  flows,
   mapChildren,
 }: {
   data: LandingData
-  scenes: Record<SceneId, ReactNode>
+  /** Pinned overlays inside the sticky stage (map-attached chrome), faded per
+   * sceneFade. Omitted scenes have no pinned part. */
+  scenes: Partial<Record<SceneId, ReactNode>>
+  /** Scene copy blocks in spine order. heightVh wraps the node in a flow
+   * range of that height (the node itself makes sticky/dwell decisions);
+   * without heightVh the node is rendered bare (the hero owns its block). */
+  flows: { id: SceneId; heightVh?: number; node: ReactNode }[]
   /** Extra content inside the map layer (ArchMap children) — e.g. overlays
    * pinned to map coords. Renders after the map mounts. */
   mapChildren?: ReactNode
@@ -278,10 +289,8 @@ export function LandingStage({
 
   return (
     <Ctx.Provider value={ctx}>
-      <div ref={wrapperRef} style={{ position: "relative" }}>
-        <div
-          style={{ position: "sticky", top: 0, height: "100svh", overflow: "hidden", ...slotVars }}
-        >
+      <div ref={wrapperRef} style={{ position: "relative", ...slotVars }}>
+        <div style={{ position: "sticky", top: 0, height: "100svh", overflow: "hidden" }}>
           <motion.div
             style={{
               position: "absolute",
@@ -298,7 +307,7 @@ export function LandingStage({
             </LandingMap>
           </motion.div>
           {Object.entries(scenes)
-            .filter(([id]) => id !== "hero" && id !== "footer")
+            .filter(([id, node]) => node && id !== "hero" && id !== "footer")
             .map(([id, node]) => (
               <motion.div
                 key={id}
@@ -313,21 +322,32 @@ export function LandingStage({
               </motion.div>
             ))}
         </div>
-        {/* hero scene: real flow block pulled up over the pinned map (its own
-            -100svh margin) — gradient + copy scroll out the top naturally
-            while the map stays sticky. The block nets +100svh of flow, so the
-            hero spacer gives back 100vh to keep the spine's scroll length
-            (and every scene boundary) where sceneRange expects it. */}
-        {scenes.hero}
-        {/* spacers: scroll length for the spine scenes (footer gets none — its
-            heightVh exists only for camera/fade math; the real block follows) */}
-        {SCENES.filter((s) => s.id !== "footer").map((s) => (
-          <section
-            key={s.id}
-            style={{ height: `${s.id === "hero" ? s.heightVh - 100 : s.heightVh}vh` }}
-            data-scene={s.id}
-          />
-        ))}
+        {/* scene copy in flow: wrappers are the scenes' scroll ranges (same
+            heights the spacers used to have, so the spine's total scroll
+            length and every scene boundary are unchanged). Each scene's own
+            CSS makes its content sticky inside the range — it scrolls in
+            from below, dwells while the range passes, exits the top. */}
+        {flows.map((f) =>
+          f.heightVh === undefined ? (
+            <Fragment key={f.id}>{f.node}</Fragment>
+          ) : (
+            <div
+              key={f.id}
+              data-scene={f.id}
+              style={{
+                height: `${f.heightVh}vh`,
+                position: "relative",
+                zIndex: 2,
+                pointerEvents: "none",
+              }}
+            >
+              {f.node}
+            </div>
+          ),
+        )}
+        {/* the hero block nets +100svh of flow, so its spacer gives back
+            100vh to keep the spine's scroll budget where sceneRange expects */}
+        <section style={{ height: `${SCENES[0].heightVh - 100}vh` }} data-scene="hero" />
         {/* footer scene: real block, scrolls up over the pinned stage */}
         {scenes.footer}
       </div>

@@ -3,10 +3,11 @@ import { useLandingData } from "@/lib/landing-data"
 import { LandingStage } from "@/components/stage"
 import { IndexPhotoMarkers } from "@/components/index-photo-markers"
 import { HeroScene } from "@/scenes/hero"
-import { IndexScene } from "@/scenes/index-scene"
+import { IndexFrame, IndexCopy } from "@/scenes/index-scene"
 import { CloseupScene } from "@/scenes/closeup"
 import { CtaScene } from "@/scenes/cta"
 import { FooterScene } from "@/scenes/footer"
+import { SCENES } from "@/lib/spine"
 import type { SceneId } from "@/lib/spine"
 
 export function App() {
@@ -15,18 +16,39 @@ export function App() {
   if (status === "error" || !data) {
     return <main><p className="boot-msg boot-msg--err">{error?.message ?? "failed to load map data"}</p></main>
   }
-  const scenes: Record<SceneId, ReactNode> = {
-    hero: <HeroScene key="hero" data={data} />,
-    index: <IndexScene key="index" data={data} />,
-    closeup: <CloseupScene key="closeup" data={data} />,
-    cta: <CtaScene key="cta" data={data} />,
+  // pinned overlays: map-attached chrome only (index slot frame)
+  const scenes: Partial<Record<SceneId, ReactNode>> = {
+    index: <IndexFrame key="index" />,
     footer: <FooterScene key="footer" data={data} />,
   }
+  // flow ranges mirror the scenes' heightVh so the spine's scroll budget
+  // (and every scene boundary) is unchanged; the hero block owns its own
+  // geometry (do not wrap)
+  const heightOf = (id: SceneId) => SCENES.find((s) => s.id === id)!.heightVh
+  const flows = [
+    { id: "hero" as const, node: <HeroScene key="hero" data={data} /> },
+    {
+      id: "index" as const,
+      heightVh: heightOf("index"),
+      node: <IndexCopy key="index" data={data} />,
+    },
+    {
+      id: "closeup" as const,
+      heightVh: heightOf("closeup"),
+      node: <CloseupScene key="closeup" data={data} />,
+    },
+    {
+      id: "cta" as const,
+      heightVh: heightOf("cta"),
+      node: <CtaScene key="cta" data={data} />,
+    },
+  ]
   return (
     <main>
       <LandingStage
         data={data}
         scenes={scenes}
+        flows={flows}
         mapChildren={<IndexPhotoMarkers picks={data.indexPhotos} />}
       />
     </main>

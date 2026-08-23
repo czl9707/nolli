@@ -20,13 +20,14 @@
   pointer-events: none;
 }
 
+/* Flow-mounted copy: sticky inside the index scroll range (the stage wraps
+   this in the range div). Pins just under the slot while the range passes —
+   enters from below, exits the top. Same width as the plate, aligned left
+   edge. */
 .copy {
-  position: absolute;
+  position: sticky;
+  top: calc((var(--slot-index-y) + var(--slot-index-h) / 2) * 100svh + 1.5rem);
   left: calc((var(--slot-index-x) - var(--slot-index-w) / 2) * 100%);
-  bottom: calc(
-    (1 - (var(--slot-index-y) - var(--slot-index-h) / 2)) * 100% + clamp(1.25rem, 3dvh, 2.25rem)
-  );
-  /* same width as the map plate above — aligned edges */
   width: calc(var(--slot-index-w) * 100%);
   color: rgb(var(--color-primary-foreground));
   z-index: 1;

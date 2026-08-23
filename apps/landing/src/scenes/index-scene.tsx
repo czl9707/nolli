@@ -1,24 +1,36 @@
 import styles from "./index-scene.module.css"
+import { Note } from "@nolli/ui"
 import type { LandingData } from "@/lib/landing-data"
 
-/** Index overlay (prototype E "light app mode"): light page around the card
- * slot, statement above. The stage's map layer settles into the frame — no
- * backing element here, only the frame itself. */
-export function IndexScene({ data }: { data: LandingData }) {
-  void data
+/** Index pinned chrome (prototype E "light app mode"): the frame around the
+ * card slot, faded per sceneFade inside the sticky stage — the map plate
+ * settles into it. The statement copy is the separate flow-mounted
+ * IndexCopy. */
+export function IndexFrame() {
   return (
     <section className={styles.scene}>
       <div className={styles.frame} />
-      <div className={styles.copy}>
-        <p className={`hand ${styles.overline}`}>The Index</p>
-        <h2 className={styles.statement}>
-          Google Maps has all the pins.
-          <br />
-          ArchDaily has all the information.
-          <br />
-          <strong>Nolli bridges the gap.</strong>
-        </h2>
-      </div>
     </section>
+  )
+}
+
+/** Index copy, flow-mounted: sticky inside its scroll range — scrolls in
+ * from below the plate, dwells pinned just under the slot while the index
+ * range passes, exits the top. */
+export function IndexCopy({ data }: { data: LandingData }) {
+  void data
+  return (
+    <div className={styles.copy}>
+      <Note asChild>
+        <p className={styles.overline}>The Index</p>
+      </Note>
+      <h2 className={styles.statement}>
+        Google Maps has all the pins.
+        <br />
+        ArchDaily has all the information.
+        <br />
+        <strong>Nolli bridges the gap.</strong>
+      </h2>
+    </div>
   )
 }

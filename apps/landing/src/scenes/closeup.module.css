@@ -4,10 +4,22 @@
    behind is the surround. Paper items are BoardItem surfaces; these anchors
    only place them. */
 
+/* Flow-mounted board: sticky at the top of its scroll range (the stage wraps
+   this in the range div) — the whole quilt scrolls in from below, dwells
+   fullscreen while the closeup range passes, exits the top. The map window
+   stays glued to CLOSEUP_SLOT throughout the dwell. */
 .scene {
-  position: absolute;
-  inset: 0;
+  position: sticky;
+  top: 0;
+  height: 100svh;
   color: rgb(var(--color-primary-foreground));
+}
+
+/* the flow wrapper is pointer-events: none — re-enable on interactive bits */
+.carousel button,
+.cta,
+.links a {
+  pointer-events: auto;
 }
 
 .note {
