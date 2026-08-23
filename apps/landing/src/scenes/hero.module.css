@@ -32,21 +32,21 @@
 }
 
 .overline {
-  font-size: clamp(1rem, 1.4vw, 1.2rem);
+  font-size: var(--landing-type-overline);
   opacity: 0.85;
   margin-bottom: 0.75rem;
 }
 
 .h1 {
   font-weight: 700;
-  font-size: clamp(2.5rem, 5.5vw, 4.2rem);
+  font-size: var(--landing-type-display);
   line-height: 1.05;
 }
 
 .sub {
   margin-top: 1.25rem;
   font-weight: 300;
-  font-size: clamp(0.95rem, 1.2vw, 1.1rem);
+  font-size: var(--landing-type-sub);
   line-height: 1.5;
   max-width: 38ch;
   opacity: 0.9;

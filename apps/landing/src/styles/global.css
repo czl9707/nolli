@@ -14,6 +14,41 @@ body {
   background: rgb(var(--color-primary-background));
   color: rgb(var(--color-primary-foreground));
   overscroll-behavior-y: none;
+  /* single source for the index plate container rule — slots.ts reads these
+     (getComputedStyle) so CSS and the spine share one definition */
+  --landing-plate-max: 42rem;
+  --landing-plate-pad: var(--spacing-component);
+
+  /* landing type scale — stepped at the app's breakpoints (@custom-media in
+     @nolli/ui) instead of fluid vw clamps; scenes consume via the module CSS */
+  --landing-type-overline: 1.2rem;
+  --landing-type-display: 4.2rem;
+  --landing-type-sub: 1.1rem;
+  --landing-type-statement: 1.9rem;
+  --landing-type-annotation: 2rem;
+  --landing-type-wordmark: 4.5rem;
+}
+
+@media (--smaller-than-md) {
+  body {
+    --landing-type-overline: 1.05rem;
+    --landing-type-display: 3.4rem;
+    --landing-type-sub: 1rem;
+    --landing-type-statement: 1.5rem;
+    --landing-type-annotation: 1.7rem;
+    --landing-type-wordmark: 3.75rem;
+  }
+}
+
+@media (--smaller-than-sm) {
+  body {
+    --landing-type-overline: 1rem;
+    --landing-type-display: 2.6rem;
+    --landing-type-sub: 0.95rem;
+    --landing-type-statement: 1.2rem;
+    --landing-type-annotation: 1.4rem;
+    --landing-type-wordmark: 3rem;
+  }
 }
 
 .boot-msg {

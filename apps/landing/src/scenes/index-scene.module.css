@@ -32,14 +32,14 @@
 }
 
 .overline {
-  font-size: clamp(0.95rem, 1vw + 0.45dvh, 1.15rem);
+  font-size: var(--landing-type-overline);
   opacity: 0.85;
   margin-bottom: 0.6rem;
 }
 
 .statement {
   font-weight: 300;
-  font-size: clamp(1.05rem, 1.1vw + 0.7dvh, 1.9rem);
+  font-size: var(--landing-type-statement);
   line-height: 1.35;
 }
 
