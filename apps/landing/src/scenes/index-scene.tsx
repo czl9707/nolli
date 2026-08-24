@@ -14,23 +14,25 @@ export function IndexFrame() {
   )
 }
 
-/** Index copy, flow-mounted: sticky inside its scroll range — scrolls in
- * from below the plate, dwells pinned just under the slot while the index
- * range passes, exits the top. */
+/** Index copy, flow-mounted: a sticky fullscreen sheet whose content sits
+ * just above the slot — scrolls in from below, dwells pinned over the index
+ * range, exits the top. */
 export function IndexCopy({ data }: { data: LandingData }) {
   void data
   return (
     <div className={styles.copy}>
-      <Note asChild>
-        <p className={styles.overline}>The Index</p>
-      </Note>
-      <h2 className={styles.statement}>
-        Google Maps has all the pins.
-        <br />
-        ArchDaily has all the information.
-        <br />
-        <strong>Nolli bridges the gap.</strong>
-      </h2>
+      <div className={styles.copyBody}>
+        <Note asChild>
+          <p className={styles.overline}>The Index</p>
+        </Note>
+        <h2 className={styles.statement}>
+          Google Maps has all the pins.
+          <br />
+          ArchDaily has all the information.
+          <br />
+          <strong>Nolli bridges the gap.</strong>
+        </h2>
+      </div>
     </div>
   )
 }

@@ -20,17 +20,25 @@
   pointer-events: none;
 }
 
-/* Flow-mounted copy: sticky inside the index scroll range (the stage wraps
-   this in the range div). Pins just under the slot while the range passes —
-   enters from below, exits the top. Same width as the plate, aligned left
-   edge. */
+/* Flow-mounted copy sheet: sticky fullscreen inside the index scroll range
+   (the stage wraps this in the range div) — enters from below, dwells, exits
+   the top. The sheet anchors its content just ABOVE the slot; the padding
+   sets the content's bottom edge at slot-top minus the gap. */
 .copy {
   position: sticky;
-  top: calc((var(--slot-index-y) + var(--slot-index-h) / 2) * 100svh + 1.5rem);
+  top: 0;
+  box-sizing: border-box;
+  height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding-bottom: calc((1 - (var(--slot-index-y) - var(--slot-index-h) / 2)) * 100svh + 1.5rem);
+}
+
+.copyBody {
   left: calc((var(--slot-index-x) - var(--slot-index-w) / 2) * 100%);
   width: calc(var(--slot-index-w) * 100%);
   color: rgb(var(--color-primary-foreground));
-  z-index: 1;
 }
 
 .overline {
