@@ -26,6 +26,21 @@
   pointer-events: auto;
 }
 
+.next {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: var(--border);
+  border-radius: var(--size-border-radius);
+  padding: 0.35rem 0.8rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.next:hover {
+  background: rgb(var(--color-secondary-background));
+}
+
 .note {
   position: absolute;
   left: var(--spacing-component);
@@ -48,38 +63,18 @@
 
 .carousel {
   position: absolute;
-  left: var(--spacing-component);
-  top: calc(9dvh + 10rem);
+  right: var(--spacing-component);
+  bottom: 6dvh;
   width: 300px;
+  z-index: 3;
 }
 
 .padCarousel {
   padding: 0.55rem 0.8rem;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 0.65rem;
-}
-
-.scene .carouselName {
-  flex: 1;
-  text-align: center;
-}
-
-.carousel button {
-  font: inherit;
-  color: inherit;
-  background: none;
-  border: var(--border);
-  border-radius: var(--size-border-radius);
-  width: 30px;
-  height: 30px;
-  flex: none;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.carousel button:hover {
-  background: rgb(var(--color-secondary-background));
 }
 
 .counter {
@@ -126,10 +121,17 @@
 }
 
 /* the pin-board surface: canvas px geometry, scaled to the viewport by
-   boardFit (JS sets left/top/scale — one source of truth with closeupSlot) */
+   boardFit (JS sets left/top/scale — one source of truth with closeupSlot).
+   Click-transparent so it never covers the carousel chrome; items opt back
+   in (photo/link modals). */
 .board {
   position: absolute;
   transform-origin: 0 0;
+  pointer-events: none;
+}
+
+.board > div:not(.dotGrid) {
+  pointer-events: auto;
 }
 
 .dotGrid {

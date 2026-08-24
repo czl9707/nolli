@@ -14,7 +14,7 @@ import {
   layoutArchBoard,
   type PlacedArchItem,
 } from "@nolli/board"
-import { Body2, Body3, H3, H5, Note } from "@nolli/ui"
+import { Body2, Body3, H3, Note } from "@nolli/ui"
 import { useLandingStage } from "@/components/stage"
 import { APP_URL, SITE_ZOOM } from "@/lib/constants"
 import { boardCtaLabel } from "@/lib/shape"
@@ -117,13 +117,9 @@ export function CloseupScene({ data }: { data: LandingData }) {
   const arch = set[i]
   const d = MAP_SHIFT[i % MAP_SHIFT.length]
 
-  // fresh scatter per arch: the marketing note rides along as a board note
+  // fresh scatter per arch
   const items = useMemo(
-    () =>
-      layoutArchBoard(
-        { ...arch, notes: [...arch.notes, { text: "each architecture is a story." }] },
-        { x: MAP_SLOT_X + d.x, y: MAP_SLOT_Y + d.y },
-      ),
+    () => layoutArchBoard(arch, { x: MAP_SLOT_X + d.x, y: MAP_SLOT_Y + d.y }),
     [arch, d],
   )
 
@@ -174,18 +170,14 @@ export function CloseupScene({ data }: { data: LandingData }) {
           position={{ x: 0, y: 0, width: 300, height: 0, rotation: -1.4 }}
           className={styles.padCarousel}
         >
-          <button type="button" onClick={() => go(-1)} aria-label="previous architecture">
-            ←
-          </button>
-          <H5 className={styles.carouselName}>{arch.name}</H5>
-          <button type="button" onClick={() => go(1)} aria-label="next architecture">
-            →
-          </button>
           <Body3 asChild>
             <span className={styles.counter}>
               {i + 1} / {set.length}
             </span>
           </Body3>
+          <button type="button" onClick={() => go(1)} className={styles.next}>
+            Next →
+          </button>
         </BoardItem>
       </div>
       <div

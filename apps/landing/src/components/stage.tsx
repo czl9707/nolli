@@ -338,7 +338,6 @@ export function LandingStage({
               style={{
                 position: "absolute",
                 inset: 0,
-                ...shiftStyle,
                 opacity: fades[underMap.id],
                 pointerEvents: "none",
               }}
