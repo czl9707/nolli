@@ -80,6 +80,7 @@ export function LandingStage({
   scenes,
   flows,
   mapChildren,
+  underMap,
 }: {
   data: LandingData
   /** Pinned overlays inside the sticky stage (map-attached chrome), faded per
@@ -92,6 +93,9 @@ export function LandingStage({
   /** Extra content inside the map layer (ArchMap children) — e.g. overlays
    * pinned to map coords. Renders after the map mounts. */
   mapChildren?: ReactNode
+  /** Pinned overlay rendered BENEATH the map layer (e.g. the closeup paper
+   * card the map window sits on), faded per its scene. */
+  underMap?: { id: Exclude<SceneId, "hero" | "footer">; node: ReactNode }
 }) {
   const wrapperRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapRef | null>(null)
@@ -291,6 +295,18 @@ export function LandingStage({
     <Ctx.Provider value={ctx}>
       <div ref={wrapperRef} style={{ position: "relative", ...slotVars }}>
         <div style={{ position: "sticky", top: 0, height: "100svh", overflow: "hidden" }}>
+          {underMap && (
+            <motion.div
+              style={{
+                position: "absolute",
+                inset: 0,
+                opacity: fades[underMap.id],
+                pointerEvents: "none",
+              }}
+            >
+              {underMap.node}
+            </motion.div>
+          )}
           <motion.div
             style={{
               position: "absolute",

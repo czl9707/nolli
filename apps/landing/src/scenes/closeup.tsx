@@ -1,34 +1,30 @@
 import styles from "./closeup.module.css"
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useMotionValueEvent } from "framer-motion"
-import { BoardItem } from "@nolli/board"
+import { BoardItem, PhotoItem } from "@nolli/board"
 import { Body2, Body3, H3, H5, Note } from "@nolli/ui"
 import { useLandingStage } from "@/components/stage"
 import { APP_URL, SITE_ZOOM } from "@/lib/constants"
 import { boardCtaLabel } from "@/lib/shape"
 import type { LandingData } from "@/lib/landing-data"
 
-/** Per-arch settle offsets — the board re-scatters a little on each switch.
- * dx/dy land on the anchor wrappers' transitioned translate; r flows into
- * each BoardItem's rotation prop. */
-const SCATTER = [
-  { r: 0, dx: 0, dy: 0 },
-  { r: -1.5, dx: 14, dy: 10 },
-  { r: 2, dx: -16, dy: 6 },
-  { r: -2.5, dx: 8, dy: -12 },
-  { r: 1.5, dx: -10, dy: 14 },
-]
+/** Per-arch tilt for the reappearing items — each arch settles at its own
+ * slight rotation. */
+const TILT = [0, -1.5, 2, -2.5, 1.5]
 
 /** Closeup overlay (prototype A winner, rotating quilt board) on the stage:
- * the map card is a transparent window at CLOSEUP_SLOT — the stage's single
- * map layer settles into it. Rotation drives stage flights (cinematic in
- * scrub, jumpTo + paper-mask in snap). Paper items are @nolli/board
- * primitives: the viewport-fraction anchors stay as wrappers, BoardItem
- * renders inside at 0/0 with the scatter rotation. */
+ * the map window sits on a paper card rendered under the map layer (see
+ * CloseupMapCard). On arch switch only the carousel stays pinned; the map
+ * camera flies to the new site; everything else fades out and reappears
+ * (BoardItem remounts replay the staggered entrance). Rotation drives stage
+ * flights (cinematic in scrub, jumpTo + paper-mask in snap). */
 export function CloseupScene({ data }: { data: LandingData }) {
   const { flyTo, mode, fade } = useLandingStage()
   const set = data.boardSet
+  // i = live index (carousel, camera); shown = rendered arch (photos, meta)
   const [i, setI] = useState(0)
+  const [shown, setShown] = useState(0)
+  const [out, setOut] = useState(false)
   // init from the fade so a restored-scroll mount starts in the right state
   const [visible, setVisible] = useState(() => fade("closeup").get() > 0.5)
   const slugRef = useRef<string | null>(null)
@@ -47,8 +43,21 @@ export function CloseupScene({ data }: { data: LandingData }) {
     return () => window.clearInterval(t)
   }, [go, i, visible])
 
+  // disappear → swap → reappear: fade the swap group out, exchange the
+  // rendered arch, let the BoardItem remounts stagger back in
+  useEffect(() => {
+    if (i === shown) return
+    setOut(true)
+    const t = window.setTimeout(() => {
+      setShown(i)
+      setOut(false)
+    }, 280)
+    return () => window.clearTimeout(t)
+  }, [i, shown])
+
   const arch = set[i]
-  const s = SCATTER[i % SCATTER.length]
+  const s = set[shown]
+  const r = TILT[shown % TILT.length]
 
   // fly on arch switch while visible; the first fly is skipped — the stage
   // already enters closeup on the hero camera (= boardSet[0]). flyTo identity
@@ -68,16 +77,7 @@ export function CloseupScene({ data }: { data: LandingData }) {
   }, [visible, i])
 
   return (
-    <section
-      className={`${styles.scene} ${styles.rot}`}
-      style={
-        {
-          "--b-dx": `${s.dx}px`,
-          "--b-dy": `${s.dy}px`,
-          pointerEvents: visible ? "auto" : "none",
-        } as CSSProperties
-      }
-    >
+    <section className={styles.scene} style={{ pointerEvents: visible ? "auto" : "none" }}>
       <div className={styles.mapCard}>
         <Note className={styles.mapLabel} key={`label-${arch.slug}`}>
           site — {arch.address}
@@ -98,7 +98,6 @@ export function CloseupScene({ data }: { data: LandingData }) {
         <BoardItem
           id="closeup-carousel"
           position={{ x: 0, y: 0, width: 300, height: 0, rotation: -1.4 }}
-          delay={1}
           className={styles.padCarousel}
         >
           <button type="button" onClick={() => go(-1)} aria-label="previous architecture">
@@ -115,74 +114,82 @@ export function CloseupScene({ data }: { data: LandingData }) {
           </Body3>
         </BoardItem>
       </div>
-      <figure className={`${styles.photo} ${styles.photo1}`}>
-        <BoardItem
-          id={`${arch.slug}-photo-1`}
-          position={{ x: 0, y: 0, width: 330, height: 0, rotation: 2 + s.r }}
-          delay={2}
-        >
-          <img key={arch.slug} src={arch.photos[0].image} alt={arch.name} />
-          <Note className={styles.photoCaption} key={`${arch.slug}-c`}>
-            {arch.name} · {arch.year}
-          </Note>
-        </BoardItem>
-      </figure>
-      <figure className={`${styles.photo} ${styles.photo2}`}>
-        <BoardItem
-          id={`${arch.slug}-photo-2`}
-          position={{ x: 0, y: 0, width: 185, height: 250, rotation: -2 + s.r }}
-          delay={3}
-        >
-          <img key={arch.slug} src={arch.photos[1].image} alt={arch.name} />
-        </BoardItem>
-      </figure>
-      <figure className={`${styles.photo} ${styles.photo3}`}>
-        <BoardItem
-          id={`${arch.slug}-photo-3`}
-          position={{ x: 0, y: 0, width: 245, height: 165, rotation: -1 + s.r }}
-          delay={4}
-        >
-          <img key={arch.slug} src={arch.photos[2].image} alt={arch.name} />
-        </BoardItem>
-      </figure>
-      <div className={styles.meta}>
-        <BoardItem
-          id={`${arch.slug}-meta`}
-          position={{ x: 0, y: 0, width: 295, height: 0, rotation: 1.2 + s.r }}
-          delay={5}
-          className={styles.padMeta}
-        >
-          <H5 className={styles.name}>{arch.name}</H5>
-          <dl>
-            <div>
-              <dt>architect</dt>
-              <dd>{arch.architect}</dd>
-            </div>
-            <div>
-              <dt>year</dt>
-              <dd>{arch.year}</dd>
-            </div>
-            <div>
-              <dt>address</dt>
-              <dd>{arch.address}</dd>
-            </div>
-          </dl>
-          <Body2 asChild>
-            <a className={styles.cta} href={APP_URL}>
-              {boardCtaLabel(data.summaries, arch)}
-            </a>
-          </Body2>
-          <div className={styles.links}>
-            {arch.links?.wikipedia && (
-              <a href={arch.links.wikipedia} target="_blank" rel="noreferrer">
-                <Note className={styles.link}>wikipedia ↗</Note>
+      {/* swap group: everything arch-bound — photos + meta. Fades out on
+          switch; the slug-keyed BoardItems remount with their entrance
+          stagger for the reappear. */}
+      <div className={`${styles.swap} ${out ? styles.swapOut : ""}`}>
+        <div className={`${styles.photo} ${styles.photo1}`}>
+          <PhotoItem
+            kind="photo"
+            photo={s.photos[0]}
+            crossOrigin={null}
+            position={{
+              x: 0,
+              y: 0,
+              width: 330,
+              height: Math.round((330 * s.photos[0].height) / s.photos[0].width),
+              rotation: 2 + r,
+            }}
+            delay={2}
+          />
+        </div>
+        <div className={`${styles.photo} ${styles.photo2}`}>
+          <PhotoItem
+            kind="photo"
+            photo={s.photos[1]}
+            crossOrigin={null}
+            position={{ x: 0, y: 0, width: 185, height: 250, rotation: -2 + r }}
+            delay={3}
+          />
+        </div>
+        <div className={`${styles.photo} ${styles.photo3}`}>
+          <PhotoItem
+            kind="photo"
+            photo={s.photos[2]}
+            crossOrigin={null}
+            position={{ x: 0, y: 0, width: 245, height: 165, rotation: -1 + r }}
+            delay={4}
+          />
+        </div>
+        <div className={styles.meta}>
+          <BoardItem
+            id={`${s.slug}-meta`}
+            position={{ x: 0, y: 0, width: 295, height: 0, rotation: 1.2 + r }}
+            delay={5}
+            className={styles.padMeta}
+          >
+            <H5 className={styles.name}>{s.name}</H5>
+            <dl>
+              <div>
+                <dt>architect</dt>
+                <dd>{s.architect}</dd>
+              </div>
+              <div>
+                <dt>year</dt>
+                <dd>{s.year}</dd>
+              </div>
+              <div>
+                <dt>address</dt>
+                <dd>{s.address}</dd>
+              </div>
+            </dl>
+            <Body2 asChild>
+              <a className={styles.cta} href={APP_URL}>
+                {boardCtaLabel(data.summaries, s)}
               </a>
-            )}
-            <a href={arch.links?.googleMaps} target="_blank" rel="noreferrer">
-              <Note className={styles.link}>google maps ↗</Note>
-            </a>
-          </div>
-        </BoardItem>
+            </Body2>
+            <div className={styles.links}>
+              {s.links?.wikipedia && (
+                <a href={s.links.wikipedia} target="_blank" rel="noreferrer">
+                  <Note className={styles.link}>wikipedia ↗</Note>
+                </a>
+              )}
+              <a href={s.links?.googleMaps} target="_blank" rel="noreferrer">
+                <Note className={styles.link}>google maps ↗</Note>
+              </a>
+            </div>
+          </BoardItem>
+        </div>
       </div>
     </section>
   )

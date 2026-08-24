@@ -7,9 +7,12 @@ import styles from "./photo-item.module.css"
 
 type PhotoItemProps = Extract<PlacedArchItem, { kind: "photo" }> & {
   delay: number
+  /** Pass null on pages without COEP require-corp — the attribute forces a
+   * CORS fetch, which image hosts may not allow for that page's origin. */
+  crossOrigin?: "anonymous" | null
 }
 
-export function PhotoItem({ photo, position, delay }: PhotoItemProps) {
+export function PhotoItem({ photo, position, delay, crossOrigin = "anonymous" }: PhotoItemProps) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -20,7 +23,7 @@ export function PhotoItem({ photo, position, delay }: PhotoItemProps) {
         delay={delay}
         onClick={() => setOpen(true)}
       >
-        <img src={photo.image} alt="" className={styles.photo} crossOrigin="anonymous"/>
+        <img src={photo.image} alt="" className={styles.photo} crossOrigin={crossOrigin ?? undefined}/>
         {photo.caption && (
           <div className={styles.caption}>
             <Note>{photo.caption}</Note>
@@ -36,7 +39,7 @@ export function PhotoItem({ photo, position, delay }: PhotoItemProps) {
           }`}
           style={{ aspectRatio: `${photo.width}/${photo.height}` }}
         >
-          <img src={photo.image} alt="" className={styles.photo} crossOrigin="anonymous"/>
+          <img src={photo.image} alt="" className={styles.photo} crossOrigin={crossOrigin ?? undefined}/>
           {photo.caption && (
             <div className={styles.caption}>
               <Note>{photo.caption}</Note>

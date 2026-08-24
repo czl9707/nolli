@@ -1,13 +1,14 @@
-/* Closeup — rotating quilt board on the stage slot. Cream quilt page around a
-   transparent map window: the stage's map layer settles into CLOSEUP_SLOT and
-   shows through the window — the window draws only its border; the cream page
-   behind is the surround. Paper items are BoardItem surfaces; these anchors
-   only place them. */
+/* Closeup — rotating quilt board on the stage slot. Cream quilt page around
+   the map window: the stage's map layer settles into CLOSEUP_SLOT and reads
+   as a paper item — the CloseupMapCard under the map layer draws its cream
+   margin, torn edge, pin and shadow. Photos are @nolli/board PhotoItems;
+   these anchors only place them. On arch switch the carousel stays pinned,
+   the map camera flies, the swap group (photos + meta) fades out and
+   remounts with the BoardItem entrance stagger. */
 
 /* Flow-mounted board: sticky at the top of its scroll range (the stage wraps
    this in the range div) — the whole quilt scrolls in from below, dwells
-   fullscreen while the closeup range passes, exits the top. The map window
-   stays glued to CLOSEUP_SLOT throughout the dwell. */
+   fullscreen while the closeup range passes, exits the top. */
 .scene {
   position: sticky;
   top: 0;
@@ -18,7 +19,8 @@
 /* the flow wrapper is pointer-events: none — re-enable on interactive bits */
 .carousel button,
 .cta,
-.links a {
+.links a,
+.photo {
   pointer-events: auto;
 }
 
@@ -84,18 +86,15 @@
   white-space: nowrap;
 }
 
-/* the map card is a bare window pinned to the slot geometry — no backing,
-   no scatter: the map layer beneath doesn't move with the board */
+/* the map window anchors to the slot geometry — the paper frame lives under
+   the map layer (CloseupMapCard), so this only carries the label + the snap
+   mode fade mask */
 .scene .mapCard {
   position: absolute;
-  box-sizing: border-box;
   left: calc((var(--slot-closeup-x) - var(--slot-closeup-w) / 2) * 100%);
   top: calc((var(--slot-closeup-y) - var(--slot-closeup-h) / 2) * 100%);
   width: calc(var(--slot-closeup-w) * 100%);
   height: calc(var(--slot-closeup-h) * 100%);
-  padding: 10px;
-  border: var(--border);
-  border-radius: var(--size-border-radius);
 }
 
 .mapLabel {
@@ -105,6 +104,7 @@
   color: rgb(var(--color-paper-background));
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
   z-index: 6;
+  animation: closeupRotIn 0.5s ease both;
 }
 
 .scene .mapLabel {
@@ -114,7 +114,7 @@
 /* masks the map's jumpTo between arches (controlled viewport is instant) */
 .mapFade {
   position: absolute;
-  inset: 10px;
+  inset: 0;
   background: rgb(var(--color-primary-foreground));
   animation: closeupMapFade 0.7s ease both;
   pointer-events: none;
@@ -130,26 +130,28 @@
   }
 }
 
-.photo {
+/* swap group: arch-bound items (photos + meta) fade out together, then the
+   slug-keyed items remount with their entrance stagger for the reappear.
+   Full-bleed layer — keep it click-transparent (carousel sits below it). */
+.swap {
   position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease;
 }
 
-.photo img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.swapOut {
+  opacity: 0;
+}
+
+.photo {
+  position: absolute;
 }
 
 .photo1 {
   right: 21%;
   top: 8dvh;
   width: 330px;
-}
-
-.photo1 img {
-  height: auto;
-  aspect-ratio: 3 / 2;
 }
 
 .photo2 {
@@ -159,52 +161,11 @@
   height: 250px;
 }
 
-/* BoardItem's minHeight doesn't cap a taller natural image — clamp the
-   surface so fixed-height photos crop (object-fit: cover) like the figure
-   overflow they replaced */
-.photo2 > div > div {
-  max-height: 250px;
-}
-
 .photo3 {
   right: 31%;
   bottom: 13dvh;
   width: 245px;
   height: 165px;
-}
-
-.photo3 > div > div {
-  max-height: 165px;
-}
-
-/* board re-settles per arch (--b-dx/--b-dy set from JS — no var() fallbacks:
-   postcss-custom-properties bakes fallbacks in statically): translate on the
-   anchors, the scatter rotation on the BoardItem child — same easing so the
-   composed move reads as one settle */
-.rot .photo1,
-.rot .photo2,
-.rot .photo3 {
-  transform: translate(var(--b-dx), var(--b-dy));
-  transition: transform 0.65s cubic-bezier(0.22, 0.9, 0.3, 1);
-}
-
-.photo > div,
-.meta > div {
-  transition: transform 0.65s cubic-bezier(0.22, 0.9, 0.3, 1);
-}
-
-/* bottom-anchored, content-sized card: the meta wrapper holds only an
-   absolute BoardItem so its height collapses to 0 — bottom-align the item
-   so the card grows up from the anchor like before */
-.meta > div {
-  top: auto !important;
-  bottom: 0;
-}
-
-.rot .photo img,
-.rot .photoCaption,
-.rot .mapLabel {
-  animation: closeupRotIn 0.5s ease both;
 }
 
 @keyframes closeupRotIn {
@@ -216,9 +177,12 @@
   }
 }
 
-.scene .photoCaption {
-  display: block;
-  padding: 6px 8px 7px;
+/* bottom-anchored, content-sized card: the meta wrapper holds only an
+   absolute BoardItem so its height collapses to 0 — bottom-align the item
+   so the card grows up from the anchor like before */
+.meta > div {
+  top: auto !important;
+  bottom: 0;
 }
 
 .meta {
@@ -230,11 +194,6 @@
 
 .padMeta {
   padding: 1.25rem 1.4rem;
-}
-
-.rot .meta {
-  transform: translate(var(--b-dx), var(--b-dy));
-  transition: transform 0.65s cubic-bezier(0.22, 0.9, 0.3, 1);
 }
 
 .name {
@@ -263,10 +222,6 @@
   text-align: right;
 }
 
-.rot .meta dl {
-  margin-top: 0.7rem;
-}
-
 .cta {
   display: block;
   margin-top: 0.8rem;
@@ -285,12 +240,7 @@
   gap: var(--spacing-paragraph);
 }
 
-.rot .links {
-  margin-top: 0.55rem;
-}
-
 .links a {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
-

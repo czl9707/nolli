@@ -2,6 +2,7 @@ import type { ReactNode } from "react"
 import { useLandingData } from "@/lib/landing-data"
 import { LandingStage } from "@/components/stage"
 import { IndexPhotoMarkers } from "@/components/index-photo-markers"
+import { CloseupMapCard } from "@/components/closeup-map-card"
 import { HeroScene } from "@/scenes/hero"
 import { IndexFrame, IndexCopy } from "@/scenes/index-scene"
 import { CloseupScene } from "@/scenes/closeup"
@@ -50,6 +51,7 @@ export function App() {
         scenes={scenes}
         flows={flows}
         mapChildren={<IndexPhotoMarkers picks={data.indexPhotos} />}
+        underMap={{ id: "closeup", node: <CloseupMapCard key="closeup-map" /> }}
       />
     </main>
   )
