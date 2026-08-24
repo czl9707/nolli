@@ -156,9 +156,6 @@ export function CloseupScene({ data }: { data: LandingData }) {
           className={styles.mapPin}
           style={{ top: "-42px", left: "50%" }}
         />
-        <Note className={styles.mapLabel} key={`label-${arch.slug}`}>
-          site — {arch.address}
-        </Note>
         {mode === "snap" && <div className={styles.mapFade} key={`fade-${arch.slug}`} />}
       </div>
       <div className={styles.note}>

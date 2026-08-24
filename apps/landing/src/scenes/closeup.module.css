@@ -14,6 +14,9 @@
   position: sticky;
   top: 0;
   height: 100svh;
+  /* the board is CANVAS_W px wide before its scale transform — clip the
+     layout box so it never widens the page */
+  overflow: hidden;
   color: rgb(var(--color-primary-foreground));
 }
 
@@ -93,26 +96,14 @@
   top: calc((var(--slot-closeup-y) - var(--slot-closeup-h) / 2) * 100%);
   width: calc(var(--slot-closeup-w) * 100%);
   height: calc(var(--slot-closeup-h) * 100%);
-  translate: var(--board-shift-x, 0px) var(--board-shift-y, 0px);
+  /* no var() fallbacks — postcss-custom-properties bakes them in statically
+     and the runtime shift would be lost */
+  translate: var(--board-shift-x) var(--board-shift-y);
   transition: translate 0.65s cubic-bezier(0.22, 0.9, 0.3, 1);
 }
 
 .mapPin {
   position: absolute;
-}
-
-.mapLabel {
-  position: absolute;
-  left: 14px;
-  bottom: 12px;
-  color: rgb(var(--color-paper-background));
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
-  z-index: 6;
-  animation: closeupRotIn 0.5s ease both;
-}
-
-.scene .mapLabel {
-  color: rgb(var(--color-primary-background));
 }
 
 /* masks the map's jumpTo between arches (controlled viewport is instant) */
@@ -131,15 +122,6 @@
   }
   to {
     opacity: 0;
-  }
-}
-
-@keyframes closeupRotIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
   }
 }
 

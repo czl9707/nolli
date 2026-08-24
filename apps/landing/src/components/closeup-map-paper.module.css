@@ -11,6 +11,6 @@
   height: calc(var(--slot-closeup-h) * 100% + 20px);
   border: 10px solid rgb(var(--color-paper-background));
   box-shadow: var(--shadow-sm);
-  translate: var(--board-shift-x, 0px) var(--board-shift-y, 0px);
+  translate: var(--board-shift-x) var(--board-shift-y);
   transition: translate 0.65s cubic-bezier(0.22, 0.9, 0.3, 1);
 }
