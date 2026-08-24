@@ -31,7 +31,7 @@ import {
   type SceneDef,
   type SceneId,
 } from "@/lib/spine"
-import { CLOSEUP_SLOT, indexSlot, slotRect, type Slot } from "@/lib/slots"
+import { closeupSlot, indexSlot, slotRect, type Slot } from "@/lib/slots"
 import { useIsMobile } from "@/lib/use-is-mobile"
 import { LandingMap } from "./landing-map"
 
@@ -39,6 +39,9 @@ type StageCtx = {
   flyTo: (camera: SceneCamera) => void
   mode: "scrub" | "snap"
   fade: (id: SceneId) => MotionValue<number>
+  /** px offset applied (as a transitioned CSS translate) to the map layer and
+   * its paper card — the closeup board relocates the map item per arch. */
+  setBoardShift: (x: number, y: number) => void
 }
 
 const Ctx = createContext<StageCtx | null>(null)
@@ -53,16 +56,16 @@ export const useLandingStage = () => {
  * multiplies by 100vw/100vh; edges via calc(cx - w/2). */
 const FULL_LAYER: LayerKey = { x: 0, y: 0, w: 1, h: 1 }
 
-function slotVarsFor(idxSlot: Slot) {
+function slotVarsFor(idxSlot: Slot, cupSlot: Slot) {
   return {
     "--slot-index-x": idxSlot.cx,
     "--slot-index-y": idxSlot.cy,
     "--slot-index-w": idxSlot.w,
     "--slot-index-h": idxSlot.h,
-    "--slot-closeup-x": CLOSEUP_SLOT.cx,
-    "--slot-closeup-y": CLOSEUP_SLOT.cy,
-    "--slot-closeup-w": CLOSEUP_SLOT.w,
-    "--slot-closeup-h": CLOSEUP_SLOT.h,
+    "--slot-closeup-x": cupSlot.cx,
+    "--slot-closeup-y": cupSlot.cy,
+    "--slot-closeup-w": cupSlot.w,
+    "--slot-closeup-h": cupSlot.h,
   } as CSSProperties
 }
 
@@ -103,27 +106,39 @@ export function LandingStage({
   const snapMode = useIsMobile() || !!reduced
 
   // Index plate capped like the app's content container; recompute on resize
-  const [vw, setVw] = useState(() => window.innerWidth)
+  const [vp, setVp] = useState(() => ({ w: window.innerWidth, h: window.innerHeight }))
   useEffect(() => {
-    const onResize = () => setVw(window.innerWidth)
+    const onResize = () => setVp({ w: window.innerWidth, h: window.innerHeight })
     window.addEventListener("resize", onResize)
     return () => window.removeEventListener("resize", onResize)
   }, [])
+  const { w: vw, h: vh } = vp
   const idxSlot = useMemo(() => indexSlot(vw), [vw])
-  const slotVars = useMemo(() => slotVarsFor(idxSlot), [idxSlot])
+  const cupSlot = useMemo(() => closeupSlot(vw, vh), [vw, vh])
+  const slotVars = useMemo(() => slotVarsFor(idxSlot, cupSlot), [idxSlot, cupSlot])
+
+  // board shift: per-arch map-item relocation inside the closeup scene (px
+  // translate on the layer + paper card; the scroll-driven rect is untouched)
+  const [boardShift, setBoardShiftState] = useState({ x: 0, y: 0 })
+  const setBoardShift = useCallback(
+    (x: number, y: number) =>
+      setBoardShiftState((prev) => (prev.x === x && prev.y === y ? prev : { x, y })),
+    [],
+  )
 
   // Runtime scene table: index camera fit to the photo-marker picks and the
-  // index layer at the capped slot, closeup camera from data.heroCamera
+  // index layer at the capped slot; closeup camera from data.heroCamera with
+  // the layer at the pin-board's site-map slot
   const scenesTable: SceneDef[] = useMemo(
     () =>
       SCENES.map((s) =>
         s.id === "index"
           ? { ...s, camera: data.indexCamera, layer: slotRect(idxSlot) }
           : s.id === "closeup"
-            ? { ...s, camera: data.heroCamera }
+            ? { ...s, camera: data.heroCamera, layer: slotRect(cupSlot) }
             : s,
       ),
-    [data, idxSlot],
+    [data, idxSlot, cupSlot],
   )
 
   const { scrollYProgress } = useScroll({ target: wrapperRef, offset: ["start start", "end end"] })
@@ -235,6 +250,9 @@ export function LandingStage({
       return
     }
     lastTarget.current = scene
+    // leaving closeup resets the map-item relocation (other scenes' rects are
+    // scroll-driven — a leftover shift would offset them)
+    if (scene.id !== "closeup" && boardShift.x !== 0) setBoardShift(0, 0)
     if (snapMode) {
       flyTo(scene.camera)
       return
@@ -287,19 +305,40 @@ export function LandingStage({
   }
 
   const ctx = useMemo<StageCtx>(
-    () => ({ flyTo, mode: snapMode ? "snap" : "scrub", fade: (id) => fades[id] }),
-    [fades, snapMode],
+    () => ({
+      flyTo,
+      mode: snapMode ? "snap" : "scrub",
+      fade: (id) => fades[id],
+      setBoardShift,
+    }),
+    [fades, snapMode, setBoardShift],
   )
+
+  // the shift rides on CSS translate (not left/top) so MapLibre never sees a
+  // container resize and mid-flight cameras stay intact
+  const shiftStyle = {
+    translate: `${boardShift.x}px ${boardShift.y}px`,
+    transition: "translate 0.65s cubic-bezier(0.22, 0.9, 0.3, 1)",
+  } as const
 
   return (
     <Ctx.Provider value={ctx}>
-      <div ref={wrapperRef} style={{ position: "relative", ...slotVars }}>
+      <div
+        ref={wrapperRef}
+        style={{
+          position: "relative",
+          ...slotVars,
+          "--board-shift-x": `${boardShift.x}px`,
+          "--board-shift-y": `${boardShift.y}px`,
+        } as CSSProperties}
+      >
         <div style={{ position: "sticky", top: 0, height: "100svh", overflow: "hidden" }}>
           {underMap && (
             <motion.div
               style={{
                 position: "absolute",
                 inset: 0,
+                ...shiftStyle,
                 opacity: fades[underMap.id],
                 pointerEvents: "none",
               }}
@@ -314,6 +353,7 @@ export function LandingStage({
               top: layerTop,
               width: layerWidth,
               height: layerHeight,
+              ...shiftStyle,
               borderRadius: "var(--size-border-radius)",
               overflow: "hidden",
             }}

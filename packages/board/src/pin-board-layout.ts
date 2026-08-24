@@ -203,7 +203,10 @@ function clampDimensions(
   return { width, height }
 }
 
-export function layoutArchBoard(arch: Arch): PlacedArchItem[] {
+export function layoutArchBoard(
+  arch: Arch,
+  anchor?: { x: number; y: number }
+): PlacedArchItem[] {
   const specs: ItemSpec[] = []
 
   specs.push({ id: "site-map", width: MAP_SLOT_W, height: MAP_SLOT_H })
@@ -226,8 +229,8 @@ export function layoutArchBoard(arch: Arch): PlacedArchItem[] {
     CANVAS_H,
     "site-map",
     BOARD_GAP,
-    MAP_SLOT_X,
-    MAP_SLOT_Y
+    anchor?.x ?? MAP_SLOT_X,
+    anchor?.y ?? MAP_SLOT_Y
   )
 
   const items: PlacedArchItem[] = []

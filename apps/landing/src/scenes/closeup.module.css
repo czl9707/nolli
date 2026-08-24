@@ -1,14 +1,15 @@
-/* Closeup — rotating quilt board on the stage slot. Cream quilt page around
-   the map window: the stage's map layer settles into CLOSEUP_SLOT and reads
-   as a paper item — the CloseupMapCard under the map layer draws its cream
-   margin, torn edge, pin and shadow. Photos are @nolli/board PhotoItems;
-   these anchors only place them. On arch switch the carousel stays pinned,
-   the map camera flies, the swap group (photos + meta) fades out and
-   remounts with the BoardItem entrance stagger. */
+/* Closeup — the app's arch pin-board fit into the viewport: items are
+   @nolli/board primitives placed by layoutArchBoard (same packing as the
+   app's board), the map item is the site-map slot the stage map layer fills
+   (paper frame under it, pin + label over). All item borders/surfaces come
+   from BoardItem — nothing hand-rolled here. On arch switch the layout
+   re-runs: items exit/re-enter at fresh spots, the map item relocates
+   (--board-shift) and its camera flies; only the carousel + heading chrome
+   stays pinned (left column reserved by boardFit). */
 
 /* Flow-mounted board: sticky at the top of its scroll range (the stage wraps
-   this in the range div) — the whole quilt scrolls in from below, dwells
-   fullscreen while the closeup range passes, exits the top. */
+   this in the range div) — scrolls in from below, dwells fullscreen while
+   the closeup range passes, exits the top. */
 .scene {
   position: sticky;
   top: 0;
@@ -18,15 +19,13 @@
 
 /* the flow wrapper is pointer-events: none — re-enable on interactive bits */
 .carousel button,
-.cta,
-.links a,
-.photo {
+.cta {
   pointer-events: auto;
 }
 
 .note {
   position: absolute;
-  left: 8%;
+  left: var(--spacing-component);
   top: 9dvh;
   width: 300px;
 }
@@ -46,7 +45,7 @@
 
 .carousel {
   position: absolute;
-  left: 8%;
+  left: var(--spacing-component);
   top: calc(9dvh + 10rem);
   width: 300px;
 }
@@ -86,15 +85,20 @@
   white-space: nowrap;
 }
 
-/* the map window anchors to the slot geometry — the paper frame lives under
-   the map layer (CloseupMapCard), so this only carries the label + the snap
-   mode fade mask */
+/* the map window anchors to the slot geometry and follows the per-arch board
+   shift; the paper frame lives under the map layer (CloseupMapPaper) */
 .scene .mapCard {
   position: absolute;
   left: calc((var(--slot-closeup-x) - var(--slot-closeup-w) / 2) * 100%);
   top: calc((var(--slot-closeup-y) - var(--slot-closeup-h) / 2) * 100%);
   width: calc(var(--slot-closeup-w) * 100%);
   height: calc(var(--slot-closeup-h) * 100%);
+  translate: var(--board-shift-x, 0px) var(--board-shift-y, 0px);
+  transition: translate 0.65s cubic-bezier(0.22, 0.9, 0.3, 1);
+}
+
+.mapPin {
+  position: absolute;
 }
 
 .mapLabel {
@@ -130,44 +134,6 @@
   }
 }
 
-/* swap group: arch-bound items (photos + meta) fade out together, then the
-   slug-keyed items remount with their entrance stagger for the reappear.
-   Full-bleed layer — keep it click-transparent (carousel sits below it). */
-.swap {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  transition: opacity 0.28s ease;
-}
-
-.swapOut {
-  opacity: 0;
-}
-
-.photo {
-  position: absolute;
-}
-
-.photo1 {
-  right: 21%;
-  top: 8dvh;
-  width: 330px;
-}
-
-.photo2 {
-  right: 6%;
-  top: 15dvh;
-  width: 185px;
-  height: 250px;
-}
-
-.photo3 {
-  right: 31%;
-  bottom: 13dvh;
-  width: 245px;
-  height: 165px;
-}
-
 @keyframes closeupRotIn {
   from {
     opacity: 0;
@@ -177,49 +143,45 @@
   }
 }
 
-/* bottom-anchored, content-sized card: the meta wrapper holds only an
-   absolute BoardItem so its height collapses to 0 — bottom-align the item
-   so the card grows up from the anchor like before */
-.meta > div {
-  top: auto !important;
-  bottom: 0;
-}
-
-.meta {
+/* the pin-board surface: canvas px geometry, scaled to the viewport by
+   boardFit (JS sets left/top/scale — one source of truth with closeupSlot) */
+.board {
   position: absolute;
-  right: 5%;
-  bottom: 9dvh;
-  width: 295px;
+  transform-origin: 0 0;
 }
 
-.padMeta {
-  padding: 1.25rem 1.4rem;
+.dotGrid {
+  position: absolute;
+  top: -5000px;
+  left: -5000px;
+  width: 10000px;
+  height: 10000px;
+  background-image: radial-gradient(
+    circle,
+    rgb(var(--color-primary-foreground) / 0.25) 1px,
+    transparent 1px
+  );
+  background-size: 24px 24px;
+  pointer-events: none;
 }
 
-.name {
-  font-weight: 700;
-}
-
-.meta dl {
-  margin-top: 0.9rem;
-  display: grid;
-  gap: 0.35rem;
-}
-
-.meta dl div {
+/* metadata card — the app's MetadataItem layout */
+.metaWrapper {
   display: flex;
-  justify-content: space-between;
-  gap: var(--spacing-paragraph);
-  font-size: var(--typography-body2-fontSize);
+  flex-direction: column;
+  padding: var(--spacing-component);
 }
 
-.meta dt {
-  opacity: 0.55;
+.metaWrapper .architect {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 1.25rem;
 }
 
-.meta dd {
-  font-weight: 600;
+.metaWrapper .address {
   text-align: right;
+  font-size: 1rem;
+  opacity: 0.75;
 }
 
 .cta {
@@ -230,17 +192,5 @@
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 3px;
-}
-
-.links {
-  margin-top: 0.9rem;
-  padding-top: 0.7rem;
-  border-top: 1px solid rgb(var(--color-primary-foreground) / 0.15);
-  display: flex;
-  gap: var(--spacing-paragraph);
-}
-
-.links a {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  text-align: left;
 }

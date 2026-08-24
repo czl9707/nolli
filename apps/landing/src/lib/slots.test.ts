@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { CLOSEUP_SLOT, INDEX_SLOT, indexSlot, slotRect } from "./slots"
+import { CLOSEUP_SLOT, INDEX_SLOT, closeupSlot, indexSlot, slotRect } from "./slots"
 
 describe("slotRect", () => {
   it("converts center/size to top-left edges", () => {
@@ -27,5 +27,15 @@ describe("slotRect", () => {
     expect(indexSlot(2400).w * 2400).toBeCloseTo(672, 10)
     // narrow viewport: full width minus component padding per side
     expect(indexSlot(500).w * 500).toBeCloseTo(500 - 64, 10)
+  })
+  it("closeupSlot maps the pin-board's site-map slot into the viewport", () => {
+    // 1908×944: height-bound fit with the chrome column reserved
+    const s = 944 / 1500
+    const slot = closeupSlot(1908, 944)
+    expect(slot.h).toBeCloseTo((300 * s) / 944, 10)
+    expect(slot.w).toBeCloseTo((400 * s) / 1908, 10)
+    // centered rect inverts: cx - w/2 lands at the canvas offset
+    const r = slotRect(slot)
+    expect(r.x * 1908).toBeCloseTo(380 + (1908 - 380 - 2400 * s) / 2 + 700 * s, 10)
   })
 })
