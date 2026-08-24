@@ -1,5 +1,5 @@
 import type { SceneCamera } from "@nolli/map"
-import { CLUSTER_CAMERA, SOUTH_CAMERA, WORLD_CAMERA } from "@/lib/constants"
+import { CLUSTER_CAMERA, HERO_CAMERA, SOUTH_CAMERA, WORLD_CAMERA } from "@/lib/constants"
 import { INDEX_SLOT, slotRect, type SlotRect } from "./slots"
 
 /**
@@ -29,7 +29,7 @@ export const DWELL_RATIO = 0.6
 const FULL: LayerKey = { x: 0, y: 0, w: 1, h: 1 }
 
 export const SCENES: SceneDef[] = [
-  { id: "hero", heightVh: 180, camera: WORLD_CAMERA, layer: FULL },
+  { id: "hero", heightVh: 180, camera: HERO_CAMERA, layer: FULL },
   { id: "index", heightVh: 200, camera: CLUSTER_CAMERA, layer: slotRect(INDEX_SLOT) },
   { id: "cta", heightVh: 160, camera: WORLD_CAMERA, layer: FULL },
   { id: "footer", heightVh: 80, camera: SOUTH_CAMERA, layer: FULL },

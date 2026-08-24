@@ -10,6 +10,7 @@ import {
   type CSSProperties,
   type ReactNode,
 } from "react"
+import { createPortal } from "react-dom"
 import {
   motion,
   useMotionValue,
@@ -34,6 +35,7 @@ import {
 import { indexSlot, slotRect, type Slot } from "@/lib/slots"
 import { useIsMobile } from "@/lib/use-is-mobile"
 import { LandingMap } from "./landing-map"
+import { SiteHeader } from "./site-header"
 
 type StageCtx = {
   flyTo: (camera: SceneCamera) => void
@@ -271,6 +273,13 @@ export function LandingStage({
     cta: ctaPe,
   }
 
+  // Site header: visible over hero/index/cta, gone before the footer's own
+  // brand block rises (visibility kill also removes it from the hit test)
+  const headerOpacity = useTransform(fadeFooter, (v) => 1 - v)
+  const headerVisibility = useTransform(fadeFooter, (v): string =>
+    v > 0.5 ? "hidden" : "visible",
+  )
+
   const ctx = useMemo<StageCtx>(
     () => ({
       flyTo,
@@ -320,6 +329,24 @@ export function LandingStage({
                 {node}
               </motion.div>
             ))}
+          {/* Portaled to body: the hero flow block (and its grade) paints
+              above the sticky stage, so an in-stage header would sit under
+              the gradient — fixed at the top level instead */}
+          {createPortal(
+            <motion.div
+              style={{
+                position: "fixed",
+                inset: 0,
+                pointerEvents: "none",
+                opacity: headerOpacity,
+                visibility: headerVisibility,
+                zIndex: 20,
+              }}
+            >
+              <SiteHeader />
+            </motion.div>,
+            document.body,
+          )}
         </div>
         {/* scene copy in flow: wrappers are the scenes' scroll ranges (same
             heights the spacers used to have, so the spine's total scroll

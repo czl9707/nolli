@@ -2,6 +2,7 @@ import type { ReactNode } from "react"
 import { useLandingData } from "@/lib/landing-data"
 import { LandingStage } from "@/components/stage"
 import { IndexPhotoMarkers } from "@/components/index-photo-markers"
+import { HeroReveal } from "@/components/hero-reveal"
 import { HeroScene } from "@/scenes/hero"
 import { IndexFrame, IndexCopy } from "@/scenes/index-scene"
 import { CtaScene } from "@/scenes/cta"
@@ -43,7 +44,12 @@ export function App() {
         data={data}
         scenes={scenes}
         flows={flows}
-        mapChildren={<IndexPhotoMarkers picks={data.indexPhotos} />}
+        mapChildren={
+          <>
+            <IndexPhotoMarkers picks={data.indexPhotos} />
+            <HeroReveal />
+          </>
+        }
       />
     </main>
   )

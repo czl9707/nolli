@@ -1,0 +1,75 @@
+/* Site header (prototype winner header-A "Topline"). Full-width bar over
+   the map; soft top scrim for legibility. CTA is the app's Button. */
+
+.bar {
+  position: absolute;
+  inset: 0 0 auto 0;
+  pointer-events: none;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 140px;
+  background: linear-gradient(
+    to bottom,
+    rgb(var(--color-primary-foreground) / 0.55),
+    transparent
+  );
+}
+
+.row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 72px;
+  padding: 0 24px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  pointer-events: auto;
+}
+
+.mark {
+  display: block;
+}
+
+.wordmark {
+  font-size: 1.35rem;
+  line-height: 1;
+  color: rgb(var(--color-primary-background));
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  pointer-events: auto;
+}
+
+.links {
+  display: flex;
+  gap: 24px;
+}
+
+.links a {
+  color: rgb(var(--color-primary-background) / 0.75);
+  text-decoration: none;
+  font-size: var(--typography-body2-fontSize);
+  font-weight: 500;
+}
+
+.links a:hover {
+  color: rgb(var(--color-primary-background));
+}
+
+@media (max-width: 767px) {
+  .links {
+    display: none;
+  }
+}

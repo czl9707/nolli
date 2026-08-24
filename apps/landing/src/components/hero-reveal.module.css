@@ -1,0 +1,14 @@
+/* Hero cursor plate (prototype winner reveal-D): the dim veil is the plate's
+   own giant box-shadow (everything outside the plate), the inside gets a
+   hairline border + a slight brightness lift. Fades with the hero scene. */
+
+.plate {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+  border-radius: var(--size-border-radius);
+  border: 1px solid rgb(var(--color-primary-background) / 0.4);
+  box-shadow: 0 0 0 200vmax rgb(var(--color-primary-foreground) / 0.45);
+  backdrop-filter: brightness(1.14) saturate(1.06);
+}

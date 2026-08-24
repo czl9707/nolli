@@ -21,6 +21,13 @@
   visibility: hidden;
 }
 
+/* hero reveal: markers render fully while the cursor plate owns the gating —
+   the per-marker clip-path (hero-reveal.tsx) crops them to the plate */
+:global([data-hero-reveal="on"]) .marker {
+  visibility: visible;
+  opacity: 1;
+}
+
 /* normal pins/clusters stand down while the photo markers own the screen —
    hide every maplibre marker root except the ones carrying a photo marker
    content (.marker is module-scoped, so :has() here matches only ours) */
