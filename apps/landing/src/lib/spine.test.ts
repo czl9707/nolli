@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { SCENES, cameraTargetAt, sceneFade, snap, spineAt } from "./spine"
 
-const s = SCENES // hero 180 / index 200 / closeup 240 / cta 160 / footer 80
+const s = SCENES // hero 180 / index 200 / cta 160 / footer 80
 const total = SCENES.reduce((sum, sc) => sum + sc.heightVh, 0)
 const range = (i: number) => ({
   start: SCENES.slice(0, i).reduce((sum, sc) => sum + sc.heightVh, 0) / total,
@@ -11,8 +11,7 @@ const range = (i: number) => ({
 describe("spineAt morph", () => {
   // hand-computed rects (viewport fractions, x/y = top-left edges):
   //   hero/cta/footer {0,0,1,1}
-  //   index    = INDEX_SLOT {cx:.62,cy:.55,w:.42,h:.66}   → {x:.41, y:.22, w:.42, h:.66}
-  //   closeup  = CLOSEUP_SLOT {cx:.3,cy:.5,w:.26,h:.34}   → {x:.17, y:.33, w:.26, h:.34}
+  //   index = INDEX_SLOT {cx:.5,cy:.55,w:.42,h:.66} → {x:.29, y:.22, w:.42, h:.66}
   const full = { x: 0, y: 0, w: 1, h: 1 }
   const eqRect = (got: ReturnType<typeof spineAt>, want: { x: number; y: number; w: number; h: number }) => {
     for (const k of ["x", "y", "w", "h"] as const) expect(got[k]).toBeCloseTo(want[k], 10)
@@ -21,26 +20,25 @@ describe("spineAt morph", () => {
     const p = (180 * 0.5) / total // mid hero dwell
     eqRect(spineAt(s, p), full)
   })
-  it("dwells exactly on the slot rect for index and closeup", () => {
+  it("dwells exactly on the slot rect for index", () => {
     eqRect(spineAt(s, (180 + 200 * 0.5) / total), { x: 0.29, y: 0.22, w: 0.42, h: 0.66 })
-    eqRect(spineAt(s, (180 + 200 + 240 * 0.5) / total), { x: 0.17, y: 0.33, w: 0.26, h: 0.34 })
   })
   it("last scene dwells to the end", () => {
     eqRect(spineAt(s, 1), full)
   })
   it("reaches the next keyframe exactly at the scene boundary", () => {
     const p = (180 + 200) / total // end of index range
-    eqRect(spineAt(s, p), { x: 0.17, y: 0.33, w: 0.26, h: 0.34 })
+    eqRect(spineAt(s, p), full)
   })
   it("applies easeInOutCubic, not linear, during transition", () => {
     const p = (180 + 200 * 0.7) / total // index local 0.7 → t = 0.25 → eased 0.0625
     const e = 0.0625
     const lerp = (a: number, b: number) => a + e * (b - a)
     eqRect(spineAt(s, p), {
-      x: lerp(0.29, 0.17),
-      y: lerp(0.22, 0.33),
-      w: lerp(0.42, 0.26),
-      h: lerp(0.66, 0.34),
+      x: lerp(0.29, 0),
+      y: lerp(0.22, 0),
+      w: lerp(0.42, 1),
+      h: lerp(0.66, 1),
     })
   })
   it("clamps out-of-range progress", () => {
@@ -96,7 +94,7 @@ describe("sceneFade", () => {
     expect(sceneFade(s, "index", start + len * 0.8)).toBe(0)
   })
   it("last scene is 0 before its approach window", () => {
-    const { start } = range(4)
+    const { start } = range(3)
     const len = 80 / total
     expect(sceneFade(s, "footer", start - len * 0.3)).toBe(0)
   })
@@ -125,7 +123,7 @@ describe("sceneFade", () => {
     // no overlay crossfade against the footer: cta copy lingers across its
     // whole outgoing transition and is gone exactly when the footer block
     // arrives (~footer.start in scroll space)
-    const cta = range(3)
+    const cta = range(2)
     expect(sceneFade(s, "cta", cta.start + (cta.end - cta.start) * 0.8)).toBeCloseTo(0.5, 6)
     expect(sceneFade(s, "cta", cta.end - 1e-9)).toBeGreaterThan(0)
     expect(sceneFade(s, "cta", cta.end)).toBe(0)

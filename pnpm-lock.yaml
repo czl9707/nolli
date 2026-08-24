@@ -10,9 +10,6 @@ importers:
 
   apps/landing:
     dependencies:
-      '@nolli/board':
-        specifier: workspace:*
-        version: link:../../packages/board
       '@nolli/data':
         specifier: workspace:*
         version: link:../../packages/data

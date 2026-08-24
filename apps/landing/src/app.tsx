@@ -2,10 +2,8 @@ import type { ReactNode } from "react"
 import { useLandingData } from "@/lib/landing-data"
 import { LandingStage } from "@/components/stage"
 import { IndexPhotoMarkers } from "@/components/index-photo-markers"
-import { CloseupMapPaper } from "@/components/closeup-map-paper"
 import { HeroScene } from "@/scenes/hero"
 import { IndexFrame, IndexCopy } from "@/scenes/index-scene"
-import { CloseupScene } from "@/scenes/closeup"
 import { CtaScene } from "@/scenes/cta"
 import { FooterScene } from "@/scenes/footer"
 import { SCENES } from "@/lib/spine"
@@ -34,11 +32,6 @@ export function App() {
       node: <IndexCopy key="index" data={data} />,
     },
     {
-      id: "closeup" as const,
-      heightVh: heightOf("closeup"),
-      node: <CloseupScene key="closeup" data={data} />,
-    },
-    {
       id: "cta" as const,
       heightVh: heightOf("cta"),
       node: <CtaScene key="cta" data={data} />,
@@ -51,7 +44,6 @@ export function App() {
         scenes={scenes}
         flows={flows}
         mapChildren={<IndexPhotoMarkers picks={data.indexPhotos} />}
-        underMap={{ id: "closeup", node: <CloseupMapPaper key="closeup-paper" /> }}
       />
     </main>
   )

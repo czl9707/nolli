@@ -12,7 +12,6 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@nolli/board": "workspace:*",
     "@nolli/data": "workspace:*",
     "@nolli/map": "workspace:*",
     "@nolli/ui": "workspace:*",

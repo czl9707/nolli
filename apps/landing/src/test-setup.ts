@@ -1,4 +1,4 @@
-// @nolli/board's barrel reaches @nolli/ui's theme store, which reads
+// @nolli/map's barrel reaches @nolli/ui's theme store, which reads
 // localStorage at module load — node-vitest has no DOM storage.
 const store = new Map<string, string>()
 const stub: Storage = {

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useDbStore, type Arch, type ArchSummary } from "@nolli/data"
 import type { SceneCamera } from "@nolli/map"
-import { BOARD_SLUGS, CLUSTER_CITY, HERO_SLUG, SITE_ZOOM } from "./constants"
+import { CLUSTER_CITY, HERO_SLUG } from "./constants"
 import { fitCamera } from "./camera"
 import { indexSlot } from "./slots"
 import { cityIdByName, computeStats, pickIndexPhotos } from "./shape"
@@ -11,9 +11,7 @@ export type LandingData = {
   cluster: ArchSummary[]
   indexPhotos: ArchSummary[]
   hero: Arch
-  boardSet: Arch[]
   stats: { architectures: number; architects: number }
-  heroCamera: SceneCamera
   indexCamera: SceneCamera
 }
 
@@ -35,8 +33,6 @@ export function useLandingData() {
         const cluster = await dataSource.getAllArchitectures({ cityIds: [cityId] })
         const hero = await dataSource.getArchBySlug(HERO_SLUG)
         if (!hero) throw new Error(`hero architecture "${HERO_SLUG}" not found`)
-        const boardSet = await Promise.all(BOARD_SLUGS.map((s) => dataSource.getArchBySlug(s)))
-        if (boardSet.some((a) => !a)) throw new Error("board slug missing")
         if (cancelled) return
         const indexPhotos = pickIndexPhotos(cluster, hero.coordinates)
         setData({
@@ -44,9 +40,7 @@ export function useLandingData() {
           cluster,
           indexPhotos,
           hero,
-          boardSet: boardSet as Arch[],
           stats: computeStats(summaries),
-          heroCamera: { center: [hero.coordinates.lng, hero.coordinates.lat], zoom: SITE_ZOOM },
           // fit the picks into the plate the map settles into at index dwell
           // (indexSlot fractions of the viewport, measured at load time)
           indexCamera: fitCamera(

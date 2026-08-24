@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { boardCtaLabel, cityIdByName, computeStats, pickIndexPhotos } from "./shape"
+import { cityIdByName, computeStats, pickIndexPhotos } from "./shape"
 import type { ArchSummary } from "@nolli/data"
 
 const s = (id: number, over: Partial<ArchSummary> = {}): ArchSummary => ({
@@ -27,16 +27,6 @@ describe("cityIdByName", () => {
     const options = { architects: [], cities: [{ id: 7, name: "Paris", countryCode: "FR" }], countries: [] }
     expect(cityIdByName(options, "paris")).toBe(7)
     expect(cityIdByName(options, "Tokyo")).toBeNull()
-  })
-})
-
-describe("boardCtaLabel", () => {
-  const arch = { architect: "Renzo Piano", city: "Paris" }
-  it("architect with 2+ works → architect CTA", () => {
-    expect(boardCtaLabel([s(1, { architect: "Renzo Piano" }), s(2, { architect: "Renzo Piano" })], arch)).toBe("more by Renzo Piano →")
-  })
-  it("otherwise city CTA", () => {
-    expect(boardCtaLabel([s(1, { architect: "Renzo Piano" })], arch)).toBe("more in Paris →")
   })
 })
 

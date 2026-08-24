@@ -1,6 +1,6 @@
 import type { SceneCamera } from "@nolli/map"
-import { CLUSTER_CAMERA, SITE_ZOOM, SOUTH_CAMERA, WORLD_CAMERA } from "@/lib/constants"
-import { CLOSEUP_SLOT, INDEX_SLOT, slotRect, type SlotRect } from "./slots"
+import { CLUSTER_CAMERA, SOUTH_CAMERA, WORLD_CAMERA } from "@/lib/constants"
+import { INDEX_SLOT, slotRect, type SlotRect } from "./slots"
 
 /**
  * Scroll spine (clock 1): maps container scroll progress (0..1) to layer
@@ -15,7 +15,7 @@ import { CLOSEUP_SLOT, INDEX_SLOT, slotRect, type SlotRect } from "./slots"
  * resizes natively. */
 export type LayerKey = SlotRect
 
-export type SceneId = "hero" | "index" | "closeup" | "cta" | "footer"
+export type SceneId = "hero" | "index" | "cta" | "footer"
 
 export type SceneDef = {
   id: SceneId
@@ -31,13 +31,6 @@ const FULL: LayerKey = { x: 0, y: 0, w: 1, h: 1 }
 export const SCENES: SceneDef[] = [
   { id: "hero", heightVh: 180, camera: WORLD_CAMERA, layer: FULL },
   { id: "index", heightVh: 200, camera: CLUSTER_CAMERA, layer: slotRect(INDEX_SLOT) },
-  // closeup camera: static fallback — stage overrides from data.heroCamera at runtime
-  {
-    id: "closeup",
-    heightVh: 240,
-    camera: { center: [2.3522, 48.8606], zoom: SITE_ZOOM },
-    layer: slotRect(CLOSEUP_SLOT),
-  },
   { id: "cta", heightVh: 160, camera: WORLD_CAMERA, layer: FULL },
   { id: "footer", heightVh: 80, camera: SOUTH_CAMERA, layer: FULL },
 ]

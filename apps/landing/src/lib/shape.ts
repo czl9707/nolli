@@ -12,11 +12,6 @@ export function cityIdByName(options: FilterOptions, name: string): number | nul
   return hit ? hit.id : null
 }
 
-export function boardCtaLabel(summaries: ArchSummary[], arch: { architect: string; city: string }): string {
-  const works = summaries.filter((s) => s.architect === arch.architect).length
-  return works >= 2 ? `more by ${arch.architect} →` : `more in ${arch.city} →`
-}
-
 export function pickIndexPhotos(
   cluster: ArchSummary[],
   seed: ArchSummary["coordinates"],

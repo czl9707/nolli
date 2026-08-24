@@ -31,7 +31,7 @@ import {
   type SceneDef,
   type SceneId,
 } from "@/lib/spine"
-import { closeupSlot, indexSlot, slotRect, type Slot } from "@/lib/slots"
+import { indexSlot, slotRect, type Slot } from "@/lib/slots"
 import { useIsMobile } from "@/lib/use-is-mobile"
 import { LandingMap } from "./landing-map"
 
@@ -39,9 +39,6 @@ type StageCtx = {
   flyTo: (camera: SceneCamera) => void
   mode: "scrub" | "snap"
   fade: (id: SceneId) => MotionValue<number>
-  /** px offset applied (as a transitioned CSS translate) to the map layer and
-   * its paper card — the closeup board relocates the map item per arch. */
-  setBoardShift: (x: number, y: number) => void
 }
 
 const Ctx = createContext<StageCtx | null>(null)
@@ -56,16 +53,12 @@ export const useLandingStage = () => {
  * multiplies by 100vw/100vh; edges via calc(cx - w/2). */
 const FULL_LAYER: LayerKey = { x: 0, y: 0, w: 1, h: 1 }
 
-function slotVarsFor(idxSlot: Slot, cupSlot: Slot) {
+function slotVarsFor(idxSlot: Slot) {
   return {
     "--slot-index-x": idxSlot.cx,
     "--slot-index-y": idxSlot.cy,
     "--slot-index-w": idxSlot.w,
     "--slot-index-h": idxSlot.h,
-    "--slot-closeup-x": cupSlot.cx,
-    "--slot-closeup-y": cupSlot.cy,
-    "--slot-closeup-w": cupSlot.w,
-    "--slot-closeup-h": cupSlot.h,
   } as CSSProperties
 }
 
@@ -83,7 +76,6 @@ export function LandingStage({
   scenes,
   flows,
   mapChildren,
-  underMap,
 }: {
   data: LandingData
   /** Pinned overlays inside the sticky stage (map-attached chrome), faded per
@@ -96,9 +88,6 @@ export function LandingStage({
   /** Extra content inside the map layer (ArchMap children) — e.g. overlays
    * pinned to map coords. Renders after the map mounts. */
   mapChildren?: ReactNode
-  /** Pinned overlay rendered BENEATH the map layer (e.g. the closeup paper
-   * card the map window sits on), faded per its scene. */
-  underMap?: { id: Exclude<SceneId, "hero" | "footer">; node: ReactNode }
 }) {
   const wrapperRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapRef | null>(null)
@@ -112,33 +101,18 @@ export function LandingStage({
     window.addEventListener("resize", onResize)
     return () => window.removeEventListener("resize", onResize)
   }, [])
-  const { w: vw, h: vh } = vp
+  const { w: vw } = vp
   const idxSlot = useMemo(() => indexSlot(vw), [vw])
-  const cupSlot = useMemo(() => closeupSlot(vw, vh), [vw, vh])
-  const slotVars = useMemo(() => slotVarsFor(idxSlot, cupSlot), [idxSlot, cupSlot])
-
-  // board shift: per-arch map-item relocation inside the closeup scene (px
-  // translate on the layer + paper card; the scroll-driven rect is untouched)
-  const [boardShift, setBoardShiftState] = useState({ x: 0, y: 0 })
-  const setBoardShift = useCallback(
-    (x: number, y: number) =>
-      setBoardShiftState((prev) => (prev.x === x && prev.y === y ? prev : { x, y })),
-    [],
-  )
+  const slotVars = useMemo(() => slotVarsFor(idxSlot), [idxSlot])
 
   // Runtime scene table: index camera fit to the photo-marker picks and the
-  // index layer at the capped slot; closeup camera from data.heroCamera with
-  // the layer at the pin-board's site-map slot
+  // index layer at the capped slot
   const scenesTable: SceneDef[] = useMemo(
     () =>
       SCENES.map((s) =>
-        s.id === "index"
-          ? { ...s, camera: data.indexCamera, layer: slotRect(idxSlot) }
-          : s.id === "closeup"
-            ? { ...s, camera: data.heroCamera, layer: slotRect(cupSlot) }
-            : s,
+        s.id === "index" ? { ...s, camera: data.indexCamera, layer: slotRect(idxSlot) } : s,
       ),
-    [data, idxSlot, cupSlot],
+    [data, idxSlot],
   )
 
   const { scrollYProgress } = useScroll({ target: wrapperRef, offset: ["start start", "end end"] })
@@ -250,9 +224,6 @@ export function LandingStage({
       return
     }
     lastTarget.current = scene
-    // leaving closeup resets the map-item relocation (other scenes' rects are
-    // scroll-driven — a leftover shift would offset them)
-    if (scene.id !== "closeup" && boardShift.x !== 0) setBoardShift(0, 0)
     if (snapMode) {
       flyTo(scene.camera)
       return
@@ -281,13 +252,11 @@ export function LandingStage({
   // Per-scene fade MotionValues for overlays
   const fadeHero = useTransform(scrollYProgress, (p) => sceneFade(scenesTable, "hero", p))
   const fadeIndex = useTransform(scrollYProgress, (p) => sceneFade(scenesTable, "index", p))
-  const fadeCloseup = useTransform(scrollYProgress, (p) => sceneFade(scenesTable, "closeup", p))
   const fadeCta = useTransform(scrollYProgress, (p) => sceneFade(scenesTable, "cta", p))
   const fadeFooter = useTransform(scrollYProgress, (p) => sceneFade(scenesTable, "footer", p))
   const fades: Record<SceneId, MotionValue<number>> = {
     hero: fadeHero,
     index: fadeIndex,
-    closeup: fadeCloseup,
     cta: fadeCta,
     footer: fadeFooter,
   }
@@ -295,12 +264,10 @@ export function LandingStage({
   // (footer is flow-mounted, not an overlay — no binding needed)
   const heroPe = useTransform(fadeHero, (v): string => (v < 0.5 ? "none" : "auto"))
   const indexPe = useTransform(fadeIndex, (v): string => (v < 0.5 ? "none" : "auto"))
-  const closeupPe = useTransform(fadeCloseup, (v): string => (v < 0.5 ? "none" : "auto"))
   const ctaPe = useTransform(fadeCta, (v): string => (v < 0.5 ? "none" : "auto"))
   const pointerEvents: Record<Exclude<SceneId, "footer">, MotionValue<string>> = {
     hero: heroPe,
     index: indexPe,
-    closeup: closeupPe,
     cta: ctaPe,
   }
 
@@ -309,17 +276,9 @@ export function LandingStage({
       flyTo,
       mode: snapMode ? "snap" : "scrub",
       fade: (id) => fades[id],
-      setBoardShift,
     }),
-    [fades, snapMode, setBoardShift],
+    [fades, snapMode],
   )
-
-  // the shift rides on CSS translate (not left/top) so MapLibre never sees a
-  // container resize and mid-flight cameras stay intact
-  const shiftStyle = {
-    translate: `${boardShift.x}px ${boardShift.y}px`,
-    transition: "translate 0.65s cubic-bezier(0.22, 0.9, 0.3, 1)",
-  } as const
 
   return (
     <Ctx.Provider value={ctx}>
@@ -328,23 +287,9 @@ export function LandingStage({
         style={{
           position: "relative",
           ...slotVars,
-          "--board-shift-x": `${boardShift.x}px`,
-          "--board-shift-y": `${boardShift.y}px`,
         } as CSSProperties}
       >
         <div style={{ position: "sticky", top: 0, height: "100svh", overflow: "hidden" }}>
-          {underMap && (
-            <motion.div
-              style={{
-                position: "absolute",
-                inset: 0,
-                opacity: fades[underMap.id],
-                pointerEvents: "none",
-              }}
-            >
-              {underMap.node}
-            </motion.div>
-          )}
           <motion.div
             style={{
               position: "absolute",
@@ -352,7 +297,6 @@ export function LandingStage({
               top: layerTop,
               width: layerWidth,
               height: layerHeight,
-              ...shiftStyle,
               borderRadius: "var(--size-border-radius)",
               overflow: "hidden",
             }}
