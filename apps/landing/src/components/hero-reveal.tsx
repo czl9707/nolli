@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import {
   motion,
   useMotionValue,
@@ -13,11 +13,13 @@ import styles from "./hero-reveal.module.css"
 
 /**
  * Hero cursor reveal (prototype winner reveal-D "Plate crop"). The hero's
- * bare Paris map sits under a dim veil punched by the plate that follows the
- * cursor; the photo markers render fully but are clipped to the plate rect
- * (per-marker inset clip-path), so straddling markers crop at the edge.
- * Everything fades with the hero scene fade; the hero→index grade and layer
- * morph are untouched (spine unchanged apart from the hero camera).
+ * bare Paris map sits under ONE dim layer: a diagonal ink gradient built
+ * into the map's upper layer (the old hero grade, moved here) with the
+ * plate's rect punched out — so the revealed map is fully bright, no second
+ * overlay on top. The photo markers render fully but are clipped to the
+ * plate rect (per-marker inset clip-path), cropping at the edge.
+ * Everything fades with the hero scene fade; the hero→index handoff keeps
+ * the gradient (now here) and the layer morph.
  *
  * Snap mode (touch / reduced motion) has no cursor: the component renders
  * nothing and IndexPhotoMarkers shows the picks unclipped as the fallback.
@@ -48,14 +50,42 @@ export function HeroReveal() {
   if (mode === "snap") return null
 
   return (
-    <motion.div
-      className={styles.plate}
-      style={{ x, y, width: PLATE.w, height: PLATE.h, opacity: heroFade }}
-      aria-hidden
-    >
+    <div className={styles.root}>
+      <PlateVars sx={sx} sy={sy} heroFade={heroFade} />
+      <motion.div className={styles.veil} style={{ opacity: heroFade }} aria-hidden />
+      <motion.div
+        className={styles.plate}
+        style={{ x, y, width: PLATE.w, height: PLATE.h, opacity: heroFade }}
+        aria-hidden
+      />
       <HeroClipDriver sx={sx} sy={sy} heroFade={heroFade} />
-    </motion.div>
+    </div>
   )
+}
+
+/** Writes the plate rect edges as CSS vars (px) for the veil's clip-path
+ * hole (a transform can't drive a polygon). */
+function PlateVars({
+  sx,
+  sy,
+}: {
+  sx: ReturnType<typeof useSpring>
+  sy: ReturnType<typeof useSpring>
+  heroFade: ReturnType<ReturnType<typeof useLandingStage>["fade"]>
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  const write = () => {
+    const el = ref.current?.parentElement
+    if (!el) return
+    el.style.setProperty("--pl", `${sx.get() - PLATE.w / 2}px`)
+    el.style.setProperty("--pt", `${sy.get() - PLATE.h / 2}px`)
+    el.style.setProperty("--pr", `${sx.get() + PLATE.w / 2}px`)
+    el.style.setProperty("--pb", `${sy.get() + PLATE.h / 2}px`)
+  }
+  useMotionValueEvent(sx, "change", write)
+  useMotionValueEvent(sy, "change", write)
+  useEffect(write)
+  return <div ref={ref} aria-hidden style={{ display: "none" }} />
 }
 
 /** Clips the photo markers to the plate rect while the hero owns the screen.
