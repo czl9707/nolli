@@ -36,6 +36,7 @@
 }
 
 .copyBody {
+  position: relative;
   left: calc((var(--slot-index-x) - var(--slot-index-w) / 2) * 100%);
   width: calc(var(--slot-index-w) * 100%);
   color: rgb(var(--color-primary-foreground));
