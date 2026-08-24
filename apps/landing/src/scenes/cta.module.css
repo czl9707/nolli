@@ -26,19 +26,29 @@
 .grade {
   position: absolute;
   inset: 0;
+  /* dark plateau from a fifth of the block down: by the time the pinned copy
+     (lower half of the sheet) is on screen, the map behind it is dark */
   background: linear-gradient(
     to bottom,
-    transparent 32%,
-    rgb(var(--color-primary-foreground) / 0.45) 55%,
-    rgb(var(--color-primary-foreground) / 0.92) 78%,
+    transparent 5%,
+    rgb(var(--color-primary-foreground) / 0.55) 12%,
+    rgb(var(--color-primary-foreground) / 0.93) 20%,
     rgb(var(--color-primary-foreground) / 0.95) 100%
   );
+}
+
+/* sticky sheet pinned against the bookend's full height (range + dark tail):
+   the copy dwells from the range start until the footer rises */
+.sheet {
+  position: sticky;
+  top: 0;
+  height: 100svh;
 }
 
 .copy {
   position: absolute;
   left: 6vw;
-  top: 66%;
+  top: 60%;
   transform: translateY(-50%);
   max-width: 42ch;
   z-index: 5;
