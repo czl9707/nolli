@@ -1,10 +1,12 @@
-/* Footer — end of the map, normal-flow block rising over the pinned south
-   ocean. */
+/* Footer — edge of the map: normal-flow cream block rising over the cta
+   grade's dark tail (the annotation sits on the dark, not the ocean). */
 
 .scene {
   display: flex;
   position: relative;
-  z-index: 1;
+  /* above the cta range wrapper (z 2): the footer block rises over the
+     cta grade's dark tail, so the handoff is the footer's own edge */
+  z-index: 3;
   flex-direction: column;
   min-height: 72vh;
   background: rgb(var(--color-primary-background));

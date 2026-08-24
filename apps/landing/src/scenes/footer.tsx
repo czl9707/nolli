@@ -3,16 +3,16 @@ import { Body1, Body2, Caption } from "@nolli/ui"
 import { APP_URL } from "@/lib/constants"
 import type { LandingData } from "@/lib/landing-data"
 
-/** Footer (prototype G "end of the map") — normal-flow cream block after the
- * stage spacers, rising over the pinned south ocean. Excluded from the
+/** Footer (prototype G "edge of the map") — normal-flow cream block after the
+ * stage spacers, rising over the cta grade's dark tail. Excluded from the
  * stage's overlay loop: it has no pinned copy, only this in-flow block. */
 export function FooterScene({ data }: { data: LandingData }) {
   return (
     <section className={styles.scene}>
       <div className={`hand ${styles.annotation}`}>
-        <span>end of the map · 世界的尽头</span>
+        <span>oops — edge of the map</span>
         <Body2 asChild>
-          <span className={styles.coords}>74° S · no pins from here on</span>
+          <span className={styles.coords}>no architectures pinned here</span>
         </Body2>
       </div>
       <div className={styles.inner}>

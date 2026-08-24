@@ -1,14 +1,20 @@
-/* CTA — hero-mirror grade. Mirror of the hero's diagonal grade: dark
-   bottom-left, fading to top-right. Layout and type match the hero — the two
-   scenes bookend uniformly. */
+/* CTA — hero-mirror grade. The hero's transition grades dark-at-top to
+   transparent-at-bottom (its hard edge hides at the top of the page, the
+   soft edge leaves into the index). The CTA is the vertical mirror:
+   transparent at the top so it enters softly over the world map, dark at
+   the bottom — and the dark carries down to the footer, so the only cut is
+   the footer block's own edge. */
 
-/* Flow-mounted bookend: sticky fullscreen inside its scroll range (the
-   stage wraps this in the range div) — scrolls in from below, dwells while
-   the cta range passes, exits the top. */
+/* Flow block inside the cta scroll range (the stage wraps this in the range
+   div). Taller than the range by the dark tail: the extra runs under the
+   rising footer (the footer sits above it, z-wise) so the space above the
+   footer block stays dark through the handoff. */
 .bookend {
-  position: sticky;
+  position: absolute;
   top: 0;
-  height: 100svh;
+  left: 0;
+  width: 100%;
+  height: calc(100% + 90svh);
   color: rgb(var(--color-primary-background));
 }
 
@@ -21,18 +27,18 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(
-    to top right,
-    rgb(var(--color-primary-foreground) / 0.92) 0%,
-    rgb(var(--color-primary-foreground) / 0.9) 28%,
-    rgb(var(--color-primary-foreground) / 0.55) 50%,
-    transparent 72%
+    to bottom,
+    transparent 32%,
+    rgb(var(--color-primary-foreground) / 0.45) 55%,
+    rgb(var(--color-primary-foreground) / 0.92) 78%,
+    rgb(var(--color-primary-foreground) / 0.95) 100%
   );
 }
 
 .copy {
   position: absolute;
   left: 6vw;
-  top: 56%;
+  top: 66%;
   transform: translateY(-50%);
   max-width: 42ch;
   z-index: 5;
