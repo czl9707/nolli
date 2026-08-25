@@ -1,6 +1,7 @@
-/* Hero — diagonal grade. Flow block mounted over the pinned map (stage pulls
-   it up with a -100svh margin) — gradient + copy scroll out the top as normal
-   content while the map stays sticky and animates. */
+/* Hero — flow block mounted over the pinned map (stage pulls it up with a
+   -100svh margin); copy scrolls out the top as normal content while the map
+   stays sticky and animates. The dim gradient over the map lives in the map
+   layer (hero-reveal) so the cursor plate reveals a fully bright map. */
 
 .hero {
   position: relative;
@@ -9,17 +10,6 @@
   z-index: 2;
   pointer-events: none;
   color: rgb(var(--color-primary-background));
-}
-
-.grade {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    165deg,
-    rgb(var(--color-primary-foreground) / 0.95) 20%,
-    rgb(var(--color-primary-foreground) / 0.45) 55%,
-    transparent 80%
-  );
 }
 
 /* copy A "split rails": statement split into two chunks at screen left and

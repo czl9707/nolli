@@ -1,13 +1,13 @@
 import styles from "./hero.module.css"
 import type { LandingData } from "@/lib/landing-data"
 
-/** Hero overlay (prototype D grade + copy-A "split rails"): the stage's map
- * layer is the background; the statement splits into two chunks at screen
- * left and right, vertically centered. */
+/** Hero overlay (copy-A "split rails"): the statement splits into two chunks
+ * at screen left and right, vertically centered. The dim gradient over the
+ * map lives in the map layer itself (hero-reveal) so the cursor plate
+ * reveals a fully bright map. */
 export function HeroScene({ data }: { data: LandingData }) {
   return (
     <section className={styles.hero}>
-      <div className={styles.grade} />
       <div className={styles.copyLeft}>
         <p className={`hand ${styles.overline}`}>
           {data.stats.architectures} works · {data.stats.architects} architects

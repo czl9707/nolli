@@ -9,7 +9,6 @@ import styles from "./site-header.module.css"
 export function SiteHeader() {
   return (
     <header className={styles.bar}>
-      <div className={styles.scrim} />
       <div className={styles.row}>
         <a className={styles.brand} href="#" aria-label="Nolli home">
           <img className={styles.mark} src="/favicon.svg" alt="" width={28} height={28} />
