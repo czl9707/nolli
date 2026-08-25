@@ -21,8 +21,8 @@
   height: 200svh;
   background: linear-gradient(
     to bottom,
-    rgb(var(--color-primary-foreground) / 0.95) 55%,
-    transparent 95%
+    rgb(var(--color-primary-foreground) / 0.95) 35%,
+    transparent 85%
   );
   /* plate-shaped hole as two band masks COMPOSITED WITH ADD (union): each
      mask is opaque outside its band, transparent inside — added together the

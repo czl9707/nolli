@@ -11,7 +11,7 @@ const range = (i: number) => ({
 describe("spineAt morph", () => {
   // hand-computed rects (viewport fractions, x/y = top-left edges):
   //   hero/cta/footer {0,0,1,1}
-  //   index = INDEX_SLOT {cx:.5,cy:.55,w:.42,h:.66} → {x:.29, y:.22, w:.42, h:.66}
+  //   index = INDEX_SLOT {cx:.5,cy:.6,w:.42,h:.65} → {x:.29, y:.275, w:.42, h:.65}
   const full = { x: 0, y: 0, w: 1, h: 1 }
   const eqRect = (got: ReturnType<typeof spineAt>, want: { x: number; y: number; w: number; h: number }) => {
     for (const k of ["x", "y", "w", "h"] as const) expect(got[k]).toBeCloseTo(want[k], 10)
@@ -21,7 +21,7 @@ describe("spineAt morph", () => {
     eqRect(spineAt(s, p), full)
   })
   it("dwells exactly on the slot rect for index", () => {
-    eqRect(spineAt(s, (180 + 200 * 0.5) / total), { x: 0.29, y: 0.22, w: 0.42, h: 0.66 })
+    eqRect(spineAt(s, (180 + 200 * 0.5) / total), { x: 0.29, y: 0.275, w: 0.42, h: 0.65 })
   })
   it("last scene dwells to the end", () => {
     eqRect(spineAt(s, 1), full)
@@ -36,9 +36,9 @@ describe("spineAt morph", () => {
     const lerp = (a: number, b: number) => a + e * (b - a)
     eqRect(spineAt(s, p), {
       x: lerp(0.29, 0),
-      y: lerp(0.22, 0),
+      y: lerp(0.275, 0),
       w: lerp(0.42, 1),
-      h: lerp(0.66, 1),
+      h: lerp(0.65, 1),
     })
   })
   it("clamps out-of-range progress", () => {

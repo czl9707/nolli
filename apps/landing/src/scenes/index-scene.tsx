@@ -26,7 +26,7 @@ export function IndexCopy({ data }: { data: LandingData }) {
           <p className={styles.overline}>The Index</p>
         </Note>
         <h2 className={styles.statement}>
-          Google Maps has all the pins.
+          Google Map has all the pins.
           <br />
           ArchDaily has all the information.
           <br />

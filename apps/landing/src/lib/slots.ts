@@ -2,7 +2,7 @@ export type Slot = { cx: number; cy: number; w: number; h: number }
 
 export type SlotRect = { x: number; y: number; w: number; h: number }
 
-export const INDEX_SLOT: Slot = { cx: 0.5, cy: 0.55, w: 0.42, h: 0.66 }
+export const INDEX_SLOT: Slot = { cx: 0.5, cy: 0.6, w: 0.42, h: 0.65 }
 
 /** Read a length CSS var from the shared @nolli/ui tokens as px (rem resolves
  * against the root font size). Falls back outside the browser (tests). */

@@ -5,9 +5,9 @@ describe("slotRect", () => {
   it("converts center/size to top-left edges", () => {
     const idx = slotRect(INDEX_SLOT)
     expect(idx.x).toBeCloseTo(0.29, 10)
-    expect(idx.y).toBeCloseTo(0.22, 10)
+    expect(idx.y).toBeCloseTo(0.275, 10)
     expect(idx.w).toBe(0.42)
-    expect(idx.h).toBe(0.66)
+    expect(idx.h).toBe(0.65)
   })
   it("is an exact inverse of the frame CSS calc (cx - w/2 etc.)", () => {
     const r = slotRect(INDEX_SLOT)
