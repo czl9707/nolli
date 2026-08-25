@@ -12,9 +12,8 @@
   color: rgb(var(--color-primary-background));
 }
 
-/* copy A "split rails": statement split into two chunks at screen left and
-   right, vertically centered (prototype winner). Mobile stacks both rails
-   left-aligned in the middle band. */
+/* split rails: mirrored statements at screen left and right, vertically
+   centered. Mobile stacks both rails left-aligned in the middle band. */
 .copyLeft,
 .copyRight {
   position: absolute;
@@ -30,12 +29,6 @@
 .copyRight {
   right: 6vw;
   text-align: right;
-}
-
-.overline {
-  font-size: var(--typography-note-fontSize);
-  opacity: 0.85;
-  margin-bottom: var(--spacing-paragraph);
 }
 
 .h1 {

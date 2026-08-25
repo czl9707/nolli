@@ -26,7 +26,7 @@ export function App() {
   // geometry (do not wrap)
   const heightOf = (id: SceneId) => SCENES.find((s) => s.id === id)!.heightVh
   const flows = [
-    { id: "hero" as const, node: <HeroScene key="hero" data={data} /> },
+    { id: "hero" as const, node: <HeroScene key="hero" /> },
     {
       id: "index" as const,
       heightVh: heightOf("index"),
