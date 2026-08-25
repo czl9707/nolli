@@ -7,6 +7,17 @@
   pointer-events: none;
 }
 
+.scrim {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 140px;
+  background: linear-gradient(
+    to bottom,
+    rgb(var(--color-primary-foreground) / 0.55),
+    transparent
+  );
+}
+
 .row {
   position: relative;
   display: flex;

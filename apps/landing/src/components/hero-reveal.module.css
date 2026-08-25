@@ -1,42 +1,14 @@
-/* Hero cursor plate (prototype winner reveal-D). ONE dim layer: the veil
-   carries the diagonal ink gradient (the hero grade, folded in here) with
-   the plate's rect punched out via an even-odd clip-path polygon driven by
-   the --pl/--pt/--pr/--pb vars. The plate itself is just the hairline
-   border + brightness lift, so the revealed map is fully bright. */
-
-.root {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.veil {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    165deg,
-    rgb(var(--color-primary-foreground) / 0.95) 20%,
-    rgb(var(--color-primary-foreground) / 0.45) 55%,
-    transparent 80%
-  );
-  clip-path: polygon(
-    evenodd,
-    0 0,
-    100% 0,
-    100% 100%,
-    0 100%,
-    var(--pl) var(--pt),
-    var(--pr) var(--pt),
-    var(--pr) var(--pb),
-    var(--pl) var(--pb)
-  );
-}
+/* Hero cursor plate (prototype winner reveal-D): the dim veil is the plate's
+   own giant box-shadow (everything outside the plate), the inside gets a
+   hairline border + a slight brightness lift. Fades with the hero scene. */
 
 .plate {
   position: absolute;
   left: 0;
   top: 0;
+  pointer-events: none;
   border-radius: var(--size-border-radius);
   border: 1px solid rgb(var(--color-primary-background) / 0.4);
+  box-shadow: 0 0 0 200vmax rgb(var(--color-primary-foreground) / 0.45);
   backdrop-filter: brightness(1.14) saturate(1.06);
 }
