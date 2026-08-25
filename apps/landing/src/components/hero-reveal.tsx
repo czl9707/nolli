@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import {
   motion,
   useMotionValue,
@@ -7,6 +7,7 @@ import {
   useTransform,
 } from "framer-motion"
 import { useMap } from "@nolli/map"
+import type { ArchSummary } from "@nolli/data"
 import { useLandingStage } from "./stage"
 import markerStyles from "./index-photo-markers.module.css"
 import styles from "./hero-reveal.module.css"
@@ -27,11 +28,24 @@ import styles from "./hero-reveal.module.css"
 
 const PLATE = { w: 360, h: 280 }
 
-export function HeroReveal() {
+/** The photo marker's pin and drop-shadow paint OUTSIDE the marker content's
+ * border box (pin at top: -10px, tilt + shadow a few px each side) — inset()
+ * accepts negative values, so let the clip expand past the box by the
+ * overhang instead of shaving the pin. */
+const OVERHANG = { top: 14, right: 10, bottom: 10, left: 10 }
+
+export function HeroReveal({
+  picks,
+  city,
+}: {
+  picks: ArchSummary[]
+  city: string
+}) {
   const { fade, mode } = useLandingStage()
   const heroFade = fade("hero")
   const sx = useSpring(useMotionValue(window.innerWidth * 0.62), { stiffness: 130, damping: 22 })
   const sy = useSpring(useMotionValue(window.innerHeight * 0.42), { stiffness: 130, damping: 22 })
+  const [inside, setInside] = useState(0)
 
   useEffect(() => {
     const onMove = (e: PointerEvent) => {
@@ -56,9 +70,13 @@ export function HeroReveal() {
       <motion.div
         className={styles.plate}
         style={{ x, y, width: PLATE.w, height: PLATE.h, opacity: heroFade }}
-        aria-hidden
-      />
-      <HeroClipDriver sx={sx} sy={sy} heroFade={heroFade} />
+      >
+        <span className={`hand ${styles.tagCity}`}>{city}</span>
+        <span className={styles.tagCount}>
+          {inside} / {picks.length}
+        </span>
+      </motion.div>
+      <HeroClipDriver sx={sx} sy={sy} heroFade={heroFade} onInside={setInside} />
     </div>
   )
 }
@@ -95,10 +113,12 @@ function HeroClipDriver({
   sx,
   sy,
   heroFade,
+  onInside,
 }: {
   sx: ReturnType<typeof useSpring>
   sy: ReturnType<typeof useSpring>
   heroFade: ReturnType<ReturnType<typeof useLandingStage>["fade"]>
+  onInside: (n: number) => void
 }) {
   const { map } = useMap()
 
@@ -108,6 +128,7 @@ function HeroClipDriver({
     const update = () => {
       raf = 0
       const active = heroFade.get() >= 0.5
+      let insideCount = 0
       const contents = Array.from(
         document.querySelectorAll<HTMLElement>(".maplibregl-marker"),
       )
@@ -124,16 +145,25 @@ function HeroClipDriver({
         const t = sy.get() - PLATE.h / 2
         const b = sy.get() + PLATE.h / 2
         const box = root.getBoundingClientRect()
-        if (box.right < l || box.left > r || box.bottom < t || box.top > b) {
+        // fully-outside test against the overhang-extended box
+        if (
+          box.right < l - OVERHANG.left ||
+          box.left > r + OVERHANG.right ||
+          box.bottom < t - OVERHANG.top ||
+          box.top > b + OVERHANG.bottom
+        ) {
           el.style.clipPath = "inset(0 0 100% 0)"
           return
         }
-        const ct = Math.max(0, t - box.top)
-        const cl = Math.max(0, l - box.left)
-        const crr = Math.max(0, box.right - r)
-        const cb = Math.max(0, box.bottom - b)
+        insideCount++
+        // negative insets grow the clip past the content box (pin, shadow)
+        const ct = Math.max(t - box.top, -OVERHANG.top)
+        const cl = Math.max(l - box.left, -OVERHANG.left)
+        const crr = Math.max(box.right - r, -OVERHANG.right)
+        const cb = Math.max(box.bottom - b, -OVERHANG.bottom)
         el.style.clipPath = `inset(${ct}px ${crr}px ${cb}px ${cl}px)`
       })
+      onInside(active ? insideCount : 0)
     }
     const schedule = () => {
       if (!raf) raf = requestAnimationFrame(update)
@@ -150,7 +180,7 @@ function HeroClipDriver({
       map.off("move", schedule)
       if (raf) cancelAnimationFrame(raf)
     }
-  }, [map, sx, sy, heroFade])
+  }, [map, sx, sy, heroFade, onInside])
 
   return null
 }

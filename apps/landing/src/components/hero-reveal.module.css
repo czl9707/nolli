@@ -14,10 +14,9 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(
-    165deg,
-    rgb(var(--color-primary-foreground) / 0.95) 20%,
-    rgb(var(--color-primary-foreground) / 0.45) 55%,
-    transparent 80%
+    to bottom,
+    rgb(var(--color-primary-foreground) / 0.95) 55%,
+    transparent 95%
   );
   /* plate-shaped hole as two band masks COMPOSITED WITH ADD (union): each
      mask is opaque outside its band, transparent inside — added together the
@@ -49,4 +48,27 @@
   border-radius: var(--size-border-radius);
   border: 1px solid rgb(var(--color-primary-background) / 0.4);
   backdrop-filter: brightness(1.14) saturate(1.06);
+}
+
+/* frame annotations — static city tag top-left outside, live inside-count
+   top-right outside; both ride with the plate */
+.tagCity,
+.tagCount {
+  position: absolute;
+  top: -10px;
+  transform: translateY(-100%);
+  font-size: var(--typography-note-fontSize);
+  color: rgb(var(--color-primary-background) / 0.85);
+  white-space: nowrap;
+}
+
+.tagCity {
+  left: 0;
+  font-size: 1.05rem;
+}
+
+.tagCount {
+  right: 0;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
 }
