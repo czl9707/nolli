@@ -19,9 +19,11 @@
     rgb(var(--color-primary-foreground) / 0.45) 55%,
     transparent 80%
   );
-  /* plate-shaped hole as two intersecting band masks — a single even-odd
-     polygon would drag connecting edges from the screen corners across the
-     veil (visible diagonal "cross" bands) */
+  /* plate-shaped hole as two band masks COMPOSITED WITH ADD (union): each
+     mask is opaque outside its band, transparent inside — added together the
+     veil stays dimmed everywhere except where both are transparent (the
+     plate rect). Intersect/destination-in would instead veil only the four
+     corner quadrants, un-dimming a full-screen cross along the plate axes */
   -webkit-mask-image: linear-gradient(
       to right,
       #000 0 var(--pl),
@@ -29,7 +31,7 @@
       #000 var(--pr)
     ),
     linear-gradient(to bottom, #000 0 var(--pt), transparent var(--pt) var(--pb), #000 var(--pb));
-  -webkit-mask-composite: source-in;
+  -webkit-mask-composite: source-over;
   mask-image: linear-gradient(
       to right,
       #000 0 var(--pl),
@@ -37,7 +39,7 @@
       #000 var(--pr)
     ),
     linear-gradient(to bottom, #000 0 var(--pt), transparent var(--pt) var(--pb), #000 var(--pb));
-  mask-composite: intersect;
+  mask-composite: add;
 }
 
 .plate {
