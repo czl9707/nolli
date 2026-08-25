@@ -12,7 +12,13 @@
 
 .veil {
   position: absolute;
-  inset: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+  /* 200svh, translated up 1:1 with page scroll (y = -scrollY from the
+     component) — the gradient exits through the top like the old flow
+     grade instead of fading in place */
+  height: 200svh;
   background: linear-gradient(
     to bottom,
     rgb(var(--color-primary-foreground) / 0.95) 55%,
@@ -47,6 +53,9 @@
   top: 0;
   border-radius: var(--size-border-radius);
   backdrop-filter: brightness(1.14) saturate(1.06);
+  /* maplibre markers carry inline z-index ~48891 and append AFTER this
+     element — stack the plate (dot, tags) above the photo cards */
+  z-index: 100000;
 }
 
 /* frame annotations — "Architecture" top-left, city name top-right, both

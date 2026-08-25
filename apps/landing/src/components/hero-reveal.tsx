@@ -3,8 +3,10 @@ import {
   motion,
   useMotionValue,
   useMotionValueEvent,
+  useScroll,
   useSpring,
   useTransform,
+  type MotionValue,
 } from "framer-motion"
 import { useMap } from "@nolli/map"
 import { useLandingStage } from "./stage"
@@ -39,6 +41,12 @@ export function HeroReveal({ city }: { city: string }) {
   const sx = useSpring(useMotionValue(window.innerWidth * 0.62), { stiffness: 130, damping: 22 })
   const sy = useSpring(useMotionValue(window.innerHeight * 0.42), { stiffness: 130, damping: 22 })
 
+  // the veil rides the page like the old flow-mounted grade did: 200svh tall,
+  // translated up 1:1 with scroll, so the gradient EXITS THROUGH THE TOP
+  // instead of fading in place
+  const { scrollY } = useScroll()
+  const veilY = useTransform(scrollY, (v) => -v)
+
   useEffect(() => {
     const onMove = (e: PointerEvent) => {
       sx.set(e.clientX)
@@ -71,8 +79,12 @@ export function HeroReveal({ city }: { city: string }) {
 
   return (
     <div className={styles.root}>
-      <PlateVars sx={sx} sy={sy} heroFade={heroFade} />
-      <motion.div className={styles.veil} style={{ opacity: heroFade }} aria-hidden />
+      <PlateVars sx={sx} sy={sy} scrollY={scrollY} />
+      <motion.div
+        className={styles.veil}
+        style={{ opacity: heroFade, y: veilY }}
+        aria-hidden
+      />
       <motion.div
         className={styles.plate}
         style={{ x, y, width: PLATE.w, height: PLATE.h, opacity: heroFade }}
@@ -86,27 +98,32 @@ export function HeroReveal({ city }: { city: string }) {
   )
 }
 
-/** Writes the plate rect edges as CSS vars (px) for the veil's clip-path
- * hole (a transform can't drive a polygon). */
+/** Writes the plate rect edges as CSS vars (px) for the veil's mask hole.
+ * The veil translates up with page scroll, so the hole's VERTICAL position
+ * is written in veil-local coords (viewport + scrollY) to stay under the
+ * plate; a transform can't drive a mask polygon. */
 function PlateVars({
   sx,
   sy,
+  scrollY,
 }: {
   sx: ReturnType<typeof useSpring>
   sy: ReturnType<typeof useSpring>
-  heroFade: ReturnType<ReturnType<typeof useLandingStage>["fade"]>
+  scrollY: MotionValue<number>
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const write = () => {
     const el = ref.current?.parentElement
     if (!el) return
+    const s = scrollY.get()
     el.style.setProperty("--pl", `${sx.get() - PLATE.w / 2}px`)
-    el.style.setProperty("--pt", `${sy.get() - PLATE.h / 2}px`)
+    el.style.setProperty("--pt", `${sy.get() - PLATE.h / 2 + s}px`)
     el.style.setProperty("--pr", `${sx.get() + PLATE.w / 2}px`)
-    el.style.setProperty("--pb", `${sy.get() + PLATE.h / 2}px`)
+    el.style.setProperty("--pb", `${sy.get() + PLATE.h / 2 + s}px`)
   }
   useMotionValueEvent(sx, "change", write)
   useMotionValueEvent(sy, "change", write)
+  useMotionValueEvent(scrollY, "change", write)
   useEffect(write)
   return <div ref={ref} aria-hidden style={{ display: "none" }} />
 }
