@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
 import {
   motion,
   useMotionValue,
@@ -7,7 +7,6 @@ import {
   useTransform,
 } from "framer-motion"
 import { useMap } from "@nolli/map"
-import type { ArchSummary } from "@nolli/data"
 import { useLandingStage } from "./stage"
 import markerStyles from "./index-photo-markers.module.css"
 import styles from "./hero-reveal.module.css"
@@ -34,18 +33,11 @@ const PLATE = { w: 360, h: 280 }
  * overhang instead of shaving the pin. */
 const OVERHANG = { top: 14, right: 10, bottom: 10, left: 10 }
 
-export function HeroReveal({
-  picks,
-  city,
-}: {
-  picks: ArchSummary[]
-  city: string
-}) {
+export function HeroReveal({ city }: { city: string }) {
   const { fade, mode } = useLandingStage()
   const heroFade = fade("hero")
   const sx = useSpring(useMotionValue(window.innerWidth * 0.62), { stiffness: 130, damping: 22 })
   const sy = useSpring(useMotionValue(window.innerHeight * 0.42), { stiffness: 130, damping: 22 })
-  const [inside, setInside] = useState(0)
 
   useEffect(() => {
     const onMove = (e: PointerEvent) => {
@@ -55,6 +47,20 @@ export function HeroReveal({
     window.addEventListener("pointermove", onMove)
     return () => window.removeEventListener("pointermove", onMove)
   }, [sx, sy])
+
+  // the plate IS the cursor in this scene — hide the system one while the
+  // hero owns the screen (links/buttons keep their own UA cursors)
+  useEffect(() => {
+    const apply = (v: number) => {
+      document.body.style.cursor = v > 0.5 ? "none" : ""
+    }
+    apply(heroFade.get())
+    const un = heroFade.on("change", apply)
+    return () => {
+      un()
+      document.body.style.cursor = ""
+    }
+  }, [heroFade])
 
   const x = useTransform(sx, (v) => v - PLATE.w / 2)
   const y = useTransform(sy, (v) => v - PLATE.h / 2)
@@ -71,12 +77,11 @@ export function HeroReveal({
         className={styles.plate}
         style={{ x, y, width: PLATE.w, height: PLATE.h, opacity: heroFade }}
       >
-        <span className={`hand ${styles.tagCity}`}>{city}</span>
-        <span className={styles.tagCount}>
-          {inside} / {picks.length}
-        </span>
+        <span className={`hand ${styles.tagTl}`}>Architecture</span>
+        <span className={`hand ${styles.tagTr}`}>{city}</span>
+        <span className={styles.dot} />
       </motion.div>
-      <HeroClipDriver sx={sx} sy={sy} heroFade={heroFade} onInside={setInside} />
+      <HeroClipDriver sx={sx} sy={sy} heroFade={heroFade} />
     </div>
   )
 }
@@ -113,12 +118,10 @@ function HeroClipDriver({
   sx,
   sy,
   heroFade,
-  onInside,
 }: {
   sx: ReturnType<typeof useSpring>
   sy: ReturnType<typeof useSpring>
   heroFade: ReturnType<ReturnType<typeof useLandingStage>["fade"]>
-  onInside: (n: number) => void
 }) {
   const { map } = useMap()
 
@@ -128,7 +131,6 @@ function HeroClipDriver({
     const update = () => {
       raf = 0
       const active = heroFade.get() >= 0.5
-      let insideCount = 0
       const contents = Array.from(
         document.querySelectorAll<HTMLElement>(".maplibregl-marker"),
       )
@@ -155,7 +157,6 @@ function HeroClipDriver({
           el.style.clipPath = "inset(0 0 100% 0)"
           return
         }
-        insideCount++
         // negative insets grow the clip past the content box (pin, shadow)
         const ct = Math.max(t - box.top, -OVERHANG.top)
         const cl = Math.max(l - box.left, -OVERHANG.left)
@@ -163,7 +164,6 @@ function HeroClipDriver({
         const cb = Math.max(box.bottom - b, -OVERHANG.bottom)
         el.style.clipPath = `inset(${ct}px ${crr}px ${cb}px ${cl}px)`
       })
-      onInside(active ? insideCount : 0)
     }
     const schedule = () => {
       if (!raf) raf = requestAnimationFrame(update)
@@ -180,7 +180,7 @@ function HeroClipDriver({
       map.off("move", schedule)
       if (raf) cancelAnimationFrame(raf)
     }
-  }, [map, sx, sy, heroFade, onInside])
+  }, [map, sx, sy, heroFade])
 
   return null
 }

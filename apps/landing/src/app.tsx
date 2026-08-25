@@ -47,7 +47,7 @@ export function App() {
         mapChildren={
           <>
             <IndexPhotoMarkers picks={data.indexPhotos} />
-            <HeroReveal picks={data.indexPhotos} city="Paris" />
+            <HeroReveal city="Paris" />
           </>
         }
       />
