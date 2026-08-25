@@ -19,17 +19,25 @@
     rgb(var(--color-primary-foreground) / 0.45) 55%,
     transparent 80%
   );
-  clip-path: polygon(
-    evenodd,
-    0 0,
-    100% 0,
-    100% 100%,
-    0 100%,
-    var(--pl) var(--pt),
-    var(--pr) var(--pt),
-    var(--pr) var(--pb),
-    var(--pl) var(--pb)
-  );
+  /* plate-shaped hole as two intersecting band masks — a single even-odd
+     polygon would drag connecting edges from the screen corners across the
+     veil (visible diagonal "cross" bands) */
+  -webkit-mask-image: linear-gradient(
+      to right,
+      #000 0 var(--pl),
+      transparent var(--pl) var(--pr),
+      #000 var(--pr)
+    ),
+    linear-gradient(to bottom, #000 0 var(--pt), transparent var(--pt) var(--pb), #000 var(--pb));
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(
+      to right,
+      #000 0 var(--pl),
+      transparent var(--pl) var(--pr),
+      #000 var(--pr)
+    ),
+    linear-gradient(to bottom, #000 0 var(--pt), transparent var(--pt) var(--pb), #000 var(--pb));
+  mask-composite: intersect;
 }
 
 .plate {
