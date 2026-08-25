@@ -2,7 +2,7 @@ export const FPS = 45;
 
 // --- Durations in SECONDS. Frames derive via round(S * FPS). ---
 export const WALK_SLOT_S = 4.5;     // per-building slot; total WALK = count × this
-export const HOOK_S = 1.5;          // held world-map + title opener
+export const HOOK_S = 0.5;          // held world-map + title opener
 // CTA = "Explore more in" line reveal (1.5s) + Nolli mark/wordmark hold (2.5s).
 // The line/lockup split belongs to CtaLockup (the only consumer of the parts);
 // only the total is shared with the beat Sequences + camera chain.
