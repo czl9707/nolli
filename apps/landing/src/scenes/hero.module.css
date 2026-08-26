@@ -1,12 +1,12 @@
-/* Hero — flow block mounted over the pinned map (stage pulls it up with a
-   -100svh margin); copy scrolls out the top as normal content while the map
-   stays sticky and animates. The dim gradient over the map lives in the map
-   layer (hero-reveal) so the cursor plate reveals a fully bright map. */
+/* Hero — sticky section inside the 180vh scene wrapper: split-rail copy
+   dwells over the map for the dwell range, then scrolls on with the page.
+   The dim gradient over the map lives in the map layer (hero.reveal) so
+   the cursor plate reveals a fully bright map. */
 
-.hero {
-  position: relative;
-  height: 200svh;
-  margin-top: -100svh;
+.scene {
+  position: sticky;
+  top: 0;
+  height: 100svh;
   z-index: 2;
   pointer-events: none;
   color: rgb(var(--color-primary-background));
