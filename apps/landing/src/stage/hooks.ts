@@ -62,9 +62,7 @@ export function useSceneScroll(id?: string): MotionValue<number> {
 export function useSceneCamera(keyframes: SceneKeyframe[]): void {
   const stage = useStage()
   const own = useSceneId()
-  const range = stage.ranges[own]
-  const startVh = range?.startVh ?? 0
-  const heightVh = range?.heightVh ?? Infinity
+  const startVh = stage.ranges[own]?.startVh ?? 0
 
   const lastCross = useRef<string | null>(null)
   const pending = useRef<{ timer: number; camera: SceneCamera; layer: LayerKey } | null>(null)
@@ -102,8 +100,15 @@ export function useSceneCamera(keyframes: SceneKeyframe[]): void {
         if (kf.atVh > vh) break
         if (kf.camera) owner = { atVh: kf.atVh, layer: kf.layer, camera: kf.camera }
       }
-      const mine = owner && owner.atVh >= startVh && owner.atVh < startVh + heightVh
-      if (!mine || !owner) {
+      // this scene owns the target when the owner keyframe is one of its own
+      // camera keyframes — inclusive of a terminal keyframe sitting exactly
+      // at its end (the cta's south flight at totalVh), and never a claim on
+      // the next scene's at:0 keyframe at a shared boundary
+      const ownerAt = owner?.atVh
+      const mine =
+        ownerAt !== undefined &&
+        keyframes.some((kf) => kf.at === ownerAt - startVh && !!kf.camera)
+      if (!owner || !mine) {
         // another scene's keyframe owns the camera — allow ours to fire the
         // next time ownership returns
         lastCross.current = null
@@ -136,7 +141,7 @@ export function useSceneCamera(keyframes: SceneKeyframe[]): void {
       unLayer()
       clear()
     }
-  }, [keyframes, startVh, heightVh, stage])
+  }, [keyframes, startVh, stage])
 }
 
 export function useMapPortal(): HTMLElement | null {
