@@ -22,9 +22,8 @@ export const yearRange = (cfg: ReelConfig): string => {
   return `${Math.min(...years)}–${Math.max(...years)}`;
 };
 
-/** The reel's narrative frame — the architect's oeuvre pinned to the product.
- *  Template needs only the architect's name. */
-export const mapTail = "on a Map.";
+export const titleLead = "Architectures by";
+export const mapTail = "on a Map";
 
-/** The persistent WALK title: name + map tail. */
-export const reelTitle = (cfg: ReelConfig): string => `${cfg.architect} ${mapTail}`;
+/** The persistent WALK title: lead + name + map tail. */
+export const reelTitle = (cfg: ReelConfig): string => `${titleLead} ${cfg.architect}, ${mapTail}`;

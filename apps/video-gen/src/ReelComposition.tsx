@@ -6,7 +6,7 @@ import {
   ctaStart, secToFrames, BRAND_FADE_OUT_LEAD_S, CLAMP,
 } from "./lib/timeline";
 import { WORLD_VP } from "./lib/viewport";
-import { reelTitle, mapTail, type ReelBuilding, type ReelConfig } from "./lib/config";
+import { reelTitle, titleLead, mapTail, type ReelBuilding, type ReelConfig } from "./lib/config";
 import { CardCarousel } from "./components/CardCarousel";
 import { BuildingCaption } from "./components/BuildingCaption";
 import { CornerBrand } from "./components/CornerBrand";
@@ -39,7 +39,7 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
         <CameraSeries buildings={buildings} worldVP={WORLD_VP} />
 
         <Sequence from={0} durationInFrames={WALK_START} layout="none">
-          <HookLockup architect={cfg.architect} tail={mapTail} />
+          <HookLockup architect={cfg.architect} lead={titleLead} tail={mapTail} />
         </Sequence>
 
         <Sequence from={WALK_START} durationInFrames={walkFrames(count)} layout="none">
