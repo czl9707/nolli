@@ -5,22 +5,14 @@ import { REEL_TYPE } from "../lib/type";
 
 const NAME_GAP = 24;
 
-// Phases inside the 1.3s HOOK (~58 frames @45fps): name steps in first, tail
-// follows; both lift together just before WALK_START so the WALK opens on the
-// map already flying. in 0.5 / hold 0.3 / out 0.5.
+// in 0.5 / hold 0.3 / out 0.5 (~58 frames @45fps)
 const NAME_IN: [number, number] = [2, 22];
 const TAIL_IN: [number, number] = [14, 34];
 const EXIT: [number, number] = [36, 57];
-// The card's opaque background fades over the exit tail — the map (already
-// mounted underneath) shows through as the text lifts, so the WALK begins on
-// a moving frame instead of a hard cut to a static map.
 const BG_OUT: [number, number] = [36, 57];
 
-/** HOOK beat — a full-text title card in the CTA's language, centered: the
- *  architect's name big over the map tail ("on a Map.") small.
- *  Per-char blur-in (staggered lines), blur-out-up exit. The opaque card
- *  doubles as the map's cover: the map mounts and holds underneath from
- *  frame 0, revealed mid-exit via the background fade. */
+/** HOOK beat — full-text title card: name big, map tail small. The opaque
+ *  background covers the map until the exit fade reveals it mid-flight. */
 export const HookLockup: React.FC<{ architect: string; tail: string }> = ({
   architect,
   tail,
