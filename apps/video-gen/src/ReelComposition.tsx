@@ -6,19 +6,20 @@ import {
   ctaStart, secToFrames, BRAND_FADE_OUT_LEAD_S, CLAMP,
 } from "./lib/timeline";
 import { WORLD_VP } from "./lib/viewport";
-import { reelTitle, yearRange, type ReelBuilding, type ReelConfig } from "./lib/config";
+import { reelTitle, walkLead, type ReelBuilding, type ReelConfig } from "./lib/config";
 import { CardCarousel } from "./components/CardCarousel";
 import { BuildingCaption } from "./components/BuildingCaption";
 import { CornerBrand } from "./components/CornerBrand";
 import { CtaLockup } from "./components/CtaLockup";
-import { HookLockup, HOOK_EXIT_F } from "./components/HookLockup";
+import { HookLockup } from "./components/HookLockup";
+import { WalkTitle } from "./components/WalkTitle";
 import { MapProvider } from "./components/MapProvider";
 import { CameraSeries } from "./components/CameraSeries";
 
 const BRAND_INSET = 48;
 const BRAND_VERT = 36;
-const HOOK_TITLE_LEFT = "55%";
-const HOOK_TITLE_RIGHT = "6%";
+const TITLE_LEFT = 64;
+const TITLE_TOP = 48;
 const walkFrames = (count: number) => count * SLOT_FRAMES;
 
 // Carousel sits at left=50% — the map spans the left 75%, the bg zone the right 25%.
@@ -37,14 +38,12 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
       <MapProvider count={count}>
         <CameraSeries buildings={buildings} worldVP={WORLD_VP} />
 
-        <Sequence from={0} durationInFrames={WALK_START + HOOK_EXIT_F} layout="none">
-          <div style={{ position: "absolute", left: HOOK_TITLE_LEFT, right: HOOK_TITLE_RIGHT, top: 0, bottom: 0, zIndex: 5, display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
-            <HookLockup architect={cfg.architect} subtitle={yearRange(cfg)} />
-          </div>
+        <Sequence from={0} durationInFrames={WALK_START} layout="none">
+          <HookLockup architect={cfg.architect} lead={walkLead} />
         </Sequence>
 
         <Sequence from={WALK_START} durationInFrames={walkFrames(count)} layout="none">
-          <WalkChrome buildings={buildings} slug={cfg.slug} title={reelTitle(cfg)} />
+          <WalkChrome buildings={buildings} slug={cfg.slug} title={reelTitle(cfg)} architect={cfg.architect} />
         </Sequence>
 
         <Sequence from={ctaStart(count)} durationInFrames={secToFrames(CTA_S)} layout="none">
@@ -61,7 +60,8 @@ const WalkChrome: React.FC<{
   buildings: ReelBuilding[];
   slug: string;
   title: string;
-}> = ({ buildings, slug, title }) => {
+  architect: string;
+}> = ({ buildings, slug, title, architect }) => {
   const frame = useCurrentFrame();
   const count = buildings.length;
   const walkLen = walkFrames(count);
@@ -85,8 +85,11 @@ const WalkChrome: React.FC<{
           ))}
         </Series>
       </div>
+      <div style={{ position: "absolute", top: TITLE_TOP, left: TITLE_LEFT, zIndex: 6 }}>
+        <WalkTitle title={title} opacity={chromeOpacity} />
+      </div>
       <div style={{ position: "absolute", top: BRAND_VERT, right: BRAND_INSET, zIndex: 6 }}>
-        <CornerBrand corner="top" title={title} opacity={chromeOpacity} />
+        <CornerBrand corner="top" title={architect} opacity={chromeOpacity} />
       </div>
       <div style={{ position: "absolute", bottom: BRAND_VERT, right: BRAND_INSET, zIndex: 6 }}>
         <CornerBrand corner="bottom" opacity={chromeOpacity} />

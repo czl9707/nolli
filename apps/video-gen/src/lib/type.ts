@@ -19,6 +19,7 @@ export const REEL_TYPE = {
   hookYears: { fontFamily: SANS, fontSize: 48, fontWeight: 300, letterSpacing: "0.05em" },
   captionTitle: { fontFamily: SANS, fontSize: 64, fontWeight: 700 },
   captionMeta: { fontFamily: SANS, fontSize: 28, fontWeight: 500, letterSpacing: "0.02em" },
+  walkTitle: { fontFamily: SANS, fontSize: 40, fontWeight: 600 },
   cornerTitle: { fontFamily: SANS, fontSize: 22, fontWeight: 500 },
   cornerHandle: { fontFamily: SANS, fontSize: 16, fontWeight: 500, letterSpacing: "0.04em" },
   ctaLead: { fontFamily: SANS, fontSize: 96, fontWeight: 500 },

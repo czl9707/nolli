@@ -18,9 +18,9 @@ describe("buildReelConfig", () => {
     expect(() => buildReelConfig({ slug: "x", architect: "X", buildings: [buildings[0]] })).toThrow();
   });
 
-  it("derives the year range and the name-only corner title", () => {
+  it("derives the year range and the walk-phrase title", () => {
     const cfg = buildReelConfig({ slug: "mies", architect: "Mies", buildings });
     expect(yearRange(cfg)).toBe("1928–1958");
-    expect(reelTitle(cfg)).toBe("Mies");
+    expect(reelTitle(cfg)).toBe("Walking through Mies");
   });
 });

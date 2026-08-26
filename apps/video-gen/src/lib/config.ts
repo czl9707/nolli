@@ -22,6 +22,9 @@ export const yearRange = (cfg: ReelConfig): string => {
   return `${Math.min(...years)}–${Math.max(...years)}`;
 };
 
-/** The reel's corner title — pure templates over ReelConfig so the seed
- *  needs no per-architect config fields. */
-export const reelTitle = (cfg: ReelConfig): string => cfg.architect;
+/** The reel's narrative frame — the walk is the video's own action, so the
+ *  template needs only the architect's name. */
+export const walkLead = "Walking through";
+
+/** The persistent WALK title: the narrative lead + name. */
+export const reelTitle = (cfg: ReelConfig): string => `${walkLead} ${cfg.architect}`;

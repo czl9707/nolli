@@ -3,9 +3,9 @@ import { REEL_TYPE } from "../lib/type";
 const FG = "rgb(var(--color-primary-foreground))";
 const FG2 = "rgb(var(--color-secondary-foreground))";
 
-/** Persistent corner brand through WALK on the right (bg) zone. `corner="top"`
- *  = the reel's descriptive title; `corner="bottom"` = the @nolli.map handle.
- *  Both are chrome labels — sans per the two-family rule. */
+/** Persistent corner chrome through WALK on the right (bg) zone: top = the
+ *  architect's name, bottom = the @nolli.map handle. Chrome labels — sans per
+ *  the two-family rule. */
 export const CornerBrand: React.FC<{
   corner: "top" | "bottom";
   title?: string; // top only; the bottom handle ignores it
