@@ -13,7 +13,7 @@ import { useMap } from "@nolli/map"
 import { useMapPortal, useSceneCamera, useSceneScroll, useStage } from "@/stage/hooks"
 import { CLUSTER_CITY, HERO_CAMERA } from "@/lib/constants"
 import type { SceneFactory } from "@/lib/scene"
-import markerStyles from "@/components/index-photo-markers.module.css"
+import markerStyles from "./index.markers.module.css"
 import revealStyles from "./hero.reveal.module.css"
 import styles from "./hero.module.css"
 

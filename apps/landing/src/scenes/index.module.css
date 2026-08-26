@@ -1,7 +1,7 @@
 /* Index — light app mode around the card slot. Light page around the card
    slot: the map plate resizes into the slot at dwell, so the frame only draws
-   its border — the cream page behind is the surround. Slot vars come from the
-   stage (INDEX_SLOT fractions). */
+   its border — the cream page behind is the surround. Slot vars are written
+   by IndexFrame (indexSlot fractions). */
 
 .scene {
   position: absolute;

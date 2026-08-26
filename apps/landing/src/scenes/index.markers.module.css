@@ -1,5 +1,5 @@
 /* Index photo markers inside the map layer — their marker contents portal
-   into the map container, so the stage fade reaches them via a CSS var that
+   into the map container, so their fade reaches them via a CSS var that
    IndexPhotoMarkers sets on it. Opacity needs the CSS-var route (no fallback
    value — Vite 8/lightningcss substitutes var() fallbacks statically) and
    must target the content div, not the marker root (maplibre writes its own
@@ -22,7 +22,7 @@
 }
 
 /* hero reveal: markers render fully while the cursor plate owns the gating —
-   the per-marker clip-path (hero-reveal.tsx) crops them to the plate */
+   the per-marker clip-path (hero.tsx) crops them to the plate */
 :global([data-hero-reveal="on"]) .marker {
   visibility: visible;
   opacity: 1;
