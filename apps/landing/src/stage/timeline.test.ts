@@ -68,6 +68,30 @@ describe("buildTimeline", () => {
     expect(t.keyframes).toHaveLength(1)
     expect(t.keyframes[0].layer).toBe(slot)
   })
+  it("keeps a terminal camera when the next scene dedupes onto its keyframe", () => {
+    const cam = { center: [-10, -55] as [number, number], zoom: 3 }
+    const t = buildTimeline([
+      {
+        id: "a",
+        heightVh: 100,
+        keyframes: [
+          { at: 0, layer: full },
+          { at: 100, layer: full, camera: cam },
+        ],
+        Component: () => null,
+      },
+      {
+        id: "b",
+        heightVh: 100,
+        keyframes: [{ at: 0, layer: full }],
+        Component: () => null,
+      },
+    ])
+    const atBoundary = t.keyframes.find((k) => k.atVh === 100)
+    expect(atBoundary?.camera).toBe(cam)
+    expect(cameraAtVh(t, 100)).toBe(cam)
+    expect(cameraAtVh(t, 150)).toBe(cam)
+  })
 })
 
 describe("layerAt", () => {

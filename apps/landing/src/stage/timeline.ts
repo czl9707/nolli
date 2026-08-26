@@ -25,7 +25,8 @@ export function buildTimeline(scenes: Scene[]): Timeline {
     for (const kf of s.keyframes) {
       const entry = { atVh: acc + kf.at, layer: kf.layer, camera: kf.camera, ease: kf.ease ?? easeInOutCubic }
       const prev = keyframes.at(-1)
-      if (prev && prev.atVh === entry.atVh) keyframes[keyframes.length - 1] = entry
+      if (prev && prev.atVh === entry.atVh)
+        keyframes[keyframes.length - 1] = entry.camera ? entry : { ...entry, camera: prev.camera }
       else keyframes.push(entry)
     }
     acc += sceneHeight(s)

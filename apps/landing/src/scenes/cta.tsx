@@ -10,12 +10,12 @@ const FULL = { x: 0, y: 0, w: 1, h: 1 }
 
 const CTA_KEYFRAMES = [
   { at: 0, layer: FULL, camera: WORLD_CAMERA },
-  { at: 96, layer: FULL },
-  { at: 160, layer: FULL, camera: SOUTH_CAMERA },
+  { at: 96, layer: FULL, camera: SOUTH_CAMERA },
+  { at: 160, layer: FULL },
 ]
 
-/** CTA: world view dwells, copy pins over a settling dark grade; the tail
- * keyframe flies far south — the static footer rises over it. */
+/** CTA: world view dwells, copy pins over a settling dark grade; at dwell
+ * end the camera flies far south — the static footer rises over it. */
 export const ctaScene: SceneFactory = ({ data }) => ({
   id: "cta",
   heightVh: 160,
