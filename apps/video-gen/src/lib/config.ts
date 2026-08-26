@@ -27,4 +27,4 @@ export const yearRange = (cfg: ReelConfig): string => {
 export const mapTail = "on a Map.";
 
 /** The persistent WALK title: name + map tail. */
-export const reelTitle = (cfg: ReelConfig): string => `${cfg.architect}, ${mapTail}`;
+export const reelTitle = (cfg: ReelConfig): string => `${cfg.architect} ${mapTail}`;

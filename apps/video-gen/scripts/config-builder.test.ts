@@ -21,6 +21,6 @@ describe("buildReelConfig", () => {
   it("derives the year range and the walk-phrase title", () => {
     const cfg = buildReelConfig({ slug: "mies", architect: "Mies", buildings });
     expect(yearRange(cfg)).toBe("1928–1958");
-    expect(reelTitle(cfg)).toBe("Mies, on a Map.");
+    expect(reelTitle(cfg)).toBe("Mies on a Map.");
   });
 });
