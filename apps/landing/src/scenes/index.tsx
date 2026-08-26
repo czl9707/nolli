@@ -60,21 +60,28 @@ function IndexScene({
  * surround. The slot vars are this scene's own concern now. */
 function IndexFrame({ slot }: { slot: Slot }) {
   const overlay = useOverlayPortal()
+  // fades with the copy: 1 through dwell at 120vh, linear to 0 by 160vh —
+  // otherwise the border outlives the scene
+  const local = useSceneScroll()
+  const opacity = useTransform(local, (v) =>
+    v <= 120 ? 1 : Math.max(0, 1 - (v - 120) / 40),
+  )
   if (!overlay) return null
   return createPortal(
-    <div
+    <motion.div
       className={styles.scene}
-      style={
-        {
+      style={{
+        ...({
           "--slot-index-x": slot.cx,
           "--slot-index-y": slot.cy,
           "--slot-index-w": slot.w,
           "--slot-index-h": slot.h,
-        } as CSSProperties
-      }
+        } as CSSProperties),
+        opacity,
+      }}
     >
       <div className={styles.frame} />
-    </div>,
+    </motion.div>,
     overlay,
   )
 }

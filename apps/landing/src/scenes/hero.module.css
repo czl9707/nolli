@@ -32,7 +32,8 @@
 }
 
 .h1 {
-  font-weight: 700;
+  font-family: var(--font-playful);
+  font-weight: 400;
   font-size: var(--typography-h1-fontSize);
   line-height: 1.05;
   max-width: 14ch;

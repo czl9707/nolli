@@ -34,7 +34,7 @@ export function useLandingData() {
         const hero = await dataSource.getArchBySlug(HERO_SLUG)
         if (!hero) throw new Error(`hero architecture "${HERO_SLUG}" not found`)
         if (cancelled) return
-        const indexPhotos = pickIndexPhotos(cluster, hero.coordinates)
+        const indexPhotos = pickIndexPhotos(cluster, hero.coordinates, 10)
         setData({
           summaries,
           cluster,
