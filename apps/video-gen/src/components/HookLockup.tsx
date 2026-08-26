@@ -1,37 +1,64 @@
+import { AbsoluteFill, interpolate, useCurrentFrame } from "remotion";
 import { SoftBlurIn } from "./SoftBlurIn";
-import { WALK_START } from "../lib/timeline";
+import { CLAMP } from "../lib/timeline";
 import { REEL_TYPE } from "../lib/type";
 
-const LINE_GAP = 12;
-/** HOOK title blur-out exit length (frames). Exported so the HOOK `<Sequence>`'s
- *  duration tail stays in lockstep with this exit. */
-export const HOOK_EXIT_F = 8;
+const NAME_GAP = 24;
 
-/** HOOK beat title — present from frame 0 (no entrance anim: `start.enabled = false`),
- *  blur-out-up exits across `[WALK_START, WALK_START + HOOK_EXIT_F]`. Rendered as
- *  two explicit right-aligned lines (name / year range) so the browser never
- *  chooses the wrap point. Name leads (700); years read as data under it
- *  (light + letterspaced). */
-export const HookLockup: React.FC<{ architect: string; subtitle: string }> = ({
+// in 0.5 / hold 0.3 / out 0.5 (~58 frames @45fps)
+const LEAD_IN: [number, number] = [2, 16];
+const NAME_IN: [number, number] = [8, 26];
+const TAIL_IN: [number, number] = [16, 34];
+const EXIT: [number, number] = [38, 57];
+const BG_OUT: [number, number] = [38, 57];
+
+/** HOOK beat — full-text title card: lead small, name big, map tail small.
+ *  The opaque background covers the map until the exit fade reveals it
+ *  mid-flight. */
+export const HookLockup: React.FC<{ architect: string; lead: string; tail: string }> = ({
   architect,
-  subtitle,
+  lead,
+  tail,
 }) => {
+  const frame = useCurrentFrame();
+  const bgOpacity = interpolate(frame, BG_OUT, [1, 0], CLAMP);
   const FG = "rgb(var(--color-primary-foreground))";
   return (
-    <div style={{ textAlign: "right" }}>
-      {[architect, subtitle].map((text, i) => (
+    <>
+      <AbsoluteFill
+        style={{ backgroundColor: "rgb(var(--color-primary-background))", opacity: bgOpacity, zIndex: 4 }}
+      />
+      <AbsoluteFill
+        style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", zIndex: 5 }}
+      >
         <SoftBlurIn
-          key={i}
-          text={text}
-          start={{ when: 0, last: 0, enabled: false }}
-          end={{ when: WALK_START, last: WALK_START + HOOK_EXIT_F, enabled: true }}
+          text={lead}
+          start={{ when: LEAD_IN[0], last: LEAD_IN[1], enabled: true }}
+          end={{ when: EXIT[0], last: EXIT[1], enabled: true }}
           style={{
-            display: "block", maxWidth: "100%", minWidth: 0, color: FG,
-            ...REEL_TYPE[i > 0 ? "hookYears" : "hookName"],
-            ...(i > 0 ? { marginTop: LINE_GAP } : {}),
+            display: "block", maxWidth: "88%", minWidth: 0, color: FG, textAlign: "center",
+            ...REEL_TYPE.hookYears,
           }}
         />
-      ))}
-    </div>
+        <SoftBlurIn
+          text={architect}
+          start={{ when: NAME_IN[0], last: NAME_IN[1], enabled: true }}
+          end={{ when: EXIT[0], last: EXIT[1], enabled: true }}
+          style={{
+            display: "block", maxWidth: "88%", minWidth: 0, color: FG, textAlign: "center",
+            ...REEL_TYPE.hookName, marginTop: NAME_GAP,
+          }}
+        />
+        <SoftBlurIn
+          text={tail}
+          start={{ when: TAIL_IN[0], last: TAIL_IN[1], enabled: true }}
+          end={{ when: EXIT[0], last: EXIT[1], enabled: true }}
+          style={{
+            display: "block", maxWidth: "88%", minWidth: 0, color: FG, textAlign: "center",
+            ...REEL_TYPE.hookYears, marginTop: NAME_GAP,
+          }}
+        />
+      </AbsoluteFill>
+    </>
   );
 };

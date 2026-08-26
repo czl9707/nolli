@@ -30,7 +30,7 @@ const HALO_BLUR_PX = 8; // blur spread — the halo's soft reach
 
 /** One caption line: a blurred dark halo copy stacked behind the fg copy. Both
  *  share the same Phases so they reveal and move char-for-char in lockstep. */
-const CaptionLine: React.FC<{
+export const CaptionLine: React.FC<{
   text: string;
   start: Phase;
   end: Phase;
