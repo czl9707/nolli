@@ -3,9 +3,8 @@ import { Body1, Body2, Caption } from "@nolli/ui"
 import { APP_URL } from "@/lib/constants"
 import type { LandingData } from "@/lib/landing-data"
 
-/** Footer (prototype G "edge of the map") — normal-flow cream block after the
- * stage spacers, rising over the cta grade's dark tail. Excluded from the
- * stage's overlay loop: it has no pinned copy, only this in-flow block. */
+/** Footer — static cream block after the stage, rising over the cta grade's
+ * dark tail. Not a spine scene: no keyframes, no stage hooks. */
 export function FooterScene({ data }: { data: LandingData }) {
   return (
     <section className={styles.scene}>

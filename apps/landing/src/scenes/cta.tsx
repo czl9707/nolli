@@ -1,16 +1,39 @@
-import styles from "./cta.module.css"
+import { motion, useTransform } from "framer-motion"
 import { Body1 } from "@nolli/ui"
-import { APP_URL } from "@/lib/constants"
+import { SOUTH_CAMERA, WORLD_CAMERA, APP_URL } from "@/lib/constants"
 import type { LandingData } from "@/lib/landing-data"
+import type { SceneFactory } from "@/lib/scene"
+import { useSceneCamera, useSceneScroll } from "@/stage/hooks"
+import styles from "./cta.module.css"
 
-/** CTA overlay (prototype A, hero-mirror grade) — the stage's map layer is
- * the background. The copy rides a sticky sheet (the index copy's pattern):
- * enters from below, pins while the range passes, exits the top; the grade
- * beneath it settles into a dark plateau by the copy's pin height so the
- * pinned copy always sits on dark. */
-export function CtaScene({ data }: { data: LandingData }) {
+const FULL = { x: 0, y: 0, w: 1, h: 1 }
+
+const CTA_KEYFRAMES = [
+  { at: 0, layer: FULL, camera: WORLD_CAMERA },
+  { at: 96, layer: FULL },
+  { at: 160, layer: FULL, camera: SOUTH_CAMERA },
+]
+
+/** CTA: world view dwells, copy pins over a settling dark grade; the tail
+ * keyframe flies far south — the static footer rises over it. */
+export const ctaScene: SceneFactory = ({ data }) => ({
+  id: "cta",
+  heightVh: 160,
+  keyframes: CTA_KEYFRAMES,
+  Component: () => <CtaScene data={data} />,
+})
+
+function CtaScene({ data }: { data: LandingData }) {
+  useSceneCamera(CTA_KEYFRAMES)
+  const local = useSceneScroll()
+  // fade in across the approach (-40 → 0), 1 through the dwell (96), out
+  // across the whole outgoing transition (96 → 160) — the old last-but-one
+  // rule, since the flow-mounted footer takes over at the boundary
+  const opacity = useTransform(local, (v) =>
+    v < -40 ? 0 : v < 0 ? (v + 40) / 40 : v <= 96 ? 1 : Math.max(0, 1 - (v - 96) / 64),
+  )
   return (
-    <section className={styles.bookend}>
+    <motion.section className={styles.bookend} style={{ opacity }}>
       <div className={styles.grade} />
       <div className={styles.sheet}>
         <div className={styles.copy}>
@@ -26,6 +49,6 @@ export function CtaScene({ data }: { data: LandingData }) {
           </Body1>
         </div>
       </div>
-    </section>
+    </motion.section>
   )
 }
