@@ -23,7 +23,10 @@ export const yearRange = (cfg: ReelConfig): string => {
 };
 
 export const titleLead = "Architectures by";
-export const mapTail = "on a Map";
+export const mapTail = "On a Map";
 
-/** The persistent WALK title: lead + name + map tail. */
-export const reelTitle = (cfg: ReelConfig): string => `${titleLead} ${cfg.architect}, ${mapTail}`;
+/** The persistent WALK title: lead + name on line 1, map tail on line 2. */
+export const reelTitleLines = (cfg: ReelConfig): [string, string] => [
+  `${titleLead} ${cfg.architect},`,
+  mapTail,
+];

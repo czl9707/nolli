@@ -10,7 +10,8 @@
     "assets": "tsx scripts/assets.ts",
     "render": "tsx scripts/render.ts",
     "test": "vitest run",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "capture:intro": "tsx scripts/capture-intro.ts"
   },
   "dependencies": {
     "@nolli/data": "workspace:*",
@@ -24,13 +25,14 @@
     "maplibre-gl": "^5.24.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "remotion": "4",
-    "sharp": "^0.33.5"
+    "remotion": "4"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^25.5.0",
     "@types/react": "^19.2.14",
+    "playwright": "^1.62.1",
+    "sharp": "^0.33.5",
     "tsx": "^4.23.0",
     "typescript": "^5.9.3",
     "vitest": "^4.1.10"

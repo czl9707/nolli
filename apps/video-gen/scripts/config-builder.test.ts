@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { buildReelConfig } from "./config-builder";
-import { reelTitle, yearRange } from "../src/lib/config";
+import { reelTitleLines, yearRange } from "../src/lib/config";
 import type { ReelBuilding } from "../src/lib/config";
 
 const buildings: ReelBuilding[] = [
@@ -18,9 +18,9 @@ describe("buildReelConfig", () => {
     expect(() => buildReelConfig({ slug: "x", architect: "X", buildings: [buildings[0]] })).toThrow();
   });
 
-  it("derives the year range and the walk-phrase title", () => {
+  it("derives the year range and the two-line title", () => {
     const cfg = buildReelConfig({ slug: "mies", architect: "Mies", buildings });
     expect(yearRange(cfg)).toBe("1928–1958");
-    expect(reelTitle(cfg)).toBe("Architectures by Mies, on a Map");
+    expect(reelTitleLines(cfg)).toEqual(["Architectures by Mies,", "On a Map"]);
   });
 });
