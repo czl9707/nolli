@@ -100,18 +100,22 @@ export function LandingStage({
       mode: snapMode ? ("snap" as const) : ("scrub" as const),
       scrollVh,
       layer,
+      timeline,
       ranges,
       mapRef: () => mapRef.current,
       flyTo,
       mapPortal,
       overlayPortal,
     }),
-    [snapMode, scrollVh, layer, ranges, flyTo, mapPortal, overlayPortal],
+    [snapMode, scrollVh, layer, timeline, ranges, flyTo, mapPortal, overlayPortal],
   )
 
   return (
     <StageInternal.StageProvider value={stageValue}>
-      <div ref={wrapperRef} style={{ position: "relative" } as CSSProperties}>
+      <div
+        ref={wrapperRef}
+        style={{ position: "relative", height: `${timeline.totalVh + 100}vh` } as CSSProperties}
+      >
         <div style={{ position: "sticky", top: 0, height: "100svh", overflow: "hidden" }}>
           <motion.div
             style={{
@@ -142,21 +146,36 @@ export function LandingStage({
             document.body,
           )}
         </div>
-        {scenes.map((s) => (
-          <StageInternal.SceneProvider key={s.id} value={{ id: s.id }}>
-            <div
-              data-scene={s.id}
-              style={{
-                height: `${sceneHeight(s)}vh`,
-                position: "relative",
-                zIndex: 2,
-                pointerEvents: "none",
-              }}
-            >
-              <s.Component />
-            </div>
-          </StageInternal.SceneProvider>
-        ))}
+        {/* scene wrappers overlay the sticky stage from the top of the
+            wrapper — they'd otherwise stack after its 100svh of flow and the
+            hero copy would only reach the viewport after a full screen of
+            scroll. The wrapper keeps totalVh + 100vh of height so the
+            scroll-progress mapping (start start / end end) is unchanged. */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 2,
+            pointerEvents: "none",
+          }}
+        >
+          {scenes.map((s) => (
+            <StageInternal.SceneProvider key={s.id} value={{ id: s.id }}>
+              <div
+                data-scene={s.id}
+                style={{
+                  height: `${sceneHeight(s)}vh`,
+                  position: "relative",
+                  pointerEvents: "none",
+                }}
+              >
+                <s.Component />
+              </div>
+            </StageInternal.SceneProvider>
+          ))}
+        </div>
       </div>
     </StageInternal.StageProvider>
   )

@@ -9,8 +9,7 @@ import {
   useTransform,
   type MotionValue,
 } from "framer-motion"
-import { useMap } from "@nolli/map"
-import { useMapPortal, useSceneCamera, useSceneScroll, useStage } from "@/stage/hooks"
+import { useMapPortal, useSceneCamera, useSceneScroll, useStage, useStageMap } from "@/stage/hooks"
 import { CLUSTER_CITY, HERO_CAMERA } from "@/lib/constants"
 import type { SceneFactory } from "@/lib/scene"
 import markerStyles from "./index.markers.module.css"
@@ -98,10 +97,11 @@ function HeroReveal() {
   }, [sx, sy])
 
   // the plate IS the cursor in this scene — hide the system one while the
-  // hero owns the screen (links/buttons keep their own UA cursors)
+  // hero owns the screen (links/buttons keep their own UA cursors). Snap
+  // mode has no plate, so the system cursor stays.
   useEffect(() => {
     const apply = (v: number) => {
-      document.body.style.cursor = v > 0.5 ? "none" : ""
+      document.body.style.cursor = v > 0.5 && mode === "scrub" ? "none" : ""
     }
     apply(heroFade.get())
     const un = heroFade.on("change", apply)
@@ -109,7 +109,7 @@ function HeroReveal() {
       un()
       document.body.style.cursor = ""
     }
-  }, [heroFade])
+  }, [heroFade, mode])
 
   const x = useTransform(sx, (v) => v - PLATE.w / 2)
   const y = useTransform(sy, (v) => v - PLATE.h / 2)
@@ -184,7 +184,7 @@ function HeroClipDriver({
   sy: ReturnType<typeof useSpring>
   heroFade: MotionValue<number>
 }) {
-  const { map } = useMap()
+  const map = useStageMap()
 
   useEffect(() => {
     if (!map) return

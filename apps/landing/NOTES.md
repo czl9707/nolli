@@ -3,13 +3,14 @@
 One-page scroll landing for the architecture map. A single sticky dark map
 layer is driven by two clocks:
 
-1. **Scrub morph** (`src/lib/spine.ts`) — the layer's real % left/top/width/height
+1. **Scrub morph** (`src/stage/timeline.ts`) — the layer's real % left/top/width/height
    is a pure function of scroll progress (container-geometry morph, the app
    technique); MapLibre `trackResize` re-renders natively. Stopping anywhere
    freezes a valid frame. Canvas trails the container ~1 frame during scrub
    (ResizeObserver async) — clipped by overflow hidden, invisible in practice.
-2. **Cinematic flights** (`stage.tsx` + `@nolli/map` `flyToSceneCinematic`) —
-   fired when the spine's target scene changes, per-frame-source cameras from
+2. **Cinematic flights** (`stage/stage.tsx` + `@nolli/map` `flyToSceneCinematic`) —
+   fired per scene via `useSceneCamera` (`stage/hooks.ts`) when the timeline's
+   camera keyframe changes, per-frame-source cameras from
    live data (`landing-data.ts`, `constants.ts`).
 
 Scenes: hero (Paris dwell, cursor plate reveal over the bare map, split-rails
@@ -26,21 +27,22 @@ first scenes came from is archived at commit 439ad33.
 
 `components/site-header.tsx` — topline bar (mark + hand wordmark left,
 Poster/About placeholder links + the app's `@nolli/ui` Button CTA right).
-Portaled to `document.body` from the stage: the hero flow block (and its
-grade) paints above the sticky stage, so an in-stage header would sit under
-the gradient. `opacity = 1 - fade("footer")` with a visibility kill for the
+Portaled to `document.body` from the stage: the scene overlays paint above
+the sticky stage, so an in-stage header would sit under them. `opacity = 1 -
+fade("footer")` with a visibility kill for the
 hit test; the bar passes pointer events through to the map. Placeholder
 links point at `#` until the poster app / about pages exist.
 
 ## Hero cursor reveal
 
-`components/hero-reveal.tsx` — the hero dwell shows the bare Paris map
+`scenes/hero.tsx` (`HeroReveal`) — the hero dwell shows the bare Paris map
 (`HERO_CAMERA`, pins off) under a dim veil. A plate (360×280,
-`var(--size-border-radius)`) spring-follows the cursor; the veil is the
-plate's own giant box-shadow, the inside gets a hairline border + slight
-brightness lift. The photo markers render fully but are clipped to the plate
+`var(--size-border-radius)`) spring-follows the cursor; the veil carries the
+diagonal ink gradient with the plate's rect punched out (mask), the plate
+gets a hairline border + slight brightness lift. The photo markers render
+fully but are clipped to the plate
 rect (per-marker `inset()` clip-path on the marker content divs, matched via
-the shared index-photo-markers module class, rAF-throttled on pointer-spring
+the shared `scenes/index.markers.module.css` class, rAF-throttled on pointer-spring
 + camera change) — straddling markers crop at the plate edge. Everything
 fades with `fade("hero")`; clips release below hero fade 0.5 so the markers
 crossfade in via the index fade while the plate dissolves (the grade and
@@ -48,9 +50,9 @@ layer morph of the hero→index handoff are untouched). Snap mode
 (touch/reduced-motion) has no cursor: no plate or veil, markers show
 unclipped.
 
-`components/index-photo-markers.tsx` gates the marker sets: photo markers own
-the screen during hero AND index (`data-photo-markers` /
-`data-arch-markers`); `data-hero-reveal="on"` forces full marker visibility
+`scenes/index.tsx` (`IndexPhotoMarkers`) gates the marker sets: photo markers
+own the screen during hero AND index (`data-photo-markers` /
+`data-arch-markers`); `data-hero-plate="on"` forces full marker visibility
 while the plate clip does the gating.
 
 ## Dev

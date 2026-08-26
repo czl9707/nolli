@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useRef } from "react"
 import { useTransform, type MotionValue } from "framer-motion"
 import type { MapRef, SceneCamera } from "@nolli/map"
 import type { LayerKey, SceneKeyframe } from "@/lib/scene"
+import type { Timeline } from "./timeline"
 
 export type StageMode = "scrub" | "snap"
 
@@ -11,6 +12,7 @@ type StageCtx = {
   scrollVh: MotionValue<number>
   /** the morphing map layer rect — camera flights gate on it settling */
   layer: MotionValue<LayerKey>
+  timeline: Timeline
   ranges: Record<string, { startVh: number; heightVh: number }>
   mapRef: () => MapRef | null
   flyTo: (camera: SceneCamera) => void
@@ -50,15 +52,19 @@ export function useSceneScroll(id?: string): MotionValue<number> {
   return useTransform(stage.scrollVh, (v) => v - startVh)
 }
 
-/** Fires a cinematic flight when local scroll crosses a camera keyframe.
+/** Fires a cinematic flight when this scene's keyframe becomes the
+ * timeline-wide camera target — the last camera keyframe at or above the
+ * current scroll, so reverse scrolls that hand ownership back re-fly too.
  * A flight started while the layer is still morphing lands off-target, so it
  * waits until the layer rect has arrived at the keyframe's layer (or is
- * superseded by a newer cross). Debounced by camera value — the registry
- * rebuilds (new identities) on data/viewport change without a real cross. */
+ * superseded by a newer target). Debounced by camera value — the registry
+ * rebuilds (new identities) on data/viewport change without a real change. */
 export function useSceneCamera(keyframes: SceneKeyframe[]): void {
   const stage = useStage()
   const own = useSceneId()
-  const startVh = stage.ranges[own]?.startVh ?? 0
+  const range = stage.ranges[own]
+  const startVh = range?.startVh ?? 0
+  const heightVh = range?.heightVh ?? Infinity
 
   const lastCross = useRef<string | null>(null)
   const pending = useRef<{ timer: number; camera: SceneCamera; layer: LayerKey } | null>(null)
@@ -66,6 +72,7 @@ export function useSceneCamera(keyframes: SceneKeyframe[]): void {
   layerRef.current = stage.layer
 
   useEffect(() => {
+    if (keyframes.length === 0) return
     const clear = () => {
       if (pending.current) window.clearTimeout(pending.current.timer)
       pending.current = null
@@ -89,14 +96,21 @@ export function useSceneCamera(keyframes: SceneKeyframe[]): void {
     }
 
     const onScroll = (vh: number) => {
-      const local = vh - startVh
-      let target: SceneKeyframe | null = null
-      for (const kf of keyframes) {
-        if (kf.camera && local >= kf.at) target = kf
+      // the timeline-wide camera target: last camera keyframe at/below vh
+      let owner: { atVh: number; layer: LayerKey; camera: SceneCamera } | null = null
+      for (const kf of stage.timeline.keyframes) {
+        if (kf.atVh > vh) break
+        if (kf.camera) owner = { atVh: kf.atVh, layer: kf.layer, camera: kf.camera }
       }
-      if (!target?.camera) return
-      const camera = target.camera
-      const key = `${target.at}:${camera.center[0]}:${camera.center[1]}:${camera.zoom}`
+      const mine = owner && owner.atVh >= startVh && owner.atVh < startVh + heightVh
+      if (!mine || !owner) {
+        // another scene's keyframe owns the camera — allow ours to fire the
+        // next time ownership returns
+        lastCross.current = null
+        return
+      }
+      const camera = owner.camera
+      const key = `${owner.atVh}:${camera.center[0]}:${camera.center[1]}:${camera.zoom}`
       if (lastCross.current === key) return
       lastCross.current = key
       if (stage.mode === "snap") {
@@ -104,7 +118,7 @@ export function useSceneCamera(keyframes: SceneKeyframe[]): void {
         return
       }
       clear()
-      pending.current = { timer: 0, camera, layer: target.layer }
+      pending.current = { timer: 0, camera, layer: owner.layer }
       pending.current.timer = window.setTimeout(fire, 150)
     }
 
@@ -122,11 +136,18 @@ export function useSceneCamera(keyframes: SceneKeyframe[]): void {
       unLayer()
       clear()
     }
-  }, [keyframes, startVh, stage])
+  }, [keyframes, startVh, heightVh, stage])
 }
 
 export function useMapPortal(): HTMLElement | null {
   return useStage().mapPortal
+}
+
+/** The stage's map instance — scenes render outside the ArchMap tree, so
+ * they read the map (and re-supply MapContext to portaled marker content)
+ * through here instead of useMap(). */
+export function useStageMap(): MapRef | null {
+  return useStage().mapRef()
 }
 
 export function useOverlayPortal(): HTMLElement | null {

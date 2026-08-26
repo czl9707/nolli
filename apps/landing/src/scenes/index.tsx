@@ -2,12 +2,12 @@ import { useEffect, type CSSProperties } from "react"
 import { createPortal } from "react-dom"
 import { motion, useTransform } from "framer-motion"
 import { Note } from "@nolli/ui"
-import { PhotoMarker, useMap } from "@nolli/map"
+import { MapContext, PhotoMarker } from "@nolli/map"
 import type { ArchSummary } from "@nolli/data"
 import type { SceneFactory, SceneKeyframe } from "@/lib/scene"
 import type { LandingData } from "@/lib/landing-data"
 import { indexSlot, slotRect, type Slot } from "@/lib/slots"
-import { useSceneCamera, useSceneScroll, useMapPortal, useOverlayPortal } from "@/stage/hooks"
+import { useSceneCamera, useSceneScroll, useMapPortal, useOverlayPortal, useStageMap } from "@/stage/hooks"
 import styles from "./index.module.css"
 import markerStyles from "./index.markers.module.css"
 
@@ -48,7 +48,7 @@ function IndexScene({
   return (
     <>
       <IndexFrame slot={slot} />
-      <IndexCopy data={data} />
+      <IndexCopy data={data} slot={slot} />
       <IndexPhotoMarkers picks={indexPhotos} />
     </>
   )
@@ -81,8 +81,9 @@ function IndexFrame({ slot }: { slot: Slot }) {
 
 /** Index copy, flow-mounted: a sticky fullscreen sheet whose content sits
  * just above the slot — scrolls in from below, dwells pinned over the index
- * range, exits the top. */
-function IndexCopy({ data }: { data: LandingData }) {
+ * range, exits the top. The slot vars live on the frame's portal element,
+ * which the flow-mounted sheet can't inherit — set them here too. */
+function IndexCopy({ data, slot }: { data: LandingData; slot: Slot }) {
   const local = useSceneScroll()
   // 1 through dwell at 120vh, linear to 0 by 160vh
   const opacity = useTransform(local, (v) =>
@@ -90,7 +91,20 @@ function IndexCopy({ data }: { data: LandingData }) {
   )
   void data
   return (
-    <motion.div className={styles.copy} style={{ opacity }}>
+    <motion.div
+      className={styles.copy}
+      style={
+        {
+          ...({
+            "--slot-index-x": slot.cx,
+            "--slot-index-y": slot.cy,
+            "--slot-index-w": slot.w,
+            "--slot-index-h": slot.h,
+          } as CSSProperties),
+          opacity,
+        }
+      }
+    >
       <div className={styles.copyBody}>
         <Note asChild>
           <p className={styles.overline}>The Index</p>
@@ -124,12 +138,15 @@ function IndexPhotoMarkers({ picks }: { picks: ArchSummary[] }) {
   const heroO = useTransform(heroLocal, (v) =>
     v <= 108 ? 1 : Math.max(0, 1 - (v - 108) / 36),
   )
-  const { map } = useMap()
+  const map = useStageMap()
 
   useEffect(() => {
     if (!map) return
     const el = map.getContainer()
-    const apply = (o: number) => {
+    // reads both sources fresh: opacity and heroO both subscribe this, and a
+    // subscriber's own value must not win just because it fired last
+    const apply = () => {
+      const o = opacity.get()
       const heroOn = heroO.get() > 0.001
       el.style.setProperty("--index-photo-o", String(o))
       // photo markers own the screen during the index dwell AND the hero
@@ -143,7 +160,7 @@ function IndexPhotoMarkers({ picks }: { picks: ArchSummary[] }) {
       const heroState = heroOn ? "on" : "off"
       if (el.dataset.heroPlate !== heroState) el.dataset.heroPlate = heroState
     }
-    apply(opacity.get())
+    apply()
     const un1 = opacity.on("change", apply)
     const un2 = heroO.on("change", apply)
     return () => {
@@ -158,12 +175,14 @@ function IndexPhotoMarkers({ picks }: { picks: ArchSummary[] }) {
 
   const mapPortal = useMapPortal()
   if (!mapPortal) return null
+  // markers mount from the scene tree (outside ArchMap), so re-supply
+  // MapContext at the portal source for the MapMarker internals
   return createPortal(
-    <>
+    <MapContext.Provider value={{ map, isLoaded: !!map }}>
       {picks.map((a) => (
         <PhotoMarker key={a.slug} building={a} className={markerStyles.marker} />
       ))}
-    </>,
+    </MapContext.Provider>,
     mapPortal,
   )
 }
