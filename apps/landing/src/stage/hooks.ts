@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useRef } from "react"
 import { useTransform, type MotionValue } from "framer-motion"
-import { flyToSceneCinematic, type MapRef, type SceneCamera } from "@nolli/map"
+import type { MapRef, SceneCamera } from "@nolli/map"
 import type { LayerKey, SceneKeyframe } from "@/lib/scene"
 
 export type StageMode = "scrub" | "snap"

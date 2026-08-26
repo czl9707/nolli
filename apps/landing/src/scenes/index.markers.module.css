@@ -21,9 +21,9 @@
   visibility: hidden;
 }
 
-/* hero reveal: markers render fully while the cursor plate owns the gating —
+/* hero plate: markers render fully while the cursor plate owns the gating —
    the per-marker clip-path (hero.tsx) crops them to the plate */
-:global([data-hero-reveal="on"]) .marker {
+:global([data-hero-plate="on"]) .marker {
   visibility: visible;
   opacity: 1;
 }

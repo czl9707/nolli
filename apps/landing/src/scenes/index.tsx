@@ -84,9 +84,9 @@ function IndexFrame({ slot }: { slot: Slot }) {
  * range, exits the top. */
 function IndexCopy({ data }: { data: LandingData }) {
   const local = useSceneScroll()
-  // 1 through dwell at 120vh, linear to 0 by 156vh
+  // 1 through dwell at 120vh, linear to 0 by 160vh
   const opacity = useTransform(local, (v) =>
-    v <= 120 ? 1 : Math.max(0, 1 - (v - 120) / 36),
+    v <= 120 ? 1 : Math.max(0, 1 - (v - 120) / 40),
   )
   void data
   return (
@@ -115,11 +115,11 @@ function IndexCopy({ data }: { data: LandingData }) {
  * flags the normal pin/cluster markers off. */
 function IndexPhotoMarkers({ picks }: { picks: ArchSummary[] }) {
   const local = useSceneScroll()
-  // index fade: ramp in from -50vh, 1 through the dwell, out by 156vh
+  // index fade: ramp in from -50vh, 1 through the dwell, out by 160vh
   const opacity = useTransform(local, (v) =>
-    v < -50 ? 0 : v < 0 ? (v + 50) / 50 : v <= 120 ? 1 : Math.max(0, 1 - (v - 120) / 36),
+    v < -50 ? 0 : v < 0 ? (v + 50) / 50 : v <= 120 ? 1 : Math.max(0, 1 - (v - 120) / 40),
   )
-  // hero fade (old sceneFade("hero")): 1 through 108vh, linear to 0 by 144vh
+  // hero fade: 1 through 108vh, linear to 0 by 144vh
   const heroLocal = useSceneScroll("hero")
   const heroO = useTransform(heroLocal, (v) =>
     v <= 108 ? 1 : Math.max(0, 1 - (v - 108) / 36),
@@ -141,7 +141,7 @@ function IndexPhotoMarkers({ picks }: { picks: ArchSummary[] }) {
       if (el.dataset.archMarkers !== archState) el.dataset.archMarkers = archState
       // hero mode: markers render fully visible; the plate clip gates them
       const heroState = heroOn ? "on" : "off"
-      if (el.dataset.heroReveal !== heroState) el.dataset.heroReveal = heroState
+      if (el.dataset.heroPlate !== heroState) el.dataset.heroPlate = heroState
     }
     apply(opacity.get())
     const un1 = opacity.on("change", apply)
@@ -152,7 +152,7 @@ function IndexPhotoMarkers({ picks }: { picks: ArchSummary[] }) {
       el.style.removeProperty("--index-photo-o")
       delete el.dataset.photoMarkers
       delete el.dataset.archMarkers
-      delete el.dataset.heroReveal
+      delete el.dataset.heroPlate
     }
   }, [map, opacity, heroO])
 

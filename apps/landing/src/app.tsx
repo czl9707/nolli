@@ -1,56 +1,37 @@
-import type { ReactNode } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useLandingData } from "@/lib/landing-data"
-import { LandingStage } from "@/components/stage"
-import { IndexPhotoMarkers } from "@/components/index-photo-markers"
-import { HeroReveal } from "@/components/hero-reveal"
-import { HeroScene } from "@/scenes/hero"
-import { IndexFrame, IndexCopy } from "@/scenes/index-scene"
-import { CtaScene } from "@/scenes/cta"
+import { LandingStage } from "@/stage/stage"
+import { heroScene } from "@/scenes/hero"
+import { indexScene } from "@/scenes/index"
+import { ctaScene } from "@/scenes/cta"
 import { FooterScene } from "@/scenes/footer"
-import { SCENES } from "@/lib/spine"
-import type { SceneId } from "@/lib/spine"
+
+const FACTORIES = [heroScene, indexScene, ctaScene]
 
 export function App() {
   const { status, data, error } = useLandingData()
+  // viewport state re-runs the factories so the index slot re-fits on resize
+  const [vp, setVp] = useState(() => ({ w: window.innerWidth, h: window.innerHeight }))
+  useEffect(() => {
+    const onResize = () => setVp({ w: window.innerWidth, h: window.innerHeight })
+    window.addEventListener("resize", onResize)
+    return () => window.removeEventListener("resize", onResize)
+  }, [])
+
+  const registry = useMemo(
+    () => (data ? FACTORIES.map((f) => f({ data, viewport: vp })) : null),
+    [data, vp],
+  )
+
   if (status === "loading") return <main><p className="boot-msg">loading the map…</p></main>
-  if (status === "error" || !data) {
+  if (status === "error" || !data || !registry) {
     return <main><p className="boot-msg boot-msg--err">{error?.message ?? "failed to load map data"}</p></main>
   }
-  // pinned overlays: map-attached chrome only (index slot frame)
-  const scenes: Partial<Record<SceneId, ReactNode>> = {
-    index: <IndexFrame key="index" />,
-    footer: <FooterScene key="footer" data={data} />,
-  }
-  // flow ranges mirror the scenes' heightVh so the spine's scroll budget
-  // (and every scene boundary) is unchanged; the hero block owns its own
-  // geometry (do not wrap)
-  const heightOf = (id: SceneId) => SCENES.find((s) => s.id === id)!.heightVh
-  const flows = [
-    { id: "hero" as const, node: <HeroScene key="hero" /> },
-    {
-      id: "index" as const,
-      heightVh: heightOf("index"),
-      node: <IndexCopy key="index" data={data} />,
-    },
-    {
-      id: "cta" as const,
-      heightVh: heightOf("cta"),
-      node: <CtaScene key="cta" data={data} />,
-    },
-  ]
+
   return (
     <main>
-      <LandingStage
-        data={data}
-        scenes={scenes}
-        flows={flows}
-        mapChildren={
-          <>
-            <IndexPhotoMarkers picks={data.indexPhotos} />
-            <HeroReveal city="Paris" />
-          </>
-        }
-      />
+      <LandingStage scenes={registry} summaries={data.summaries} />
+      <FooterScene data={data} />
     </main>
   )
 }

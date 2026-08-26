@@ -48,7 +48,7 @@ function HeroScene() {
   )
 }
 
-// ── cursor-plate reveal (ex-components/hero-reveal.tsx) ──────────────
+// ── cursor-plate reveal ──────────────
 
 /**
  * Hero cursor reveal (prototype winner reveal-D "Plate crop"). The hero's
@@ -75,7 +75,7 @@ const OVERHANG = { top: 14, right: 10, bottom: 10, left: 10 }
 function HeroReveal() {
   const { mode } = useStage()
   const heroLocal = useSceneScroll()
-  // old sceneFade("hero"): 1 through dwell (108vh), linear to 0 by 144vh
+  // 1 through dwell (108vh), linear to 0 by 144vh
   const heroFade = useTransform(heroLocal, (v) =>
     v <= 108 ? 1 : Math.max(0, 1 - (v - 108) / 36),
   )
