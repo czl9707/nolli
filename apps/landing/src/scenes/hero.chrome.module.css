@@ -1,0 +1,126 @@
+/* Hero screen chrome — the content around the cursor-plate reveal (prototype
+   winner: hero.proto layout "g"). Three blocks share the header's 24px right
+   edge: nav, the pick list, and the nearest caption. */
+
+.chromeRoot {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  color: rgb(var(--color-primary-background));
+  --hero-accent: #ee8a33;
+}
+
+/* headline, bottom-left */
+.headline {
+  position: absolute;
+  left: 6vw;
+  bottom: 6svh;
+  font-family: var(--font-playful);
+  font-weight: 400;
+  font-size: clamp(2.6rem, 5.4vw, 3.8rem);
+  line-height: 1.14;
+  max-width: 22ch;
+}
+
+.headlineAccent {
+  color: var(--hero-accent);
+}
+
+/* pick names, top-right under the site header: the pick(s) currently inside
+   the plate's reveal radius read at full strength + weight, everything else
+   sits at 0.3 */
+.pickList {
+  position: absolute;
+  top: 108px;
+  right: 24px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  text-align: right;
+  font-size: 0.8rem;
+  line-height: 2;
+  max-width: 30ch;
+}
+
+.pick {
+  opacity: 0.3;
+  transition: opacity 0.4s ease;
+}
+
+.pickActive {
+  opacity: 1;
+  font-weight: 600;
+}
+
+/* nearest-building caption, bottom-right */
+.caption {
+  position: absolute;
+  right: 24px;
+  bottom: 6svh;
+  text-align: right;
+  max-width: 34ch;
+}
+
+.captionName {
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.captionMeta {
+  font-size: 0.85rem;
+  opacity: 0.75;
+  margin-top: 0.15rem;
+}
+
+/* plate furniture: corner ticks, north mark, live lat/lng at the plate's
+   bottom-right corner */
+.furniture {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.tick {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-color: rgb(var(--color-primary-foreground) / 0.9);
+}
+
+.tickTl { left: -5px; top: -5px; border-left: 1.5px solid; border-top: 1.5px solid; }
+.tickTr { right: -5px; top: -5px; border-right: 1.5px solid; border-top: 1.5px solid; }
+.tickBl { left: -5px; bottom: -5px; border-left: 1.5px solid; border-bottom: 1.5px solid; }
+.tickBr { right: -5px; bottom: -5px; border-right: 1.5px solid; border-bottom: 1.5px solid; }
+
+.north {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  color: rgb(var(--color-primary-background) / 0.85);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+}
+
+.coords {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: rgb(var(--color-primary-background) / 0.85);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+@media (max-width: 767px) {
+  .pickList {
+    max-width: 22ch;
+    font-size: 0.72rem;
+  }
+
+  .caption {
+    bottom: 12svh;
+  }
+}

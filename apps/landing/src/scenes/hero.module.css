@@ -1,7 +1,7 @@
-/* Hero — sticky section inside the 180vh scene wrapper: split-rail copy
-   dwells over the map for the dwell range, then scrolls on with the page.
-   The dim gradient over the map lives in the map layer (hero.reveal) so
-   the cursor plate reveals a fully bright map. */
+/* Hero — sticky section inside the 180vh scene wrapper. The screen chrome
+   (headline, pick list, caption) lives in hero.chrome; the dim gradient over
+   the map lives in the map layer (hero.reveal) so the cursor plate reveals a
+   fully bright map. */
 
 .scene {
   position: sticky;
@@ -10,44 +10,8 @@
   z-index: 2;
   pointer-events: none;
   color: rgb(var(--color-primary-background));
-}
-
-/* split rails: mirrored statements at screen left and right, vertically
-   centered. Mobile stacks both rails left-aligned in the middle band. */
-.copyLeft,
-.copyRight {
-  position: absolute;
-  top: 50svh;
-  transform: translateY(-50%);
-  z-index: 5;
-}
-
-.copyLeft {
-  left: 6vw;
-}
-
-.copyRight {
-  right: 6vw;
-  text-align: right;
-}
-
-.h1 {
-  font-family: var(--font-playful);
-  font-weight: 400;
-  font-size: var(--typography-h1-fontSize);
-  line-height: 1.05;
-  max-width: 14ch;
-}
-
-@media (max-width: 767px) {
-  .copyLeft {
-    top: 34svh;
-  }
-
-  .copyRight {
-    top: 60svh;
-    right: auto;
-    left: 6vw;
-    text-align: left;
-  }
+  /* the plate's furniture (hero.chrome) rides the cursor and can cross the
+     viewport edge — the plate itself is clipped by the stage's overflow,
+     this matches it so nothing grows a horizontal scrollbar */
+  overflow: hidden;
 }

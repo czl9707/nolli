@@ -11,7 +11,9 @@ import {
 } from "framer-motion"
 import { useMapPortal, useSceneCamera, useSceneScroll, useStage, useStageMap } from "@/stage/hooks"
 import { CLUSTER_CITY, HERO_CAMERA } from "@/lib/constants"
+import type { LandingData } from "@/lib/landing-data"
 import type { SceneFactory } from "@/lib/scene"
+import { HeroChrome } from "./hero.chrome"
 import markerStyles from "./index.markers.module.css"
 import revealStyles from "./hero.reveal.module.css"
 import styles from "./hero.module.css"
@@ -23,26 +25,25 @@ const HERO_KEYFRAMES = [
   { at: 108, layer: FULL },
 ]
 
-/** Hero: bare Paris map under a cursor-plate reveal; split-rail copy dwells
- * over it, then the layer morphs into the index slot over the last 72vh. */
-export const heroScene: SceneFactory = () => ({
+/** Hero: bare Paris map under a cursor-plate reveal; screen chrome (headline,
+ * pick list, nearest caption, plate furniture) dwells around it, then the
+ * layer morphs into the index slot over the last 72vh. */
+export const heroScene: SceneFactory = ({ data }) => ({
   id: "hero",
   heightVh: 180,
   keyframes: HERO_KEYFRAMES,
-  Component: HeroScene,
+  Component: () => <HeroScene data={data} />,
 })
 
-function HeroScene() {
+function HeroScene({ data }: { data: LandingData }) {
   useSceneCamera(HERO_KEYFRAMES)
+  // plate springs live here so the chrome can read the plate position
+  const sx = useSpring(useMotionValue(window.innerWidth * 0.62), { stiffness: 130, damping: 22 })
+  const sy = useSpring(useMotionValue(window.innerHeight * 0.42), { stiffness: 130, damping: 22 })
   return (
     <section className={styles.scene}>
-      <div className={styles.copyLeft}>
-        <h1 className={styles.h1}>Map unfolds.</h1>
-      </div>
-      <div className={styles.copyRight}>
-        <h1 className={styles.h1}>Architecture lives.</h1>
-      </div>
-      <HeroReveal />
+      <HeroReveal sx={sx} sy={sy} />
+      <HeroChrome data={data} sx={sx} sy={sy} />
     </section>
   )
 }
@@ -63,7 +64,7 @@ function HeroScene() {
  * nothing and IndexPhotoMarkers shows the picks unclipped as the fallback.
  */
 
-const PLATE = { w: 360, h: 280 }
+export const PLATE = { w: 360, h: 280 }
 
 /** The photo marker's pin and drop-shadow paint OUTSIDE the marker content's
  * border box (pin at top: -10px, tilt + shadow a few px each side) — inset()
@@ -71,15 +72,19 @@ const PLATE = { w: 360, h: 280 }
  * overhang instead of shaving the pin. */
 const OVERHANG = { top: 14, right: 10, bottom: 10, left: 10 }
 
-function HeroReveal() {
+function HeroReveal({
+  sx,
+  sy,
+}: {
+  sx: ReturnType<typeof useSpring>
+  sy: ReturnType<typeof useSpring>
+}) {
   const { mode } = useStage()
   const heroLocal = useSceneScroll()
   // 1 through dwell (108vh), linear to 0 by 144vh
   const heroFade = useTransform(heroLocal, (v) =>
     v <= 108 ? 1 : Math.max(0, 1 - (v - 108) / 36),
   )
-  const sx = useSpring(useMotionValue(window.innerWidth * 0.62), { stiffness: 130, damping: 22 })
-  const sy = useSpring(useMotionValue(window.innerHeight * 0.42), { stiffness: 130, damping: 22 })
 
   // the veil rides the page like the old flow-mounted grade did: 200svh tall,
   // translated up 1:1 with scroll, so the gradient EXITS THROUGH THE TOP
