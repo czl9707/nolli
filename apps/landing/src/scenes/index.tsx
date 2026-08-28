@@ -201,17 +201,21 @@ function IndexPanel({
 }) {
   const local = useSceneScroll()
   const opacity = useTransform(local, (v) =>
-    v < 0
+    v < -FLY_EARLY_VH
       ? 0
-      : v < 40
-        ? v / 40
+      : v < 40 - FLY_EARLY_VH
+        ? (v + FLY_EARLY_VH) / 40
         : v <= DWELL_VH
           ? 1
           : Math.max(0, 1 - (v - DWELL_VH) / EXIT_VH),
   )
-  // entrance rides the scroll: the sheet rises into place over the same
-  // 40vh ramp as the fade
-  const y = useTransform(local, (v) => (v < 0 ? 48 : v < 40 ? 48 * (1 - v / 40) : 0))
+  // entrance rides the scroll with the landing flight: the sheet rises
+  // into place over the handoff tail, fully seated shortly after arrival
+  const y = useTransform(
+    local,
+    (v) =>
+      v < -FLY_EARLY_VH ? 48 : v < 40 - FLY_EARLY_VH ? 48 * (1 - (v + FLY_EARLY_VH) / 40) : 0,
+  )
   return (
     <motion.div
       className={styles.panel}
@@ -263,21 +267,21 @@ function IndexPanel({
 /** Photo markers pinned at real coords — MapMarker tracks the camera natively.
  * Marker contents portal into the map container, outside any fade wrapper, so
  * their fade is written onto the container as a CSS var the markers consume
- * (see index.markers.module.css). The hero hands over a bare map; these
- * arrive AFTER the landing flight (ramp 30→70vh), hold through the dwell,
- * and leave by 160vh. While they're on screen the container also flags the
- * normal pin/cluster markers off. */
+ * (see index.markers.module.css). The hero hands over a bare map; these ride
+ * in with the landing flight (ramp -FLY_EARLY_VH→16vh), hold through the
+ * dwell, and leave by 160vh. While they're on screen the container also flags
+ * the normal pin/cluster markers off. */
 function IndexPhotoMarkers({ picks }: { picks: ArchSummary[] }) {
   const stage = useStage()
   const own = useSceneId()
   const local = useSceneScroll()
-  // after-landing fade: 0 until the flight carries (30vh), in by 70vh,
-  // 1 through the dwell, out by the scene's exit window
+  // with-landing fade: 0 until the flight fires, in by shortly after the
+  // scene starts, 1 through the dwell, out by the scene's exit window
   const opacity = useTransform(local, (v) =>
-    v < 30
+    v < -FLY_EARLY_VH
       ? 0
-      : v < 70
-        ? (v - 30) / 40
+      : v < 40 - FLY_EARLY_VH
+        ? (v + FLY_EARLY_VH) / 40
         : v <= DWELL_VH
           ? 1
           : Math.max(0, 1 - (v - DWELL_VH) / EXIT_VH),
