@@ -10,9 +10,11 @@ import styles from "./hero.chrome.module.css"
  * two-line statement dwells bottom-left; the index picks list top-right
  * highlights the pick currently under the plate; that pick's caption sits
  * bottom-right; the plate carries corner ticks, a north mark, and a live
- * lat/lng readout. Everything fades out with the hero scene fade. In snap
- * mode (touch / reduced motion) there is no plate, so the caption and
- * furniture stand down. */
+ * lat/lng readout. The headline and pick list are plain content — they
+ * scroll away with the document — while the plate-locked caption and
+ * furniture fade out with the hero scene fade. In snap mode (touch /
+ * reduced motion) there is no plate, so the caption and furniture stand
+ * down. */
 export function HeroChrome({
   data,
   sx,
@@ -33,16 +35,16 @@ export function HeroChrome({
   const { nearest, active } = usePlatePicks(sx, sy, picks)
 
   return (
-    <motion.div className={styles.chromeRoot} style={{ opacity: fade }}>
+    <div className={styles.chromeRoot}>
       <HeroHeadline />
       <PickList picks={picks} active={active} />
       {scrub && (
-        <>
+        <motion.div className={styles.chromeRoot} style={{ opacity: fade }}>
           <NearestCaption nearest={nearest} />
           <PlateFurniture sx={sx} sy={sy} />
-        </>
+        </motion.div>
       )}
-    </motion.div>
+    </div>
   )
 }
 
