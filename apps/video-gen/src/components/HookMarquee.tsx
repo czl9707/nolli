@@ -1,9 +1,9 @@
 import { useMemo } from "react";
-import { AbsoluteFill, Img, staticFile, useCurrentFrame } from "remotion";
+import { AbsoluteFill, Easing, Img, interpolate, staticFile, useCurrentFrame } from "remotion";
 import { NO_ANIM, SoftBlurIn } from "./SoftBlurIn";
 import { REEL_TYPE } from "../lib/type";
 import { hookLead, heroImagePath, type ReelBuilding } from "../lib/config";
-import { REEL_W, REEL_H } from "../lib/timeline";
+import { CLAMP, HOOK_EXIT_FRAMES, HOOK_FRAMES, REEL_W, REEL_H } from "../lib/timeline";
 
 // --- Marquee geometry + math. Pure: no React/Remotion side effects. ---
 
@@ -49,6 +49,27 @@ export function marqueeShift(frame: number, period: number, speed: number): numb
   return mod === 0 ? 0 : -mod; // avoid -0
 }
 
+const EXIT_EASE = Easing.bezier(0.25, 0.1, 0.25, 1);
+
+/** Exit state over the beat's final `exitFrames`: `move` is the px magnitude a
+ *  row slides toward its own edge (0 → ROW_H, eased), `opacity` the row fade.
+ *  The fade completes two frames early so no near-invisible ghost rides the
+ *  last frames before the cut. */
+export function hookExit(
+  frame: number,
+  totalFrames: number,
+  exitFrames: number,
+): { move: number; opacity: number } {
+  const begin = totalFrames - exitFrames;
+  return {
+    move: interpolate(frame, [begin, totalFrames], [0, ROW_H], {
+      ...CLAMP,
+      easing: EXIT_EASE,
+    }),
+    opacity: interpolate(frame, [begin, totalFrames - 2], [1, 0], CLAMP),
+  };
+}
+
 // --- Component ---
 
 const NAME_GAP = 24;
@@ -61,7 +82,9 @@ const MarqueeRow: React.FC<{
   buildings: ReelBuilding[];
   shift: number;
   edge: "top" | "bottom";
-}> = ({ slug, buildings, shift, edge }) => {
+  exitY: number;
+  opacity: number;
+}> = ({ slug, buildings, shift, edge, exitY, opacity }) => {
   // The strip contents never change per frame — only `shift` does.
   const strip = useMemo(
     () =>
@@ -84,6 +107,8 @@ const MarqueeRow: React.FC<{
         [edge]: 0,
         height: ROW_H,
         overflow: "hidden",
+        opacity,
+        transform: `translateY(${exitY}px)`,
       }}
     >
       <div
@@ -119,6 +144,8 @@ export const HookMarquee: React.FC<{
     ];
   }, [buildings]);
   const FG = "rgb(var(--color-primary-foreground))";
+  const { move, opacity } = hookExit(frame, HOOK_FRAMES, HOOK_EXIT_FRAMES);
+  const exit = { when: HOOK_FRAMES - HOOK_EXIT_FRAMES, last: HOOK_FRAMES - 1, enabled: true };
 
   // Settled from frame 0 — the feed poster frame must carry the title; the
   // scrolling rows supply all the motion this beat needs.
@@ -138,12 +165,16 @@ export const HookMarquee: React.FC<{
           buildings={top}
           shift={marqueeShift(frame, topPeriod, TOP_SPEED)}
           edge="top"
+          exitY={-move}
+          opacity={opacity}
         />
         <MarqueeRow
           slug={slug}
           buildings={bottom}
           shift={marqueeShift(frame, bottomPeriod, -BOTTOM_SPEED)}
           edge="bottom"
+          exitY={move}
+          opacity={opacity}
         />
         <AbsoluteFill
           style={{
@@ -159,7 +190,7 @@ export const HookMarquee: React.FC<{
               key={text}
               text={text}
               start={NO_ANIM}
-              end={NO_ANIM}
+              end={exit}
               style={{
                 display: "block", maxWidth: "88%", minWidth: 0, color: FG, textAlign: "center",
                 ...role, marginTop,
