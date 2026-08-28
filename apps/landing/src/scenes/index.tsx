@@ -40,10 +40,14 @@ const DWELL_VH = 140
 const EXIT_VH = 40
 
 /** How far before the scene starts (in vh) the landing flight fires. The
- * camera keyframe must precede the scene to own the camera early, which
- * also completes the hero handoff morph over FLY_EARLY_VH fewer vh — the
- * flight is underway by the time the reader arrives. */
+ * flight keyframe sits mid-morph: the hero handoff shape change is already
+ * underway, the markers ride in with the flight, and the morph, the marker
+ * fade, and the column all arrive together at scene start. */
 export const FLY_EARLY_VH = 50
+
+/** How far into the hero handoff morph the flight fires (0.35 = the layer
+ * is 35% of the way from full screen to the plate). */
+const FLIGHT_AT_MORPH = 0.35
 
 export const indexScene: SceneFactory = ({ data, viewport }) => {
   const { rect, px, column } = indexPlate(viewport.w, viewport.h)
@@ -52,8 +56,18 @@ export const indexScene: SceneFactory = ({ data, viewport }) => {
     data.indexPhotos.map((p) => p.coordinates),
     px,
   )
+  // the morph runs hero-dwell-end (108vh global) → scene start: a linear
+  // head to the flight point, then an easeOut tail into the plate
+  const full: SceneKeyframe["layer"] = { x: 0, y: 0, w: 1, h: 1 }
+  const midway = {
+    x: full.x + (rect.x - full.x) * FLIGHT_AT_MORPH,
+    y: full.y + (rect.y - full.y) * FLIGHT_AT_MORPH,
+    w: full.w + (rect.w - full.w) * FLIGHT_AT_MORPH,
+    h: full.h + (rect.h - full.h) * FLIGHT_AT_MORPH,
+  }
   const keyframes: SceneKeyframe[] = [
-    { at: -FLY_EARLY_VH, layer: rect, camera },
+    { at: -FLY_EARLY_VH, layer: midway, camera, ease: (t) => t },
+    { at: 0, layer: rect, ease: (t) => 1 - Math.pow(1 - t, 3) },
     { at: DWELL_VH, layer: rect },
   ]
   return {
@@ -159,7 +173,7 @@ function IndexScene({
  * carries the border radius, the frame draws the hairline. */
 function IndexFrame({ rect }: { rect: ReturnType<typeof indexPlate>["rect"] }) {
   const overlay = useOverlayPortal()
-  // fades with the panel: 1 through dwell at 120vh, linear to 0 by 160vh
+  // fades with the markers: 1 through the dwell, linear to 0 over EXIT_VH
   const local = useSceneScroll()
   const opacity = useTransform(local, (v) =>
     v <= DWELL_VH ? 1 : Math.max(0, 1 - (v - DWELL_VH) / EXIT_VH),
@@ -251,20 +265,21 @@ function IndexPanel({
  * Marker contents portal into the map container, outside any fade wrapper, so
  * their fade is written onto the container as a CSS var the markers consume
  * (see index.markers.module.css). The hero hands over a bare map; these ride
- * in with the landing flight (ramp -FLY_EARLY_VH→16vh), hold through the
- * dwell, and leave by 160vh. While they're on screen the container also flags
- * the normal pin/cluster markers off. */
+ * in with the landing flight (ramp -FLY_EARLY_VH→0, completing with the
+ * morph), hold through the dwell, and leave by the exit window. While they're
+ * on screen the container also flags the normal pin/cluster markers off. */
 function IndexPhotoMarkers({ picks }: { picks: ArchSummary[] }) {
   const stage = useStage()
   const own = useSceneId()
   const local = useSceneScroll()
-  // with-landing fade: 0 until the flight fires, in by shortly after the
-  // scene starts, 1 through the dwell, out by the scene's exit window
+  // with-landing fade: 0 until the flight fires, ramping to 1 across the
+  // morph's easeOut tail so the markers complete with the shape change at
+  // scene start, out by the scene's exit window
   const opacity = useTransform(local, (v) =>
     v < -FLY_EARLY_VH
       ? 0
-      : v < 40 - FLY_EARLY_VH
-        ? (v + FLY_EARLY_VH) / 40
+      : v < 0
+        ? (v + FLY_EARLY_VH) / FLY_EARLY_VH
         : v <= DWELL_VH
           ? 1
           : Math.max(0, 1 - (v - DWELL_VH) / EXIT_VH),

@@ -55,9 +55,9 @@ export function useSceneScroll(id?: string): MotionValue<number> {
 /** Fires a cinematic flight when this scene's keyframe becomes the
  * timeline-wide camera target — the last camera keyframe at or above the
  * current scroll, so reverse scrolls that hand ownership back re-fly too.
- * A flight started while the layer is still morphing lands off-target, so it
- * waits until the layer rect has arrived at the keyframe's layer (or is
- * superseded by a newer target). Debounced by camera value — the registry
+ * Keyframes may sit mid-morph (the layer passes through their rect without
+ * holding), so the trigger is the scroll crossing itself, debounced to
+ * absorb fast pass-throughs. Debounced by camera value — the registry
  * rebuilds (new identities) on data/viewport change without a real change. */
 export function useSceneCamera(keyframes: SceneKeyframe[]): void {
   const stage = useStage()
@@ -65,9 +65,7 @@ export function useSceneCamera(keyframes: SceneKeyframe[]): void {
   const startVh = stage.ranges[own]?.startVh ?? 0
 
   const lastCross = useRef<string | null>(null)
-  const pending = useRef<{ timer: number; camera: SceneCamera; layer: LayerKey } | null>(null)
-  const layerRef = useRef(stage.layer)
-  layerRef.current = stage.layer
+  const pending = useRef<{ timer: number; camera: SceneCamera } | null>(null)
 
   useEffect(() => {
     if (keyframes.length === 0) return
@@ -76,29 +74,19 @@ export function useSceneCamera(keyframes: SceneKeyframe[]): void {
       pending.current = null
     }
 
-    const rectsClose = (a: LayerKey, b: LayerKey) =>
-      Math.abs(a.x - b.x) < 0.002 &&
-      Math.abs(a.y - b.y) < 0.002 &&
-      Math.abs(a.w - b.w) < 0.002 &&
-      Math.abs(a.h - b.h) < 0.002
-
     const fire = () => {
       const p = pending.current
       if (!p) return
-      if (!rectsClose(layerRef.current.get(), p.layer)) {
-        p.timer = window.setTimeout(fire, 150)
-        return
-      }
       clear()
       stage.flyTo(p.camera)
     }
 
     const onScroll = (vh: number) => {
       // the timeline-wide camera target: last camera keyframe at/below vh
-      let owner: { atVh: number; layer: LayerKey; camera: SceneCamera } | null = null
+      let owner: { atVh: number; camera: SceneCamera } | null = null
       for (const kf of stage.timeline.keyframes) {
         if (kf.atVh > vh) break
-        if (kf.camera) owner = { atVh: kf.atVh, layer: kf.layer, camera: kf.camera }
+        if (kf.camera) owner = { atVh: kf.atVh, camera: kf.camera }
       }
       // this scene owns the target when the owner keyframe is one of its own
       // camera keyframes — inclusive of a terminal keyframe sitting exactly
@@ -125,22 +113,14 @@ export function useSceneCamera(keyframes: SceneKeyframe[]): void {
         return
       }
       clear()
-      pending.current = { timer: 0, camera, layer: owner.layer }
+      pending.current = { timer: 0, camera }
       pending.current.timer = window.setTimeout(fire, 150)
     }
 
     const unScroll = stage.scrollVh.on("change", onScroll)
-    const unLayer = layerRef.current.on("change", () => {
-      // re-evaluate as geometry writes land: fires the moment the rect arrives
-      if (pending.current) {
-        window.clearTimeout(pending.current.timer)
-        pending.current.timer = window.setTimeout(fire, 150)
-      }
-    })
     onScroll(stage.scrollVh.get())
     return () => {
       unScroll()
-      unLayer()
       clear()
     }
   }, [keyframes, startVh, stage])
