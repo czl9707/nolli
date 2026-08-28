@@ -38,6 +38,12 @@ const FLY_MS = 4000
 const DWELL_VH = 200
 const EXIT_VH = 40
 
+/** How far before the scene starts (in vh) the landing flight fires. The
+ * camera keyframe must precede the scene to own the camera early, which
+ * also completes the hero handoff morph over FLY_EARLY_VH fewer vh — the
+ * flight is underway by the time the reader arrives. */
+const FLY_EARLY_VH = 24
+
 export const indexScene: SceneFactory = ({ data, viewport }) => {
   const { rect, px, column } = indexPlate(viewport.w, viewport.h)
   // first city = Paris: the hero hands over a bare Paris map
@@ -46,7 +52,7 @@ export const indexScene: SceneFactory = ({ data, viewport }) => {
     px,
   )
   const keyframes: SceneKeyframe[] = [
-    { at: 0, layer: rect, camera },
+    { at: -FLY_EARLY_VH, layer: rect, camera },
     { at: DWELL_VH, layer: rect },
   ]
   return {

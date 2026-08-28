@@ -109,8 +109,10 @@ export function useSceneCamera(keyframes: SceneKeyframe[]): void {
         ownerAt !== undefined &&
         keyframes.some((kf) => kf.at === ownerAt - startVh && !!kf.camera)
       if (!owner || !mine) {
-        // another scene's keyframe owns the camera — allow ours to fire the
-        // next time ownership returns
+        // another scene's keyframe owns the camera — drop any pending
+        // flight (it would fire late and hijack the new owner's) and allow
+        // ours to fire the next time ownership returns
+        clear()
         lastCross.current = null
         return
       }
