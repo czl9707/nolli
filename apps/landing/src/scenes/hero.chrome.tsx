@@ -34,7 +34,7 @@ export function HeroChrome({
 
   return (
     <motion.div className={styles.chromeRoot} style={{ opacity: fade }}>
-      <Headline />
+      <HeroHeadline />
       <PickList picks={picks} active={active} />
       {scrub && (
         <>
@@ -53,7 +53,7 @@ const HEADLINE_LINES = [
   <>for architectures.</>,
 ]
 
-function Headline() {
+export function HeroHeadline() {
   const reduced = useReducedMotion()
   return (
     <h1 className={styles.headline}>

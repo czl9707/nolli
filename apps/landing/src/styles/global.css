@@ -1,5 +1,9 @@
 @import "@nolli/ui/global.css";
 
+:root {
+  --hero-accent: #ee8a33;
+}
+
 html,
 body,
 #root {
@@ -27,6 +31,17 @@ body {
   translate: -50% -50%;
   font-weight: var(--typography-body2-fontWeight);
   letter-spacing: 0.04em;
+}
+
+/* Boot cover: opaque ink block in the map's own background colour, carrying
+   the hero headline. It paints before any data arrives and fades out once
+   the map has settled, so boot reads as the hero arriving, not a loader. */
+.boot-cover {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  color: rgb(var(--color-primary-background));
+  pointer-events: none;
 }
 
 .boot-msg--err {

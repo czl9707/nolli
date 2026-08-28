@@ -7,7 +7,6 @@
   inset: 0;
   pointer-events: none;
   color: rgb(var(--color-primary-background));
-  --hero-accent: #ee8a33;
 }
 
 /* headline, bottom-left */

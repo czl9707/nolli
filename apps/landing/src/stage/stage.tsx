@@ -26,9 +26,13 @@ const FULL_LAYER: LayerKey = { x: 0, y: 0, w: 1, h: 1 }
 export function LandingStage({
   scenes,
   summaries,
+  onMapIdle,
 }: {
   scenes: Scene[]
   summaries: ArchSummary[]
+  /** Fired once the map has finished rendering (tiles settled), or after a
+   * fallback window if it never settles. Drives the boot cover fade. */
+  onMapIdle?: () => void
 }) {
   const wrapperRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapRef | null>(null)
@@ -99,6 +103,29 @@ export function LandingStage({
     // fire once per map instance
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapReady])
+
+  // boot reveal signal: MapLibre fires idle once every pending render is
+  // done (style, tiles, patterns), which is the first moment the map looks
+  // like itself. A fallback keeps a stalled tile fetch from wedging the
+  // cover on. Declared after the camera effect so the initial jumpTo's
+  // re-render counts toward the idle we catch.
+  useEffect(() => {
+    if (!mapReady) return
+    const map = mapRef.current
+    if (!map) return
+    let done = false
+    const fire = () => {
+      if (done) return
+      done = true
+      onMapIdle?.()
+    }
+    map.once("idle", fire)
+    const t = setTimeout(fire, 4000)
+    return () => {
+      clearTimeout(t)
+      map.off("idle", fire)
+    }
+  }, [mapReady, onMapIdle])
 
   const stageValue = useMemo(
     () => ({
