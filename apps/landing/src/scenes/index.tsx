@@ -42,7 +42,7 @@ const EXIT_VH = 40
  * camera keyframe must precede the scene to own the camera early, which
  * also completes the hero handoff morph over FLY_EARLY_VH fewer vh — the
  * flight is underway by the time the reader arrives. */
-const FLY_EARLY_VH = 24
+const FLY_EARLY_VH = 50
 
 export const indexScene: SceneFactory = ({ data, viewport }) => {
   const { rect, px, column } = indexPlate(viewport.w, viewport.h)
@@ -187,7 +187,8 @@ function IndexFrame({ rect }: { rect: ReturnType<typeof indexPlate>["rect"] }) {
 
 /** City-list column, flow-mounted: a sticky sheet over the left of the
  * plate for the dwell — the selected city leads, the statement sits
- * mid-column, the list anchors the bottom. */
+ * mid-column, the list anchors the bottom. Plain flow content: it scrolls
+ * into view and away with the document, no scroll-driven fade. */
 function IndexPanel({
   column,
   selected,
@@ -199,29 +200,10 @@ function IndexPanel({
   onSelect: (name: string) => void
   loaded: string[]
 }) {
-  const local = useSceneScroll()
-  const opacity = useTransform(local, (v) =>
-    v < -FLY_EARLY_VH
-      ? 0
-      : v < 40 - FLY_EARLY_VH
-        ? (v + FLY_EARLY_VH) / 40
-        : v <= DWELL_VH
-          ? 1
-          : Math.max(0, 1 - (v - DWELL_VH) / EXIT_VH),
-  )
-  // entrance rides the scroll with the landing flight: the sheet rises
-  // into place over the handoff tail, fully seated shortly after arrival
-  const y = useTransform(
-    local,
-    (v) =>
-      v < -FLY_EARLY_VH ? 48 : v < 40 - FLY_EARLY_VH ? 48 * (1 - (v + FLY_EARLY_VH) / 40) : 0,
-  )
   return (
-    <motion.div
+    <div
       className={styles.panel}
       style={{
-        opacity,
-        y,
         marginLeft: `${column.left * 100}%`,
         width: `${column.width * 100}%`,
       }}
@@ -260,7 +242,7 @@ function IndexPanel({
           )
         })}
       </ul>
-    </motion.div>
+    </div>
   )
 }
 
