@@ -1,12 +1,17 @@
 export const FPS = 45;
 
+// Composition canvas (Root.tsx <Composition width/height>).
+export const REEL_W = 1920;
+export const REEL_H = 1080;
+
 // --- Durations in SECONDS. Frames derive via round(S * FPS). ---
 export const WALK_SLOT_S = 2.3;     // per-building slot; total WALK = count × this
-export const HOOK_S = 1.3;          // full-text title card opener
-// CTA = "Explore more in" line reveal (1.5s) + Nolli mark/wordmark hold (2.5s).
-// The line/lockup split belongs to CtaLockup (the only consumer of the parts);
-// only the total is shared with the beat Sequences + camera chain.
-export const CTA_S = 1.5 + 2.5;
+// HOOK: marquee opener — two counter-scrolling cover rows flanking the title.
+export const HOOK_S = 1.8;
+// CTA = "Explore more in" line reveal + Nolli mark/wordmark hold.
+export const CTA_LINE_S = 1.5;
+export const CTA_LOCKUP_S = 3.5;
+export const CTA_S = CTA_LINE_S + CTA_LOCKUP_S;
 
 export const BRAND_FADE_OUT_LEAD_S = 0.4; // map/chrome fade-out lead into CTA
 
@@ -19,12 +24,12 @@ export const secToFrames = (s: number): number => Math.round(s * FPS);
 
 export const SLOT_FRAMES = secToFrames(WALK_SLOT_S);
 
+export const HOOK_FRAMES = secToFrames(HOOK_S);
+
 export const CLAMP = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 
-export const WALK_START = secToFrames(HOOK_S);
-
 export function ctaStart(count: number): number {
-  return WALK_START + count * SLOT_FRAMES;
+  return HOOK_FRAMES + count * SLOT_FRAMES;
 }
 export function totalFrames(count: number): number {
   return ctaStart(count) + secToFrames(CTA_S);

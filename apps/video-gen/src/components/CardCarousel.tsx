@@ -1,7 +1,7 @@
 import { Img, staticFile, useCurrentFrame } from "remotion";
 import { Easing, interpolate } from "remotion";
 import { CLAMP, SLOT_FRAMES, SNAP_FRAC } from "../lib/timeline";
-import type { ReelBuilding } from "../lib/config";
+import { heroImagePath, type ReelBuilding } from "../lib/config";
 
 // --- Carousel geometry + math (1920×1080). Pure: no React/Remotion side effects. ---
 
@@ -106,7 +106,7 @@ const CarouselCard: React.FC<{
       }}
     >
       <Img
-        src={staticFile(`data/${slug}/images/${building.slug}-hero.jpg`)}
+        src={staticFile(heroImagePath(slug, building.slug))}
         style={{ width: "100%", height: "100%", objectFit: "cover" }}
       />
       {showVeil ? (

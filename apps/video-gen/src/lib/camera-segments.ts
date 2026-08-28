@@ -1,4 +1,4 @@
-import { secToFrames, SLOT_FRAMES, CTA_S, WALK_START } from "./timeline";
+import { secToFrames, SLOT_FRAMES, CTA_S, HOOK_FRAMES } from "./timeline";
 import type { MapViewport } from "./viewport";
 import type { ReelBuilding } from "./config";
 
@@ -42,7 +42,7 @@ export function buildCameraSegments(
 ): Segment[] {
   const segs: Segment[] = [];
 
-  segs.push({ kind: "hold", at: worldVP, durationInFrames: WALK_START });
+  segs.push({ kind: "hold", at: worldVP, durationInFrames: HOOK_FRAMES });
 
   for (let i = 0; i < buildings.length; i++) {
     const b = buildings[i];

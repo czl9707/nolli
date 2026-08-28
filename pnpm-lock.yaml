@@ -282,9 +282,6 @@ importers:
       remotion:
         specifier: '4'
         version: 4.0.507(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
-      sharp:
-        specifier: ^0.33.5
-        version: 0.33.5
     devDependencies:
       '@types/better-sqlite3':
         specifier: ^7.6.13
@@ -295,6 +292,9 @@ importers:
       '@types/react':
         specifier: ^19.2.14
         version: 19.2.17
+      sharp:
+        specifier: ^0.33.5
+        version: 0.33.5
       tsx:
         specifier: ^4.23.0
         version: 4.23.0

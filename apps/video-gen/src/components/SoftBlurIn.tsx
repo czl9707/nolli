@@ -12,6 +12,9 @@ export type Phase = {
   enabled: boolean;
 };
 
+/** Both phases disabled — render fully settled from frame 0. */
+export const NO_ANIM: Phase = { when: 0, last: 0, enabled: false };
+
 export type CharStyle = { opacity: number; blur: number; translateY: number };
 
 // Fixed physics — internal, not call-tunable.
@@ -80,6 +83,11 @@ export const SoftBlurIn: React.FC<{
     }
     return toks;
   }, [chars]);
+
+  // Both phases disabled = static text — skip the per-char machinery entirely.
+  if (!start.enabled && !end.enabled) {
+    return <span style={{ display: "inline-block", lineHeight: 1.1, ...style }}>{text}</span>;
+  }
 
   return (
     <span style={{ display: "inline-block", lineHeight: 1.1, ...style }}>

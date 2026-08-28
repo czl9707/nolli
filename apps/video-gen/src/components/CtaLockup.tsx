@@ -1,10 +1,8 @@
 import { AbsoluteFill, Img, interpolate, staticFile, useCurrentFrame } from "remotion";
-import { secToFrames, CLAMP } from "../lib/timeline";
+import { secToFrames, CLAMP, CTA_LINE_S } from "../lib/timeline";
 import { REEL_TYPE } from "../lib/type";
-import { SoftBlurIn } from "./SoftBlurIn";
+import { NO_ANIM, SoftBlurIn } from "./SoftBlurIn";
 
-const CTA_LINE_S = 1.5;
-const CTA_LOCKUP_S = 2.5;
 const LINE_END = secToFrames(CTA_LINE_S);
 const EXIT_F = 8;
 const LINE_REVEAL_START = secToFrames(0.1);
@@ -40,7 +38,7 @@ export const CtaLockup: React.FC = () => {
         <SoftBlurIn
           text="Nolli"
           start={{ when: LOCK_START, last: LOCK_START + 16, enabled: true }}
-          end={{ when: 0, last: 0, enabled: false }}
+          end={NO_ANIM}
           style={{ ...REEL_TYPE.ctaWordmark, color: FG }}
         />
       </div>
