@@ -50,6 +50,8 @@ runCli("render", async (slug) => {
     composition,
     serveUrl,
     codec: "h264",
+    // Size lever: 20 lands a 28s reel around ~70MB (default CRF ~18 → ~100MB).
+    crf: process.env.REEL_CRF ? Number(process.env.REEL_CRF) : 20,
     outputLocation: outPath,
     concurrency,
     chromiumOptions: { gl: "angle" },

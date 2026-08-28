@@ -10,8 +10,7 @@
     "assets": "tsx scripts/assets.ts",
     "render": "tsx scripts/render.ts",
     "test": "vitest run",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "capture:intro": "tsx scripts/capture-intro.ts"
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@nolli/data": "workspace:*",

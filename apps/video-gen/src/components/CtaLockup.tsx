@@ -4,7 +4,7 @@ import { REEL_TYPE } from "../lib/type";
 import { SoftBlurIn } from "./SoftBlurIn";
 
 const CTA_LINE_S = 1.5;
-const CTA_LOCKUP_S = 2.5;
+const CTA_LOCKUP_S = 3.5;
 const LINE_END = secToFrames(CTA_LINE_S);
 const EXIT_F = 8;
 const LINE_REVEAL_START = secToFrames(0.1);
