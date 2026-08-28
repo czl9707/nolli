@@ -8,6 +8,7 @@ import { indexScene } from "@/scenes/index"
 import { ctaScene } from "@/scenes/cta"
 import { FooterScene } from "@/scenes/footer"
 import { HeroHeadline } from "@/scenes/hero.chrome"
+import { ScrollThumb } from "@/components/scroll-thumb"
 
 const FACTORIES = [heroScene, indexScene, ctaScene]
 
@@ -40,6 +41,7 @@ export function App() {
 
   return (
     <main>
+      <ScrollThumb />
       {data && registry && (
         <>
           <LandingStage scenes={registry} summaries={data.summaries} onMapIdle={onMapIdle} />
