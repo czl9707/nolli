@@ -13,6 +13,8 @@ import { useMapPortal, useSceneCamera, useSceneScroll, useStage, useStageMap } f
 import { CLUSTER_CITY, HERO_CAMERA } from "@/lib/constants"
 import type { LandingData } from "@/lib/landing-data"
 import type { SceneFactory } from "@/lib/scene"
+import type { ArchSummary } from "@nolli/data"
+import { MapContext, PhotoMarker } from "@nolli/map"
 import { HeroChrome } from "./hero.chrome"
 import markerStyles from "./index.markers.module.css"
 import revealStyles from "./hero.reveal.module.css"
@@ -20,9 +22,18 @@ import styles from "./hero.module.css"
 
 const FULL = { x: 0, y: 0, w: 1, h: 1 }
 
+const DWELL_VH = 108
+
+/** Vertical px offset that rides the veil's 1:1 page exit once the hero's
+ * dwell ends — the plate leaves THROUGH THE TOP with the veil instead of
+ * lingering at the cursor. Shared by the plate transform, the veil's mask
+ * hole, and the marker clip driver so all three stay glued. */
+const exitYpx = (scrollY: number) =>
+  -Math.max(0, scrollY - (DWELL_VH / 100) * window.innerHeight)
+
 const HERO_KEYFRAMES = [
   { at: 0, layer: FULL, camera: HERO_CAMERA },
-  { at: 108, layer: FULL },
+  { at: DWELL_VH, layer: FULL },
 ]
 
 /** Hero: bare Paris map under a cursor-plate reveal; screen chrome (headline,
@@ -43,8 +54,66 @@ function HeroScene({ data }: { data: LandingData }) {
   return (
     <section className={styles.scene}>
       <HeroReveal sx={sx} sy={sy} />
+      <HeroPhotoMarkers picks={data.indexPhotos} />
       <HeroChrome data={data} sx={sx} sy={sy} />
     </section>
+  )
+}
+
+/** Hero-owned photo markers. Each scene owns the markers it shows: the hero
+ * mounts its Paris picks (clipped to the cursor plate by HeroClipDriver),
+ * fades them out with the veil exit, and hands a BARE map to the index —
+ * whose own markers arrive after its landing flight. The fade vars are
+ * per-owner (--hero-photo-o here, --index-photo-o in the index scene); the
+ * shared container flags are gated on global scroll at the scene seam. */
+function HeroPhotoMarkers({ picks }: { picks: ArchSummary[] }) {
+  const stage = useStage()
+  const local = useSceneScroll()
+  // 1 through dwell (108vh), 0 by 126vh — fully gone when the clip driver
+  // releases (heroFade 0.5), so the markers never flash unclipped on the
+  // bare map during the exit
+  const o = useTransform(local, (v) =>
+    v <= DWELL_VH ? 1 : Math.max(0, 1 - (v - DWELL_VH) / 18),
+  )
+  // the index scene takes over the flags at its own start
+  const seam = (stage.ranges["index"]?.startVh ?? Infinity) - 5
+
+  const map = useStageMap()
+  useEffect(() => {
+    if (!map) return
+    const el = map.getContainer()
+    const apply = () => {
+      const v = o.get()
+      el.style.setProperty("--hero-photo-o", String(v))
+      if (stage.scrollVh.get() > seam) return
+      const on = v > 0.001
+      const photoState = on ? "on" : "off"
+      if (el.dataset.photoMarkers !== photoState) el.dataset.photoMarkers = photoState
+      const archState = on ? "off" : "on"
+      if (el.dataset.archMarkers !== archState) el.dataset.archMarkers = archState
+      // plate gating releases as the clip does (heroFade 0.5) so the tail
+      // fades through the var instead of pinning at opacity 1
+      const plateState = v > 0.5 ? "on" : "off"
+      if (el.dataset.heroPlate !== plateState) el.dataset.heroPlate = plateState
+    }
+    apply()
+    const un1 = o.on("change", apply)
+    const un2 = stage.scrollVh.on("change", apply)
+    return () => {
+      un1()
+      un2()
+    }
+  }, [map, o, stage, seam])
+
+  const mapPortal = useMapPortal()
+  if (!mapPortal || !map) return null
+  return createPortal(
+    <MapContext.Provider value={{ map, isLoaded: !!map }}>
+      {picks.map((a) => (
+        <PhotoMarker key={a.slug} building={a} className={markerStyles.heroMarker} />
+      ))}
+    </MapContext.Provider>,
+    mapPortal,
   )
 }
 
@@ -55,13 +124,14 @@ function HeroScene({ data }: { data: LandingData }) {
  * bare Paris map sits under ONE dim layer: a diagonal ink gradient built
  * into the map's upper layer (the old hero grade, moved here) with the
  * plate's rect punched out — so the revealed map is fully bright, no second
- * overlay on top. The photo markers render fully but are clipped to the
- * plate rect (per-marker inset clip-path), cropping at the edge.
- * Everything fades with the hero scene fade; the hero→index handoff keeps
- * the gradient (now here) and the layer morph.
+ * overlay on top. The hero's photo markers (HeroPhotoMarkers) render fully
+ * but are clipped to the plate rect (per-marker inset clip-path), cropping
+ * at the edge. Everything fades with the hero scene fade; the hero→index
+ * handoff keeps the gradient (now here) and the layer morph, and hands over
+ * a BARE map — the index mounts its own markers after its landing flight.
  *
  * Snap mode (touch / reduced motion) has no cursor: the component renders
- * nothing and IndexPhotoMarkers shows the picks unclipped as the fallback.
+ * nothing and the markers show unclipped as the fallback.
  */
 
 export const PLATE = { w: 360, h: 280 }
@@ -83,7 +153,7 @@ function HeroReveal({
   const heroLocal = useSceneScroll()
   // 1 through dwell (108vh), linear to 0 by 144vh
   const heroFade = useTransform(heroLocal, (v) =>
-    v <= 108 ? 1 : Math.max(0, 1 - (v - 108) / 36),
+    v <= DWELL_VH ? 1 : Math.max(0, 1 - (v - DWELL_VH) / 36),
   )
 
   // the veil rides the page like the old flow-mounted grade did: 200svh tall,
@@ -117,7 +187,11 @@ function HeroReveal({
   }, [heroFade, mode])
 
   const x = useTransform(sx, (v) => v - PLATE.w / 2)
-  const y = useTransform(sy, (v) => v - PLATE.h / 2)
+  // past the dwell the plate rides the veil's exit 1:1 — up through the top
+  const y = useTransform(
+    [sy, scrollY],
+    ([cy, s]: number[]) => cy - PLATE.h / 2 + exitYpx(s),
+  )
 
   const mapPortal = useMapPortal()
 
@@ -165,10 +239,12 @@ function PlateVars({
     const el = ref.current?.parentElement
     if (!el) return
     const s = scrollY.get()
+    // veil-local vertical = viewport + scrollY, minus the plate's exit ride
+    const ey = exitYpx(s)
     el.style.setProperty("--pl", `${sx.get() - PLATE.w / 2}px`)
-    el.style.setProperty("--pt", `${sy.get() - PLATE.h / 2 + s}px`)
+    el.style.setProperty("--pt", `${sy.get() + ey - PLATE.h / 2 + s}px`)
     el.style.setProperty("--pr", `${sx.get() + PLATE.w / 2}px`)
-    el.style.setProperty("--pb", `${sy.get() + PLATE.h / 2 + s}px`)
+    el.style.setProperty("--pb", `${sy.get() + ey + PLATE.h / 2 + s}px`)
   }
   useMotionValueEvent(sx, "change", write)
   useMotionValueEvent(sy, "change", write)
@@ -177,9 +253,9 @@ function PlateVars({
   return <div ref={ref} aria-hidden style={{ display: "none" }} />
 }
 
-/** Clips the photo markers to the plate rect while the hero owns the screen.
- * Below hero fade 0.5 (outgoing transition) clips release — the markers
- * crossfade in via the index fade while the plate dissolves. */
+/** Clips the hero's photo markers to the plate rect while the hero owns the
+ * screen. Below hero fade 0.5 (outgoing transition) clips release — the
+ * markers fade out through the shared var while the plate dissolves. */
 function HeroClipDriver({
   sx,
   sy,
@@ -197,11 +273,12 @@ function HeroClipDriver({
     const update = () => {
       raf = 0
       const active = heroFade.get() >= 0.5
+      const ey = exitYpx(window.scrollY)
       const contents = Array.from(
         document.querySelectorAll<HTMLElement>(".maplibregl-marker"),
       )
         .map((root) => root.firstElementChild as HTMLElement | null)
-        .filter((el): el is HTMLElement => !!el && el.classList.contains(markerStyles.marker))
+        .filter((el): el is HTMLElement => !!el && el.classList.contains(markerStyles.heroMarker))
       contents.forEach((el) => {
         if (!active) {
           if (el.style.clipPath) el.style.clipPath = ""
@@ -210,8 +287,8 @@ function HeroClipDriver({
         const root = el.parentElement!
         const l = sx.get() - PLATE.w / 2
         const r = sx.get() + PLATE.w / 2
-        const t = sy.get() - PLATE.h / 2
-        const b = sy.get() + PLATE.h / 2
+        const t = sy.get() + ey - PLATE.h / 2
+        const b = sy.get() + ey + PLATE.h / 2
         const box = root.getBoundingClientRect()
         // fully-outside test against the overhang-extended box
         if (

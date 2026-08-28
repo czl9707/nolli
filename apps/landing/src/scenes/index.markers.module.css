@@ -21,16 +21,30 @@
   visibility: hidden;
 }
 
-/* hero plate: markers render fully while the cursor plate owns the gating —
-   the per-marker clip-path (hero.tsx) crops them to the plate */
-:global([data-hero-plate="on"]) .marker {
-  visibility: visible;
-  opacity: 1;
-}
-
 /* normal pins/clusters stand down while the photo markers own the screen —
    hide every maplibre marker root except the ones carrying a photo marker
-   content (.marker is module-scoped, so :has() here matches only ours) */
-:global([data-arch-markers="off"]) :global(.maplibregl-marker):not(:has(.marker)) {
+   content (.marker/.heroMarker are module-scoped, so :has() here matches
+   only ours) */
+:global([data-arch-markers="off"]) :global(.maplibregl-marker):not(:has(.marker)):not(:has(.heroMarker)) {
   visibility: hidden;
+}
+
+/* hero-owned photo markers (hero.tsx) — own fade var, and the hero plate
+   gates them: while the plate owns the screen they render fully and the
+   per-marker clip-path (hero.tsx) crops them to the plate */
+.heroMarker {
+  opacity: var(--hero-photo-o);
+}
+
+.heroMarker :global(figcaption p) {
+  font-family: var(--font-playful);
+}
+
+:global([data-photo-markers="off"]) .heroMarker {
+  visibility: hidden;
+}
+
+:global([data-hero-plate="on"]) .heroMarker {
+  visibility: visible;
+  opacity: 1;
 }

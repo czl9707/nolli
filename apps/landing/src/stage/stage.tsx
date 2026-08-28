@@ -91,6 +91,11 @@ export function LandingStage({
     const vh = snapMode ? snapVh(timeline, scrollVh.get()) : scrollVh.get()
     const camera = cameraAtVh(timeline, vh)
     if (camera) mapRef.current?.jumpTo({ center: camera.center, zoom: camera.zoom })
+    // scene photo-marker fades start at 0 — an unset var would compute as
+    // opacity 1 and flash the markers before any scene writer lands
+    const c = mapRef.current?.getContainer()
+    c?.style.setProperty("--index-photo-o", "0")
+    c?.style.setProperty("--hero-photo-o", "0")
     // fire once per map instance
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapReady])

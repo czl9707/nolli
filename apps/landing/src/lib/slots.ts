@@ -1,8 +1,4 @@
-export type Slot = { cx: number; cy: number; w: number; h: number }
-
 export type SlotRect = { x: number; y: number; w: number; h: number }
-
-export const INDEX_SLOT: Slot = { cx: 0.5, cy: 0.6, w: 0.42, h: 0.65 }
 
 /** Read a length CSS var from the shared @nolli/ui tokens as px (rem resolves
  * against the root font size). Falls back outside the browser (tests). */
@@ -16,18 +12,38 @@ function cssVarPx(name: string, fallback: number): number {
   return parseFloat(m[1]) * root
 }
 
-/** Index plate sizing like the app's content container: full width minus
- * component padding per side, capped at --landing-plate-max (landing
- * global.css — 42rem, 1.5x above the lg breakpoint). Read per call so
- * crossing the breakpoint re-applies on resize. */
-export function indexSlot(vw: number): Slot {
-  const max = cssVarPx("--landing-plate-max", 672)
-  const pad = cssVarPx("--spacing-component", 32)
-  return { ...INDEX_SLOT, w: Math.min((vw - pad * 2) / vw, max / vw) }
-}
+/** Index plate: the map settles into a standalone rect on the right of the
+ * city-list column. The two-column assembly (column + plate) is capped at
+ * MAX_ASSEMBLY and centered — wide, but not ultrawide-stretched. The plate
+ * is inset from the assembly edges (site header clearance above, component
+ * padding elsewhere), so the cream page frames it on all sides. Returns the
+ * viewport-fraction rect for the layer keyframes, the rect's px size for
+ * camera fitting, and the column's viewport fractions for the panel. */
+const LEFT_COL = 0.28
+const HEADER_H = cssVarPx("--size-header-height", 56)
+const MAX_ASSEMBLY = 1440
+const PADDING = cssVarPx("--spacing-component", 32)
 
-/** Slot as a viewport-fraction rect with x/y = top-left edges (the layer
- * geometry the map plate settles into at dwell). */
-export function slotRect(slot: Slot): SlotRect {
-  return { x: slot.cx - slot.w / 2, y: slot.cy - slot.h / 2, w: slot.w, h: slot.h }
+export function indexPlate(vw: number, vh: number): {
+  rect: SlotRect
+  px: { width: number; height: number }
+  column: { left: number; width: number }
+} {
+  const top = HEADER_H + PADDING
+  const assemblyW = Math.min(vw, MAX_ASSEMBLY)
+  const marginX = (vw - assemblyW) / 2
+  const colW = LEFT_COL * assemblyW
+  const x0 = marginX + colW + PADDING
+  const x1 = marginX + assemblyW - PADDING
+  const rect = {
+    x: x0 / vw,
+    y: top / vh,
+    w: (x1 - x0) / vw,
+    h: 1 - (top + PADDING) / vh,
+  }
+  return {
+    rect,
+    px: { width: rect.w * vw, height: rect.h * vh },
+    column: { left: marginX / vw, width: colW / vw },
+  }
 }

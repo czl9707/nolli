@@ -10,7 +10,7 @@ const FACTORIES = [heroScene, indexScene, ctaScene]
 
 export function App() {
   const { status, data, error } = useLandingData()
-  // viewport state re-runs the factories so the index slot re-fits on resize
+  // viewport state re-runs the factories so the index plate re-fits on resize
   const [vp, setVp] = useState(() => ({ w: window.innerWidth, h: window.innerHeight }))
   useEffect(() => {
     const onResize = () => setVp({ w: window.innerWidth, h: window.innerHeight })

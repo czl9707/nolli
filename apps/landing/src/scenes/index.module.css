@@ -1,7 +1,6 @@
-/* Index — light app mode around the card slot. Light page around the card
-   slot: the map plate resizes into the slot at dwell, so the frame only draws
-   its border — the cream page behind is the surround. Slot vars are written
-   by IndexFrame (indexSlot fractions). */
+/* Index — city-list column beside a standalone map plate. The layer settles
+   into the plate rect (slots.ts indexPlate); the frame draws its hairline,
+   the panel carries the selected city, the statement, and the city list. */
 
 .scene {
   position: absolute;
@@ -11,49 +10,86 @@
 .frame {
   box-sizing: border-box;
   position: absolute;
-  left: calc((var(--slot-index-x) - var(--slot-index-w) / 2) * 100%);
-  top: calc((var(--slot-index-y) - var(--slot-index-h) / 2) * 100%);
-  width: calc(var(--slot-index-w) * 100%);
-  height: calc(var(--slot-index-h) * 100%);
+  left: calc(var(--plate-x) * 100%);
+  top: calc(var(--plate-y) * 100%);
+  width: calc(var(--plate-w) * 100%);
+  height: calc(var(--plate-h) * 100%);
   border: var(--border);
   border-radius: var(--size-border-radius);
   pointer-events: none;
 }
 
-/* Flow-mounted copy sheet: sticky fullscreen inside the index scroll range
-   (the stage wraps this in the range div) — enters from below, dwells, exits
-   the top. The sheet anchors its content just ABOVE the slot; the padding
-   sets the content's bottom edge at slot-top minus the gap. */
-.copy {
+/* Flow-mounted panel: sticky through the index scroll range (the stage wraps
+   this in the range div) — city name bottom-anchored into the copy, list
+   anchored at the column's foot. */
+.panel {
   position: sticky;
   top: 0;
   box-sizing: border-box;
   height: 100svh;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  padding-bottom: calc((1 - (var(--slot-index-y) - var(--slot-index-h) / 2)) * 100svh + 1.5rem);
-}
-
-.copyBody {
-  position: relative;
-  left: calc((var(--slot-index-x) - var(--slot-index-w) / 2) * 100%);
-  width: calc(var(--slot-index-w) * 100%);
+  padding: calc(var(--size-header-height) + var(--spacing-component)) 0
+    var(--spacing-component) var(--spacing-component);
+  pointer-events: auto;
+  overflow-y: auto;
   color: rgb(var(--color-primary-foreground));
 }
 
-.overline {
-  font-size: var(--typography-note-fontSize);
-  opacity: 0.85;
+.dossier {
+  margin-top: auto;
   margin-bottom: var(--spacing-paragraph);
+}
+
+.city {
+  font-weight: 300;
+  font-size: clamp(3rem, 4.5vw, 4.5rem);
+  line-height: 1.05;
+  margin: 0;
 }
 
 .statement {
   font-weight: 300;
-  font-size: var(--typography-h3-fontSize);
-  line-height: 1.35;
+  font-size: var(--typography-body1-fontSize);
+  line-height: 1.4;
 }
 
 .statement strong {
   font-weight: 700;
+}
+
+.list {
+  margin-top: auto;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.row {
+  list-style: none;
+  cursor: pointer;
+  font-size: var(--typography-body2-fontSize);
+  opacity: 0.55;
+  padding: 0.2rem 0;
+  border-top: var(--border);
+  transition: opacity 150ms ease;
+}
+
+.list .row:last-child {
+  border-bottom: var(--border);
+}
+
+.row:hover {
+  opacity: 0.85;
+}
+
+.rowActive {
+  opacity: 1;
+  font-weight: 700;
+}
+
+.rowPending {
+  opacity: 0.2;
+  cursor: progress;
 }

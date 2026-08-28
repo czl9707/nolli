@@ -1,9 +1,6 @@
 import { useEffect, useState } from "react"
 import { useDbStore, type Arch, type ArchSummary } from "@nolli/data"
-import type { SceneCamera } from "@nolli/map"
 import { CLUSTER_CITY, HERO_SLUG } from "./constants"
-import { fitCamera } from "./camera"
-import { indexSlot } from "./slots"
 import { cityIdByName, computeStats, pickIndexPhotos } from "./shape"
 
 export type LandingData = {
@@ -12,7 +9,6 @@ export type LandingData = {
   indexPhotos: ArchSummary[]
   hero: Arch
   stats: { architectures: number; architects: number }
-  indexCamera: SceneCamera
 }
 
 export function useLandingData() {
@@ -41,15 +37,6 @@ export function useLandingData() {
           indexPhotos,
           hero,
           stats: computeStats(summaries),
-          // fit the picks into the plate the map settles into at index dwell
-          // (indexSlot fractions of the viewport, measured at load time)
-          indexCamera: fitCamera(
-            indexPhotos.map((p) => p.coordinates),
-            {
-              width: window.innerWidth * indexSlot(window.innerWidth).w,
-              height: window.innerHeight * indexSlot(window.innerWidth).h,
-            },
-          ),
         })
       } catch (e) {
         if (!cancelled) setErr(e as Error)

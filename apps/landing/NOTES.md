@@ -14,10 +14,10 @@ layer is driven by two clocks:
    live data (`landing-data.ts`, `constants.ts`).
 
 Scenes: hero (Paris dwell, cursor plate reveal over the bare map, split-rails
-copy, diagonal grade) → index (light page, framed map slot + photo cards
-pinned to map coords) → cta (hero-mirror grade) → footer (cream block rising
-over the south ocean, normal flow). Mobile/reduced-motion swap the scrub for
-snapped keyframes. Design + wiring specs (local, gitignored):
+copy, diagonal grade) → index (city-list column + standalone map plate,
+click a city to fly there) → cta (hero-mirror grade) → footer (cream block
+rising over the south ocean, normal flow). Mobile/reduced-motion swap the
+scrub for snapped keyframes. Design + wiring specs (local, gitignored):
 `docs/superpowers/specs/2026-08-21-landing-page-design-direction.md`,
 `docs/superpowers/specs/2026-08-20-landing-page-design.md`, plan in
 `docs/superpowers/plans/2026-08-21-landing-page.md`. The prototype round the
@@ -44,16 +44,39 @@ fully but are clipped to the plate
 rect (per-marker `inset()` clip-path on the marker content divs, matched via
 the shared `scenes/index.markers.module.css` class, rAF-throttled on pointer-spring
 + camera change) — straddling markers crop at the plate edge. Everything
-fades with `fade("hero")`; clips release below hero fade 0.5 so the markers
-crossfade in via the index fade while the plate dissolves (the grade and
-layer morph of the hero→index handoff are untouched). Snap mode
-(touch/reduced-motion) has no cursor: no plate or veil, markers show
-unclipped.
+fades with `fade("hero")`; clips release below hero fade 0.5 so the markers fade out through the hero
+var while the plate dissolves (the grade and layer morph of the hero→index
+handoff are untouched). Snap mode (touch/reduced-motion) has no cursor: no
+plate or veil, markers show unclipped.
 
-`scenes/index.tsx` (`IndexPhotoMarkers`) gates the marker sets: photo markers
-own the screen during hero AND index (`data-photo-markers` /
-`data-arch-markers`); `data-hero-plate="on"` forces full marker visibility
-while the plate clip does the gating.
+Each scene owns the markers it shows. `scenes/hero.tsx`
+(`HeroPhotoMarkers`) mounts the Paris picks (`.heroMarker` class) clipped to
+the plate, fades them out with the veil exit, and hands a BARE map to the
+index — whose `IndexPhotoMarkers` arrive after the landing flight (ramp
+30→70vh). Fade vars are per-owner (`--hero-photo-o` / `--index-photo-o`,
+initialized to 0 on the map container at map-ready); the shared container
+flags (`data-photo-markers` / `data-arch-markers` / `data-hero-plate`) are
+written by whichever scene owns the screen, gated on global scroll at the
+scene seam.
+
+## Index — city list + standalone plate
+
+`scenes/index.tsx`. The map layer settles into a standalone plate
+(`slots.ts` `indexPlate`: right of a 26% column, page margin on all sides,
+site-header clearance above; `IndexFrame` draws its hairline). The
+flow-mounted `IndexPanel` is the winning "city dossier" layout from the
+2026-08-27 variant round (A editorial / B dossier / C numbered rail, built
+switchable then folded): selected city leads huge, the statement sits
+mid-column, the compact city list anchors the bottom. Hand-picked 6 cities,
+name-only rows (Paris first — continuity with the hero); click →
+`fitCamera` on the city's farthest-point picks into the plate px →
+`stage.flyTo`, and `IndexPhotoMarkers` swap to that city. The two-column
+assembly (column + plate) is capped at 1400px and centered (`indexPlate`).
+Copy: "Don't miss the masterpiece / Google Maps treats a masterpiece no
+differently. ArchDaily curates everything about it. Nolli pins it on the
+map."
+Paris comes free with the landing data; other cities preload once via
+filter options.
 
 ## Dev
 
@@ -71,6 +94,8 @@ unaffected.
 
 - footer copy + link set (placeholders point at `#`)
 - header nav targets (poster app, about page)
+- mobile layout for the index two-column (26% column is unreadable narrow;
+  needs a stacked plate + horizontal city chips pass)
 - prerendered shell / static first-paint for hero — REQUIRED before deploy
   (live db load means no-JS crawlers and slow links see only "loading the
   map…")

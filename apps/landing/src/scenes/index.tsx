@@ -1,33 +1,65 @@
-import { useEffect, type CSSProperties } from "react"
+import { useEffect, useMemo, useState, type CSSProperties } from "react"
 import { createPortal } from "react-dom"
 import { motion, useTransform } from "framer-motion"
-import { Note } from "@nolli/ui"
+import { H2 } from "@nolli/ui"
 import { MapContext, PhotoMarker } from "@nolli/map"
-import type { ArchSummary } from "@nolli/data"
+import { useDbStore, type ArchSummary } from "@nolli/data"
 import type { SceneFactory, SceneKeyframe } from "@/lib/scene"
 import type { LandingData } from "@/lib/landing-data"
-import { indexSlot, slotRect, type Slot } from "@/lib/slots"
-import { useSceneCamera, useSceneScroll, useMapPortal, useOverlayPortal, useStageMap } from "@/stage/hooks"
+import { indexPlate } from "@/lib/slots"
+import { fitCamera } from "@/lib/camera"
+import { cityIdByName, pickIndexPhotos } from "@/lib/shape"
+import {
+  useSceneCamera,
+  useSceneId,
+  useSceneScroll,
+  useStage,
+  useMapPortal,
+  useOverlayPortal,
+  useStageMap,
+} from "@/stage/hooks"
 import styles from "./index.module.css"
 import markerStyles from "./index.markers.module.css"
 
-/** Index: the plate settles into the photo slot; pinned frame + sticky copy. */
+/** Hand-picked city index — Paris leads (continuity with the hero dwell). */
+const CITIES = ["Paris", "New York", "Tokyo", "London", "Chicago", "Berlin"] as const
+
+const PICKS_PER_CITY = 8
+
+/** Explicit flyTo duration keeps the full arc inside a fixed time budget
+ * (maxDuration would clamp the arc shape instead). */
+const FLY_MS = 4000
+
+/** Index: the map settles into a standalone plate right of a city-list
+ * column. Selecting a city flies the plate there and swaps its photo
+ * markers — the "don't miss the masterpiece" demo. Long dwell (stable
+ * plate 0→DWELL_VH, most of it after the landing flight ends ~70vh) so the
+ * interactive window is easy to land on and sit in. */
+const DWELL_VH = 200
+const EXIT_VH = 40
+
 export const indexScene: SceneFactory = ({ data, viewport }) => {
-  const slot = indexSlot(viewport.w)
+  const { rect, px, column } = indexPlate(viewport.w, viewport.h)
+  // first city = Paris: the hero hands over a bare Paris map
+  const camera = fitCamera(
+    data.indexPhotos.map((p) => p.coordinates),
+    px,
+  )
   const keyframes: SceneKeyframe[] = [
-    { at: 0, layer: slotRect(slot), camera: data.indexCamera },
-    { at: 120, layer: slotRect(slot) },
+    { at: 0, layer: rect, camera },
+    { at: DWELL_VH, layer: rect },
   ]
   return {
     id: "index",
-    heightVh: 200,
+    heightVh: 280,
     keyframes,
     Component: () => (
       <IndexScene
         data={data}
-        indexPhotos={data.indexPhotos}
-        slot={slot}
+        platePx={px}
+        column={column}
         keyframes={keyframes}
+        rect={rect}
       />
     ),
   }
@@ -35,50 +67,111 @@ export const indexScene: SceneFactory = ({ data, viewport }) => {
 
 function IndexScene({
   data,
-  indexPhotos,
-  slot,
+  platePx,
+  column,
   keyframes,
+  rect,
 }: {
   data: LandingData
-  indexPhotos: ArchSummary[]
-  slot: Slot
+  platePx: { width: number; height: number }
+  column: ReturnType<typeof indexPlate>["column"]
   keyframes: SceneKeyframe[]
+  rect: ReturnType<typeof indexPlate>["rect"]
 }) {
   useSceneCamera(keyframes)
+  const stage = useStage()
+  const dataSource = useDbStore((s) => s.dataSource)
+
+  // Paris comes free with the landing data; the other cities preload once
+  const [byCity, setByCity] = useState<Record<string, ArchSummary[]>>(() => ({
+    Paris: data.cluster,
+  }))
+  useEffect(() => {
+    if (!dataSource) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        const options = await dataSource.getFilterOptions()
+        const entries = await Promise.all(
+          CITIES.filter((c) => c !== "Paris").map(async (name) => {
+            const id = cityIdByName(options, name)
+            if (!id) throw new Error(`index city "${name}" not found`)
+            return [name, await dataSource.getAllArchitectures({ cityIds: [id] })] as const
+          }),
+        )
+        if (!cancelled) setByCity((prev) => ({ ...prev, ...Object.fromEntries(entries) }))
+      } catch {
+        // cities that didn't load stay dim in the list
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [dataSource])
+
+  const picksByCity = useMemo(() => {
+    const out: Record<string, ArchSummary[]> = {}
+    for (const name of CITIES) {
+      if (name === "Paris") {
+        out.Paris = data.indexPhotos
+        continue
+      }
+      const items = byCity[name]
+      if (!items?.length) continue
+      out[name] = pickIndexPhotos(items, items[0].coordinates, PICKS_PER_CITY)
+    }
+    return out
+  }, [byCity, data.indexPhotos])
+
+  const [selected, setSelected] = useState<string>("Paris")
+  const onSelect = (name: string) => {
+    setSelected(name)
+    const picks = picksByCity[name]
+    const map = stage.mapRef()
+    if (!picks || !map) return
+    const camera = fitCamera(picks.map((p) => p.coordinates), platePx)
+    // spot-to-spot clicks ride MapLibre's native flyTo — the arced move
+    map.flyTo({ ...camera, essential: true, duration: FLY_MS })
+  }
+
   return (
     <>
-      <IndexFrame slot={slot} />
-      <IndexCopy data={data} slot={slot} />
-      <IndexPhotoMarkers picks={indexPhotos} />
+      <IndexFrame rect={rect} />
+      <IndexPanel
+        column={column}
+        selected={selected}
+        onSelect={onSelect}
+        loaded={Object.keys(picksByCity)}
+      />
+      <IndexPhotoMarkers picks={picksByCity[selected] ?? data.indexPhotos} />
     </>
   )
 }
 
-/** Index pinned chrome (prototype E "light app mode"): the frame around the
- * card slot, portaled over the map — the plate resizes into the slot at
- * dwell, so the frame only draws its border; the cream page behind is the
- * surround. The slot vars are this scene's own concern now. */
-function IndexFrame({ slot }: { slot: Slot }) {
+/** Border around the standalone plate, portaled over the map — the layer
+ * carries the border radius, the frame draws the hairline. */
+function IndexFrame({ rect }: { rect: ReturnType<typeof indexPlate>["rect"] }) {
   const overlay = useOverlayPortal()
-  // fades with the copy: 1 through dwell at 120vh, linear to 0 by 160vh —
-  // otherwise the border outlives the scene
+  // fades with the panel: 1 through dwell at 120vh, linear to 0 by 160vh
   const local = useSceneScroll()
   const opacity = useTransform(local, (v) =>
-    v <= 120 ? 1 : Math.max(0, 1 - (v - 120) / 40),
+    v <= DWELL_VH ? 1 : Math.max(0, 1 - (v - DWELL_VH) / EXIT_VH),
   )
   if (!overlay) return null
   return createPortal(
     <motion.div
       className={styles.scene}
-      style={{
-        ...({
-          "--slot-index-x": slot.cx,
-          "--slot-index-y": slot.cy,
-          "--slot-index-w": slot.w,
-          "--slot-index-h": slot.h,
-        } as CSSProperties),
-        opacity,
-      }}
+      style={
+        {
+          ...({
+            "--plate-x": rect.x,
+            "--plate-y": rect.y,
+            "--plate-w": rect.w,
+            "--plate-h": rect.h,
+          } as CSSProperties),
+          opacity,
+        }
+      }
     >
       <div className={styles.frame} />
     </motion.div>,
@@ -86,44 +179,77 @@ function IndexFrame({ slot }: { slot: Slot }) {
   )
 }
 
-/** Index copy, flow-mounted: a sticky fullscreen sheet whose content sits
- * just above the slot — scrolls in from below, dwells pinned over the index
- * range, exits the top. The slot vars live on the frame's portal element,
- * which the flow-mounted sheet can't inherit — set them here too. */
-function IndexCopy({ data, slot }: { data: LandingData; slot: Slot }) {
+/** City-list column, flow-mounted: a sticky sheet over the left of the
+ * plate for the dwell — the selected city leads, the statement sits
+ * mid-column, the list anchors the bottom. */
+function IndexPanel({
+  column,
+  selected,
+  onSelect,
+  loaded,
+}: {
+  column: ReturnType<typeof indexPlate>["column"]
+  selected: string
+  onSelect: (name: string) => void
+  loaded: string[]
+}) {
   const local = useSceneScroll()
-  // 1 through dwell at 120vh, linear to 0 by 160vh
   const opacity = useTransform(local, (v) =>
-    v <= 120 ? 1 : Math.max(0, 1 - (v - 120) / 40),
+    v < 0
+      ? 0
+      : v < 40
+        ? v / 40
+        : v <= DWELL_VH
+          ? 1
+          : Math.max(0, 1 - (v - DWELL_VH) / EXIT_VH),
   )
-  void data
+  // entrance rides the scroll: the sheet rises into place over the same
+  // 40vh ramp as the fade
+  const y = useTransform(local, (v) => (v < 0 ? 48 : v < 40 ? 48 * (1 - v / 40) : 0))
   return (
     <motion.div
-      className={styles.copy}
-      style={
-        {
-          ...({
-            "--slot-index-x": slot.cx,
-            "--slot-index-y": slot.cy,
-            "--slot-index-w": slot.w,
-            "--slot-index-h": slot.h,
-          } as CSSProperties),
-          opacity,
-        }
-      }
+      className={styles.panel}
+      style={{
+        opacity,
+        y,
+        marginLeft: `${column.left * 100}%`,
+        width: `${column.width * 100}%`,
+      }}
     >
-      <div className={styles.copyBody}>
-        <Note asChild>
-          <p className={styles.overline}>The Index</p>
-        </Note>
-        <h2 className={styles.statement}>
-          Google Map has all the pins.
-          <br />
-          ArchDaily has all the information.
-          <br />
-          <strong>Nolli bridges the gap.</strong>
-        </h2>
+      <div className={styles.dossier}>
+        <H2 className={styles.city}>{selected}</H2>
       </div>
+      <div className={styles.copy}>
+        <p className={styles.statement}>
+          Google Maps treats a masterpiece no differently.
+          <br />
+          ArchDaily curates everything about it.
+          <br />
+          <strong>Nolli pins it on the map.</strong>
+          <br />
+          <strong>Don't miss the masterpiece.</strong>
+        </p>
+      </div>
+      <ul className={styles.list} role="listbox" aria-label="Cities">
+        {CITIES.map((name) => {
+          const ready = loaded.includes(name)
+          return (
+            <li
+              key={name}
+              className={[
+                styles.row,
+                name === selected ? styles.rowActive : "",
+                ready ? "" : styles.rowPending,
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              onClick={() => onSelect(name)}
+            >
+              {name}
+            </li>
+          )
+        })}
+      </ul>
     </motion.div>
   )
 }
@@ -131,57 +257,53 @@ function IndexCopy({ data, slot }: { data: LandingData; slot: Slot }) {
 /** Photo markers pinned at real coords — MapMarker tracks the camera natively.
  * Marker contents portal into the map container, outside any fade wrapper, so
  * their fade is written onto the container as a CSS var the markers consume
- * (see index.markers.module.css). While the photo markers are on screen (index
- * dwell, or the hero where the cursor plate clips them), the container also
- * flags the normal pin/cluster markers off. */
+ * (see index.markers.module.css). The hero hands over a bare map; these
+ * arrive AFTER the landing flight (ramp 30→70vh), hold through the dwell,
+ * and leave by 160vh. While they're on screen the container also flags the
+ * normal pin/cluster markers off. */
 function IndexPhotoMarkers({ picks }: { picks: ArchSummary[] }) {
+  const stage = useStage()
+  const own = useSceneId()
   const local = useSceneScroll()
-  // index fade: ramp in from -50vh, 1 through the dwell, out by 160vh
+  // after-landing fade: 0 until the flight carries (30vh), in by 70vh,
+  // 1 through the dwell, out by the scene's exit window
   const opacity = useTransform(local, (v) =>
-    v < -50 ? 0 : v < 0 ? (v + 50) / 50 : v <= 120 ? 1 : Math.max(0, 1 - (v - 120) / 40),
+    v < 30
+      ? 0
+      : v < 70
+        ? (v - 30) / 40
+        : v <= DWELL_VH
+          ? 1
+          : Math.max(0, 1 - (v - DWELL_VH) / EXIT_VH),
   )
-  // hero fade: 1 through 108vh, linear to 0 by 144vh
-  const heroLocal = useSceneScroll("hero")
-  const heroO = useTransform(heroLocal, (v) =>
-    v <= 108 ? 1 : Math.max(0, 1 - (v - 108) / 36),
-  )
-  const map = useStageMap()
+  // the hero owns the shared flags before this scene starts (gated seam)
+  const seam = (stage.ranges[own]?.startVh ?? 0) - 5
 
+  const map = useStageMap()
   useEffect(() => {
     if (!map) return
     const el = map.getContainer()
-    // reads both sources fresh: opacity and heroO both subscribe this, and a
-    // subscriber's own value must not win just because it fired last
     const apply = () => {
       const o = opacity.get()
-      const heroOn = heroO.get() > 0.001
       el.style.setProperty("--index-photo-o", String(o))
-      // photo markers own the screen during the index dwell AND the hero
-      // (there the cursor plate clips them — see hero.tsx)
-      const state = o > 0 || heroOn ? "on" : "off"
+      if (stage.scrollVh.get() < seam) return
+      const state = o > 0.001 ? "on" : "off"
       if (el.dataset.photoMarkers !== state) el.dataset.photoMarkers = state
       // while the photo markers own the screen, the normal pins stand down
       const archState = state === "on" ? "off" : "on"
       if (el.dataset.archMarkers !== archState) el.dataset.archMarkers = archState
-      // hero mode: markers render fully visible; the plate clip gates them
-      const heroState = heroOn ? "on" : "off"
-      if (el.dataset.heroPlate !== heroState) el.dataset.heroPlate = heroState
     }
     apply()
     const un1 = opacity.on("change", apply)
-    const un2 = heroO.on("change", apply)
+    const un2 = stage.scrollVh.on("change", apply)
     return () => {
       un1()
       un2()
-      el.style.removeProperty("--index-photo-o")
-      delete el.dataset.photoMarkers
-      delete el.dataset.archMarkers
-      delete el.dataset.heroPlate
     }
-  }, [map, opacity, heroO])
+  }, [map, opacity, stage, seam])
 
   const mapPortal = useMapPortal()
-  if (!mapPortal) return null
+  if (!mapPortal || !map) return null
   // markers mount from the scene tree (outside ArchMap), so re-supply
   // MapContext at the portal source for the MapMarker internals
   return createPortal(
