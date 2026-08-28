@@ -10,6 +10,7 @@ import {
   type MotionValue,
 } from "framer-motion"
 import { useMapPortal, useSceneCamera, useSceneScroll, useStage, useStageMap } from "@/stage/hooks"
+import { FLY_EARLY_VH } from "./index"
 import { CLUSTER_CITY, HERO_CAMERA } from "@/lib/constants"
 import type { LandingData } from "@/lib/landing-data"
 import type { SceneFactory } from "@/lib/scene"
@@ -75,8 +76,10 @@ function HeroPhotoMarkers({ picks }: { picks: ArchSummary[] }) {
   const o = useTransform(local, (v) =>
     v <= DWELL_VH ? 1 : Math.max(0, 1 - (v - DWELL_VH) / 18),
   )
-  // the index scene takes over the flags at its own start
-  const seam = (stage.ranges["index"]?.startVh ?? Infinity) - 5
+  // the index scene takes over the flags when its marker ramp begins (the
+  // ramp fires FLY_EARLY_VH before its start) — any later and our "off"
+  // writes clobber its "on" mid-fade
+  const seam = (stage.ranges["index"]?.startVh ?? Infinity) - FLY_EARLY_VH
 
   const map = useStageMap()
   useEffect(() => {

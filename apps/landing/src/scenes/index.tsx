@@ -43,7 +43,7 @@ const EXIT_VH = 40
  * camera keyframe must precede the scene to own the camera early, which
  * also completes the hero handoff morph over FLY_EARLY_VH fewer vh — the
  * flight is underway by the time the reader arrives. */
-const FLY_EARLY_VH = 50
+export const FLY_EARLY_VH = 50
 
 export const indexScene: SceneFactory = ({ data, viewport }) => {
   const { rect, px, column } = indexPlate(viewport.w, viewport.h)
@@ -269,8 +269,10 @@ function IndexPhotoMarkers({ picks }: { picks: ArchSummary[] }) {
           ? 1
           : Math.max(0, 1 - (v - DWELL_VH) / EXIT_VH),
   )
-  // the hero owns the shared flags before this scene starts (gated seam)
-  const seam = (stage.ranges[own]?.startVh ?? 0) - 5
+  // flag ownership begins when the ramp begins: the ramp precedes the scene,
+  // so a seam at scene start would hold the flag "off" until the fade is
+  // already over and the markers would pop in
+  const seam = (stage.ranges[own]?.startVh ?? 0) - FLY_EARLY_VH
 
   const map = useStageMap()
   useEffect(() => {
