@@ -2,7 +2,7 @@ import { AbsoluteFill, interpolate, Sequence, Series, useCurrentFrame } from "re
 import { useStaticJson } from "./lib/use-static-json";
 import { useFontsReady } from "./lib/use-fonts";
 import {
-  SLOT_FRAMES, CTA_S, WALK_START, HOOK_FRAMES,
+  SLOT_FRAMES, CTA_S, HOOK_FRAMES,
   ctaStart, secToFrames, BRAND_FADE_OUT_LEAD_S, CLAMP,
 } from "./lib/timeline";
 import { WORLD_VP } from "./lib/viewport";
@@ -42,7 +42,7 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
           <HookMarquee slug={cfg.slug} architect={cfg.architect} buildings={buildings} />
         </Sequence>
 
-        <Sequence from={WALK_START} durationInFrames={walkFrames(count)} layout="none">
+        <Sequence from={HOOK_FRAMES} durationInFrames={walkFrames(count)} layout="none">
           <WalkChrome buildings={buildings} slug={cfg.slug} title={reelTitleLines(cfg)} architect={cfg.architect} />
         </Sequence>
 

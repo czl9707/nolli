@@ -23,7 +23,12 @@ export const yearRange = (cfg: ReelConfig): string => {
 };
 
 export const titleLead = "Architectures by";
+export const hookLead = "Architecture by";
 export const mapTail = "On a Map";
+
+/** Staged hero image URL for a building (written by scripts/assets.ts). */
+export const heroImagePath = (slug: string, buildingSlug: string): string =>
+  `data/${slug}/images/${buildingSlug}-hero.jpg`;
 
 /** The persistent WALK title: lead + name on line 1, map tail on line 2. */
 export const reelTitleLines = (cfg: ReelConfig): [string, string] => [

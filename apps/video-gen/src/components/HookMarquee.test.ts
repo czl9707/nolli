@@ -3,6 +3,10 @@ import {
   splitRows, tileRow, marqueeShift, stripCycles,
   ROW_H, HOOK_PITCH, HOOK_IMG_W, HOOK_GAP, TOP_SPEED, BOTTOM_SPEED,
 } from "./HookMarquee";
+import { REEL_W, REEL_H } from "../lib/timeline";
+
+// Room the two-line hook title needs between the rows.
+const MIN_TITLE_BAND_PX = 400;
 
 describe("splitRows", () => {
   it("even indices -> top row, odd -> bottom, order preserved", () => {
@@ -18,20 +22,19 @@ describe("splitRows", () => {
 });
 
 describe("tileRow", () => {
-  it("reaches at least minCount items", () => {
-    expect(tileRow(["a", "b", "c"], 7).length).toBeGreaterThanOrEqual(7);
-    expect(tileRow(["a"], 4).length).toBeGreaterThanOrEqual(4);
+  it("length is cycles × row length", () => {
+    expect(tileRow(["a", "b", "c"], 2)).toHaveLength(6);
+    expect(tileRow(["a"], 4)).toHaveLength(4);
   });
   it("is plain cyclic repetition — the strip repeats with the row's period", () => {
     const row = ["a", "b", "c"];
-    const out = tileRow(row, 10);
-    expect(out).toHaveLength(12); // next whole multiple of the row length
+    const out = tileRow(row, 4);
     for (let i = 0; i < out.length; i++) {
       expect(out[i]).toBe(row[i % row.length]);
     }
   });
   it("never places identical items adjacent (source >= 2)", () => {
-    const out = tileRow(["a", "b", "c"], 10);
+    const out = tileRow(["a", "b", "c"], 3);
     for (let i = 0; i < out.length - 1; i++) {
       expect(out[i]).not.toBe(out[i + 1]);
     }
@@ -66,19 +69,19 @@ describe("marqueeShift", () => {
 });
 
 describe("marquee geometry", () => {
-  it("two rows + center band fit the 1080px canvas", () => {
-    expect(ROW_H * 2).toBeLessThanOrEqual(1080);
-    expect(1080 - ROW_H * 2).toBeGreaterThanOrEqual(400);
+  it("two rows + center band fit the canvas", () => {
+    expect(ROW_H * 2).toBeLessThanOrEqual(REEL_H);
+    expect(REEL_H - ROW_H * 2).toBeGreaterThanOrEqual(MIN_TITLE_BAND_PX);
   });
   it("rows scroll at different speeds", () => {
     expect(TOP_SPEED).not.toBe(BOTTOM_SPEED);
   });
-  it("stripCycles covers 1920px across the whole wrap range", () => {
+  it(`stripCycles covers ${REEL_W}px across the whole wrap range`, () => {
     for (const len of [3, 4, 5, 7, 8]) {
       const period = len * HOOK_PITCH;
       const stripW = stripCycles(len) * len * (HOOK_IMG_W + HOOK_GAP) - HOOK_GAP;
       // worst-case shift is a full period back
-      expect(stripW - period).toBeGreaterThanOrEqual(1920);
+      expect(stripW - period).toBeGreaterThanOrEqual(REEL_W);
     }
   });
 });

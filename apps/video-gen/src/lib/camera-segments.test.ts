@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { buildCameraSegments, FLY_FRAC } from "./camera-segments";
-import { ctaStart, SLOT_FRAMES, secToFrames, CTA_S, WALK_START } from "./timeline";
+import { ctaStart, SLOT_FRAMES, secToFrames, CTA_S, HOOK_FRAMES } from "./timeline";
 import type { ReelBuilding } from "./config";
 
 const b = (slug: string, lng: number, lat: number): ReelBuilding =>
@@ -20,13 +20,13 @@ describe("buildCameraSegments", () => {
     }
   });
 
-  it("first Hold is the world viewport with duration WALK_START (holdWorldFrames)", () => {
+  it("first Hold is the world viewport with duration HOOK_FRAMES (holdWorldFrames)", () => {
     const segs = buildCameraSegments(buildings, worldVP, 15);
     const first = segs[0];
     expect(first.kind).toBe("hold");
     if (first.kind !== "hold") return;
     expect(first.at).toBe(worldVP);
-    expect(first.durationInFrames).toBe(WALK_START);
+    expect(first.durationInFrames).toBe(HOOK_FRAMES);
   });
 
   it("contiguity by reference: each segment's to === next segment's from/at", () => {

@@ -1,13 +1,14 @@
 import { useMemo } from "react";
 import { AbsoluteFill, Img, staticFile, useCurrentFrame } from "remotion";
-import { SoftBlurIn } from "./SoftBlurIn";
+import { NO_ANIM, SoftBlurIn } from "./SoftBlurIn";
 import { REEL_TYPE } from "../lib/type";
-import type { ReelBuilding } from "../lib/config";
+import { hookLead, heroImagePath, type ReelBuilding } from "../lib/config";
+import { REEL_W, REEL_H } from "../lib/timeline";
 
-// --- Marquee geometry + math (1920×1080). Pure: no React/Remotion side effects. ---
+// --- Marquee geometry + math. Pure: no React/Remotion side effects. ---
 
-/** Row height — 30% of the 1080px canvas; the title band gets the rest. */
-export const ROW_H = 324;
+/** Row height — 30% of the canvas; the title band gets the rest. */
+export const ROW_H = Math.round(REEL_H * 0.3);
 export const HOOK_IMG_W = 480;
 export const HOOK_GAP = 24;
 export const HOOK_PITCH = HOOK_IMG_W + HOOK_GAP;
@@ -23,21 +24,20 @@ export function splitRows<T>(items: T[]): [T[], T[]] {
   return [top, bottom];
 }
 
-/** Repeat `row` cyclically until it holds at least `minCount` whole-row cycles'
- *  worth of items (result length is a multiple of the row length). Plain
- *  repetition — the strip must be periodic with the row's period so the
- *  `marqueeShift` wrap lands on identical content. */
-export function tileRow<T>(row: T[], minCount: number): T[] {
+/** Repeat `row` cyclically for `cycles` whole row-cycles (result length is a
+ *  multiple of the row length). Plain repetition — the strip must be periodic
+ *  with the row's period so the `marqueeShift` wrap lands on identical
+ *  content. */
+export function tileRow<T>(row: T[], cycles: number): T[] {
   if (row.length === 0) return [];
-  const cycles = Math.max(1, Math.ceil(minCount / row.length));
-  return Array.from({ length: cycles * row.length }, (_, i) => row[i % row.length]);
+  return Array.from({ length: Math.max(1, cycles) * row.length }, (_, i) => row[i % row.length]);
 }
 
 /** How many whole row-cycles the strip needs: worst-case shift is one full row
- *  period back, and the strip must still cover the 1920px viewport. */
+ *  period back, and the strip must still cover the viewport. */
 export function stripCycles(rowLen: number): number {
   const period = rowLen * HOOK_PITCH;
-  return 1 + Math.ceil((1920 + HOOK_GAP) / period);
+  return 1 + Math.ceil((REEL_W + HOOK_GAP) / period);
 }
 
 /** Wrapped strip offset for frame `frame` at `speed` px/frame. Always within
@@ -52,10 +52,6 @@ export function marqueeShift(frame: number, period: number, speed: number): numb
 // --- Component ---
 
 const NAME_GAP = 24;
-const HOOK_LEAD = "Architecture by";
-// Settled from frame 0 — the feed poster frame must carry the title; the
-// scrolling rows supply all the motion this beat needs.
-const SETTLED = { when: 0, last: 0, enabled: false } as const;
 
 /** One scrolling strip of cover photos. The outer div is the fixed clip
  *  viewport; the inner div is the translated strip (clipping must NOT ride
@@ -65,36 +61,45 @@ const MarqueeRow: React.FC<{
   buildings: ReelBuilding[];
   shift: number;
   edge: "top" | "bottom";
-}> = ({ slug, buildings, shift, edge }) => (
-  <div
-    style={{
-      position: "absolute",
-      left: 0,
-      right: 0,
-      [edge]: 0,
-      height: ROW_H,
-      overflow: "hidden",
-    }}
-  >
-    <div
-      style={{
-        display: "flex",
-        gap: HOOK_GAP,
-        width: "max-content",
-        height: "100%",
-        transform: `translateX(${shift}px)`,
-      }}
-    >
-      {buildings.map((b, i) => (
+}> = ({ slug, buildings, shift, edge }) => {
+  // The strip contents never change per frame — only `shift` does.
+  const strip = useMemo(
+    () =>
+      buildings.map((b, i) => (
         <Img
           key={i}
-          src={staticFile(`data/${slug}/images/${b.slug}-hero.jpg`)}
+          src={staticFile(heroImagePath(slug, b.slug))}
           style={{ width: HOOK_IMG_W, height: ROW_H, objectFit: "cover", flex: "none" }}
         />
-      ))}
+      )),
+    [buildings, slug],
+  );
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left: 0,
+        right: 0,
+        [edge]: 0,
+        height: ROW_H,
+        overflow: "hidden",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          gap: HOOK_GAP,
+          width: "max-content",
+          height: "100%",
+          transform: `translateX(${shift}px)`,
+        }}
+      >
+        {strip}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 /** HOOK beat — counter-scrolling cover rows flanking the architect title. The
  *  opaque background covers the map until the hard cut into the WALK flight. */
@@ -107,13 +112,20 @@ export const HookMarquee: React.FC<{
   const [top, bottom, topPeriod, bottomPeriod] = useMemo(() => {
     const [a, b] = splitRows(buildings);
     return [
-      tileRow(a, stripCycles(a.length) * a.length),
-      tileRow(b, stripCycles(b.length) * b.length),
+      tileRow(a, stripCycles(a.length)),
+      tileRow(b, stripCycles(b.length)),
       a.length * HOOK_PITCH,
       b.length * HOOK_PITCH,
     ];
   }, [buildings]);
   const FG = "rgb(var(--color-primary-foreground))";
+
+  // Settled from frame 0 — the feed poster frame must carry the title; the
+  // scrolling rows supply all the motion this beat needs.
+  const lines = [
+    { text: hookLead, role: REEL_TYPE.hookYears, marginTop: 0 },
+    { text: architect, role: REEL_TYPE.hookName, marginTop: NAME_GAP },
+  ];
 
   return (
     <>
@@ -142,24 +154,18 @@ export const HookMarquee: React.FC<{
             zIndex: 6,
           }}
         >
-          <SoftBlurIn
-            text={HOOK_LEAD}
-            start={SETTLED}
-            end={SETTLED}
-            style={{
-              display: "block", maxWidth: "88%", minWidth: 0, color: FG, textAlign: "center",
-              ...REEL_TYPE.hookYears,
-            }}
-          />
-          <SoftBlurIn
-            text={architect}
-            start={SETTLED}
-            end={SETTLED}
-            style={{
-              display: "block", maxWidth: "88%", minWidth: 0, color: FG, textAlign: "center",
-              ...REEL_TYPE.hookName, marginTop: NAME_GAP,
-            }}
-          />
+          {lines.map(({ text, role, marginTop }) => (
+            <SoftBlurIn
+              key={text}
+              text={text}
+              start={NO_ANIM}
+              end={NO_ANIM}
+              style={{
+                display: "block", maxWidth: "88%", minWidth: 0, color: FG, textAlign: "center",
+                ...role, marginTop,
+              }}
+            />
+          ))}
         </AbsoluteFill>
       </AbsoluteFill>
     </>
