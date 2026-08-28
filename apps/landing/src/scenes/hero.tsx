@@ -89,8 +89,6 @@ function HeroPhotoMarkers({ picks }: { picks: ArchSummary[] }) {
       const on = v > 0.001
       const photoState = on ? "on" : "off"
       if (el.dataset.photoMarkers !== photoState) el.dataset.photoMarkers = photoState
-      const archState = on ? "off" : "on"
-      if (el.dataset.archMarkers !== archState) el.dataset.archMarkers = archState
       // plate gating releases as the clip does (heroFade 0.5) so the tail
       // fades through the var instead of pinning at opacity 1
       const plateState = v > 0.5 ? "on" : "off"

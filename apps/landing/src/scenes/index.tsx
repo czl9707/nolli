@@ -35,7 +35,8 @@ const FLY_MS = 4000
  * markers — the "don't miss the masterpiece" demo. Long dwell (stable
  * plate 0→DWELL_VH, most of it after the landing flight ends ~70vh) so the
  * interactive window is easy to land on and sit in. */
-const DWELL_VH = 200
+const HEIGHT_VH = 220
+const DWELL_VH = 140
 const EXIT_VH = 40
 
 /** How far before the scene starts (in vh) the landing flight fires. The
@@ -57,7 +58,7 @@ export const indexScene: SceneFactory = ({ data, viewport }) => {
   ]
   return {
     id: "index",
-    heightVh: 280,
+    heightVh: HEIGHT_VH,
     keyframes,
     Component: () => (
       <IndexScene
@@ -281,9 +282,6 @@ function IndexPhotoMarkers({ picks }: { picks: ArchSummary[] }) {
       if (stage.scrollVh.get() < seam) return
       const state = o > 0.001 ? "on" : "off"
       if (el.dataset.photoMarkers !== state) el.dataset.photoMarkers = state
-      // while the photo markers own the screen, the normal pins stand down
-      const archState = state === "on" ? "off" : "on"
-      if (el.dataset.archMarkers !== archState) el.dataset.archMarkers = archState
     }
     apply()
     const un1 = opacity.on("change", apply)

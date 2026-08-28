@@ -100,6 +100,9 @@ export function LandingStage({
     const c = mapRef.current?.getContainer()
     c?.style.setProperty("--index-photo-o", "0")
     c?.style.setProperty("--hero-photo-o", "0")
+    // the landing only ever shows scene photo markers — the normal pins
+    // stand down for the whole spine
+    c?.setAttribute("data-arch-markers", "off")
     // fire once per map instance
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapReady])
