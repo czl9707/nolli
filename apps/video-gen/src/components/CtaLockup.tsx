@@ -10,11 +10,8 @@ const LINE_EXIT_START = LINE_END - EXIT_F;
 const LOCK_START = LINE_END;
 const MARK_IN: [number, number] = [LOCK_START, LOCK_START + secToFrames(0.3)];
 
-/**
- * CTA beat. The favicon renders cream via the document-level forced dark
- * color-scheme (see MapProvider) — its @media (prefers-color-scheme: dark)
- * branch applies.
- */
+// The favicon renders cream via the document-level forced dark color-scheme
+// (see MapProvider) — its prefers-color-scheme: dark branch applies.
 export const CtaLockup: React.FC = () => {
   const ctaFrame = useCurrentFrame();
   const markScale = interpolate(ctaFrame, MARK_IN, [0.6, 1], CLAMP);

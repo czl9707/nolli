@@ -2,17 +2,14 @@ import { useMemo } from "react";
 import { interpolate, useCurrentFrame } from "remotion";
 import { CLAMP } from "../lib/timeline";
 
-/** A timed phase of the soft-blur animation (entrance or exit).
- *  - `when`: frame the phase begins (char 0's reveal begin / exit begin).
- *  - `last`: frame the phase completes (last char settled / exit complete).
- *  - `enabled`: false = skip the phase entirely (render settled / hold). */
+/** A timed phase of the soft-blur animation (entrance or exit): begins at
+ *  `when`, completes at `last`; `enabled: false` skips the phase. */
 export type Phase = {
   when: number;
   last: number;
   enabled: boolean;
 };
 
-/** Both phases disabled — render fully settled from frame 0. */
 export const NO_ANIM: Phase = { when: 0, last: 0, enabled: false };
 
 export type CharStyle = { opacity: number; blur: number; translateY: number };
@@ -22,11 +19,8 @@ const CHAR_REVEAL_F = 8;
 const ENTRANCE_BLUR_PX = 14;
 const ENTRANCE_RISE_PX = 14;
 
-/** Per-character "soft blur in" entrance + blur-out-up exit. Entrance is
- *  per-char staggered: char `i` begins at `start.when + i*staggerF` and resolves
- *  `CHAR_REVEAL_F` later, where `staggerF` is DERIVED from the entrance window
- *  so the last char settles exactly at `start.last`. Exit is synchronous; a
- *  disabled phase is a no-op. */
+/** Per-char stagger is DERIVED from the entrance window so the last char
+ *  settles exactly at `start.last`. Exit is synchronous. */
 export function softBlurChar(
   frame: number,
   charIndex: number,
@@ -56,8 +50,8 @@ export function softBlurChar(
   };
 }
 
-/** Per-character soft-blur reveal (entrance) with an optional blur-out-up exit.
- *  `start`/`end` are the entrance/exit `Phase`s; typography travels via `style`. */
+/** Per-character soft-blur reveal (entrance) with optional blur-out-up exit.
+ *  Typography travels via `style`. */
 export const SoftBlurIn: React.FC<{
   text: string;
   start: Phase;
@@ -67,10 +61,9 @@ export const SoftBlurIn: React.FC<{
   const frame = useCurrentFrame();
   const chars = useMemo(() => [...text], [text]);
 
-  // Group into word / whitespace tokens so text wraps at word boundaries rather
-  // than mid-word. Whitespace tokens render as plain collapsible text nodes (an
-  // inline-block space wouldn't strip at a wrap boundary → leading indent on
-  // line 2).
+  // Word/whitespace tokens so text wraps at word boundaries. Whitespace renders
+  // as plain collapsible text nodes — an inline-block space wouldn't strip at
+  // a wrap boundary → leading indent on line 2.
   const tokens = useMemo(() => {
     const toks: { kind: "word" | "space"; text: string; start: number }[] = [];
     let i = 0;
@@ -84,7 +77,6 @@ export const SoftBlurIn: React.FC<{
     return toks;
   }, [chars]);
 
-  // Both phases disabled = static text — skip the per-char machinery entirely.
   if (!start.enabled && !end.enabled) {
     return <span style={{ display: "inline-block", lineHeight: 1.1, ...style }}>{text}</span>;
   }
@@ -108,9 +100,8 @@ export const SoftBlurIn: React.FC<{
                   style={{
                     display: "inline-block",
                     opacity,
-                    // Snap to whole pixels — fractional-pixel translateY
-                    // re-antialiases glyphs to different rows every frame → a
-                    // constant vertical "shake" during the reveal.
+                    // Whole pixels only — fractional translateY re-antialiases
+                    // glyphs to different rows each frame → vertical "shake".
                     filter: blurPx > 0.01 ? `blur(${Math.round(blurPx)}px)` : undefined,
                     transform: `translateY(${Math.round(translateY)}px)`,
                     whiteSpace: "pre",

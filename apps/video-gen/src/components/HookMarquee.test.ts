@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
 import {
-  splitRows, tileRow, marqueeShift, stripCycles,
+  splitRows, tileRow, marqueeShift, stripCycles, hookExit,
   ROW_H, HOOK_PITCH, HOOK_IMG_W, HOOK_GAP, TOP_SPEED, BOTTOM_SPEED,
 } from "./HookMarquee";
-import { REEL_W, REEL_H } from "../lib/timeline";
+import { REEL_W, REEL_H, HOOK_FRAMES, HOOK_EXIT_FRAMES } from "../lib/timeline";
 
 // Room the two-line hook title needs between the rows.
 const MIN_TITLE_BAND_PX = 400;
@@ -83,5 +83,36 @@ describe("marquee geometry", () => {
       // worst-case shift is a full period back
       expect(stripW - period).toBeGreaterThanOrEqual(REEL_W);
     }
+  });
+});
+
+describe("hookExit", () => {
+  const begin = HOOK_FRAMES - HOOK_EXIT_FRAMES;
+  it("settled before the exit window: no move, fully opaque", () => {
+    for (let f = 0; f < begin; f++) {
+      const { move, opacity } = hookExit(f, HOOK_FRAMES, HOOK_EXIT_FRAMES);
+      expect(move).toBe(0);
+      expect(opacity).toBe(1);
+    }
+  });
+  it("gone by the last rendered frame: opaque-free and fully moved at totalFrames", () => {
+    expect(hookExit(HOOK_FRAMES - 1, HOOK_FRAMES, HOOK_EXIT_FRAMES).opacity).toBe(0);
+    expect(hookExit(HOOK_FRAMES, HOOK_FRAMES, HOOK_EXIT_FRAMES).move).toBe(ROW_H);
+  });
+  it("move and opacity are monotonic across the exit window", () => {
+    let prevMove = 0;
+    let prevOpacity = 1;
+    for (let f = begin; f <= HOOK_FRAMES; f++) {
+      const { move, opacity } = hookExit(f, HOOK_FRAMES, HOOK_EXIT_FRAMES);
+      expect(move).toBeGreaterThanOrEqual(prevMove);
+      expect(opacity).toBeLessThanOrEqual(prevOpacity);
+      prevMove = move;
+      prevOpacity = opacity;
+    }
+  });
+  it("fade completes before the slide — no ghost at partial opacity near-full offset", () => {
+    const nearEnd = HOOK_FRAMES - 2;
+    expect(hookExit(nearEnd, HOOK_FRAMES, HOOK_EXIT_FRAMES).opacity).toBe(0);
+    expect(hookExit(nearEnd, HOOK_FRAMES, HOOK_EXIT_FRAMES).move).toBeLessThan(ROW_H);
   });
 });

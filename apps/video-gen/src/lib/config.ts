@@ -16,7 +16,7 @@ export type ReelConfig = {
   buildings: ReelBuilding[];
 };
 
-/** The reel's year range, from its (already chronologically sorted) buildings. */
+/** Depends on buildings being chronologically sorted (buildReelConfig sorts). */
 export const yearRange = (cfg: ReelConfig): string => {
   const years = cfg.buildings.map((b) => b.year);
   return `${Math.min(...years)}–${Math.max(...years)}`;
@@ -30,7 +30,6 @@ export const mapTail = "On a Map";
 export const heroImagePath = (slug: string, buildingSlug: string): string =>
   `data/${slug}/images/${buildingSlug}-hero.jpg`;
 
-/** The persistent WALK title: lead + name on line 1, map tail on line 2. */
 export const reelTitleLines = (cfg: ReelConfig): [string, string] => [
   `${titleLead} ${cfg.architect},`,
   mapTail,

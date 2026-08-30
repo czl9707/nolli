@@ -1,16 +1,15 @@
 import type { CSSProperties } from "react";
 
-/** The reel's type scale — one entry per text role, consumed by the text
- *  components so no component keeps local font constants. Mirrors the app's
- *  two-family rule (#105): Quicksand (sans) for reading text, Architects
- *  Daughter (playful) for the single display moment — the CTA wordmark. */
+/** The reel's type scale — single font authority, no component-local constants.
+ *  Two-family rule (#105): Quicksand for reading text, Architects Daughter for
+ *  the single display moment — the CTA wordmark. */
 export type TypeRole = Pick<CSSProperties, "fontFamily" | "fontSize" | "fontWeight" | "letterSpacing">;
 
 const SANS = "var(--font-sans)";
 export const PLAYFUL = "var(--font-playful)";
 
-/** Quicksand Variable's real wght range — weights outside it render as
- *  synthetic bold (the class of bug the test guards against). */
+/** Quicksand Variable's real wght range — weights outside it render synthetic
+ *  bold (the class of bug the test guards against). */
 export const MIN_WEIGHT = 300;
 export const MAX_WEIGHT = 700;
 

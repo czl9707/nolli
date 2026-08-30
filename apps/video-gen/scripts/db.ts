@@ -40,7 +40,6 @@ async function downloadDb(dest: string): Promise<void> {
   }
 }
 
-/** Run a query against a single readonly connection, then close it. */
 function withDb<T>(dbPath: string, fn: (db: Database.Database) => T): T {
   const db = new Database(dbPath, { readonly: true });
   try {

@@ -3,7 +3,7 @@ import { REEL_TYPE } from "../lib/type";
 const FG = "rgb(var(--color-primary-foreground))";
 const FG2 = "rgb(var(--color-secondary-foreground))";
 
-/** Corner chrome through WALK: top = architect name, bottom = @nolli.map. */
+/** Corner chrome through WALK. */
 export const CornerBrand: React.FC<{
   corner: "top" | "bottom";
   title?: string; // top only; the bottom handle ignores it

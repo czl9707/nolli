@@ -28,13 +28,9 @@ const FLY_FRAMES = Math.round(FLY_FRAC * SLOT_FRAMES);
 const HOLD_FRAMES = SLOT_FRAMES - FLY_FRAMES;
 const CTA_FRAMES = secToFrames(CTA_S);
 
-/**
- * Build the flat camera-segment chain:
- *   Hold(world) → Flight(world→b0) → Hold(b0) → Flight(b0→b1) → … → Hold(bN)
- * Contiguity is by REFERENCE: each Flight's `from` is the same object as the
- * preceding Hold's `at`, and each Hold's `at` is the same object as the
- * preceding Flight's `to`. The last Hold(bN) extends across the CTA beat.
- */
+/** Build Hold(world) → Flight→Hold per building. Contiguity is by REFERENCE:
+ *  each Flight's `from` is the preceding Hold's `at` object, and vice versa.
+ *  The last Hold extends across the CTA beat. */
 export function buildCameraSegments(
   buildings: ReelBuilding[],
   worldVP: MapViewport,

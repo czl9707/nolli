@@ -7,8 +7,7 @@ import { useThemeStore } from "@nolli/ui";
 import { CLAMP, ctaStart, secToFrames, BRAND_FADE_OUT_LEAD_S } from "../lib/timeline";
 import { useStaticJson } from "../lib/use-static-json";
 
-/** One architecture pin from the seed-generated `all-arch.json` (every
- *  architecture in the DB), used to scatter the full pin field on the HOOK map. */
+/** One pin from the seed-generated `all-arch.json` — the full DB pin field. */
 type ArchPin = {
   id: number;
   slug: string;
@@ -16,8 +15,8 @@ type ArchPin = {
   coordinates: { lng: number; lat: number };
 };
 
-// Force dark once at module load. colorScheme flips the browser media feature so
-// embedded SVGs render dark under headless Chrome (which defaults to light).
+// colorScheme flips the browser media feature so embedded SVGs render dark
+// under headless Chrome (which defaults to light).
 useThemeStore.setState({ theme: "dark", resolvedTheme: "dark" });
 if (typeof document !== "undefined") {
   document.body.dataset.theme = "dark";
@@ -41,10 +40,9 @@ export function useMapContext(): MapContextValue {
   return ctx;
 }
 
-/** Publish `selectedSlug` to the map from a Flight/Hold. MUST be called from a
- *  useEffect (never during render) — a parent state setter during render trips
- *  React's "cannot update a component while rendering a different component"
- *  warning. Encapsulated here so the two segment components can't drift. */
+/** Publish `selectedSlug` to the map from a Flight/Hold. Effect-only (never
+ *  render): a parent state setter during render trips React's update-while-
+ *  rendering warning. Shared so the segment components can't drift. */
 export function useSelectedSlug(selectedSlug?: string): void {
   const { setSegmentState } = useMapContext();
   useEffect(() => {
@@ -52,16 +50,14 @@ export function useSelectedSlug(selectedSlug?: string): void {
   }, [selectedSlug, setSegmentState]);
 }
 
-// Map→bg layout (fractions of screen width): map spans the left 75%, a 35%
-// gradient band, then a pure-bg right 25%.
+// Map spans the left 75%, a 35% gradient band, then pure bg on the right 25%.
 const FULL_BG_RIGHT = 0.25;
 const GRADIENT_W = 0.35;
 const MAP_FRAC = 1 - FULL_BG_RIGHT;
 const GRADIENT_START = MAP_FRAC - GRADIENT_W;
 
-/** Mounts the ONE <ArchMap> for the whole reel and exposes its ref + the active
- *  segment's selectedSlug via context. The pin field is always the full Nolli
- *  DB; only selectedSlug is dynamic. Fades out into CTA. */
+/** Mounts the ONE <ArchMap> for the whole reel and exposes its ref + the
+ *  active segment's selectedSlug via context. Fades out into CTA. */
 export const MapProvider: React.FC<{
   count: number;
   children: ReactNode;
@@ -74,7 +70,7 @@ export const MapProvider: React.FC<{
   const cta = ctaStart(count);
   const fadeOut = interpolate(frame, [cta - secToFrames(BRAND_FADE_OUT_LEAD_S), cta], [0, 1], CLAMP);
   const mapOpacity = 1 - fadeOut;
-  const showMap = frame < cta; // HOOK + WALK; map fades out into CTA then hides
+  const showMap = frame < cta;
 
   const allSummaries = useMemo<ArchSummary[]>(
     () =>

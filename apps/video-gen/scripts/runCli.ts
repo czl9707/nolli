@@ -1,7 +1,5 @@
-/** argv flags shared by the seed/assets/render CLIs. */
 export type CliFlags = { fresh?: boolean };
 
-/** argv[2] slug + optional flags + error-exit harness shared by the CLIs. */
 export function runCli(
   name: string,
   fn: (slug: string, flags: CliFlags) => Promise<void>,
