@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { motion, useReducedMotion, useTransform, type MotionValue } from "framer-motion"
+import { Body1, Body2, Body3, Caption, H1 } from "@nolli/ui"
 import type { ArchSummary } from "@nolli/data"
 import type { LandingData } from "@/lib/landing-data"
 import { useSceneScroll, useStage, useStageMap } from "@/stage/hooks"
@@ -58,7 +59,7 @@ const HEADLINE_LINES = [
 export function HeroHeadline() {
   const reduced = useReducedMotion()
   return (
-    <h1 className={styles.headline}>
+    <H1 className={styles.headline}>
       {HEADLINE_LINES.map((line, i) => (
         <motion.div
           key={i}
@@ -69,7 +70,7 @@ export function HeroHeadline() {
           {line}
         </motion.div>
       ))}
-    </h1>
+    </H1>
   )
 }
 
@@ -140,12 +141,16 @@ function PickList({ picks, active }: { picks: ArchSummary[]; active: ReadonlySet
       transition={{ duration: 0.5, delay: 0.9, ease: "easeOut" }}
     >
       {picks.map((p) => (
-        <li
+        <Body3
+          asChild
           key={p.slug}
-          className={`${styles.pick} ${active.has(p.slug) ? styles.pickActive : ""}`}
         >
-          {p.name}
-        </li>
+          <li
+            className={`${styles.pick} ${active.has(p.slug) ? styles.pickActive : ""}`}
+          >
+            {p.name}
+          </li>
+        </Body3>
       ))}
     </motion.ul>
   )
@@ -160,10 +165,14 @@ function NearestCaption({ nearest }: { nearest: ArchSummary | null }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.15 }}
       >
-        <div className={styles.captionName}>{nearest?.name ?? ""}</div>
-        <div className={styles.captionMeta}>
-          {nearest ? `${nearest.architect}, ${nearest.year}` : ""}
-        </div>
+        <Body1 asChild>
+          <div className={styles.captionName}>{nearest?.name ?? ""}</div>
+        </Body1>
+        <Body2 asChild>
+          <div className={styles.captionMeta}>
+            {nearest ? `${nearest.architect}, ${nearest.year}` : ""}
+          </div>
+        </Body2>
       </motion.div>
     </div>
   )
@@ -209,7 +218,9 @@ function PlateFurniture({
       <span className={`${styles.tick} ${styles.tickTr}`} />
       <span className={`${styles.tick} ${styles.tickBl}`} />
       <span className={`${styles.tick} ${styles.tickBr}`} />
-      <span className={styles.north}>N ↑</span>
+      <Caption asChild>
+        <span className={styles.north}>N ↑</span>
+      </Caption>
       <span ref={coordsRef} className={styles.coords} />
     </motion.div>
   )

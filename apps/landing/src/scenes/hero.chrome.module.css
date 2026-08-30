@@ -9,15 +9,12 @@
   color: rgb(var(--color-primary-background));
 }
 
-/* headline, bottom-left */
+/* headline, bottom-left — H1 variant; the clamp only rescales the display size */
 .headline {
   position: absolute;
   left: 6vw;
   bottom: 6svh;
-  font-family: var(--font-playful);
-  font-weight: 400;
   font-size: clamp(2.6rem, 5.4vw, 3.8rem);
-  line-height: 1.14;
   max-width: 22ch;
 }
 
@@ -36,7 +33,6 @@
   margin: 0;
   padding: 0;
   text-align: right;
-  font-size: 0.8rem;
   line-height: 2;
   max-width: 30ch;
 }
@@ -61,13 +57,10 @@
 }
 
 .captionName {
-  font-size: 1.1rem;
   font-weight: 600;
-  line-height: 1.2;
 }
 
 .captionMeta {
-  font-size: 0.85rem;
   opacity: 0.75;
   margin-top: 0.15rem;
 }
@@ -97,7 +90,6 @@
   top: calc(100% + 8px);
   left: 0;
   color: rgb(var(--color-primary-background) / 0.85);
-  font-size: 0.7rem;
   letter-spacing: 0.08em;
 }
 
@@ -116,7 +108,6 @@
 @media (max-width: 767px) {
   .pickList {
     max-width: 22ch;
-    font-size: 0.72rem;
   }
 
   .caption {

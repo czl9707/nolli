@@ -16,6 +16,7 @@ import type { LandingData } from "@/lib/landing-data"
 import type { SceneFactory } from "@/lib/scene"
 import type { ArchSummary } from "@nolli/data"
 import { MapContext, PhotoMarker } from "@nolli/map"
+import { Note } from "@nolli/ui"
 import { HeroChrome } from "./hero.chrome"
 import markerStyles from "./index.markers.module.css"
 import revealStyles from "./hero.reveal.module.css"
@@ -212,8 +213,12 @@ function HeroReveal({
         className={revealStyles.plate}
         style={{ x, y, width: PLATE.w, height: PLATE.h, opacity: heroFade }}
       >
-        <span className={`hand ${revealStyles.tagTl}`}>Architecture</span>
-        <span className={`hand ${revealStyles.tagTr}`}>{CLUSTER_CITY}</span>
+        <Note asChild>
+          <span className={revealStyles.tagTl}>Architecture</span>
+        </Note>
+        <Note asChild>
+          <span className={revealStyles.tagTr}>{CLUSTER_CITY}</span>
+        </Note>
         <span className={revealStyles.dot} />
       </motion.div>
       <HeroClipDriver sx={sx} sy={sy} heroFade={heroFade} />

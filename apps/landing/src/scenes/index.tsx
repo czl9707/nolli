@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react"
 import { createPortal } from "react-dom"
 import { motion, useTransform } from "framer-motion"
-import { H2 } from "@nolli/ui"
+import { Body1, Body2, H1 } from "@nolli/ui"
 import { MapContext, PhotoMarker } from "@nolli/map"
 import { useDbStore, type ArchSummary } from "@nolli/data"
 import type { SceneFactory, SceneKeyframe } from "@/lib/scene"
@@ -224,36 +224,41 @@ function IndexPanel({
       }}
     >
       <div className={styles.dossier}>
-        <H2 className={styles.city}>{selected}</H2>
+        <H1 asChild>
+          <h2 className={styles.city}>{selected}</h2>
+        </H1>
       </div>
       <div className={styles.copy}>
-        <p className={styles.statement}>
-          Google Maps treats a masterpiece no differently.
-          <br />
-          ArchDaily curates everything about it.
-          <br />
-          <strong>Nolli pins it on the map.</strong>
-          <br />
-          <strong>Don't miss the masterpiece.</strong>
-        </p>
+        <Body1 asChild>
+          <p className={styles.statement}>
+            Google Maps treats a masterpiece no differently.
+            <br />
+            ArchDaily curates everything about it.
+            <br />
+            <strong>Nolli pins it on the map.</strong>
+            <br />
+            <strong>Don't miss the masterpiece.</strong>
+          </p>
+        </Body1>
       </div>
       <ul className={styles.list} role="listbox" aria-label="Cities">
         {CITIES.map((name) => {
           const ready = loaded.includes(name)
           return (
-            <li
-              key={name}
-              className={[
-                styles.row,
-                name === selected ? styles.rowActive : "",
-                ready ? "" : styles.rowPending,
-              ]
-                .filter(Boolean)
-                .join(" ")}
-              onClick={() => onSelect(name)}
-            >
-              {name}
-            </li>
+            <Body2 asChild key={name}>
+              <li
+                className={[
+                  styles.row,
+                  name === selected ? styles.rowActive : "",
+                  ready ? "" : styles.rowPending,
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                onClick={() => onSelect(name)}
+              >
+                {name}
+              </li>
+            </Body2>
           )
         })}
       </ul>

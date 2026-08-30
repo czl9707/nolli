@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { motion, useReducedMotion } from "framer-motion"
+import { Body2 } from "@nolli/ui"
 import { MAP_COLORS } from "@nolli/map"
 import { useLandingData } from "@/lib/landing-data"
 import { LandingStage } from "@/stage/stage"
@@ -34,7 +35,9 @@ export function App() {
   if (status === "error") {
     return (
       <main>
-        <p className="boot-msg boot-msg--err">{error?.message ?? "failed to load map data"}</p>
+        <Body2 asChild>
+          <p className="boot-msg boot-msg--err">{error?.message ?? "failed to load map data"}</p>
+        </Body2>
       </main>
     )
   }

@@ -25,6 +25,7 @@
 .panel {
   position: sticky;
   top: 0;
+  margin-top: 30vh;
   box-sizing: border-box;
   height: 100svh;
   display: flex;
@@ -41,16 +42,13 @@
   margin-bottom: var(--spacing-paragraph);
 }
 
+/* H1 variant; the clamp only rescales the display size */
 .city {
-  font-weight: 300;
   font-size: clamp(3rem, 4.5vw, 4.5rem);
-  line-height: 1.05;
   margin: 0;
 }
 
 .statement {
-  font-weight: 300;
-  font-size: var(--typography-body1-fontSize);
   line-height: 1.4;
 }
 
@@ -69,7 +67,6 @@
 .row {
   list-style: none;
   cursor: pointer;
-  font-size: var(--typography-body2-fontSize);
   opacity: 0.55;
   padding: 0.2rem 0;
   border-top: var(--border);

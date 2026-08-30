@@ -1,5 +1,5 @@
 import { motion, useTransform } from "framer-motion"
-import { Body1 } from "@nolli/ui"
+import { Body1, Button, H1, Note } from "@nolli/ui"
 import { SOUTH_CAMERA, WORLD_CAMERA, APP_URL } from "@/lib/constants"
 import type { LandingData } from "@/lib/landing-data"
 import type { SceneFactory } from "@/lib/scene"
@@ -37,16 +37,20 @@ function CtaScene({ data }: { data: LandingData }) {
       <div className={styles.grade} />
       <div className={styles.sheet}>
         <div className={styles.copy}>
-          <p className={`hand ${styles.overline}`}>
-            {data.stats.architectures} works · {data.stats.architects} architects
-          </p>
-          <h2 className={styles.h2}>Open the Map.</h2>
-          <p className={styles.sub}>free</p>
+          <Note asChild>
+            <p className={styles.overline}>
+              {data.stats.architectures} works · {data.stats.architects} architects
+            </p>
+          </Note>
+          <H1 asChild>
+            <h2>Open the Map.</h2>
+          </H1>
           <Body1 asChild>
-            <a className={styles.btn} href={APP_URL}>
-              Open Nolli →
-            </a>
+            <p className={styles.sub}>free</p>
           </Body1>
+          <Button variant="outline" size="lg" asChild className={styles.btn}>
+            <a href={APP_URL}>Open Nolli →</a>
+          </Button>
         </div>
       </div>
     </motion.section>

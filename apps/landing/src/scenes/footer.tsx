@@ -1,5 +1,5 @@
 import styles from "./footer.module.css"
-import { Body1, Body2, Caption } from "@nolli/ui"
+import { Body1, Body2, Caption, H1, H3 } from "@nolli/ui"
 import { APP_URL } from "@/lib/constants"
 import type { LandingData } from "@/lib/landing-data"
 
@@ -8,15 +8,19 @@ import type { LandingData } from "@/lib/landing-data"
 export function FooterScene({ data }: { data: LandingData }) {
   return (
     <section className={styles.scene}>
-      <div className={`hand ${styles.annotation}`}>
-        <span>oops — edge of the map</span>
+      <div className={styles.annotation}>
+        <H3 asChild>
+          <span>oops — edge of the map</span>
+        </H3>
         <Body2 asChild>
           <span className={styles.coords}>no architectures pinned here</span>
         </Body2>
       </div>
       <div className={styles.inner}>
         <div className={styles.brand}>
-          <span className={`hand ${styles.wordmark}`}>Nolli</span>
+          <H1 asChild>
+            <span className={styles.wordmark}>Nolli</span>
+          </H1>
           <Body2 asChild>
             <span className={styles.tagline}>the architecture map</span>
           </Body2>

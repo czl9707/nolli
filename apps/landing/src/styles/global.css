@@ -40,7 +40,6 @@ body {
   left: 50%;
   top: 50%;
   translate: -50% -50%;
-  font-weight: var(--typography-body2-fontWeight);
   letter-spacing: 0.04em;
 }
 
@@ -57,8 +56,4 @@ body {
 
 .boot-msg--err {
   color: rgb(var(--color-accent-foreground));
-}
-
-.hand {
-  font-family: var(--font-playful);
 }

@@ -1,4 +1,4 @@
-import { Button, H6 } from "@nolli/ui"
+import { Body2, Button, H6 } from "@nolli/ui"
 import { APP_URL } from "@/lib/constants"
 import styles from "./site-header.module.css"
 
@@ -16,8 +16,12 @@ export function SiteHeader() {
         </a>
         <div className={styles.right}>
           <nav className={styles.links} aria-label="site">
-            <a href="#">Poster</a>
-            <a href="#">About</a>
+            <Body2 asChild>
+              <a href="#">Poster</a>
+            </Body2>
+            <Body2 asChild>
+              <a href="#">About</a>
+            </Body2>
           </nav>
           <Button variant="outline" size="default" asChild>
             <a href={APP_URL}>Explore Nolli</a>

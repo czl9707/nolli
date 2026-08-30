@@ -55,35 +55,15 @@
 }
 
 .overline {
-  font-size: var(--typography-note-fontSize);
   opacity: 0.85;
   margin-bottom: var(--spacing-paragraph);
 }
 
-.h2 {
-  font-weight: 700;
-  font-size: var(--typography-h1-fontSize);
-  line-height: 1.05;
-}
-
 .sub {
   margin-top: var(--spacing-paragraph);
-  font-weight: 300;
-  font-size: var(--typography-body1-fontSize);
   opacity: 0.8;
 }
 
 .btn {
-  display: inline-block;
   margin-top: var(--spacing-component);
-  padding: 0.85rem var(--spacing-component);
-  border: var(--border);
-  border-color: rgb(var(--color-primary-background));
-  border-radius: 999px;
-  font-weight: 600;
-}
-
-.btn:hover {
-  background: rgb(var(--color-primary-background));
-  color: rgb(var(--color-primary-foreground));
 }

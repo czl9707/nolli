@@ -44,8 +44,6 @@
 .links a {
   color: rgb(var(--color-primary-background) / 0.75);
   text-decoration: none;
-  font-size: var(--typography-body2-fontSize);
-  font-weight: 500;
 }
 
 .links a:hover {
