@@ -37,9 +37,13 @@ runCli("render", async (slug) => {
 
   const maxFrames = process.env.REEL_MAX_FRAMES ? Number(process.env.REEL_MAX_FRAMES) : comp.durationInFrames;
   const composition = { ...comp, durationInFrames: Math.min(maxFrames, comp.durationInFrames) };
-  // Lower concurrency eases per-frame tile pressure on the vector tile source
-  // (a dropped tile leaves a blank hole in that frame).
-  const concurrency = process.env.REEL_CONCURRENCY ? Number(process.env.REEL_CONCURRENCY) : undefined;
+  // Concurrency: each worker is a separate browser tab with its own MapLibre
+  // instance, and frames are assigned round-robin. With multiple tabs, some
+  // tabs' maps get captured mid-settle (label-less parent-tile fallback) —
+  // visible as street/label blink after each landing. Default 1 worker for
+  // deterministic output; raise via REEL_CONCURRENCY when speed matters more
+  // than frame-exact basemaps.
+  const concurrency = process.env.REEL_CONCURRENCY ? Number(process.env.REEL_CONCURRENCY) : 1;
 
   const outPathDir = outDir(slug);
   mkdirSync(outPathDir, { recursive: true });

@@ -25,23 +25,46 @@ import type { MapViewport } from "../lib/viewport";
  *    low zoom a long hop may never reach areTilesLoaded() (global tiles keep
  *    streaming); waiting for them would cost seconds per frame. A transient
  *    tile hole mid-flight is imperceptible.
- * Because held frames share an identical viewport, the effect deps skip
- * re-runs across the hold — only the first settled frame pays the tile-wait,
- * and the rest screenshot the now-fully-loaded map.
+ * EVERY frame re-runs the gate (frame is in the effect deps). With parallel
+ * render workers each holding its own map instance, a once-per-hold gate let
+ * a tab that released mid-load keep its stale canvas for all its interleaved
+ * frames — visible as street/label blink after each landing.
  * (`map.stop()` is deliberately NOT called: it halts the render loop and
  * starves subsequent frames' tile loads.)
  */
-function useMapFrame(map: MapRef | null, viewport: MapViewport, moving: boolean): void {
+/** Errored in-view tiles are invisible to `areTilesLoaded()` (errored counts
+ *  as loaded) — the map then renders parent-tile fallback: streets but no
+ *  labels. Collect them via the tile managers' in-view stores. Private API,
+ *  guarded so a MapLibre upgrade degrades to "no errored tiles found". */
+function retryErroredTiles(m: MapRef): number {
+  const tms = (m as any).style?.tileManagers;
+  if (!tms) return 0;
+  let retried = 0;
+  for (const tm of Object.values<any>(tms)) {
+    const tiles: any[] = tm?._inViewTiles?.getAllTiles?.() ?? [];
+    for (const t of tiles) {
+      if (t.state === "errored") {
+        tm._reloadTile?.(t.tileID.key, "reloading");
+        retried++;
+      }
+    }
+  }
+  return retried;
+}
+
+function useMapFrame(map: MapRef | null, viewport: MapViewport, moving: boolean, absFrame: number): void {
   const cx = viewport.center[0];
   const cy = viewport.center[1];
   const zoom = viewport.zoom;
 
   useEffect(() => {
     if (!map) return;
+    const m = map; // non-null alias — TS doesn't carry param narrowing into closures
 
     const handle = delayRender("archmap-frame");
     let released = false;
     let cancelled = false;
+    let retries = 0;
     const release = () => {
       if (!released) {
         released = true;
@@ -57,10 +80,29 @@ function useMapFrame(map: MapRef | null, viewport: MapViewport, moving: boolean)
       if (--n <= 0) release();
       else requestAnimationFrame(settle);
     };
+    // Symbol placement is throttled (a new placement won't start until the
+    // last one stops being "recent"), and `idle` CAN fire while the placement
+    // is still stale from flight-time state — capturing then shows the
+    // previous zoom's labels for one frame. Require a settled placement too.
+    const placementSettled = () => {
+      const placement = (m as any).style?.placement;
+      return !placement || placement.stale !== true;
+    };
     const onIdle = () => {
       if (cancelled) return;
-      if (moving || map.areTilesLoaded()) requestAnimationFrame(settle);
-      else map.once("idle", onIdle);
+      if (moving || (map.areTilesLoaded() && placementSettled())) {
+        // Errored tiles pass areTilesLoaded yet render as label-less fallback.
+        // Re-kick them (TileManager.reload() skips errored tiles) and wait for
+        // the next idle; bounded so a hard-failing tile can't hang the frame.
+        if (!moving && retries < 3 && retryErroredTiles(map) > 0) {
+          retries++;
+          map.once("idle", onIdle);
+          return;
+        }
+        requestAnimationFrame(settle);
+      } else {
+        map.once("idle", onIdle);
+      }
     };
 
     map.jumpTo({ center: [cx, cy], zoom });
@@ -73,17 +115,51 @@ function useMapFrame(map: MapRef | null, viewport: MapViewport, moving: boolean)
     // frame's draw.
     map.triggerRepaint();
     map.once("idle", onIdle);
+    // Watchdog (settled frames): a tile whose fetch hangs under multi-worker
+    // tile traffic keeps the map not-idle forever — the gate below would spin
+    // until the hard cap and screenshot parent-tile fallback. Re-kick stuck
+    // loading tiles as errored (aborting best-effort); areTilesLoaded() then
+    // passes, the idle gate fires, and retryErroredTiles reloads them fresh.
+    const watchdog = moving ? null : setTimeout(() => {
+      if (cancelled || released) return;
+      const tms = (map as any).style?.tileManagers ?? {};
+      let stuck = 0;
+      for (const tm of Object.values<any>(tms)) {
+        for (const t of tm?._inViewTiles?.getAllTiles?.() ?? []) {
+          if (t.state === "loading" || t.state === "reloading") {
+            t.abortController?.abort?.();
+            tm._source?.abortTile?.(t);
+            t.state = "errored";
+            stuck++;
+          }
+        }
+      }
+      if (stuck) map.triggerRepaint();
+    }, 8000);
     // Safety net: moving frames release fast (a hole is fine), static frames
-    // get a generous cap so a frame can never hang Remotion.
-    const fallback = setTimeout(release, moving ? 1500 : 6000);
+    // get a generous cap so a frame can never hang Remotion. The settled cap
+    // stays under Remotion's delayRender timeout.
+    const fallback = setTimeout(release, moving ? 1500 : 20000);
 
     return () => {
       cancelled = true;
+      if (watchdog) clearTimeout(watchdog);
       clearTimeout(fallback);
       map.off("idle", onIdle);
       release();
     };
-  }, [map, cx, cy, zoom, moving]);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(fallback);
+      m.off("idle", onIdle);
+      release();
+    };
+    // `frame` in deps: EVERY frame gates, not just the first of a hold.
+    // A once-per-hold gate lets a worker tab that captured mid-load (or whose
+    // glyphs arrived after its first settled frame) keep that stale canvas for
+    // all its interleaved frames; per-frame re-gating self-corrects.
+  }, [map, cx, cy, zoom, moving, absFrame]);
 }
 
 /** Moving camera segment: flies `from`→`to` over its duration. Publishes the
@@ -94,7 +170,8 @@ export const Flight: React.FC<{
   to: MapViewport;
   selectedSlug?: string;
   durationInFrames: number;
-}> = ({ from, to, selectedSlug, durationInFrames }) => {
+  absFrame: number;
+}> = ({ from, to, selectedSlug, durationInFrames, absFrame }) => {
   const frame = useCurrentFrame();
   const { map } = useMapContext();
   useSelectedSlug(selectedSlug);
@@ -111,7 +188,7 @@ export const Flight: React.FC<{
     t,
   });
   const vp: MapViewport = { center: [fp.center.lng, fp.center.lat], zoom: fp.zoom };
-  useMapFrame(map, vp, true);
+  useMapFrame(map, vp, true, absFrame);
   return null;
 };
 
@@ -121,9 +198,10 @@ export const Flight: React.FC<{
 export const Hold: React.FC<{
   at: MapViewport;
   selectedSlug?: string;
-}> = ({ at, selectedSlug }) => {
+  absFrame: number;
+}> = ({ at, selectedSlug, absFrame }) => {
   const { map } = useMapContext();
   useSelectedSlug(selectedSlug);
-  useMapFrame(map, at, false);
+  useMapFrame(map, at, false, absFrame);
   return null;
 };

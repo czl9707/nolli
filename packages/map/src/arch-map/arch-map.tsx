@@ -84,6 +84,7 @@ export const ArchMap = forwardRef<MapRef, ArchMapProps>(function ArchMap(
         loading={isLoading}
         viewport={viewport}
         canvasContextAttributes={capture ? { preserveDrawingBuffer: true } : undefined}
+        fadeDuration={capture ? 0 : undefined}
       >
         <ArchMarkers
           architectures={architectures}

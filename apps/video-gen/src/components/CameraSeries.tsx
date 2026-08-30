@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Series } from "remotion";
+import { Series, useCurrentFrame } from "remotion";
 import { buildCameraSegments } from "../lib/camera-segments";
 import { Flight, Hold } from "./Flight";
 import { BUILDING_ZOOM, type MapViewport } from "../lib/viewport";
@@ -16,14 +16,19 @@ export const CameraSeries: React.FC<{
     () => buildCameraSegments(buildings, worldVP, BUILDING_ZOOM),
     [buildings, worldVP],
   );
+  // Absolute composition frame — useCurrentFrame() inside a Series.Sequence is
+  // sequence-relative (constant across a hold), which the capture gate needs
+  // to re-run every frame. CameraSeries sits outside the Sequences, so its
+  // frame is absolute.
+  const absFrame = useCurrentFrame();
   return (
     <Series>
       {segments.map((s, i) => (
         <Series.Sequence key={i} durationInFrames={s.durationInFrames} layout="none">
           {s.kind === "hold" ? (
-            <Hold at={s.at} selectedSlug={s.selectedSlug} />
+            <Hold at={s.at} selectedSlug={s.selectedSlug} absFrame={absFrame} />
           ) : (
-            <Flight from={s.from} to={s.to} selectedSlug={s.selectedSlug} durationInFrames={s.durationInFrames} />
+            <Flight from={s.from} to={s.to} selectedSlug={s.selectedSlug} durationInFrames={s.durationInFrames} absFrame={absFrame} />
           )}
         </Series.Sequence>
       ))}
