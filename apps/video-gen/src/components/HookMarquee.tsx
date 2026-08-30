@@ -53,8 +53,7 @@ const EXIT_EASE = Easing.bezier(0.25, 0.1, 0.25, 1);
 
 /** Exit state over the beat's final `exitFrames`: `move` is the px magnitude a
  *  row slides toward its own edge (0 → ROW_H, eased), `opacity` the row fade.
- *  The fade completes two frames early so no near-invisible ghost rides the
- *  last frames before the cut. */
+ *  Fade ends two frames early so no ghost rides the last frames before the cut. */
 export function hookExit(
   frame: number,
   totalFrames: number,

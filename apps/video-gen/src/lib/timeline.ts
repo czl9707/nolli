@@ -8,9 +8,7 @@ export const REEL_H = 1080;
 export const WALK_SLOT_S = 2.3;     // per-building slot; total WALK = count × this
 // HOOK: marquee opener — two counter-scrolling cover rows flanking the title.
 export const HOOK_S = 1.8;
-// Graceful exit at the end of HOOK: rows slide toward their edges + fade,
-// title blur-out — all over this tail window.
-export const HOOK_EXIT_S = 0.5;
+export const HOOK_EXIT_S = 0.5; // tail window: rows slide out + fade, title blur-out
 // CTA = "Explore more in" line reveal + Nolli mark/wordmark hold.
 export const CTA_LINE_S = 1.5;
 export const CTA_LOCKUP_S = 3.5;
