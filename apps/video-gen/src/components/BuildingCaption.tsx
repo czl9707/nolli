@@ -10,26 +10,21 @@ const CAPTION_BOTTOM = 96;
 const CAPTION_MAX_W = "50%"; // wrap long names before they reach the card stack
 const EXIT_F = 8; // blur-out-up length at slot end
 
-const REVEAL_START = 0; // begin the blur-in at slot start (concurrent with the slide)
-const META_START = 12; // meta trails the title so the two lines step in, not stack
-const EXIT_START = SLOT_FRAMES - EXIT_F; // both lines blur out at slot end
-// Entrance window: a fixed ~20-frame cascade regardless of name length (long
-// names resolve slightly faster than the old length-dependent timing — intentional).
+const REVEAL_START = 0; // concurrent with the card slide
+const META_START = 12; // meta trails the title so the two lines step in
+const EXIT_START = SLOT_FRAMES - EXIT_F;
+// Fixed ~20-frame cascade regardless of name length — long names resolve
+// slightly faster than length-dependent timing; intentional.
 const REVEAL_LAST = 20;
-const META_REVEAL_LAST = 20 + META_START; // meta's window starts at META_START
+const META_REVEAL_LAST = 20 + META_START;
 
-// Glyph-bound halo: each line is rendered twice — a dark copy blurred behind
-// (the halo) and the fg copy on top. Both copies share the role's weight
-// (Quicksand Variable covers 300–700 natively — no synthetic boost) so they
-// reveal and move char-for-char in lockstep. Unlike a div plate, the halo
-// travels with the letters and only darkens the map right around the glyphs,
-// so white text stays legible over the dark map's light water without a
-// visible rectangular pad.
-const HALO_COLOR = "rgb(var(--color-primary-background))"; // near-black in dark theme
-const HALO_BLUR_PX = 8; // blur spread — the halo's soft reach
+// Each line renders twice: a blurred dark halo copy behind the fg copy. A
+// glyph-bound halo (not a div plate) travels with the letters and darkens only
+// around the glyphs — white text stays legible over the dark map's light water
+// with no rectangular pad.
+const HALO_COLOR = "rgb(var(--color-primary-background))";
+const HALO_BLUR_PX = 8;
 
-/** One caption line: a blurred dark halo copy stacked behind the fg copy. Both
- *  share the same Phases so they reveal and move char-for-char in lockstep. */
 export const CaptionLine: React.FC<{
   text: string;
   start: Phase;
@@ -41,8 +36,6 @@ export const CaptionLine: React.FC<{
   const shared = { text, start, end };
   return (
     <div style={{ position: "relative", marginTop }}>
-      {/* Halo: same text, dark, blurred — absolutely filled so it wraps
-          identically to the fg line. */}
       <div
         style={{
           position: "absolute",
@@ -67,15 +60,10 @@ export const CaptionLine: React.FC<{
   );
 };
 
-/** Bottom-left building caption for the WALK beat: building name (big) over
- *  year · location, all foreground color, floating over the map with a glyph-
- *  bound halo so it stays legible over the dark map's light water. Reveals per
- *  slot with the same per-char soft-blur as the CTA (a fixed ~20-frame entrance
- *  window regardless of name length), wraps at CAPTION_MAX_W, and blurs out at
- *  slot end. Renders inside a per-building `<Series.Sequence>`, so SoftBlurIn's
- *  `useCurrentFrame()` is slot-relative (0 at each slot start) and each building
- *  gets a fresh reveal via natural Sequence remount. Fades with the shared chrome
- *  opacity. */
+/** Bottom-left building caption for the WALK beat: name over year · location,
+ *  per-char soft-blur reveal, glyph-bound halo for legibility over the map.
+ *  Renders inside a per-building `<Series.Sequence>` — the frame is
+ *  slot-relative and each building gets a fresh reveal via Sequence remount. */
 export const BuildingCaption: React.FC<{
   building: ReelBuilding;
   opacity: number;

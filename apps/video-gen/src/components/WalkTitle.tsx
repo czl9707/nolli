@@ -2,8 +2,8 @@ import { NO_ANIM } from "./SoftBlurIn";
 import { CaptionLine } from "./BuildingCaption";
 import { REEL_TYPE } from "../lib/type";
 
-/** The persistent top-left title through WALK: two left-aligned lines.
- *  Rides the shared chrome opacity; halo keeps it legible over the map. */
+/** Persistent top-left title through WALK. Rides the shared chrome opacity;
+ *  halo keeps it legible over the map. */
 export const WalkTitle: React.FC<{ lines: [string, string]; opacity: number }> = ({
   lines,
   opacity,

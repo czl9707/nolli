@@ -22,7 +22,7 @@ const TITLE_LEFT = 64;
 const TITLE_TOP = 48;
 const walkFrames = (count: number) => count * SLOT_FRAMES;
 
-// Carousel sits at left=50% — the map spans the left 75%, the bg zone the right 25%.
+// Carousel at left=50% — map spans the left 75%, bg zone the right 25%.
 const STACK_LEFT = 0.5;
 
 export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
@@ -54,8 +54,8 @@ export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
   );
 };
 
-/** WALK-local chrome: carousel, captions, brand. `chromeOpacity` fades in over
- *  slot-0's fly and out into CTA. */
+/** WALK-local chrome: carousel, captions, brand. Fades in over slot-0's fly
+ *  and out into CTA. */
 const WalkChrome: React.FC<{
   buildings: ReelBuilding[];
   slug: string;

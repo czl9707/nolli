@@ -7,16 +7,14 @@ import { CLAMP, HOOK_EXIT_FRAMES, HOOK_FRAMES, REEL_W, REEL_H } from "../lib/tim
 
 // --- Marquee geometry + math. Pure: no React/Remotion side effects. ---
 
-/** Row height — 30% of the canvas; the title band gets the rest. */
-export const ROW_H = Math.round(REEL_H * 0.3);
+export const ROW_H = Math.round(REEL_H * 0.3); // rows 30% each, title band the rest
 export const HOOK_IMG_W = 480;
 export const HOOK_GAP = 24;
 export const HOOK_PITCH = HOOK_IMG_W + HOOK_GAP;
-/** Scroll speeds in px/frame — deliberately unequal so the rows parallax. */
+// Unequal speeds so the two rows parallax.
 export const TOP_SPEED = 6;
 export const BOTTOM_SPEED = 4.5;
 
-/** Even indices -> top row, odd -> bottom, order preserved. */
 export function splitRows<T>(items: T[]): [T[], T[]] {
   const top: T[] = [];
   const bottom: T[] = [];
@@ -24,26 +22,22 @@ export function splitRows<T>(items: T[]): [T[], T[]] {
   return [top, bottom];
 }
 
-/** Repeat `row` cyclically for `cycles` whole row-cycles (result length is a
- *  multiple of the row length). Plain repetition — the strip must be periodic
- *  with the row's period so the `marqueeShift` wrap lands on identical
- *  content. */
+/** Plain cyclic repetition — the strip must be periodic with the row's period
+ *  so the `marqueeShift` wrap lands on identical content. */
 export function tileRow<T>(row: T[], cycles: number): T[] {
   if (row.length === 0) return [];
   return Array.from({ length: Math.max(1, cycles) * row.length }, (_, i) => row[i % row.length]);
 }
 
-/** How many whole row-cycles the strip needs: worst-case shift is one full row
- *  period back, and the strip must still cover the viewport. */
+/** Whole row-cycles needed: worst-case shift is one full period back, and the
+ *  strip must still cover the viewport. */
 export function stripCycles(rowLen: number): number {
   const period = rowLen * HOOK_PITCH;
   return 1 + Math.ceil((REEL_W + HOOK_GAP) / period);
 }
 
-/** Wrapped strip offset for frame `frame` at `speed` px/frame. Always within
- *  [-period, 0]; with a row-periodic strip the wrap is seamless (identical
- *  content one period over). Positive speed scrolls leftward, negative
- *  rightward. */
+/** Wrapped strip offset, always within [-period, 0]; seamless with a
+ *  row-periodic strip. Positive speed scrolls leftward. */
 export function marqueeShift(frame: number, period: number, speed: number): number {
   const mod = (((frame * speed) % period) + period) % period;
   return mod === 0 ? 0 : -mod; // avoid -0
@@ -69,13 +63,10 @@ export function hookExit(
   };
 }
 
-// --- Component ---
-
 const NAME_GAP = 24;
 
-/** One scrolling strip of cover photos. The outer div is the fixed clip
- *  viewport; the inner div is the translated strip (clipping must NOT ride
- *  along with the transform, or the visible window scrolls away with it). */
+/** One scrolling strip of cover photos. Clipping lives on the outer fixed div,
+ *  NOT the translated strip — else the visible window scrolls away with it. */
 const MarqueeRow: React.FC<{
   slug: string;
   buildings: ReelBuilding[];
@@ -84,7 +75,6 @@ const MarqueeRow: React.FC<{
   exitY: number;
   opacity: number;
 }> = ({ slug, buildings, shift, edge, exitY, opacity }) => {
-  // The strip contents never change per frame — only `shift` does.
   const strip = useMemo(
     () =>
       buildings.map((b, i) => (
@@ -125,8 +115,8 @@ const MarqueeRow: React.FC<{
   );
 };
 
-/** HOOK beat — counter-scrolling cover rows flanking the architect title. The
- *  opaque background covers the map until the hard cut into the WALK flight. */
+/** HOOK beat — counter-scrolling cover rows flanking the architect title.
+ *  Opaque background covers the map until the hard cut into the WALK flight. */
 export const HookMarquee: React.FC<{
   slug: string;
   architect: string;
@@ -146,8 +136,7 @@ export const HookMarquee: React.FC<{
   const { move, opacity } = hookExit(frame, HOOK_FRAMES, HOOK_EXIT_FRAMES);
   const exit = { when: HOOK_FRAMES - HOOK_EXIT_FRAMES, last: HOOK_FRAMES - 1, enabled: true };
 
-  // Settled from frame 0 — the feed poster frame must carry the title; the
-  // scrolling rows supply all the motion this beat needs.
+  // Title settled from frame 0 — the feed poster frame must carry it.
   const lines = [
     { text: hookLead, role: REEL_TYPE.hookYears, marginTop: 0 },
     { text: architect, role: REEL_TYPE.hookName, marginTop: NAME_GAP },
