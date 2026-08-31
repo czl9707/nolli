@@ -1,10 +1,11 @@
-// Cursor-plate reveal over the spine's map layer. The veil, plate and
-// marker clips render THROUGH the spine's map portal (they ride the map
-// layer, not the scrolling flow wrapper); the portal root doubles as the
-// surface every offset is written against. All coordinates are
-// surface-local / viewport px each frame; the plate clamps to `boundsRef`
-// so it stays inside the reveal pane. Past the hero hold the whole reveal
-// rides up with the page 1:1 (exitYpx), unveiling the map from the top.
+// Cursor-plate reveal over the spine's map. The veil, plate and crosshair
+// lines render THROUGH the spine's overlay portal — a box bounded to the
+// first 100svh, independent of the morphing map layer — and the portal
+// root doubles as the surface every offset is written against. All
+// coordinates are surface-local / viewport px each frame; the plate clamps
+// to `boundsRef` so it stays inside the reveal pane. Past the hero hold
+// the whole reveal rides up with the page 1:1 (exitYpx), unveiling the
+// map from the top; the box clips the lines at its edges.
 import { useEffect, useRef, useState, type RefObject } from "react"
 import { createPortal } from "react-dom"
 import {
@@ -16,7 +17,7 @@ import {
 import type { MapRef } from "@nolli/map"
 import type { ArchSummary } from "@nolli/data"
 import { Caption, Note } from "@nolli/ui"
-import { useMapPortal } from "@/spine/spine"
+import { useOverlayPortal } from "@/spine/spine"
 import { useIsMobile } from "@/lib/use-is-mobile"
 import markerStyles from "./index.markers.module.css"
 import styles from "./hero-reveal.module.css"
@@ -85,11 +86,12 @@ function plateRect(
 }
 
 /** Veil + plate + furniture over the spine map, plus the marker clip driver.
- * Renders into the spine's map portal; the portal root is the surface. The
- * plate roams `boundsRef` if given (a pane), else the surface. `local` is the
- * hero scene's local scroll in vh — past the hold (100vh) the whole reveal
- * rides up with the page, unveiling the map from the top. Snap mode (touch /
- * reduced motion) renders nothing — markers show unclipped. */
+ * Renders into the spine's overlay portal: the root is bounded to the first
+ * 100svh (the hero scene's region) and never rides the morphing map layer.
+ * The plate roams `boundsRef` if given (a pane), else the root. `local` is
+ * the hero scene's local scroll in vh — past the hold (100vh) the whole
+ * reveal rides up with the page, unveiling the map from the top. Snap mode
+ * (touch / reduced motion) renders nothing — markers show unclipped. */
 export function CursorReveal({
   boundsRef,
   map,
@@ -109,7 +111,7 @@ export function CursorReveal({
 }) {
   const reduced = useReducedMotion()
   const snap = useIsMobile() || !!reduced
-  const mapPortal = useMapPortal()
+  const overlayPortal = useOverlayPortal()
   const rootRef = useRef<HTMLDivElement | null>(null)
   const clampEl = () => boundsRef?.current ?? rootRef.current
 
@@ -117,7 +119,7 @@ export function CursorReveal({
   // the page-exit ride, written per frame so scroll and resize stay correct
   // without listeners
   useEffect(() => {
-    if (snap || !mapPortal) return
+    if (snap || !overlayPortal) return
     const root = rootRef.current
     if (!root) return
     let raf = 0
@@ -167,14 +169,14 @@ export function CursorReveal({
       window.removeEventListener("resize", schedule)
       if (raf) cancelAnimationFrame(raf)
     }
-    // mapPortal: the effect re-arms when the portal mounts the root
-  }, [snap, mapPortal, boundsRef, sx, sy, local])
+    // overlayPortal: the effect re-arms when the portal mounts the root
+  }, [snap, overlayPortal, boundsRef, sx, sy, local])
 
   // coords readout — plate-centre lat/lng straight to the DOM (the plate's
   // ridden position once the exit ride has begun)
   const coordsRef = useRef<HTMLSpanElement>(null)
   useEffect(() => {
-    if (snap || !map || !mapPortal) return
+    if (snap || !map || !overlayPortal) return
     const update = () => {
       const el = clampEl()
       const surface = rootRef.current
@@ -194,12 +196,12 @@ export function CursorReveal({
       u2()
       u3()
     }
-  }, [snap, map, mapPortal, boundsRef, sx, sy, local])
+  }, [snap, map, overlayPortal, boundsRef, sx, sy, local])
 
   // clip photo markers to the plate rect (ridden up with the exit ride —
   // the markers stay in the map layer, only the plate moves)
   useEffect(() => {
-    if (snap || !map || !mapPortal) return
+    if (snap || !map || !overlayPortal) return
     let raf = 0
     const update = () => {
       raf = 0
@@ -256,10 +258,10 @@ export function CursorReveal({
       window.removeEventListener("scroll", schedule)
       if (raf) cancelAnimationFrame(raf)
     }
-  }, [snap, map, mapPortal, boundsRef, sx, sy, local])
+  }, [snap, map, overlayPortal, boundsRef, sx, sy, local])
 
   if (snap) return null
-  if (!mapPortal) return null
+  if (!overlayPortal) return null
   return createPortal(
     <div ref={rootRef} className={styles.root}>
       <div className={styles.veil} aria-hidden />
@@ -288,7 +290,7 @@ export function CursorReveal({
         <span ref={coordsRef} className={styles.coords} />
       </div>
     </div>,
-    mapPortal,
+    overlayPortal,
   )
 }
 

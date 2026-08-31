@@ -1,10 +1,16 @@
-/* Cursor-plate reveal on the spine map layer. One dim veil over the map
-   with the plate's rect punched out; markers render fully but crop to the
-   plate. */
+/* Cursor-plate reveal over the spine map. The root is bounded to the
+   hero's region — the first 100svh — via the spine's overlay portal, so
+   the veil and crosshair lines never ride the morphing map layer and clip
+   at the box edges. One dim veil over the map with the plate's rect
+   punched out; markers render fully but crop to the plate. */
 
 .root {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100svh;
+  overflow: hidden;
   pointer-events: none;
   z-index: 2;
 }

@@ -18,6 +18,7 @@ type SpineCtx = {
   ranges: Record<string, { startVh: number; heightVh: number }>
   mapRef: () => MapRef | null
   mapPortal: HTMLElement | null
+  overlayPortal: HTMLElement | null
 }
 
 const Ctx = createContext<SpineCtx | null>(null)
@@ -28,9 +29,16 @@ export function useSpineMap(): MapRef | null {
 }
 
 /** Portal target for scene-owned content that must render inside the map
- * layer (markers, reveal overlays) — null until the map mounts. */
+ * layer (markers) — null until the map mounts. */
 export function useMapPortal(): HTMLElement | null {
   return useContext(Ctx)?.mapPortal ?? null
+}
+
+/** Portal target for scene-owned overlays that must span the sticky
+ * viewport instead of riding the morphing map layer — null until the
+ * spine mounts. */
+export function useOverlayPortal(): HTMLElement | null {
+  return useContext(Ctx)?.overlayPortal ?? null
 }
 
 /** Scene-local scroll in vh, unclamped: negative before the scene starts
@@ -59,6 +67,7 @@ export function Spine({
   const mapRef = useRef<MapRef | null>(null)
   const [mapReady, setMapReady] = useState(false)
   const [mapPortal, setMapPortal] = useState<HTMLElement | null>(null)
+  const [overlayPortal, setOverlayPortal] = useState<HTMLElement | null>(null)
 
   const timeline = useMemo(() => buildTimeline(scenes), [scenes])
   const ranges = useMemo(() => {
@@ -149,8 +158,8 @@ export function Spine({
   }, [mapReady, onMapIdle])
 
   const ctx = useMemo(() => ({
-    scrollVh, ranges, mapRef: () => mapRef.current, mapPortal,
-  }), [scrollVh, ranges, mapPortal])
+    scrollVh, ranges, mapRef: () => mapRef.current, mapPortal, overlayPortal,
+  }), [scrollVh, ranges, mapPortal, overlayPortal])
 
   return (
     <Ctx.Provider value={ctx}>
@@ -164,6 +173,7 @@ export function Spine({
               <div ref={setMapPortal} style={{ position: "absolute", inset: 0, pointerEvents: "none" }} />
             </LandingMap>
           </motion.div>
+          <div ref={setOverlayPortal} style={{ position: "absolute", inset: 0, pointerEvents: "none" }} />
           {createPortal(
             <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 20 }}>
               <SiteHeader />

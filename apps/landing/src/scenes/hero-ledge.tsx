@@ -1,9 +1,11 @@
 // Hero hold scene on the spine (prototype variant A "Ledger" hero). The
-// spine's map layer IS the hero map; the reveal and photo markers render
-// through the map portal so they ride the layer, while the pane-split
-// content overlay scrolls in the flow wrapper — the hold's height equals
-// the component's, so everything scrolls off naturally and the reveal
-// rides up with the page, unveiling the map through the transition.
+// spine's map layer IS the hero map; photo markers render through the map
+// portal so they ride the layer, while the reveal renders through the
+// overlay portal — bounded to the first 100svh, not the layer — and the
+// pane-split content overlay scrolls in the flow wrapper. The hold's
+// height equals the component's, so everything scrolls off naturally and
+// the reveal rides up with the page, unveiling the map through the
+// transition.
 import { useEffect, useRef } from "react"
 import { createPortal } from "react-dom"
 import { motion, useReducedMotion, useTransform } from "framer-motion"
