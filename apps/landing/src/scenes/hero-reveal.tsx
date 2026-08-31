@@ -15,7 +15,7 @@ import {
 import type { MapRef } from "@nolli/map"
 import type { ArchSummary } from "@nolli/data"
 import { Caption, Note, useIsMobile } from "@nolli/ui"
-import markerStyles from "./index.markers.module.css"
+import markerStyles from "@/components/photo-markers.module.css"
 import styles from "./hero-reveal.module.css"
 
 export const PLATE = { w: 360, h: 280 }

@@ -1,0 +1,47 @@
+/* Photo markers portalled into the spine's map layer (via useMapPortal) —
+   shared by the hero and index scenes. Marker contents live inside the map
+   container, outside any scene fade wrapper, so each scene writes its fade
+   onto the container as a CSS var these classes consume. Opacity needs the
+   CSS-var route (no fallback value — Vite 8/lightningcss substitutes var()
+   fallbacks statically) and must target the content div, not the marker
+   root (maplibre writes its own inline opacity there). */
+
+/* index-owned photo markers (index-ledge.tsx) */
+.indexMarker {
+  opacity: var(--index-photo-o);
+}
+
+/* captions in the playful hand — Body2/Body3 hardcode font-family via
+   --typography-bodyX-fontFamily, which postcss bakes to the sans stack at
+   build, so a var override on the marker can't reach it; out-specify the
+   module class instead (figcaption is the photo-marker caption block) */
+.indexMarker :global(figcaption p),
+.heroMarker :global(figcaption p) {
+  font-family: var(--font-playful);
+}
+
+/* index gates the container's data-photo-markers flag from its ramp's
+   start (before that the hero's markers own the container ungated) */
+:global([data-photo-markers="off"]) .indexMarker {
+  visibility: hidden;
+}
+
+/* hero-owned photo markers (hero-reveal.tsx) — own fade var; while the
+   plate owns the screen they render fully and the per-marker clip-path
+   (hero-reveal.tsx) crops them to the plate */
+.heroMarker {
+  opacity: var(--hero-photo-o);
+}
+
+:global([data-photo-markers="off"]) .heroMarker {
+  visibility: hidden;
+}
+
+/* normal pins/clusters stand down while the photo markers own the screen —
+   hide every maplibre marker root except the ones carrying a photo marker
+   content (.indexMarker/.heroMarker are module-scoped, so :has() here
+   matches only ours); LandingMap sets data-arch-markers="off" for the
+   whole spine */
+:global([data-arch-markers="off"]) :global(.maplibregl-marker):not(:has(.indexMarker)):not(:has(.heroMarker)) {
+  visibility: hidden;
+}

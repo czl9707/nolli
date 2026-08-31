@@ -92,7 +92,7 @@ function HeroLedge({ data }: { data: LandingData }) {
   }, [fade, snap])
 
   // hero photo markers stand down over the transition entry: their opacity
-  // comes from --hero-photo-o on the map container (index.markers.module.css),
+  // comes from --hero-photo-o on the map container (photo-markers.module.css),
   // so they fade out early in the transition instead of stacking over the
   // index markers during the index hold
   useEffect(() => {

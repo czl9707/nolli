@@ -9,7 +9,7 @@ export const LandingMap = forwardRef<
   return (
     // data-arch-markers: the photo markers own the screen for the whole
     // spine — normal pin/cluster markers stay stood down
-    // (index.markers.module.css)
+    // (photo-markers.module.css)
     <div data-arch-markers="off" style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
       <ArchMap ref={ref} architectures={summaries} ready={true}>
         {children}

@@ -14,7 +14,7 @@ import type { LandingData } from "@/lib/landing-data"
 import { fitCamera } from "@/lib/camera"
 import { cityIdByName, pickIndexPhotos } from "@/lib/shape"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
-import markerStyles from "./index.markers.module.css"
+import markerStyles from "@/components/photo-markers.module.css"
 import styles from "./index-ledge.module.css"
 
 /** Hand-picked city index — Paris leads (continuity with the hero dwell). */
@@ -239,7 +239,7 @@ function CityColumn({
 /** Photo markers pinned at real coords — MapMarker tracks the camera natively.
  * Marker contents portal into the spine's map layer, outside any fade
  * wrapper, so their fade is written onto the map container as a CSS var the
- * markers consume (index.markers.module.css). The container's
+ * markers consume (photo-markers.module.css). The container's
  * data-photo-markers flag is ours only from the ramp's start: before that
  * the hero's markers own the container, and clearing the flag keeps them
  * ungated on the way back up. While ours are on screen the container also
@@ -288,7 +288,7 @@ function IndexPhotoMarkers({ picks }: { picks: ArchSummary[] }) {
   return createPortal(
     <MapContext.Provider value={{ map, isLoaded: !!map }}>
       {picks.map((a) => (
-        <PhotoMarker key={a.slug} building={a} className={markerStyles.marker} />
+        <PhotoMarker key={a.slug} building={a} className={markerStyles.indexMarker} />
       ))}
     </MapContext.Provider>,
     mapPortal,
