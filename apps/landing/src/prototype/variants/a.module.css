@@ -25,6 +25,12 @@
   z-index: 1;
 }
 
+/* the reveal is bounded by the empty top-left pane */
+.revealBounds {
+  position: absolute;
+  inset: 0;
+}
+
 /* hero cells — margin panes flank the track panes, so padding is inner */
 .headlineBody {
   display: flex;
@@ -34,34 +40,57 @@
 
 .pickBody {
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
   padding: 2svh 1.5rem 1rem 1.5rem;
 }
 
 .captionBody {
   display: flex;
   align-items: flex-end;
-  justify-content: flex-end;
-  text-align: right;
+  justify-content: flex-start;
+  text-align: left;
   padding: 1.5rem 1.5rem 2.5svh 1.5rem;
 }
 
-/* index cells */
+/* index — 80svh scene, 2x3 city grid */
+.indexScreen {
+  height: 80svh;
+}
+
 .cityBody {
   padding: 2.5svh 1.5rem 1rem 1.5rem;
 }
 
 .city {
-  font-size: clamp(3rem, 4.5vw, 4.5rem);
-  margin: 0;
+  font-size: clamp(2.4rem, 3.6vw, 3.6rem);
+  margin: 0 0 1rem;
 }
 
-.statementBody {
-  padding: 1.5rem;
+.cityCell {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 1.25rem;
+  font-size: 1.2rem;
+  opacity: 0.55;
+  cursor: pointer;
+  transition: opacity 150ms ease;
+  user-select: none;
 }
 
-.listBody {
-  padding: 1.5rem 1.5rem 2.5svh 1.5rem;
+.cityCell:hover {
+  opacity: 0.85;
+}
+
+.cityCellActive {
+  opacity: 1;
+  font-weight: 700;
+}
+
+.cityCellPending {
+  opacity: 0.2;
+  cursor: progress;
 }
 
 /* the map IS its cell — fills the split exactly */

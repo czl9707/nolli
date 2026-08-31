@@ -29,10 +29,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-inline: max(
-    calc((100vw - var(--landing-plate-max, 80rem)) / 2),
-    var(--spacing-group)
-  );
+  /* no grid pad — the header spans edge to edge */
+  padding-inline: 1.5rem;
 }
 
 .brand {
@@ -84,12 +82,13 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  text-align: right;
+  text-align: left;
   max-width: 30ch;
 }
 
 .pickList .pick {
   line-height: 2;
+  font-size: 1rem;
 }
 
 .pick {
@@ -105,11 +104,14 @@
 /* nearest caption */
 .captionName {
   font-weight: 600;
+  font-size: 1.3rem;
+  line-height: 1.25;
 }
 
 .captionMeta {
   opacity: 0.75;
   margin-top: 0.15rem;
+  font-size: 1.05rem;
 }
 
 /* statement */

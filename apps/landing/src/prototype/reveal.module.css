@@ -41,6 +41,7 @@
   z-index: 100000;
 }
 
+/* frame annotations — outside the plate edges, small side padding */
 .tagTl,
 .tagTr {
   position: absolute;
@@ -51,11 +52,11 @@
 }
 
 .tagTl {
-  left: 0;
+  left: 12px;
 }
 
 .tagTr {
-  right: 0;
+  right: 12px;
 }
 
 .dot {
@@ -68,6 +69,26 @@
   background: rgb(var(--color-destructive));
 }
 
+/* crosshair guides — same styling as pane split borders */
+.cx {
+  position: absolute;
+  z-index: 99999;
+  pointer-events: none;
+  background: rgb(var(--color-primary-foreground) / 0.25);
+}
+
+.cxV {
+  top: 0;
+  bottom: 0;
+  width: 1px;
+}
+
+.cxH {
+  left: 0;
+  right: 0;
+  height: 1px;
+}
+
 .furniture {
   position: absolute;
   left: 0;
@@ -75,22 +96,10 @@
   z-index: 100001;
 }
 
-.tick {
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  border-color: rgb(var(--color-primary-foreground) / 0.9);
-}
-
-.tickTl { left: -5px; top: -5px; border-left: 1.5px solid; border-top: 1.5px solid; }
-.tickTr { right: -5px; top: -5px; border-right: 1.5px solid; border-top: 1.5px solid; }
-.tickBl { left: -5px; bottom: -5px; border-left: 1.5px solid; border-bottom: 1.5px solid; }
-.tickBr { right: -5px; bottom: -5px; border-right: 1.5px solid; border-bottom: 1.5px solid; }
-
 .north {
   position: absolute;
   top: calc(100% + 8px);
-  left: 0;
+  left: 12px;
   color: rgb(var(--color-primary-foreground) / 0.85);
   letter-spacing: 0.08em;
 }
@@ -98,7 +107,7 @@
 .coords {
   position: absolute;
   top: calc(100% + 10px);
-  right: 0;
+  right: 12px;
   font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
   font-size: 0.7rem;
   letter-spacing: 0.1em;

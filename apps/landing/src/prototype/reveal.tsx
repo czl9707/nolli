@@ -38,11 +38,24 @@ export function useCursorSprings() {
   return { sx, sy }
 }
 
-/** Plate rect in viewport px, centre clamped inside the surface. */
-function plateRect(surface: HTMLElement, sx: MotionValue<number>, sy: MotionValue<number>) {
+/** Plate rect in viewport px, fully clamped inside the bounds element.
+ * `rect` is the SURFACE box — downstream offsets (veil vars, transforms,
+ * crosshair lines) are surface-local, while the clamp keeps the plate inside
+ * the bounds pane. */
+function plateRect(
+  bounds: HTMLElement,
+  surface: HTMLElement,
+  sx: MotionValue<number>,
+  sy: MotionValue<number>,
+) {
+  const b = bounds.getBoundingClientRect()
   const r = surface.getBoundingClientRect()
-  const cx = Math.min(Math.max(sx.get(), r.left), r.right)
-  const cy = Math.min(Math.max(sy.get(), r.top), r.bottom)
+  const clampAxis = (v: number, start: number, end: number, size: number) =>
+    end - start >= size
+      ? Math.min(Math.max(v, start + size / 2), end - size / 2)
+      : (start + end) / 2
+  const cx = clampAxis(sx.get(), b.left, b.right, PLATE.w)
+  const cy = clampAxis(sy.get(), b.top, b.bottom, PLATE.h)
   return {
     left: cx - PLATE.w / 2,
     right: cx + PLATE.w / 2,
@@ -53,10 +66,12 @@ function plateRect(surface: HTMLElement, sx: MotionValue<number>, sy: MotionValu
 }
 
 /** Veil + plate + furniture over one map surface, plus the marker clip
- * driver. Render inside the MapSurface (absolute, inset 0). Snap mode
- * (touch / reduced motion) renders nothing — markers show unclipped. */
+ * driver. Render inside the MapSurface (absolute, inset 0). The plate roams
+ * `boundsRef` if given (a pane), else the surface. Snap mode (touch /
+ * reduced motion) renders nothing — markers show unclipped. */
 export function CursorReveal({
   surfaceRef,
+  boundsRef,
   map,
   sx,
   sy,
@@ -64,6 +79,7 @@ export function CursorReveal({
   tagTr,
 }: {
   surfaceRef: RefObject<HTMLDivElement | null>
+  boundsRef?: RefObject<HTMLDivElement | null>
   map: MapRef | null
   sx: MotionValue<number>
   sy: MotionValue<number>
@@ -73,9 +89,10 @@ export function CursorReveal({
   const reduced = useReducedMotion()
   const snap = useIsMobile() || !!reduced
   const rootRef = useRef<HTMLDivElement | null>(null)
+  const clampEl = () => boundsRef?.current ?? surfaceRef.current
 
-  // veil hole vars (surface-local) + plate transform, written per frame so
-  // scroll and resize stay correct without extra listeners
+  // veil hole vars (surface-local) + plate transform + crosshair lines,
+  // written per frame so scroll and resize stay correct without listeners
   useEffect(() => {
     if (snap) return
     const surface = surfaceRef.current
@@ -84,19 +101,27 @@ export function CursorReveal({
     let raf = 0
     const write = () => {
       raf = 0
-      const p = plateRect(surface, sx, sy)
-      root.style.setProperty("--pl", `${p.left - p.rect.left}px`)
-      root.style.setProperty("--pt", `${p.top - p.rect.top}px`)
+      const el = clampEl()
+      if (!el) return
+      const p = plateRect(el, surface, sx, sy)
+      const ox = p.left - p.rect.left
+      const oy = p.top - p.rect.top
+      root.style.setProperty("--pl", `${ox}px`)
+      root.style.setProperty("--pt", `${oy}px`)
       root.style.setProperty("--pr", `${p.right - p.rect.left}px`)
       root.style.setProperty("--pb", `${p.bottom - p.rect.top}px`)
       const plate = root.querySelector<HTMLElement>("[data-plate]")
-      if (plate) {
-        plate.style.transform = `translate(${p.left - p.rect.left}px, ${p.top - p.rect.top}px)`
-      }
+      if (plate) plate.style.transform = `translate(${ox}px, ${oy}px)`
       const furn = root.querySelector<HTMLElement>("[data-furniture]")
-      if (furn) {
-        furn.style.transform = `translate(${p.left - p.rect.left}px, ${p.top - p.rect.top}px)`
+      if (furn) furn.style.transform = `translate(${ox}px, ${oy}px)`
+      const setPx = (sel: string, prop: "left" | "top", v: number) => {
+        const el2 = root.querySelector<HTMLElement>(sel)
+        if (el2) el2.style[prop] = `${v}px`
       }
+      setPx("[data-cxvl]", "left", ox)
+      setPx("[data-cxvr]", "left", p.right - p.rect.left)
+      setPx("[data-cxht]", "top", oy)
+      setPx("[data-cxhb]", "top", p.bottom - p.rect.top)
     }
     const schedule = () => {
       if (!raf) raf = requestAnimationFrame(write)
@@ -113,17 +138,17 @@ export function CursorReveal({
       window.removeEventListener("resize", schedule)
       if (raf) cancelAnimationFrame(raf)
     }
-  }, [snap, surfaceRef, sx, sy])
+  }, [snap, surfaceRef, boundsRef, sx, sy])
 
   // coords readout — plate-centre lat/lng straight to the DOM
   const coordsRef = useRef<HTMLSpanElement>(null)
   useEffect(() => {
     if (snap || !map) return
-    const surface = surfaceRef.current
-    if (!surface) return
     const update = () => {
-      if (!coordsRef.current) return
-      const p = plateRect(surface, sx, sy)
+      const el = clampEl()
+      const surface = surfaceRef.current
+      if (!el || !surface || !coordsRef.current) return
+      const p = plateRect(el, surface, sx, sy)
       const c = map.unproject([(p.left + p.right) / 2, (p.top + p.bottom) / 2])
       coordsRef.current.textContent = `${Math.abs(c.lat).toFixed(4)}° ${c.lat >= 0 ? "N" : "S"}  ${Math.abs(c.lng).toFixed(4)}° ${c.lng >= 0 ? "E" : "W"}`
     }
@@ -135,19 +160,22 @@ export function CursorReveal({
       u1()
       u2()
     }
-  }, [snap, map, surfaceRef, sx, sy])
+  }, [snap, map, surfaceRef, boundsRef, sx, sy])
 
   // clip photo markers to the plate rect
   useEffect(() => {
     if (snap || !map) return
-    const surface = surfaceRef.current
-    if (!surface) return
     let raf = 0
     const update = () => {
       raf = 0
-      const p = plateRect(surface, sx, sy)
+      const el = clampEl()
+      const surface = surfaceRef.current
+      if (!el || !surface) return
+      const p = plateRect(el, surface, sx, sy)
+      // scoped to THIS surface — other map surfaces on the page keep their
+      // markers unclipped
       const contents = Array.from(
-        document.querySelectorAll<HTMLElement>(".maplibregl-marker"),
+        surface.querySelectorAll<HTMLElement>(".maplibregl-marker"),
       )
         .map((root) => root.firstElementChild as HTMLElement | null)
         .filter(
@@ -188,12 +216,19 @@ export function CursorReveal({
       window.removeEventListener("scroll", schedule)
       if (raf) cancelAnimationFrame(raf)
     }
-  }, [snap, map, surfaceRef, sx, sy])
+  }, [snap, map, surfaceRef, boundsRef, sx, sy])
 
   if (snap) return null
   return (
     <div ref={rootRef} className={styles.root}>
       <div className={styles.veil} aria-hidden />
+      {/* crosshair guides — full-height verticals at the plate's left/right,
+          full-width horizontals at its top/bottom; same styling as pane
+          borders */}
+      <span data-cxvl className={`${styles.cx} ${styles.cxV}`} aria-hidden />
+      <span data-cxvr className={`${styles.cx} ${styles.cxV}`} aria-hidden />
+      <span data-cxht className={`${styles.cx} ${styles.cxH}`} aria-hidden />
+      <span data-cxhb className={`${styles.cx} ${styles.cxH}`} aria-hidden />
       <div data-plate className={styles.plate} style={{ width: PLATE.w, height: PLATE.h }}>
         <Note asChild>
           <span className={styles.tagTl}>{tagTl}</span>
@@ -206,10 +241,6 @@ export function CursorReveal({
         <span className={styles.dot} />
       </div>
       <div data-furniture className={styles.furniture} style={{ width: PLATE.w, height: PLATE.h }}>
-        <span className={`${styles.tick} ${styles.tickTl}`} />
-        <span className={`${styles.tick} ${styles.tickTr}`} />
-        <span className={`${styles.tick} ${styles.tickBl}`} />
-        <span className={`${styles.tick} ${styles.tickBr}`} />
         <Caption asChild>
           <span className={styles.north}>N ↑</span>
         </Caption>
