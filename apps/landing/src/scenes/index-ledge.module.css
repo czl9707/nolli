@@ -1,0 +1,70 @@
+/* Index ledge on the spine — sticky 80svh hold, self-centered at 10svh
+   ((100svh - 80svh) / 2); the map is the spine's layer landing on the empty
+   shape pane inside the split, this tree is the content around it. */
+
+.index {
+  position: sticky;
+  top: 10svh;
+  height: 80svh;
+}
+
+.splits {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+/* the shape pane — empty in the DOM; the spine's map layer lands on its
+   rect (filling the pane exactly) */
+.mapPane {
+  position: absolute;
+  inset: 0;
+}
+
+/* dossier */
+.cityBody {
+  padding: 2.5svh 1.5rem 1rem 1.5rem;
+}
+
+.city {
+  font-size: clamp(2.4rem, 3.6vw, 3.6rem);
+  margin: 0 0 1rem;
+}
+
+.statement {
+  line-height: 1.4;
+}
+
+.statement strong {
+  font-weight: 700;
+}
+
+/* 2x3 city grid — each pane IS the button; the spine's scene wrappers
+   disable pointer events, so the cells re-enable them */
+.cityCell {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 1.25rem;
+  font-size: 1.2rem;
+  opacity: 0.55;
+  cursor: pointer;
+  transition: opacity 150ms ease;
+  user-select: none;
+  pointer-events: auto;
+}
+
+.cityCell:hover {
+  opacity: 0.85;
+}
+
+.cityCellActive {
+  opacity: 1;
+  font-weight: 700;
+}
+
+.cityCellPending {
+  opacity: 0.2;
+  cursor: progress;
+}
