@@ -6,7 +6,6 @@ import type { LandingData } from "@/lib/landing-data"
 import { fitCamera } from "@/lib/camera"
 import { useSceneScroll, useSpineMap } from "@/spine/spine"
 import type { PxRect, TransitionScene } from "@/spine/timeline"
-import { HERO_EXCLUDE } from "./hero-ledge"
 
 /** Hero → index morph. Pure camera choreography: entering fires the flight
  * to the index camera (Paris picks fitted to the index pane), crossing back
@@ -17,8 +16,7 @@ function HeroIndexTransition({ data, indexPane }: { data: LandingData; indexPane
   const local = useSceneScroll()
   const direction = useRef<"none" | "forward" | "back">("none")
   const cameras = useMemo(() => {
-    const kept = data.heroPicks.filter((p) => !HERO_EXCLUDE.has(p.slug))
-    const pts = kept.map((p) => p.coordinates)
+    const pts = data.heroPicks.map((p) => p.coordinates)
     return {
       to: fitCamera(pts, { width: indexPane.width, height: indexPane.height }, { x: 100, top: 100, bottom: 240 }),
       back: fitCamera(pts, { width: window.innerWidth, height: window.innerHeight }, { x: 100, top: 100, bottom: 240 }),

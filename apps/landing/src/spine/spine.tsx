@@ -78,6 +78,7 @@ export function Spine({
 
   // measured shape rects, re-measured on resize; re-applied without a
   // scroll event
+  // TODO: what this hookd handling.
   const [rects, setRects] = useState<Record<string, PxRect>>({})
   useEffect(() => {
     const measure = () => {

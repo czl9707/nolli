@@ -1,5 +1,5 @@
 import { Body2, Button, H6 } from "@nolli/ui"
-import { APP_URL } from "@/lib/constants"
+import { ABOUT_URL, APP_URL, POSTER_URL } from "@/lib/constants"
 import styles from "./site-header.module.css"
 
 /** Site header (prototype winner header-A "Topline"): mark + hand wordmark
@@ -17,10 +17,14 @@ export function SiteHeader() {
         <div className={styles.right}>
           <nav className={styles.links} aria-label="site">
             <Body2 asChild>
-              <a href="#">Poster</a>
+              <a href={POSTER_URL} target="_blank" rel="noopener noreferrer">
+                Poster
+              </a>
             </Body2>
             <Body2 asChild>
-              <a href="#">About</a>
+              <a href={ABOUT_URL} target="_blank" rel="noopener noreferrer">
+                About
+              </a>
             </Body2>
           </nav>
           <Button variant="outline" size="default" asChild>

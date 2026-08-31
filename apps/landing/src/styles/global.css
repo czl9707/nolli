@@ -35,14 +35,6 @@ body {
   --landing-plate-max: 80rem;
 }
 
-.boot-msg {
-  position: fixed;
-  left: 50%;
-  top: 50%;
-  translate: -50% -50%;
-  letter-spacing: 0.04em;
-}
-
 /* Boot scroll lock: until the map reveals, the spine is a flat plate with
    nothing to scroll to. app.tsx renders <main data-boot> while locked;
    :has() carries it to the body from the React-rendered element. */
@@ -65,8 +57,4 @@ body:has(main[data-boot]) {
   .spine-boot {
     transition: none;
   }
-}
-
-.boot-msg--err {
-  color: rgb(var(--color-accent-foreground));
 }

@@ -23,7 +23,6 @@ import styles from "./hero-ledge.module.css"
 
 /** Far outliers excluded from the hero fit (still rendered, just not fitted
  * — they'd pull the camera out until the rest clutters). */
-export const HERO_EXCLUDE = new Set(["fondation-louis-vuitton", "philharmonie-de-paris"])
 
 export const heroHold = (data: LandingData): HoldScene => ({
   kind: "hold",
@@ -62,9 +61,8 @@ function HeroLedge({ data }: { data: LandingData }) {
       return
     }
     const b = pane.getBoundingClientRect()
-    const kept = picks.filter((p) => !HERO_EXCLUDE.has(p.slug))
     const fit = fitCamera(
-      kept.map((p) => p.coordinates),
+      picks.map((p) => p.coordinates),
       { width: b.width, height: b.height },
       { x: 100, top: 100, bottom: 240 },
     )

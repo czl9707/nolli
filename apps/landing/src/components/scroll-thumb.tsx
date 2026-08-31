@@ -55,7 +55,7 @@ export function ScrollThumb() {
       style={{
         position: "fixed",
         right: MARGIN - 2,
-        top: MARGIN,
+        top: `calc(${MARGIN}px + var(--size-header-height))`,
         width: WIDTH,
         height: geo.thumbH,
         borderRadius: WIDTH,
@@ -71,7 +71,7 @@ export function ScrollThumb() {
 
 function measure() {
   const doc = document.documentElement
-  const trackH = window.innerHeight - MARGIN * 2
+  const trackH = window.innerHeight - MARGIN * 2 - (document.querySelector("header")?.getBoundingClientRect()?.height ?? 0);
   const contentH = Math.max(doc.scrollHeight, 1)
   const thumbH = Math.min(Math.max((window.innerHeight / contentH) * trackH, MIN_THUMB), trackH)
   return { trackH, thumbH }

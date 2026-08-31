@@ -63,12 +63,11 @@ export function App() {
 
   // the scroll spine stays still until the map can be seen: <main data-boot>
   // below + the body:has(main[data-boot]) lock in global.css
-
   if (status === "error") {
     return (
       <main data-boot={revealed ? undefined : ""}>
-        <Body2 asChild>
-          <p className="boot-msg boot-msg--err">{error?.message ?? "failed to load map data"}</p>
+        <Body2>
+          {error?.message ?? "failed to load map data"}
         </Body2>
       </main>
     )

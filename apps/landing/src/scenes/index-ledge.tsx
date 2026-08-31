@@ -13,7 +13,6 @@ import type { HoldScene, PxRect } from "@/spine/timeline"
 import type { LandingData } from "@/lib/landing-data"
 import { fitCamera } from "@/lib/camera"
 import { cityIdByName, pickIndexPhotos } from "@/lib/shape"
-import { HERO_EXCLUDE } from "./hero-ledge"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
 import markerStyles from "./index.markers.module.css"
 import styles from "./index-ledge.module.css"
@@ -109,8 +108,7 @@ function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect 
   picksRef.current = picks
   useEffect(() => {
     if (!map || local.get() < 0) return
-    const kept = picksRef.current.filter((p) => !HERO_EXCLUDE.has(p.slug))
-    map.jumpTo(cameraFor(kept))
+    map.jumpTo(cameraFor(picksRef.current))
   }, [map, local, cameraFor])
 
   const onSelect = useCallback(
