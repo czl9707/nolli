@@ -1,25 +1,21 @@
-/* Site header (prototype winner header-A "Topline"). Full-width bar over
-   the map; smoked frosted-glass background (web glassmorphism approximation:
-   translucent gradient fill + backdrop blur, no border) so the same light
-   ink reads over every scene. CTA is the app's Button. */
+/* Site header (prototype winner header-A "Topline"). Full-width frosted
+   strip over the map (translucent fill + backdrop blur + 1px bottom rule)
+   so the same ink reads over every scene. CTA is the app's Button. */
 
 .bar {
   position: absolute;
   inset: 0 0 auto 0;
   pointer-events: none;
-  color: rgb(var(--color-primary-background));
-  background: linear-gradient(
-    180deg,
-    rgb(var(--color-primary-foreground) / 0.52),
-    rgb(var(--color-primary-foreground) / 0.3)
-  );
-  backdrop-filter: blur(18px) saturate(140%);
-  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  color: rgb(var(--color-primary-foreground));
+  background: rgb(var(--color-primary-background) / 0.45);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  border-bottom: 1px solid rgb(var(--color-primary-foreground) / 0.25);
 }
 
 @media (prefers-reduced-transparency: reduce) {
   .bar {
-    background: rgb(var(--color-primary-foreground));
+    background: rgb(var(--color-primary-background));
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
@@ -30,8 +26,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 72px;
-  padding: 0 24px;
+  height: var(--size-header-height);
+  padding-inline: 1.5rem;
 }
 
 .brand {
@@ -59,12 +55,12 @@
 }
 
 .links a {
-  color: rgb(var(--color-primary-background) / 0.75);
+  color: rgb(var(--color-primary-foreground) / 0.75);
   text-decoration: none;
 }
 
 .links a:hover {
-  color: rgb(var(--color-primary-background));
+  color: rgb(var(--color-primary-foreground));
 }
 
 @media (max-width: 767px) {

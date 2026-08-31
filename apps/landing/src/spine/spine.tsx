@@ -27,6 +27,12 @@ export function useSpineMap(): MapRef | null {
   return useContext(Ctx)?.mapRef() ?? null
 }
 
+/** Portal target for scene-owned content that must render inside the map
+ * layer (markers, reveal overlays) — null until the map mounts. */
+export function useMapPortal(): HTMLElement | null {
+  return useContext(Ctx)?.mapPortal ?? null
+}
+
 /** Scene-local scroll in vh, unclamped: negative before the scene starts
  * (fade-in ramps), > heightVh past its end (exit fades). */
 export function useSceneScroll(id?: string): MotionValue<number> {

@@ -1,0 +1,117 @@
+/* Cursor-plate reveal on the spine map layer. One dim veil over the map
+   with the plate's rect punched out; markers render fully but crop to the
+   plate. */
+
+.root {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.veil {
+  position: absolute;
+  inset: 0;
+  /* flat deepest ink — no gradient; the map shows only through the plate */
+  background: rgb(18 18 18 / 0.92);
+  -webkit-mask-image: linear-gradient(
+      to right,
+      #000 0 var(--pl),
+      transparent var(--pl) var(--pr),
+      #000 var(--pr)
+    ),
+    linear-gradient(to bottom, #000 0 var(--pt), transparent var(--pt) var(--pb), #000 var(--pb));
+  -webkit-mask-composite: source-over;
+  mask-image: linear-gradient(
+      to right,
+      #000 0 var(--pl),
+      transparent var(--pl) var(--pr),
+      #000 var(--pr)
+    ),
+    linear-gradient(to bottom, #000 0 var(--pt), transparent var(--pt) var(--pb), #000 var(--pb));
+  mask-composite: add;
+}
+
+.plate {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: var(--size-border-radius);
+  backdrop-filter: brightness(1.14) saturate(1.06);
+  z-index: 100000;
+}
+
+/* frame annotations — outside the plate edges, small side padding */
+.tagTl,
+.tagTr {
+  position: absolute;
+  top: -10px;
+  transform: translateY(-100%);
+  color: rgb(var(--color-primary-foreground) / 0.85);
+  white-space: nowrap;
+}
+
+.tagTl {
+  left: 12px;
+}
+
+.tagTr {
+  right: 12px;
+}
+
+.dot {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgb(var(--color-destructive));
+}
+
+/* crosshair guides — same styling as pane split borders */
+.cx {
+  position: absolute;
+  z-index: 99999;
+  pointer-events: none;
+  background: rgb(var(--color-primary-foreground) / 0.25);
+}
+
+.cxV {
+  top: 0;
+  bottom: 0;
+  width: 1px;
+}
+
+.cxH {
+  left: 0;
+  right: 0;
+  height: 1px;
+}
+
+.furniture {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 100001;
+}
+
+.north {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 12px;
+  color: rgb(var(--color-primary-foreground) / 0.85);
+  letter-spacing: 0.08em;
+}
+
+.coords {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 12px;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: rgb(var(--color-primary-foreground) / 0.85);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

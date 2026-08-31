@@ -1,0 +1,89 @@
+/* Hero ledge on the spine — sticky full-viewport hold; the map itself is
+   the spine's layer below, this tree is the content overlay above it. */
+
+.hero {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+}
+
+.splits {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+/* the reveal is bounded by the empty top-left pane */
+.revealBounds {
+  position: absolute;
+  inset: 0;
+}
+
+/* hero cells — margin panes flank the track panes, so padding is inner */
+.headlineBody {
+  display: flex;
+  align-items: flex-end;
+  padding: 0 1.5rem 2.5svh 1.5rem;
+}
+
+.pickBody {
+  display: flex;
+  justify-content: flex-start;
+  padding: 2svh 1.5rem 1rem 1.5rem;
+}
+
+.captionBody {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  text-align: left;
+  padding: 1.5rem 1.5rem 2.5svh 1.5rem;
+}
+
+/* headline */
+.headline {
+  margin: 0;
+  font-size: clamp(2.6rem, 5.4vw, 3.8rem);
+  max-width: 22ch;
+}
+
+.accent {
+  color: var(--hero-accent);
+}
+
+/* pick list */
+.pickList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+  max-width: 30ch;
+}
+
+.pickList .pick {
+  line-height: 2;
+  font-size: 1rem;
+}
+
+.pick {
+  opacity: 0.3;
+  transition: opacity 0.4s ease;
+}
+
+.pickActive {
+  opacity: 1;
+  font-weight: 600;
+}
+
+/* nearest caption */
+.captionName {
+  font-weight: 600;
+  font-size: 1.3rem;
+  line-height: 1.25;
+}
+
+.captionMeta {
+  opacity: 0.75;
+  margin-top: 0.15rem;
+  font-size: 1.05rem;
+}
