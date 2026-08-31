@@ -87,6 +87,24 @@ function HeroLedge({ data }: { data: LandingData }) {
     }
   }, [fade, snap])
 
+  // hero photo markers stand down with the exit fade: their opacity comes
+  // from --hero-photo-o on the map container (index.markers.module.css), so
+  // they fade with the content instead of stacking over the index markers
+  // during the index hold
+  useEffect(() => {
+    if (!map) return
+    const el = map.getContainer()
+    const apply = (v: number) => {
+      el.style.setProperty("--hero-photo-o", String(v))
+    }
+    apply(fade.get())
+    const un = fade.on("change", apply)
+    return () => {
+      un()
+      el.style.removeProperty("--hero-photo-o")
+    }
+  }, [map, fade])
+
   return (
     <section data-spine-shape="hero" className={styles.hero}>
       <CursorReveal
