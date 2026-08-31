@@ -1,11 +1,28 @@
 /* Site header (prototype winner header-A "Topline"). Full-width bar over
-   the map; soft top scrim for legibility. CTA is the app's Button. */
+   the map; smoked frosted-glass background (web glassmorphism approximation:
+   translucent gradient fill + backdrop blur, no border) so the same light
+   ink reads over every scene. CTA is the app's Button. */
 
 .bar {
   position: absolute;
   inset: 0 0 auto 0;
   pointer-events: none;
   color: rgb(var(--color-primary-background));
+  background: linear-gradient(
+    180deg,
+    rgb(var(--color-primary-foreground) / 0.52),
+    rgb(var(--color-primary-foreground) / 0.3)
+  );
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .bar {
+    background: rgb(var(--color-primary-foreground));
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 }
 
 .row {
