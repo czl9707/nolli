@@ -78,20 +78,12 @@ map."
 Paris comes free with the landing data; other cities preload once via
 filter options.
 
-## Landing redo prototype
+## Landing redo
 
-`src/prototype/` + `prototype.html` — isolated-scene prototype for the page
-redo (2026-08-30 round). Question: how do hero + index + header read
-recomposed as 100svh scenes on a 6-col + margin cell grid, map as background
-or cell, cursor reveal kept. Three variants at `/prototype.html` via
-`?variant=A|B|C` + a floating switcher: **A Ledger** (ruled cells over
-full-bleed map), **B Plate** (map as a cell object on paper), **C Poster**
-(full-bleed, type overlays). Map-as-spine scroll wiring deliberately absent.
-Dev flags: `&mock=1` (db-free landmark picks), `&static=1` (fixed 900px
-scenes for full-page captures — svh scales with the capture window).
-Verified headless except map raster (SwiftShader can't draw the canvas).
-The production scenes above are untouched; delete the prototype once a
-variant wins and is folded in.
+The 2026-08-30 redo round shipped as the production spine — hold/transition
+scenes, measured shapes, boundary flights. The throwaway prototype that
+settled the direction (variant A "Ledger") is deleted. Design doc (local,
+gitignored): `docs/superpowers/specs/2026-08-31-landing-map-spine-design.md`.
 
 ## Dev
 
