@@ -14,9 +14,7 @@ if (typeof document !== "undefined") {
 
 export type DemoCompositionProps = { config: VideoConfig };
 
-// The whole timeline is data-driven: each entry in config.scenes becomes a
-// Series.Sequence whose length is derived from its type. Reorder/edits live in
-// video.json, not here.
+// The timeline is data-driven — reorder/edits live in video.json, not here.
 export const DemoComposition: React.FC<DemoCompositionProps> = ({ config }) => {
   useFontsReady();
   const fontVariant = config.fontVariant ?? DEFAULT_FONT_VARIANT;

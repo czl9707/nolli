@@ -14,7 +14,6 @@ function loadVideoConfig(outDir: string): VideoConfig {
   return readJsonOr<VideoConfig>(join(outDir, "video.json"), "Run `pnpm seed <slug>` first.");
 }
 
-// Report any file referenced by a scene that doesn't exist in the out dir.
 function missingFiles(config: VideoConfig, outDir: string): string[] {
   const missing: string[] = [];
   for (const s of config.scenes) {
@@ -49,7 +48,7 @@ async function main(slug: string) {
     process.exit(1);
   }
 
-  // ffprobe each video scene so durationOf can size it accurately.
+  // durationOf needs native frame counts — fill them via ffprobe.
   for (const s of config.scenes) {
     if (s.type === "video") s.frames = await getClipFrames(join(outDir, s.src));
   }

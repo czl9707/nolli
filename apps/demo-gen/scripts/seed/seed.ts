@@ -10,7 +10,6 @@ import { DEFAULT_FONT_VARIANT, type Scene, type VideoConfig } from "../../src/li
 
 const DEMO_RATE = 2;
 
-// Raw DB columns → the manifest's building shape.
 const toBuildingRow = (r: ArchRow): BuildingRow => ({
   slug: r.slug,
   name: r.name,
@@ -24,10 +23,8 @@ const toBuildingRow = (r: ArchRow): BuildingRow => ({
 const detailSrc = (b: BuildingRow) => `images/${b.slug}-detail.png`;
 const boardSrc = (b: BuildingRow) => `images/${b.slug}-board.png`;
 
-// Resolve the architect + buildings from sqlite and write out/<slug>/manifest.json.
-// The journey always defaults to opening on the earliest building (year-ascending)
-// plus one random other; to visit different buildings, edit "journey" in
-// demo.json after seeding.
+// The seeded journey defaults to the earliest building plus one random other;
+// to visit different buildings, edit "journey" in demo.json after seeding.
 function resolveAndWriteManifest(dbPath: string, dir: string, slug: string): Manifest {
   const architect = resolveArchitectName(dbPath, slug);
   const rows = queryArchitectBuildings(dbPath, architect).map(toBuildingRow);
@@ -45,9 +42,6 @@ export function freshJourney(manifest: Manifest): Journey {
   return [first.slug, second?.slug ?? first.slug];
 }
 
-// Scene order leads with the demo (journey → board reveal → photo open), then
-// alternates text → images → text → images → text → logo: name, board photos,
-// count, detail photos, "Now available in".
 export function buildScenes(manifest: Manifest): Scene[] {
   const scenes: Scene[] = [];
   scenes.push({ type: "video", src: "demo-1.mp4", playbackRate: DEMO_RATE });
@@ -88,8 +82,6 @@ async function main(slug: string, { fresh }: { fresh?: boolean }) {
   const dir = resolve("out", slug);
   mkdirSync(dir, { recursive: true });
 
-  // Resolve from the DB and write manifest.json, then derive the two editable
-  // configs from it.
   const dbPath = await ensureDb(fresh);
   const manifest = resolveAndWriteManifest(dbPath, dir, slug);
 

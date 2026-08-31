@@ -13,7 +13,6 @@ export type CursorOptions = {
   // wall-ms, matching assets-demo's appWait so the cursor moves in the same
   // (slowed) time-frame as the app's animations.
   slowmo: number;
-  // Viewport in CSS px (for clamping + center fallback).
   viewport: { width: number; height: number };
   // click(): app-ms to hover at the cursor's spot before pressing — the
   // "I'm here" beat the viewer needs to read the click.
@@ -123,21 +122,15 @@ export const CURSOR_INIT = `
 
 export function createCursor(page: Page, opts: CursorOptions) {
   const { slowmo, viewport, hoverAppMs, dwellAppMs } = opts;
-  // Start at screen center — the cursor is revealed there by appear() at capture
-  // start (no glide-in; that read as a bad initial move).
   let cur: Vec = { x: viewport.width / 2, y: viewport.height / 2 };
   const wall = (appMs: number) => appMs / slowmo;
 
-  // Step a pre-computed path, dispatching a real pointermove per point (the
-  // in-page overlay follows these). Points carry ghost-cursor's natural timing;
-  // we rescale the whole span to `appMs` of app-time so the move lands on a
-  // deterministic duration while preserving its slow-fast-slow speed curve.
-  //
-  // The path is SUBSAMPLED to <= MAX_PATH_POINTS: each page.mouse.move is a CDP
-  // round-trip (~7ms wall), and ghost-cursor emits 20-50 points even for short
-  // moves — stepping all of them inflates the real app-time far past `appMs`.
-  // 8 points is well above per-frame density at capture rate, so it stays
-  // smooth without the CDP tax.
+  // Points carry ghost-cursor's natural slow-fast-slow timing, rescaled to a
+  // deterministic appMs span. SUBSAMPLED to <= MAX_PATH_POINTS: each
+  // page.mouse.move is a CDP round-trip (~7ms wall), and ghost-cursor emits
+  // 20-50 points even for short moves — stepping all of them inflates the real
+  // app-time far past `appMs`. 8 points is well above per-frame density at
+  // capture rate, so it stays smooth without the CDP tax.
   async function runPath(pts: TimedVec[], appMs: number, end: Vec): Promise<Vec> {
     if (pts.length === 0) return end;
     const MAX_PATH_POINTS = 8;
@@ -156,16 +149,14 @@ export function createCursor(page: Page, opts: CursorOptions) {
     return { x: clamp(end.x, 0, viewport.width), y: clamp(end.y, 0, viewport.height) };
   }
 
-  // Ghost-cursor Bézier from cur to `point`, landed exactly on it.
   async function move(point: Vec, appMs: number): Promise<void> {
     const pts = path(cur, point, { useTimestamps: true }) as TimedVec[];
     cur = await runPath(pts, appMs, point);
   }
 
-  // Press/release at the current spot, with the hover beat before and dwell
-  // after. Callers pair it with move(): one decisive move onto the target,
-  // then click — without the hover the cursor seems to barely graze the target
-  // before the action fires.
+  // Callers pair it with move(): one decisive move onto the target, then
+  // click — without the hover beat the press reads as barely grazing the
+  // target before the action fires.
   async function click(): Promise<void> {
     await page.waitForTimeout(wall(hoverAppMs));
     await page.mouse.click(cur.x, cur.y);
@@ -200,13 +191,12 @@ export function createCursor(page: Page, opts: CursorOptions) {
     };
   }
 
-  // A small, human-like reposition just before a drag — the hand settling on the
-  // map. Picks a random point in the central region of the viewport (NOT an
-  // offset from the current cursor: after a pan the cursor can sit near an edge,
-  // and a random ±offset would wander it off the map). Two extras vs a plain
-  // move: (1) guarantee a meaningful travel distance so it reads as a move, not
-  // a twitch; (2) scale the duration by distance so a SHORT reposition is quick
-  // instead of a fixed slow crawl (the first reach, from center, was the victim).
+  // A small, human-like reposition just before a drag — the hand settling on
+  // the map. A random point in the central region, NOT an offset from the
+  // current cursor (after a pan it can sit near an edge, and a ±offset would
+  // wander it off the map). Guarantees a minimum travel so it reads as a move
+  // rather than a twitch, and scales duration by distance so short reaches
+  // aren't slow crawls.
   async function reposition(): Promise<void> {
     let tx = viewport.width * (0.3 + Math.random() * 0.4);
     let ty = viewport.height * (0.3 + Math.random() * 0.4);
@@ -223,8 +213,8 @@ export function createCursor(page: Page, opts: CursorOptions) {
     await move({ x: tx, y: ty }, clamp(dist / 1.8, 70, 120));
   }
 
-  // Reveal the cursor at screen center at capture start (a single pointermove —
-  // the overlay is hidden until the first move). No path, no animation.
+  // The overlay is hidden until the first pointermove — a single move reveals
+  // it. No path, no glide-in (that read as a bad initial move).
   async function appear(): Promise<void> {
     const c = { x: viewport.width / 2, y: viewport.height / 2 };
     await page.mouse.move(c.x, c.y);

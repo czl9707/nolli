@@ -5,22 +5,16 @@ import { join } from "node:path";
 import { FPS } from "../../src/lib/constants";
 import { JOURNEY, VIEWPORT } from "./tuning";
 
-// ── Recording + mux pipeline ────────────────────────────────────────────────
-// startRecording opens a CDP screencast on the page; endRecording stops it and
-// returns the frames folded onto the app-time clock. resampleTimeline →
-// muxClip then turn that frame list into demo-1.mp4.
-
 type ScreencastFrame = { ts: number; data: Buffer };
 type Recorder = { client: CDPSession; frames: ScreencastFrame[]; ts0: number };
 // One captured frame on the timeline: app-time (ms) since recording start.
 export type MasterFrame = { appMs: number; data: Buffer };
 
-// Open a CDP screencast on the page. Frames are decoded to Buffers on arrival
-// (base64 would hold +33% overhead in the heap for the whole capture). Frame
-// times come from the compositor's own paint timestamp (metadata.timestamp,
-// epoch seconds) — NOT arrival time: frames can arrive seconds late under load
-// (e.g. the lightbox photo decode), and arrival-stamping smears the timeline,
-// compressing late action into the clip's end.
+// Frames decode to Buffers on arrival (base64 would hold +33% heap overhead
+// for the whole capture). Timestamps are the compositor's paint clock
+// (metadata.timestamp, epoch seconds) — NOT arrival time: frames can arrive
+// seconds late under load (e.g. the lightbox photo decode), and
+// arrival-stamping smears late action into the clip's end.
 export async function startRecording(context: BrowserContext, page: Page): Promise<Recorder> {
   const ts0 = Date.now() / 1000;
   const frames: ScreencastFrame[] = [];
@@ -38,9 +32,6 @@ export async function startRecording(context: BrowserContext, page: Page): Promi
   return { client, frames, ts0 };
 }
 
-// Stop the screencast, detach the CDP session, and fold the captured frames
-// onto the app-time clock ((paintTime - recordingStart) * slowmo), in paint
-// order.
 export async function endRecording(rec: Recorder): Promise<MasterFrame[]> {
   await rec.client.send("Page.stopScreencast");
   await rec.client.detach().catch(() => {});
@@ -67,10 +58,9 @@ export function padHold(master: MasterFrame[], appMs: number): void {
   }
 }
 
-// Resample the recording's app-time frame timeline to a real-time 30fps frame list
-// by nearest app-time. Pacing is 1:1 (the recording's app-time IS the real-time
-// the viewer experiences); outCount is capped at maxFrames, beyond which pacing
-// compresses. Runs once per recording.
+// Pacing is 1:1 — the recording's app-time IS the real-time the viewer
+// experiences. outCount is capped at maxFrames; beyond the cap, pacing
+// compresses.
 export function resampleTimeline(master: MasterFrame[]): Buffer[] {
   const winStart = master[0].appMs;
   const winEnd = master[master.length - 1].appMs;
@@ -87,8 +77,8 @@ export function resampleTimeline(master: MasterFrame[]): Buffer[] {
   return out;
 }
 
-// Stream the frames to ffmpeg's stdin (image2pipe) and mux to demo-1.mp4
-// (h264). No frame files touch disk. Returns the absolute clip path.
+// image2pipe keeps the whole mux in-process: no jpg sequence on disk, no
+// read-back.
 export async function muxClip(outDir: string, frames: Buffer[]): Promise<string> {
   const clipAbs = join(outDir, "demo-1.mp4");
   const ffmpeg = spawn("ffmpeg", [

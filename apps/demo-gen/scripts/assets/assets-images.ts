@@ -13,9 +13,8 @@ import {
 import type { Manifest } from "../seed/manifest";
 import { VIEWPORT } from "./tuning";
 
-// Capture BOTH types (detail + board lightbox) for every building of one slug
-// into out/<slug>/images/. The base manifest (out/<slug>/manifest.json from
-// `pnpm seed <slug>`) is read for the building list.
+// Detail + board-lightbox stills for every building in out/<slug>/manifest.json
+// → out/<slug>/images/.
 export async function generateImages(slug: string) {
   const outDir = resolve("out", slug);
   const manifest = readJsonOr<Manifest>(resolve("out", slug, "manifest.json"), "Run `pnpm seed <slug>` first.");
@@ -45,8 +44,7 @@ export async function generateImages(slug: string) {
         await page.screenshot({ path: join(outDir, detailRel), fullPage: false });
         detailImgs.push(detailRel);
 
-        // Board view with the cover photo opened in the lightbox. Selectors
-        // (BOARD_PHOTO / LIGHTBOX_FRAME) live in capture-helpers. A force-click
+        // Board view with the cover photo opened in the lightbox. A force-click
         // is required: the board viewport calls preventDefault() on
         // pointerdown, which can swallow Playwright's click.
         await page.goto(`${BASE_URL}/arch/${b.slug}/board?capture=1`);

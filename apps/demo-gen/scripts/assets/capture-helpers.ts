@@ -38,12 +38,12 @@ const ANIM_INIT = `
 })();
 `;
 
-// before framer-motion loads. framer-motion v12 captures requestAnimationFrame
-// once at module-init (`typeof requestAnimationFrame ? requestAnimationFrame : …`),
-// so overriding window.requestAnimationFrame at runtime is too late: it already
-// holds the original, and its entrance animations (board polaroids, pin fades,
-// modal) would play at real speed and pop in. Wrapping the clocks at init, with
-// the factor read from window.__SLOWMO (default 1 = real-time), lets us flip the
+// framer-motion v12 captures requestAnimationFrame once at module-init
+// (`typeof requestAnimationFrame ? requestAnimationFrame : …`), so overriding
+// window.requestAnimationFrame at runtime is too late: it already holds the
+// original, and its entrance animations (board polaroids, pin fades, modal)
+// would play at real speed and pop in. Wrapping the clocks at init, with the
+// factor read from window.__SLOWMO (default 1 = real-time), lets us flip the
 // WHOLE app — MapLibre camera AND framer-motion — to slow-mo at capture time.
 // Identity at factor 1, so non-capture contexts are unaffected.
 //
@@ -70,11 +70,10 @@ const CLOCK_INIT = `
 `;
 
 // ── Board-package selectors ─────────────────────────────────────────────────
-// Hash-proof selectors for packages/board DOM (carried over from the legacy
-// capture.ts). These encode board internals: polaroid wrappers carry inline
-// `transform: rotate(...)` (NOT rotateX/rotateZ like map pins), and every
-// BoardItem renders a pushpin <img src="/images/pin.png"> which must be
-// excluded. The modal's framer-motion backdrop is the only element whose
+// Hash-proof selectors encoding packages/board internals: polaroid wrappers
+// carry inline `transform: rotate(...)` (NOT rotateX/rotateZ like map pins),
+// every BoardItem renders a pushpin <img src="/images/pin.png"> which must be
+// excluded, and the modal's framer-motion backdrop is the only element whose
 // CSS-module class contains 'backdrop'. If packages/board changes shape, these
 // are the single place to update.
 export const BOARD_PHOTO = 'div[style*="rotate("] img:not([src*="pin.png"])';
@@ -111,8 +110,6 @@ export async function waitForToastDisappear(page: Page) {
   await page.waitForTimeout(Number(process.env.SETTLE_MS ?? 4000));
 }
 
-// Wait for the in-flight camera move (`easeTo`/`panBy`, issued via
-// `window.__nolliMap` under ?capture=1) to reach moveend.
 export async function waitForMapMoveEnd(page: Page, timeoutMs = 6000) {
   await page
     .waitForFunction(
@@ -126,7 +123,8 @@ export async function waitForMapMoveEnd(page: Page, timeoutMs = 6000) {
     .catch(() => {});
 }
 
-// Node-side poll (real wall-time) for MapLibre tile-readiness.
+// Polls from Node, so it runs on real wall-time — unaffected by the slowed
+// in-page clocks.
 export async function waitForTilesLoaded(
   page: Page,
   timeoutMs = 6000,

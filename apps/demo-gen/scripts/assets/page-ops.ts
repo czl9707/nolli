@@ -13,8 +13,7 @@ import { JOURNEY, appWait, VIEWPORT } from "./tuning";
 // ── Page operations ─────────────────────────────────────────────────────────
 // Everything here drives the real app — through the capture bridges
 // (?capture=1 → window.__nolliMap / window.__nolliNavigateArch) or synthetic
-// pointer input (cursor + pan helpers). The narrative that sequences these ops
-// lives in assets-demo.ts.
+// pointer input. The narrative sequencing these ops lives in assets-demo.ts.
 
 const rand = (min: number, max: number) => min + Math.random() * (max - min);
 const signed = (n: number) => `${n >= 0 ? "+" : ""}${n}`;
@@ -96,9 +95,8 @@ const pinScreen = (page: Page, lng: number, lat: number) =>
 
 // ── Session setup ───────────────────────────────────────────────────────────
 
-// Set up the dark-mode capture page on the journey's first building and assert
-// the map bridge exposed itself (?capture=1 gates MapCaptureBridge →
-// window.__nolliMap, and preserves the drawing buffer for the screencast).
+// ?capture=1 gates MapCaptureBridge → window.__nolliMap and preserves the
+// drawing buffer for the screencast — fail fast if it didn't run.
 export async function setupPageForCapture(browser: Browser, start: BuildingRow) {
   const context = await applyBrowserCaptureContext(browser, {
     viewport: VIEWPORT,
@@ -151,11 +149,10 @@ export async function flipSlowmo(page: Page) {
 
 // ── Navigation ──────────────────────────────────────────────────────────────
 
-// Real arch→arch navigation — the money shot. Same code path as clicking
-// an "Also by" suggestion card (window.__nolliNavigateArch, exposed under
-// ?capture=1): the URL changes, the sidebar (selection panel) updates to arch #2,
-// and MapFlyNavigator flies. Reached via the real nav handler, not a synthetic
-// flyTo, so this is exactly the inter-arch transition a user gets.
+// Real arch→arch navigation — the money shot. Goes through the app's own nav
+// handler (window.__nolliNavigateArch, the "Also by" card path), not a
+// synthetic flyTo, so the URL change + sidebar update + MapFlyNavigator fly
+// are exactly the inter-arch transition a user gets.
 export async function navigateToArch(page: Page, target: BuildingRow, beat: (label: string) => void) {
   const hasNav = await page.evaluate(
     () => !!(window as unknown as { __nolliNavigateArch?: unknown }).__nolliNavigateArch,
@@ -171,10 +168,9 @@ export async function navigateToArch(page: Page, target: BuildingRow, beat: (lab
     },
     target.slug,
   );
-  // Fixed wait for the off-screen fly (MAP_TRANSITION_LONG = 1800 app-ms) to land
-  // + a short settle, then straight into the #2 map pan. Replaces a variable
-  // waitForMapMoveEnd (which resolved unpredictably because `select` is async, so
-  // isMoving() was already false at the first poll) plus a dead hold.
+  // Fixed wait for the off-screen fly to land + settle, then straight into the
+  // arrival pan. A waitForMapMoveEnd here resolved unpredictably — `select` is
+  // async, so isMoving() was already false at the first poll.
   await appWait(page, JOURNEY.navLandMs);
   const camAfterNav = await cam(page);
   beat(
@@ -200,7 +196,6 @@ const panFromAngle = (base: number, fanHalfDeg: number): { dx: number; dy: numbe
   };
 };
 
-// A fully random drift-pan (no direction bias).
 const randomPan = (): { dx: number; dy: number; dur: number } =>
   panFromAngle(Math.random() * Math.PI * 2, 0);
 

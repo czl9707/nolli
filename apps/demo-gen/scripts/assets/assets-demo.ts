@@ -18,10 +18,8 @@ import {
 } from "./page-ops";
 
 // Capture the journey→board→photo-open demo as a single slow-mo CDP screencast
-// and resample it to a real-time 30fps clip. Writes demo-1.mp4 into out/<slug>/.
-// The journey (buildings to visit, in order) comes from demo.json
-// (loadDemoConfig); tuning is code-only. See project memory for the slow-mo /
-// WAAPI rationale.
+// and resample it to a real-time 30fps clip (demo-1.mp4 in out/<slug>/). The
+// journey comes from demo.json; tuning is code-only (demo-config.ts).
 async function captureDemo(
   slug: string,
   buildings: BuildingRow[],
@@ -51,40 +49,30 @@ async function captureDemo(
     });
 
     const rec = await startRecording(context, page);
-    // Reveal the cursor at screen center as the journey begins.
     await cursor.appear();
 
-    // Beats in order: establish + look around on the first building, then the
-    // real arch→arch navigation to each subsequent building with a look-around
-    // pan on arrival, then the board + photo section on the last one.
-    //
     // Cursor philosophy: STILL during camera beats (a frozen pointer over a
-    // panning map is correct and reads as "watching"), then ONE decisive move +
-    // hover to each thing it clicks. No aimless wandering — that's what read as
-    // "blind" movement.
+    // panning map reads as "watching"), then ONE decisive move + hover to each
+    // thing it clicks. No aimless wandering — that's what read as "blind"
+    // movement.
     const clickOn = async (target: Locator | { x: number; y: number }) => {
       const point = "x" in target ? target : await pointOf(target, VIEWPORT);
       await cursor.move(point, JOURNEY.cursorMoveAppMs);
       await cursor.click();
     };
     const beats: Array<() => Promise<void>> = [
-      // Beat 1: open mid-zoom on the first building, hold, then ease in closer.
       async () => {
         await appWait(page, JOURNEY.establishHold);
         await flyTo(page, start.latitude, start.longitude, JOURNEY.visitZoom);
         await waitForMapMoveEnd(page);
-        // Cursor rests at center during the ease-in + hold.
         await appWait(page, JOURNEY.flyHold);
         beat("beat1 done (ease-in + hold)");
       },
-      // Beat 2: drift the map a couple times (a human "look around" on #1).
       async () => {
         await panMapAround(page, cursor, start);
         beat("pan#1 done");
       },
     ];
-    // One navigation beat (the money shot) + one arrival pan per remaining
-    // building, in journey order.
     for (const target of buildings.slice(1)) {
       beats.push(async () => {
         await navigateToArch(page, target, beat);
@@ -95,12 +83,10 @@ async function captureDemo(
       });
     }
     beats.push(
-      // "Go to Pin Board" → map shrinks to inset, polaroids bloom. The
-      // app's MapFlyNavigator recenters the inset on the building on board entry;
-      // we do NOT flyTo ourselves — trust the app's recenter. boardOpenSettle lets
-      // the bloom + recenter play out in WALL time (appMs / slowmo); raise it if
-      // you push `slowmo` toward 1.0. boardHold is then a PURE static pause that
-      // survives the final-cut 2× playbackRate so the viewer reads the board.
+      // Trust the app here: MapFlyNavigator's inset recenter on board entry IS
+      // the shot — we do NOT flyTo ourselves. boardOpenSettle runs in wall time
+      // (appMs / slowmo); raise it if pushing `slowmo` toward 1.0. boardHold is
+      // a pure static pause that survives the final-cut 2× playbackRate.
       async () => {
         await clickOn(page.getByRole("button", { name: /go to pin board/i }));
         beat("board clicked");

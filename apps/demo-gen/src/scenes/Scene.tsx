@@ -37,8 +37,6 @@ const NolliMark: React.FC<{ size: number }> = ({ size }) => (
   </svg>
 );
 
-// Text card: per-char soft-blur reveal over the fixed typing window, hold,
-// then blur-out-up before the cut.
 export const SegmentText: React.FC<{ scene: TextScene; fontVariant: FontVariant }> = ({
   scene,
   fontVariant,
@@ -59,9 +57,7 @@ export const SegmentText: React.FC<{ scene: TextScene; fontVariant: FontVariant 
   );
 };
 
-// Logo mark scales/fades in first; "Nolli" soft-blurs in to its right. The
-// mark+word row is centered — the lockup seats and holds. No exit: the logo is
-// the final frame.
+// No exit wipe: the logo is the final frame — the lockup seats and holds.
 export const SegmentLogo: React.FC<{ fontVariant: FontVariant }> = ({ fontVariant }) => {
   const frame = useCurrentFrame();
   const markScale = interpolate(frame, [OUTRO.logo.markIn, OUTRO.logo.markSettle], [0.6, 1], {
