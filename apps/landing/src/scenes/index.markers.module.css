@@ -29,9 +29,9 @@
   visibility: hidden;
 }
 
-/* hero-owned photo markers (hero.tsx) — own fade var, and the hero plate
-   gates them: while the plate owns the screen they render fully and the
-   per-marker clip-path (hero.tsx) crops them to the plate */
+/* hero-owned photo markers (hero-reveal.tsx) — own fade var; while the
+   plate owns the screen they render fully and the per-marker clip-path
+   (hero-reveal.tsx) crops them to the plate */
 .heroMarker {
   opacity: var(--hero-photo-o);
 }
@@ -42,9 +42,4 @@
 
 :global([data-photo-markers="off"]) .heroMarker {
   visibility: hidden;
-}
-
-:global([data-hero-plate="on"]) .heroMarker {
-  visibility: visible;
-  opacity: 1;
 }
