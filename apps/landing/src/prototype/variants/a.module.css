@@ -1,0 +1,72 @@
+/* PROTOTYPE variant A — Ledger, recursive-split model. The screen is cut
+   into cells (header strip top, then vertical cuts on 6-col grid lines,
+   horizontal cuts anywhere); every cut draws its 1px line and keeps it.
+   Hero: full-screen map under the cursor plate; content cells on top.
+   Index: map confined to its cell on the dark page. */
+
+.heroScreen {
+  cursor: none;
+}
+
+.heroScreen :global(a),
+.heroScreen :global(button) {
+  cursor: pointer;
+}
+
+.fullMap {
+  position: absolute;
+  inset: 0;
+  border-radius: 0;
+}
+
+.splits {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+/* hero cells — margin panes flank the track panes, so padding is inner */
+.headlineBody {
+  display: flex;
+  align-items: flex-end;
+  padding: 0 1.5rem 2.5svh 1.5rem;
+}
+
+.pickBody {
+  display: flex;
+  justify-content: flex-end;
+  padding: 2svh 1.5rem 1rem 1.5rem;
+}
+
+.captionBody {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  text-align: right;
+  padding: 1.5rem 1.5rem 2.5svh 1.5rem;
+}
+
+/* index cells */
+.cityBody {
+  padding: 2.5svh 1.5rem 1rem 1.5rem;
+}
+
+.city {
+  font-size: clamp(3rem, 4.5vw, 4.5rem);
+  margin: 0;
+}
+
+.statementBody {
+  padding: 1.5rem;
+}
+
+.listBody {
+  padding: 1.5rem 1.5rem 2.5svh 1.5rem;
+}
+
+/* the map IS its cell — fills the split exactly */
+.mapFill {
+  position: absolute;
+  inset: 0;
+  border-radius: 0;
+}

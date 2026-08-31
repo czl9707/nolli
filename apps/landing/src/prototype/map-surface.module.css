@@ -1,0 +1,16 @@
+/* PROTOTYPE — map mounts. */
+
+.surface {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--size-border-radius);
+}
+
+/* display-only maps never offer the grab hand */
+.surface :global(.maplibregl-canvas-container) {
+  cursor: default;
+}
+
+/* marker content class — targeted by the cursor-plate clip driver */
+.photo {
+}
