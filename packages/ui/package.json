@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@fontsource-variable/quicksand": "^5.3.0",
-    "@fontsource/architects-daughter": "^5.2.7",
+    "@fontsource/architects-daughter": "^5.3.0",
     "@nolli/data": "workspace:*",
     "cmdk": "^1.1.1",
     "lucide-react": "*",
