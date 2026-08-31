@@ -1,19 +1,26 @@
 /* Photo markers portalled into the spine's map layer (via useMapPortal) —
    shared by the hero and index scenes. Marker contents live inside the map
-   container, outside any scene fade wrapper, so each scene writes its fade
-   onto the container as a CSS var these classes consume. Opacity needs the
-   CSS-var route (no fallback value — Vite 8/lightningcss substitutes var()
-   fallbacks statically) and must target the content div, not the marker
-   root (maplibre writes its own inline opacity there). */
+   container, outside any scene fade wrapper, so visibility routes through
+   the container: hero writes a scroll-coupled CSS var (no fallback value —
+   Vite 8/lightningcss substitutes var() fallbacks statically), index
+   toggles a flag and the transition below does the fade. Both target the
+   content div, not the marker root (maplibre writes its own inline opacity
+   there). */
 
-/* index-owned photo markers (index-ledge.tsx) */
+/* index-owned photo markers (index-ledge.tsx) — binary on/off via the
+   container's data-photo-markers flag */
 .indexMarker {
-  opacity: var(--index-photo-o);
+  opacity: 0;
+  transition: opacity 0.4s ease;
 }
 
-/* index gates the container's data-photo-markers flag from its ramp's
-   start (before that the hero's markers own the container ungated) */
-:global([data-photo-markers="off"]) .indexMarker {
+:global([data-photo-markers="on"]) .indexMarker {
+  opacity: 1;
+}
+
+/* the hero's markers stand down while the index owns the screen (their
+   scroll var is already 0 by then — this is the hard gate) */
+:global([data-photo-markers="on"]) .heroMarker {
   visibility: hidden;
 }
 
@@ -22,10 +29,6 @@
    (hero-reveal.tsx) crops them to the plate */
 .heroMarker {
   opacity: var(--hero-photo-o);
-}
-
-:global([data-photo-markers="off"]) .heroMarker {
-  visibility: hidden;
 }
 
 /* normal pins/clusters stand down while the photo markers own the screen —

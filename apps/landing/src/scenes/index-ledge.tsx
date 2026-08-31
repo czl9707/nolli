@@ -1,7 +1,8 @@
 // Index ledge on the spine (prototype variant A "Ledger" index). The map is
 // the spine's layer landing on the empty shape pane; photo markers portal
-// into it and fade through a container var, while the flow tree carries the
-// city dossier + 2x3 city-button grid and fades out over the hold's tail.
+// into it and gate through a container flag, while the flow tree carries
+// the city dossier + 2x3 city-button grid and fades out over the hold's
+// tail.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 import { motion, useTransform } from "framer-motion"
@@ -22,9 +23,9 @@ const CITIES = ["Paris", "New York", "Tokyo", "London", "Chicago", "Berlin"] as 
 
 const PICKS_PER_CITY = 8
 
-/** Markers ride in with the boundary flight: 0 until its landing run-in,
- * ramping to 1 across the morph's tail so they arrive with the shape at
- * scene start, out again over the exit window. */
+/** Marker visibility window in scene-local vh: flag on at the landing
+ * run-in, off again at the exit window (fade length lives in
+ * photo-markers.module.css). EXIT_END_VH bounds the content fade below. */
 const RAMP_VH = 30
 const EXIT_START_VH = 170
 const EXIT_END_VH = 199
@@ -238,49 +239,32 @@ function CityColumn({
 
 /** Photo markers pinned at real coords — MapMarker tracks the camera natively.
  * Marker contents portal into the spine's map layer, outside any fade
- * wrapper, so their fade is written onto the map container as a CSS var the
- * markers consume (photo-markers.module.css). The container's
- * data-photo-markers flag is ours only from the ramp's start: before that
- * the hero's markers own the container, and clearing the flag keeps them
- * ungated on the way back up. While ours are on screen the container also
- * keeps the normal pin/cluster markers stood down (the spine sets
- * data-arch-markers="off"; our class exempts us from that sweep). */
+ * wrapper, so visibility is a binary container flag (photo-markers.module
+ * css transitions the flip): on at the landing run-in, off at the exit
+ * window or scrolled back above the run-in. While ours are on screen the
+ * container also keeps the normal pin/cluster markers stood down (the
+ * spine sets data-arch-markers="off"; our class exempts us from that
+ * sweep). */
 function IndexPhotoMarkers({ picks }: { picks: ArchSummary[] }) {
   const map = useSpineMap()
   const mapPortal = useMapPortal()
   const local = useSceneScroll()
-  // with-landing fade: 0 until the run-in, ramping to 1 across the morph's
-  // tail so the markers complete with the shape change at scene start, out
-  // by the scene's exit window
-  const opacity = useTransform(local, (v) =>
-    v < -RAMP_VH
-      ? 0
-      : v < 0
-        ? (v + RAMP_VH) / RAMP_VH
-        : v <= EXIT_START_VH
-          ? 1
-          : Math.max(0, 1 - (v - EXIT_START_VH) / (EXIT_END_VH - EXIT_START_VH)),
-  )
 
   useEffect(() => {
     if (!map) return
     const el = map.getContainer()
     const apply = () => {
-      const o = opacity.get()
-      el.style.setProperty("--index-photo-o", String(o))
-      if (local.get() < -RAMP_VH) {
-        el.removeAttribute("data-photo-markers")
-        return
-      }
-      const state = o > 0.001 ? "on" : "off"
-      if (el.dataset.photoMarkers !== state) el.dataset.photoMarkers = state
+      const v = local.get()
+      if (v >= -RAMP_VH && v < EXIT_START_VH) el.dataset.photoMarkers = "on"
+      else el.removeAttribute("data-photo-markers")
     }
     apply()
     const un = local.on("change", apply)
     return () => {
       un()
+      el.removeAttribute("data-photo-markers")
     }
-  }, [map, opacity, local])
+  }, [map, local])
 
   if (!mapPortal || !map) return null
   // markers mount from the scene tree (outside the spine's map), so
