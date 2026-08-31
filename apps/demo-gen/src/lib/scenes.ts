@@ -1,9 +1,19 @@
-import { STILL_FRAMES, scene2Duration } from "./timing";
-import { OUTRO, segmentDuration, LOGO_WORD } from "./outro";
-// Text cards animate out before the cut; the logo is the final lockup, so it
-// holds (exit = false).
+import { OUTRO, LOGO_WORD, STILL_FRAMES } from "./constants";
 
-export type FontVariant = "inter" | "playful";
+// Frames a segment runs: entrance beat + (reveal window) + hold + exit.
+// Independent of text length — empty text skips the reveal window. The logo is
+// the final lockup and passes exit=false so it holds instead of wiping out.
+export function segmentDuration(textLen: number, typeStart: number, exit = false): number {
+  const typed = textLen <= 0 ? 0 : OUTRO.typeFrames;
+  return typeStart + typed + OUTRO.hold + (exit ? OUTRO.exitFrames : 0);
+}
+
+// Frame at which a segment's exit wipe begins (entrance + reveal + hold).
+export function exitStartFrame(typeStart: number): number {
+  return typeStart + OUTRO.typeFrames + OUTRO.hold;
+}
+
+export type FontVariant = "sans" | "playful";
 export type ColorToken = "fg" | "fgSecondary";
 
 export type TextScene = { type: "text"; text: string; size?: number; color?: ColorToken };
@@ -12,7 +22,6 @@ export type VideoScene = {
   type: "video";
   src: string;
   playbackRate?: number;
-  endStill?: string;
   /** Native (pre-speedup) frame count, filled by assemble via ffprobe. */
   frames?: number;
 };
@@ -28,6 +37,7 @@ export type VideoConfig = {
 
 export const DEFAULT_TEXT_SIZE = 104;
 export const DEFAULT_PLAYBACK_RATE = 1;
+export const DEFAULT_FONT_VARIANT: FontVariant = "playful";
 
 export function durationOf(scene: Scene): number {
   switch (scene.type) {
@@ -37,9 +47,10 @@ export function durationOf(scene: Scene): number {
     case "image":
       return STILL_FRAMES;
     case "video":
-      return Math.ceil(
-        (scene.frames ?? scene2Duration) / (scene.playbackRate ?? DEFAULT_PLAYBACK_RATE),
-      );
+      if (scene.frames === undefined) {
+        throw new Error(`video scene "${scene.src}" has no frame count — run \`pnpm assemble\` first.`);
+      }
+      return Math.ceil(scene.frames / (scene.playbackRate ?? DEFAULT_PLAYBACK_RATE));
     case "logo":
       return segmentDuration(LOGO_WORD.length, OUTRO.logo.typeStart);
   }

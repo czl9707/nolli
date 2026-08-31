@@ -1,12 +1,10 @@
-import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { FPS } from "../src/lib/timing";
+import { readJsonOr } from "@nolli/remotion/cli";
+import { FPS } from "../../src/lib/constants";
 
-export type Journey = { hero: string; far: string };
-
-// Seam fires after beat 5 = the "Go to Pin Board" open + hold. That makes chunk 1
-// (demo-1, the only chunk the default video.json uses) end on the board reveal.
-export const SEAM_AFTER_BEAT_DEFAULT = 5;
+// Building slugs the demo visits, in order: open on the first, real-navigate
+// through the middles, board + lightbox section on the last.
+export type Journey = string[];
 
 // Canonical capture tuning. demo.json does NOT carry tuning — re-tuning is a
 // code edit here. Values are app-ms (the units the final real-time clip shows).
@@ -30,12 +28,14 @@ export const DEFAULT_TUNING = {
   detailCloseHold: 500,
 
   panCount: 2,
+  // Look-around fan half-widths (deg): pan 1 glances OUT away from the pin on a
+  // wide fan; pan 2 glances BACK toward the pin on a narrow one.
+  panOutFanHalf: 60,
   panFanHalf: 20,
   panMagMin: 150,
   panMagMax: 400,
   panDurMin: 200,
   panDurMax: 400,
-  panSteps: 14,
   panHold: 500,
 
   mapReturnMs: 3000,
@@ -43,7 +43,7 @@ export const DEFAULT_TUNING = {
   screencastQuality: 92,
   maxFrames: 24 * FPS,
 
-  // Visible-cursor feel (see scripts/cursor.ts). app-ms, like the rest. The
+  // Visible-cursor feel (see ../assets/cursor.ts). app-ms, like the rest. The
   // approach to a click target, the hover-on-target before pressing (the "I'm
   // here" beat), and the post-release settle. Cursor is still during camera
   // beats and only moves to deliberately click/drag — visual tuning.
@@ -54,28 +54,23 @@ export const DEFAULT_TUNING = {
 
 export type Tuning = typeof DEFAULT_TUNING;
 
-// The on-disk file is just the two slugs + the seam; tuning is code-only.
+// The on-disk file is just the journey; tuning is code-only.
 export type DemoConfigFile = {
   journey: Journey;
-  seamAfterBeat?: number;
 };
 
 export type DemoConfig = {
   journey: Journey;
-  seamAfterBeat: number;
   tuning: Tuning;
 };
 
 export function loadDemoConfig(dir: string): DemoConfig {
   const file = join(dir, "demo.json");
-  if (!existsSync(file)) {
-    throw new Error(`No demo.json at ${file}. Run \`pnpm seed <slug>\` first.`);
+  const parsed = readJsonOr<Partial<DemoConfigFile>>(file, "Run `pnpm seed <slug>` first.");
+  if (!parsed.journey || parsed.journey.length < 2) {
+    throw new Error(
+      `${file} needs a journey of >=2 building slugs (open on the first, navigate to the rest).`,
+    );
   }
-  const parsed = JSON.parse(readFileSync(file, "utf8")) as Partial<DemoConfigFile>;
-  if (!parsed.journey) throw new Error(`${file} is missing journey.hero/far.`);
-  return {
-    journey: parsed.journey,
-    seamAfterBeat: parsed.seamAfterBeat ?? SEAM_AFTER_BEAT_DEFAULT,
-    tuning: DEFAULT_TUNING,
-  };
+  return { journey: parsed.journey, tuning: DEFAULT_TUNING };
 }

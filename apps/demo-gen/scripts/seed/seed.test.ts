@@ -4,18 +4,17 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   buildScenes,
-  countText,
   writeDemoJson,
   writeVideoJson,
   freshJourney,
 } from "./seed";
+import { countText } from "../../src/lib/constants";
 import type { Manifest } from "./manifest";
 
 const manifest: Manifest = {
   architect: "Mies",
   slug: "mies",
   count: 2,
-  hero: "a",
   buildings: [
     { slug: "a", name: "A", year: 1, city: "X", cc: "US", latitude: 0, longitude: 0 },
     { slug: "b", name: "B", year: 2, city: "Y", cc: "US", latitude: 0, longitude: 90 },
@@ -30,8 +29,8 @@ describe("countText", () => {
 });
 
 describe("freshJourney", () => {
-  it("hero from manifest, far = farthest from hero", () => {
-    expect(freshJourney(manifest)).toEqual({ hero: "a", far: "b" });
+  it("opens on the earliest building, then one other", () => {
+    expect(freshJourney(manifest)).toEqual(["a", "b"]);
   });
 });
 
@@ -73,25 +72,20 @@ describe("writeDemoJson", () => {
   beforeEach(() => { dir = mkdtempSync(join(tmpdir(), "seed-")); });
   afterEach(() => rmSync(dir, { recursive: true, force: true }));
 
-  it("writes journey + default seam, and no tuning block", () => {
+  it("writes the journey, and no tuning block", () => {
     writeDemoJson(dir, manifest);
     const cfg = JSON.parse(readFileSync(join(dir, "demo.json"), "utf8"));
-    expect(cfg.journey).toEqual({ hero: "a", far: "b" });
-    expect(cfg.seamAfterBeat).toBe(5);
+    expect(cfg.journey).toEqual(["a", "b"]);
     expect(cfg.tuning).toBeUndefined();
   });
 
-  it("preserves hand-edited journey + seam on rerun", () => {
+  it("preserves a hand-edited journey on rerun", () => {
     writeDemoJson(dir, manifest);
-    const first = JSON.parse(readFileSync(join(dir, "demo.json"), "utf8"));
-    first.journey = { hero: "b", far: "a" };
-    first.seamAfterBeat = 6;
-    writeFileSync(join(dir, "demo.json"), JSON.stringify(first));
+    writeFileSync(join(dir, "demo.json"), JSON.stringify({ journey: ["b", "a"] }));
 
     writeDemoJson(dir, manifest);
     const cfg = JSON.parse(readFileSync(join(dir, "demo.json"), "utf8"));
-    expect(cfg.journey).toEqual({ hero: "b", far: "a" });
-    expect(cfg.seamAfterBeat).toBe(6);
+    expect(cfg.journey).toEqual(["b", "a"]);
   });
 });
 

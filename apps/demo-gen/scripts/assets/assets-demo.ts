@@ -2,16 +2,19 @@ import { chromium } from "playwright";
 import type { Browser, BrowserContext, CDPSession, Page } from "playwright";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { LAUNCH_ARGS, newDarkContext, waitForStable, waitForMoveEnd, waitForTilesLoaded } from "./capture-helpers";
-import { loadDemoConfig, type DemoConfig, type Tuning } from "./demo-config";
-import type { BuildingRow, Manifest } from "./manifest";
+import { runCli, readJsonOr } from "@nolli/remotion/cli";
+import { MAP_TRANSITION_SHORT, MAP_TRANSITION_LONG } from "@nolli/ui/constants";
+import { LAUNCH_ARGS, applyBrowserCaptureContext, waitForToastDisappear, waitForMapMoveEnd, waitForTilesLoaded } from "./capture-helpers";
+import { loadDemoConfig, type DemoConfig, type Tuning } from "../seed/demo-config";
+import type { BuildingRow, Manifest } from "../seed/manifest";
 import { createCursor, type Cursor } from "./cursor";
-import { FPS } from "../src/lib/timing";
+import { FPS } from "../../src/lib/constants";
 
 const execFileP = promisify(execFile);
 const BASE_URL = process.env.BASE_URL ?? "http://localhost:5173";
+const VIEWPORT = { width: 1920, height: 1080 };
 
 // app-ms wait under the journey's slow-mo factor.
 const appWait = (page: Page, appMs: number) =>
@@ -20,33 +23,27 @@ const appWait = (page: Page, appMs: number) =>
 const rand = (min: number, max: number) => min + Math.random() * (max - min);
 const signed = (n: number) => `${n >= 0 ? "+" : ""}${n}`;
 
-// A fully random drift-pan (random direction + magnitude in range). Used for
-// board drag-pans, where there's no pin to frame.
-const randomPan = (): { dx: number; dy: number; dur: number } => {
-  const angle = Math.random() * Math.PI * 2;
-  const mag = rand(JOURNEY.panMagMin, JOURNEY.panMagMax);
-  return {
-    dx: Math.round(Math.cos(angle) * mag),
-    dy: Math.round(Math.sin(angle) * mag),
-    dur: Math.round(rand(JOURNEY.panDurMin, JOURNEY.panDurMax)),
-  };
+// The map handle MapCaptureBridge exposes under ?capture=1 — the structural
+// type every in-page evaluate shim casts window.__nolliMap to. (The cast is
+// repeated per shim: evaluate callbacks serialize and run in the page, so they
+// can't close over a Node-side accessor.)
+type NolliCaptureMap = {
+  getZoom: () => number;
+  getCenter: () => { lng: number; lat: number };
+  getBounds: () => { contains: (p: [number, number]) => boolean };
+  stop: () => void;
+  flyTo: (o: {
+    center: [number, number];
+    zoom: number;
+    duration: number;
+    curve: number;
+    speed: number;
+    essential: boolean;
+  }) => void;
+  panBy: (off: [number, number], o: { duration: number }) => void;
+  jumpTo: (o: { center: [number, number]; zoom: number }) => void;
+  project?: (lngLat: [number, number]) => { x: number; y: number };
 };
-
-const VIEWPORT_CX = 960;
-const VIEWPORT_CY = 540;
-
-// Project an arch's coord to screen px via the live map (to aim the return pan).
-const pinScreen = (page: Page, lng: number, lat: number) =>
-  page.evaluate(
-    ({ lng, lat }) => {
-      const m = (window as unknown as {
-        __nolliMap?: { project?: (lngLat: [number, number]) => { x: number; y: number } };
-      }).__nolliMap;
-      const p = m?.project?.([lng, lat]);
-      return p ? { x: p.x, y: p.y } : null;
-    },
-    { lng, lat },
-  );
 
 // Build a pan (dx, dy, dur) from a base angle + a ±fanHalf spread, with random
 // magnitude/duration. Used by the map look-around: pan 1 glances OUT away from
@@ -61,6 +58,22 @@ const panFromAngle = (base: number, fanHalfDeg: number): { dx: number; dy: numbe
   };
 };
 
+// A fully random drift-pan (no direction bias). Used for board drag-pans, where
+// there's no pin to frame.
+const randomPan = (): { dx: number; dy: number; dur: number } =>
+  panFromAngle(Math.random() * Math.PI * 2, 0);
+
+// Project an arch's coord to screen px via the live map (to aim the return pan).
+const pinScreen = (page: Page, lng: number, lat: number) =>
+  page.evaluate(
+    ({ lng, lat }) => {
+      const m = (window as unknown as { __nolliMap?: NolliCaptureMap }).__nolliMap;
+      const p = m?.project?.([lng, lat]);
+      return p ? { x: p.x, y: p.y } : null;
+    },
+    { lng, lat },
+  );
+
 // ── Journey tuning ─────────────────────────────────────────────────────────
 // All durations are APP-ms (the units the final real-time clip shows). Under
 // `slowmo`, an app-ms wait takes appMs/slowmo wall-ms. Keep the sum of holds
@@ -69,16 +82,17 @@ const panFromAngle = (base: number, fanHalfDeg: number): { dx: number; dy: numbe
 // The journey is now recorded as two chunks (map journey, then board section),
 // so each chunk's continuous screencast is half as long.
 //
-// Tuning comes from demo.json (set at the top of captureDemo from config.tuning).
-// Kept module-level so the existing helpers read JOURNEY.<field> unchanged.
+// Tuning is code-only (DEFAULT_TUNING in demo-config.ts), set on JOURNEY at the
+// top of captureDemo. Kept module-level so the existing helpers read
+// JOURNEY.<field> unchanged.
 let JOURNEY: Tuning;
 
 // ── Recording primitives ───────────────────────────────────────────────────
 // startRecording / endRecording fold a CDP screencast into a Recorder; Journey
 // owns the per-chunk frame lists and exposes start/seam/end so the journey can
-// be captured as N sequential chunks. The seam is a single seam() call — move
-// it (via demo.json's seamAfterBeat) to relocate where one chunk ends and the
-// next begins. Each chunk becomes its own output file (demo-<n>.mp4).
+// be captured as sequential chunks. The seam is a single seam() call placed by
+// captureDemo after the board reveal. Each chunk becomes its own output file
+// (demo-<n>.mp4).
 
 type ScreencastFrame = { wall: number; data: string };
 type Recorder = { client: CDPSession; frames: ScreencastFrame[]; wall0: number };
@@ -98,8 +112,8 @@ async function startRecording(context: BrowserContext, page: Page): Promise<Reco
   await client.send("Page.startScreencast", {
     format: "jpeg",
     quality: JOURNEY.screencastQuality,
-    maxWidth: 1920,
-    maxHeight: 1080,
+    maxWidth: VIEWPORT.width,
+    maxHeight: VIEWPORT.height,
   });
   return { client, frames, wall0 };
 }
@@ -160,41 +174,32 @@ class Journey {
 }
 
 // ── In-page camera + gesture primitives ────────────────────────────────────
-// In-page camera primitive mirroring packages/map/src/map-flyto.ts.
+// In-page camera primitive mirroring packages/map/src/map-flyto.ts
+// (flyToArchCinematic), on the app's own transition constants.
 const flyTo = (page: Page, lat: number, lng: number, zoom: number = JOURNEY.flyZoom) =>
   page.evaluate(
-    ({ lat, lng, zoom }) => {
-      const m = (window as unknown as {
-        __nolliMap?: {
-          getZoom: () => number;
-          getBounds: () => { contains: (p: [number, number]) => boolean };
-          stop: () => void;
-          flyTo: (o: {
-            center: [number, number];
-            zoom: number;
-            duration: number;
-            curve: number;
-            speed: number;
-            essential: boolean;
-          }) => void;
-        };
-      }).__nolliMap;
+    ({ lat, lng, zoom, nearMs, farMs }) => {
+      const m = (window as unknown as { __nolliMap?: NolliCaptureMap }).__nolliMap;
       if (!m) return;
       const dest = Math.max(m.getZoom(), zoom);
       const delta = dest - m.getZoom();
       const contains = m.getBounds().contains([lng, lat]);
-      const duration = contains ? 600 + delta * 200 : 1800;
+      const duration = contains ? nearMs + delta * 200 : farMs;
       m.stop();
       m.flyTo({ center: [lng, lat], zoom: dest, duration, curve: 1.2, speed: 1.0, essential: true });
     },
-    { lat, lng, zoom },
+    {
+      lat,
+      lng,
+      zoom,
+      nearMs: MAP_TRANSITION_SHORT * 1000,
+      farMs: MAP_TRANSITION_LONG * 1000,
+    },
   );
 
 const cam = (page: Page) =>
   page.evaluate(() => {
-    const m = (window as unknown as {
-      __nolliMap?: { getZoom: () => number; getCenter: () => { lng: number; lat: number } };
-    }).__nolliMap;
+    const m = (window as unknown as { __nolliMap?: NolliCaptureMap }).__nolliMap;
     if (!m) return null;
     const c = m.getCenter();
     return { zoom: m.getZoom(), lng: c.lng, lat: c.lat };
@@ -202,7 +207,7 @@ const cam = (page: Page) =>
 
 const mapCenter = (page: Page) =>
   page.evaluate(() => {
-    const m = (window as unknown as { __nolliMap?: { getCenter: () => { lng: number; lat: number } } }).__nolliMap;
+    const m = (window as unknown as { __nolliMap?: NolliCaptureMap }).__nolliMap;
     const c = m?.getCenter();
     return c ? { lng: c.lng, lat: c.lat } : { lng: NaN, lat: NaN };
   });
@@ -212,9 +217,7 @@ const mapCenter = (page: Page) =>
 const panMap = (page: Page, dx: number, dy: number, dur: number) =>
   page.evaluate(
     ({ dx, dy, duration }) => {
-      const m = (window as unknown as {
-        __nolliMap?: { panBy: (off: [number, number], o: { duration: number }) => void };
-      }).__nolliMap;
+      const m = (window as unknown as { __nolliMap?: NolliCaptureMap }).__nolliMap;
       m?.panBy([dx, dy], { duration });
     },
     { dx, dy, duration: dur },
@@ -245,15 +248,15 @@ async function panMapAround(
       p = randomPan();
       intent = "random (pin unavailable)";
     } else {
-      const offX = pin.x - VIEWPORT_CX;
-      const offY = pin.y - VIEWPORT_CY;
+      const offX = pin.x - VIEWPORT.width / 2;
+      const offY = pin.y - VIEWPORT.height / 2;
       if (Math.hypot(offX, offY) < 8) {
         p = randomPan();
         intent = "random (pin centered)";
       } else if (i === 0) {
-        // Pan 1: glance OUT away from the pin — wide (±60°) fan so the outbound
+        // Pan 1: glance OUT away from the pin — wide fan so the outbound
         // direction varies run-to-run instead of mirroring the return axis.
-        p = panFromAngle(Math.atan2(-offY, -offX), 60);
+        p = panFromAngle(Math.atan2(-offY, -offX), JOURNEY.panOutFanHalf);
         intent = "OUT away from pin";
       } else {
         p = panFromAngle(Math.atan2(offY, offX), JOURNEY.panFanHalf); // toward pin
@@ -274,7 +277,7 @@ async function panMapAround(
     await panMap(page, p.dx, p.dy, p.dur);
     // followPan mirrors the cursor to the map's real per-frame pan offset (in-page
     // rAF) and resolves on moveend — i.e. it both syncs the cursor AND waits for
-    // the pan to finish, replacing waitForMoveEnd here.
+    // the pan to finish, replacing waitForMapMoveEnd here.
     await cursor.followPan();
     const after = await mapCenter(page);
     if (
@@ -297,8 +300,8 @@ async function panMapAround(
 // Asserts PER pan — varied directions can net ~zero
 // over the whole loop, so a net-displacement check would false-throw.
 async function panBoard(page: Page, cursor: Cursor, p: { dx: number; dy: number; dur: number }) {
-  const cx = 960;
-  const cy = 540;
+  const cx = VIEWPORT.width / 2;
+  const cy = VIEWPORT.height / 2;
   const polaroidPos = () =>
     page.evaluate(() => {
       const r = (document.querySelector('div[style*="rotate("]') as HTMLElement | null)?.getBoundingClientRect();
@@ -327,17 +330,17 @@ async function panBoard(page: Page, cursor: Cursor, p: { dx: number; dy: number;
 // while the mechanics — page setup, tile warm-up, nav internals, resample, mux
 // — live behind named functions.
 
-// Open the dark-mode capture page on the hero arch and assert the map bridge
-// exposed itself (?capture=1 gates MapCaptureBridge → window.__nolliMap, and
-// preserves the drawing buffer for the screencast).
-async function openCapturePage(browser: Browser, hero: BuildingRow) {
-  const context = await newDarkContext(browser, {
-    viewport: { width: 1920, height: 1080 },
+// Open the dark-mode capture page on the journey's first building and assert
+// the map bridge exposed itself (?capture=1 gates MapCaptureBridge →
+// window.__nolliMap, and preserves the drawing buffer for the screencast).
+async function openCapturePage(browser: Browser, start: BuildingRow) {
+  const context = await applyBrowserCaptureContext(browser, {
+    viewport: VIEWPORT,
     deviceScaleFactor: 1,
   });
   const page = await context.newPage();
-  await page.goto(`${BASE_URL}/arch/${hero.slug}?capture=1`);
-  await waitForStable(page);
+  await page.goto(`${BASE_URL}/arch/${start.slug}?capture=1`);
+  await waitForToastDisappear(page);
   const hasMap = await page.evaluate(
     () => !!(window as unknown as { __nolliMap?: unknown }).__nolliMap,
   );
@@ -352,25 +355,23 @@ async function openCapturePage(browser: Browser, hero: BuildingRow) {
 // Warm both flyTo destinations' zoom at their centers BEFORE slow-mo, so each
 // swoop snaps in instantly during capture. Jumps run at real time (setTimeout
 // isn't patched) and are invisible (screencast hasn't started). Leaves the
-// camera at the establishing zoom on the hero (the journey's start state).
-async function warmTiles(page: Page, hero: BuildingRow, far: BuildingRow) {
+// camera at the establishing zoom on the first building (the journey's start state).
+async function warmTiles(page: Page, start: BuildingRow, last: BuildingRow) {
   const jumpTo = (center: [number, number], zoom: number) =>
     page.evaluate(
       ({ center, zoom }) => {
-        (window as unknown as {
-          __nolliMap?: { jumpTo: (o: { center: [number, number]; zoom: number }) => void };
-        }).__nolliMap?.jumpTo({ center, zoom });
+        (window as unknown as { __nolliMap?: NolliCaptureMap }).__nolliMap?.jumpTo({ center, zoom });
       },
       { center, zoom },
     );
   for (const target of [
-    { c: [hero.longitude, hero.latitude] as [number, number], z: JOURNEY.diveZoom },
-    { c: [far.longitude, far.latitude] as [number, number], z: JOURNEY.flyZoom },
+    { c: [start.longitude, start.latitude] as [number, number], z: JOURNEY.diveZoom },
+    { c: [last.longitude, last.latitude] as [number, number], z: JOURNEY.flyZoom },
   ]) {
     await jumpTo(target.c, target.z);
     await waitForTilesLoaded(page, 6000);
   }
-  await jumpTo([hero.longitude, hero.latitude], JOURNEY.establishZoom);
+  await jumpTo([start.longitude, start.latitude], JOURNEY.establishZoom);
   await waitForTilesLoaded(page, 6000);
   console.log("  tile warm done");
 }
@@ -391,7 +392,7 @@ async function flipSlowmo(page: Page) {
 // and MapFlyNavigator flies. Target is the farthest same-architect building
 // (warmed off-camera above) — reached via the real nav handler, not a synthetic
 // flyTo, so this is exactly the inter-arch transition a user gets.
-async function navigateToArch(page: Page, far: BuildingRow, beat: (label: string) => void) {
+async function navigateToArch(page: Page, target: BuildingRow, beat: (label: string) => void) {
   const hasNav = await page.evaluate(
     () => !!(window as unknown as { __nolliNavigateArch?: unknown }).__nolliNavigateArch,
   );
@@ -399,16 +400,16 @@ async function navigateToArch(page: Page, far: BuildingRow, beat: (label: string
     throw new Error("window.__nolliNavigateArch not found — ArchNavCaptureBridge didn't run.");
   }
   const camBeforeNav = await cam(page);
-  beat(`nav trigger → ${far.slug} (from zoom ${camBeforeNav?.zoom} lng ${camBeforeNav?.lng.toFixed(3)})`);
+  beat(`nav trigger → ${target.slug} (from zoom ${camBeforeNav?.zoom} lng ${camBeforeNav?.lng.toFixed(3)})`);
   await page.evaluate(
     (slug) => {
       (window as unknown as { __nolliNavigateArch?: (s: string, fly?: boolean) => void }).__nolliNavigateArch?.(slug, true);
     },
-    far.slug,
+    target.slug,
   );
   // Fixed wait for the off-screen fly (MAP_TRANSITION_LONG = 1800 app-ms) to land
   // + a short settle, then straight into the #2 map pan. Replaces a variable
-  // waitForMoveEnd (which resolved unpredictably because `select` is async, so
+  // waitForMapMoveEnd (which resolved unpredictably because `select` is async, so
   // isMoving() was already false at the first poll) plus a dead hold.
   await appWait(page, JOURNEY.navLandMs);
   const camAfterNav = await cam(page);
@@ -438,7 +439,8 @@ function resampleTimeline(master: MasterFrame[]): string[] {
   return out;
 }
 
-// Write one chunk's resampled frames as a jpg sequence and mux to demo-<index>.mp4// (h264). Returns the absolute clip path.
+// Write one chunk's resampled frames as a jpg sequence and mux to
+// demo-<index>.mp4 (h264). Returns the absolute clip path.
 async function muxChunk(outDir: string, frames: string[], index: number): Promise<string> {
   const framesDir = join(outDir, `demo-frames-${index}`);
   rmSync(framesDir, { recursive: true, force: true });
@@ -464,27 +466,23 @@ async function muxChunk(outDir: string, frames: string[], index: number): Promis
   return clipAbs;
 }
 
-// Capture the home->board journey via slow-mo CDP screencast, resample each chunk
-// to a real-time 30fps clip, and screenshot the demo's landing frame. Writes
-// demo-1.mp4 + demo-2.mp4 + demo-end.png into out/<slug>/. Tuning + journey
-// targets + seamAfterBeat come from demo.json (loadDemoConfig). See project
-// memory for the slow-mo / WAAPI rationale.
+// Capture the home->board journey via slow-mo CDP screencast and resample each
+// chunk to a real-time 30fps clip. Writes demo-1.mp4 + demo-2.mp4 into
+// out/<slug>/. The journey (buildings to visit, in order) comes from demo.json
+// (loadDemoConfig); tuning is code-only. See project memory for the slow-mo /
+// WAAPI rationale.
 //
-// Recorded as N chunks (default 2: map journey, then board section). The seam
-// fires after beat `config.seamAfterBeat` — move it by editing demo.json.
+// Recorded as 2 chunks (map journey, then board section). The seam fires after
+// the board open + hold so chunk 1 ends on the polaroid bloom.
 async function captureDemo(
   slug: string,
-  manifest: Manifest,
-  hero: BuildingRow,
-  far: BuildingRow,
+  buildings: BuildingRow[],
   config: DemoConfig,
 ): Promise<void> {
   const outDir = resolve("out", slug);
   JOURNEY = config.tuning; // module-level tuning for helpers (appWait, pan helpers, etc.)
-
-  if (manifest.buildings.length < 2) {
-    throw new Error(`Journey needs >=2 buildings; ${slug} has ${manifest.buildings.length}.`);
-  }
+  const [start] = buildings;
+  const last = buildings[buildings.length - 1];
 
   const wallStart = Date.now();
   const beat = (label: string) =>
@@ -493,13 +491,13 @@ async function captureDemo(
   let journey!: Journey;
   const browser = await chromium.launch({ args: LAUNCH_ARGS });
   try {
-    const { context, page } = await openCapturePage(browser, hero);
-    await warmTiles(page, hero, far);
+    const { context, page } = await openCapturePage(browser, start);
+    await warmTiles(page, start, last);
     await flipSlowmo(page);
 
     const cursor = createCursor(page, {
       slowmo: JOURNEY.slowmo,
-      viewport: { width: 1920, height: 1080 },
+      viewport: VIEWPORT,
     });
 
     journey = new Journey(context, page, beat);
@@ -507,8 +505,10 @@ async function captureDemo(
     // Reveal the cursor at screen center as the journey begins.
     await cursor.appear();
 
-    // Beats in order. The chunk seam fires after beat `config.seamAfterBeat`
-    // (1-indexed). Move the cut by editing demo.json's seamAfterBeat.
+    // Beats in order: establish + look around on the first building, then the
+    // real arch→arch navigation to each subsequent building with a look-around
+    // pan on arrival, then the board section on the last one. The chunk seam
+    // fires right after the board open + hold.
     //
     // Cursor philosophy: STILL during camera beats (a frozen pointer over a
     // panning map is correct and reads as "watching"), then ONE decisive move +
@@ -520,30 +520,34 @@ async function captureDemo(
       dwellAppMs: JOURNEY.cursorDwellAppMs,
     };
     const beats: Array<() => Promise<void>> = [
-      // Beat 1: open mid-zoom on the hero, hold, then ease in closer.
+      // Beat 1: open mid-zoom on the first building, hold, then ease in closer.
       async () => {
         await appWait(page, JOURNEY.establishHold);
-        await flyTo(page, hero.latitude, hero.longitude, JOURNEY.diveZoom);
-        await waitForMoveEnd(page);
+        await flyTo(page, start.latitude, start.longitude, JOURNEY.diveZoom);
+        await waitForMapMoveEnd(page);
         // Cursor rests at center during the ease-in + hold.
         await appWait(page, JOURNEY.flyHold);
         beat("beat1 done (ease-in + hold)");
       },
       // Beat 2: drift the map a couple times (a human "look around" on #1).
       async () => {
-        await panMapAround(page, cursor, hero);
+        await panMapAround(page, cursor, start);
         beat("pan#1 done");
       },
-      // Beat 3: arch→arch navigation (the money shot).
-      async () => {
-        await navigateToArch(page, far, beat);
-      },
-      // Beat 4: drift the map again on arch #2 before entering its board.
-      async () => {
-        await panMapAround(page, cursor, far);
-        beat("pan#2 done");
-      },
-      // Beat 5: "Go to Pin Board" → map shrinks to inset, polaroids bloom. The
+    ];
+    // One navigation beat (the money shot) + one arrival pan per remaining
+    // building, in journey order.
+    for (const target of buildings.slice(1)) {
+      beats.push(async () => {
+        await navigateToArch(page, target, beat);
+      });
+      beats.push(async () => {
+        await panMapAround(page, cursor, target);
+        beat(`pan on ${target.slug} done`);
+      });
+    }
+    const boardBeat = beats.push(
+      // "Go to Pin Board" → map shrinks to inset, polaroids bloom. The
       // app's MapFlyNavigator recenters the inset on the building on board entry;
       // we do NOT flyTo ourselves — trust the app's recenter. boardOpenSettle lets
       // the bloom + recenter play out in WALL time (appMs / slowmo); raise it if
@@ -557,6 +561,8 @@ async function captureDemo(
         await appWait(page, JOURNEY.boardHold);
         beat("boardHold done");
       },
+    ) - 1;
+    beats.push(
       // Beat 6: open a photo (detail lightbox, cross-fade).
       async () => {
         const photo = page.locator('div[style*="rotate("] img:not([src*="pin.png"])').first();
@@ -592,17 +598,13 @@ async function captureDemo(
         beat("returned to map");
         await appWait(page, JOURNEY.mapReturnHold);
       },
-    ];
+    );
 
     for (let i = 0; i < beats.length; i++) {
       await beats[i]();
-      if (i + 1 === config.seamAfterBeat) await journey.seam();
+      if (i === boardBeat) await journey.seam();
     }
     await journey.end();
-    // Glide the cursor off-screen so the lock-frame still has no pointer in it.
-    await cursor.exit();
-    // Grab the final map view of arch #2 as the lock-frame still (demo-2 end).
-    await page.screenshot({ path: join(outDir, "demo-end.png") });
   } finally {
     await browser.close();
   }
@@ -610,7 +612,7 @@ async function captureDemo(
   const chunks = journey.chunkFrames();
   if (chunks.length < 2) {
     throw new Error(
-      `Demo capture produced ${chunks.length} chunk(s); expected >=2. Check demo.json \`seamAfterBeat\` (must be between 1 and the beat count, default 5). Got: ${config.seamAfterBeat}.`,
+      `Demo capture produced ${chunks.length} chunk(s); expected 2 (the seam fires after the board reveal).`,
     );
   }
   for (let i = 0; i < chunks.length; i++) {
@@ -625,34 +627,24 @@ async function captureDemo(
 
 export async function runDemo(slug: string) {
   const outDir = resolve("out", slug);
-  const manifestPath = join(outDir, "manifest.json");
-  if (!existsSync(manifestPath)) {
-    throw new Error(`Missing ${manifestPath}. Run \`pnpm seed ${slug}\` first.`);
-  }
-  const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as Manifest;
+  const manifest = readJsonOr<Manifest>(join(outDir, "manifest.json"), "Run `pnpm seed <slug>` first.");
 
   const config = loadDemoConfig(outDir);
-  const { hero: heroSlug, far: farSlug } = config.journey;
-  const hero = manifest.buildings.find((b) => b.slug === heroSlug);
-  const far = manifest.buildings.find((b) => b.slug === farSlug);
-  if (!hero || !far) {
+  const buildings = config.journey.map((s) =>
+    manifest.buildings.find((b) => b.slug === s),
+  );
+  const missing = config.journey.filter((_, i) => !buildings[i]);
+  if (missing.length) {
     throw new Error(
-      `demo.json journey (${heroSlug}→${farSlug}) not found in manifest buildings. ` +
+      `demo.json journey slugs not in manifest: ${missing.join(", ")}. ` +
         `Edit the "journey" in out/${slug}/demo.json or rerun \`pnpm seed ${slug}\`.`,
     );
   }
 
-  console.log(`assets:demo — ${slug} (journey: ${hero.slug} → ${far.slug}, seam after beat ${config.seamAfterBeat})`);
-  await captureDemo(slug, manifest, hero, far, config);
+  console.log(`assets:demo — ${slug} (journey: ${config.journey.join(" → ")})`);
+  await captureDemo(slug, buildings as BuildingRow[], config);
 }
 
-async function main() {
-  const slug = process.argv[2];
-  if (!slug) {
-    console.error("Usage: assets:demo <architect-slug>");
-    process.exit(1);
-  }
-  await runDemo(slug);
+if (process.argv[1] && resolve(process.argv[1]) === import.meta.filename) {
+  runCli("assets:demo", runDemo);
 }
-
-main().catch((e) => { console.error(e); process.exit(1); });

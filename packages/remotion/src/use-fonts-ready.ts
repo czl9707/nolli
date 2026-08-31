@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { continueRender, delayRender } from "remotion";
 
-/** Gate captures on the two reel fonts resolving — @fontsource CSS uses
+/** Gate captures on the two brand fonts resolving — @fontsource CSS uses
  *  font-display:swap, so a capture could beat the swap window and bake in
  *  the fallback.
  *
@@ -11,7 +11,7 @@ import { continueRender, delayRender } from "remotion";
  *  orphaned handle kills long renders at its timeout. */
 export function useFontsReady(): void {
   useEffect(() => {
-    const handle = delayRender("Loading reel fonts", { timeoutInMilliseconds: 60_000 });
+    const handle = delayRender("Loading brand fonts", { timeoutInMilliseconds: 60_000 });
     let cleared = false;
     const clear = () => {
       if (!cleared) {

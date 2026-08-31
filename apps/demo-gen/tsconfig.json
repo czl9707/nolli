@@ -6,5 +6,10 @@
     "baseUrl": ".",
     "paths": {}
   },
-  "include": ["src", "scripts", "test"]
+  "include": [
+    "src",
+    "scripts",
+    "test",
+    "remotion.config.ts"
+  ]
 }

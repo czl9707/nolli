@@ -1,4 +1,4 @@
-import { NO_ANIM } from "./SoftBlurIn";
+import { NO_ANIM } from "@nolli/remotion";
 import { CaptionLine } from "./BuildingCaption";
 import { REEL_TYPE } from "../lib/type";
 

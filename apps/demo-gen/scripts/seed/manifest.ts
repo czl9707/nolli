@@ -8,24 +8,23 @@ export type BuildingRow = {
   longitude: number;
 };
 
+// Buildings are year-ascending (from the DB query), so buildings[0] is the
+// architect's earliest work — the default the seeded journey opens on.
 export type Manifest = {
   architect: string;
   slug: string;
   count: number;
-  hero: string;
   buildings: BuildingRow[];
 };
 
 export function rowsToManifest(
   rows: BuildingRow[],
-  opts: { architect: string; slug: string; heroSlug?: string },
+  opts: { architect: string; slug: string },
 ): Manifest {
-  const hero = opts.heroSlug ?? rows[0]?.slug ?? "";
   return {
     architect: opts.architect,
     slug: opts.slug,
     count: rows.length,
-    hero,
     buildings: rows,
   };
 }

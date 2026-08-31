@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { AbsoluteFill, Easing, Img, interpolate, staticFile, useCurrentFrame } from "remotion";
-import { NO_ANIM, SoftBlurIn } from "./SoftBlurIn";
+import { NO_ANIM, SoftBlurIn } from "@nolli/remotion";
 import { REEL_TYPE } from "../lib/type";
 import { hookLead, heroImagePath, type ReelBuilding } from "../lib/config";
 import { CLAMP, HOOK_EXIT_FRAMES, HOOK_FRAMES, REEL_W, REEL_H } from "../lib/timeline";

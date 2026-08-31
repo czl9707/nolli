@@ -2,12 +2,8 @@ import { bundle } from "@remotion/bundler";
 import { renderMedia, selectComposition } from "@remotion/renderer";
 import { existsSync, mkdirSync, copyFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { runCli } from "./runCli";
+import { runCli, browserExecutable } from "@nolli/remotion/cli";
 import { outDir, dataDir, dataAllArchPath, allArchPath, reelConfigPath } from "./paths";
-
-const BROWSER =
-  process.env.REMOTION_BROWSER_EXECUTABLE ??
-  ["/usr/bin/google-chrome", "/usr/bin/chromium", "/usr/bin/chromium-browser"].find((p) => existsSync(p));
 
 function stageAssets(slug: string): void {
   const data = dataDir(slug);
@@ -24,7 +20,7 @@ function stageAssets(slug: string): void {
 }
 
 runCli("render", async (slug) => {
-  if (!BROWSER) throw new Error("No system Chrome/Chromium found. Set REMOTION_BROWSER_EXECUTABLE.");
+  const BROWSER = browserExecutable();
 
   stageAssets(slug);
 

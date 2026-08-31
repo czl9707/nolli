@@ -1,8 +1,11 @@
 import { chromium } from "playwright";
-import { mkdirSync, readFileSync, existsSync } from "node:fs";
+import { mkdirSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { newDarkContext, waitForStable, LAUNCH_ARGS } from "./capture-helpers";
-import type { Manifest } from "./manifest";
+import { runCli, readJsonOr } from "@nolli/remotion/cli";
+import { applyBrowserCaptureContext, waitForToastDisappear, LAUNCH_ARGS } from "./capture-helpers";
+import type { Manifest } from "../seed/manifest";
+
+const VIEWPORT = { width: 1920, height: 1080 };
 
 const BASE_URL = process.env.BASE_URL ?? "http://localhost:5173";
 
@@ -11,8 +14,7 @@ const BASE_URL = process.env.BASE_URL ?? "http://localhost:5173";
 // `pnpm seed <slug>`) is read for the building list.
 export async function runImages(slug: string) {
   const outDir = resolve("out", slug);
-  const manifestPath = resolve("out", slug, "manifest.json");
-  const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as Manifest;
+  const manifest = readJsonOr<Manifest>(resolve("out", slug, "manifest.json"), "Run `pnpm seed <slug>` first.");
   if (!manifest.buildings?.length)
     throw new Error(`No buildings in manifest for ${slug}. Run \`pnpm seed ${slug}\` first.`);
 
@@ -24,8 +26,8 @@ export async function runImages(slug: string) {
   const boardImgs: string[] = [];
   const failures: string[] = [];
   try {
-    const context = await newDarkContext(browser, {
-      viewport: { width: 1920, height: 1080 },
+    const context = await applyBrowserCaptureContext(browser, {
+      viewport: VIEWPORT,
       deviceScaleFactor: 1,
     });
     const page = await context.newPage();
@@ -34,7 +36,7 @@ export async function runImages(slug: string) {
       try {
         // Detail view (?capture=1 enables WebGL readback for screenshots).
         await page.goto(`${BASE_URL}/arch/${b.slug}?capture=1`);
-        await waitForStable(page);
+        await waitForToastDisappear(page);
         const detailRel = `images/${b.slug}-detail.png`;
         await page.screenshot({ path: join(outDir, detailRel), fullPage: false });
         detailImgs.push(detailRel);
@@ -47,7 +49,7 @@ export async function runImages(slug: string) {
         // calls preventDefault() on pointerdown, which can swallow Playwright's
         // click.
         await page.goto(`${BASE_URL}/arch/${b.slug}/board?capture=1`);
-        await waitForStable(page);
+        await waitForToastDisappear(page);
         const photo = page
           .locator('div[style*="rotate("] img:not([src*="pin.png"])')
           .first();
@@ -76,18 +78,9 @@ export async function runImages(slug: string) {
   );
 }
 
-async function main() {
-  const slug = process.argv[2];
-  if (!slug) {
-    console.error("Usage: assets:images <architect-slug>");
-    process.exit(1);
-  }
-  const manifestPath = resolve("out", slug, "manifest.json");
-  if (!existsSync(manifestPath)) {
-    throw new Error(`Missing ${manifestPath}. Run \`pnpm seed ${slug}\` first.`);
-  }
-  console.log(`assets:images — ${slug}`);
-  await runImages(slug);
+if (process.argv[1] && resolve(process.argv[1]) === import.meta.filename) {
+  runCli("assets:images", async (slug) => {
+    console.log(`assets:images — ${slug}`);
+    await runImages(slug);
+  });
 }
-
-main().catch((e) => { console.error(e); process.exit(1); });

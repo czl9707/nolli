@@ -1,6 +1,6 @@
 import { AbsoluteFill, interpolate, Sequence, Series, useCurrentFrame } from "remotion";
 import { useStaticJson } from "./lib/use-static-json";
-import { useFontsReady } from "./lib/use-fonts";
+import { useFontsReady } from "@nolli/remotion";
 import {
   SLOT_FRAMES, CTA_S, HOOK_FRAMES,
   ctaStart, secToFrames, BRAND_FADE_OUT_LEAD_S, CLAMP,

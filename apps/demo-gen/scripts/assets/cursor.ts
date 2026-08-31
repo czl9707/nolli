@@ -1,8 +1,4 @@
 import type { Locator, Page } from "playwright";
-// ghost-cursor's `path` is pure math (Bézier + Fitts's-law point density +
-// overshoot). We drive page.mouse ourselves so motion stays on the capture's
-// slow-mo app-time clock. (Its GhostCursor class + installMouseHelper are
-// Puppeteer-coupled and don't fit our Playwright/CDP-screencast pipeline.)
 import { path } from "ghost-cursor";
 
 // Local mirror of ghost-cursor's Vector/TimedVector/BoundingBox shapes — defined
@@ -24,11 +20,11 @@ export type CursorOptions = {
 
 export type CursorTiming = {
   /** app-ms for the approach to a click target. */
-  moveAppMs?: number;
+  moveAppMs: number;
   /** app-ms to hover on the target before pressing — the "arrive" beat. */
-  hoverAppMs?: number;
+  hoverAppMs: number;
   /** app-ms to settle after releasing. */
-  dwellAppMs?: number;
+  dwellAppMs: number;
 };
 
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
@@ -59,7 +55,7 @@ export function createCursor(page: Page, opts: CursorOptions) {
   // The path is SUBSAMPLED to <= MAX_PATH_POINTS: each page.mouse.move is a CDP
   // round-trip (~7ms wall), and ghost-cursor emits 20-50 points even for short
   // moves — stepping all of them inflates the real app-time far past `appMs`.
-  // ~12 points is well above per-frame density at capture rate, so it stays
+  // 8 points is well above per-frame density at capture rate, so it stays
   // smooth without the CDP tax.
   async function runPath(pts: TimedVec[], appMs: number, end: Vec): Promise<Vec> {
     if (pts.length === 0) return end;
@@ -115,20 +111,14 @@ export function createCursor(page: Page, opts: CursorOptions) {
     return box ? centerOf(box) : { x: viewport.width / 2, y: viewport.height / 2 };
   }
 
-  async function pointAt(target: CursorTarget, t: CursorTiming = {}): Promise<Vec> {
-    return moveTo(await resolve(target), t.moveAppMs ?? 260);
-  }
-
   // Approach → HOVER (the "I'm here" beat the viewer needs to read the click) →
   // press → release. The hover is the important part: without it the cursor
   // seems to barely graze the target before the action fires.
-  async function click(target: CursorTarget, t: CursorTiming = {}): Promise<void> {
-    const hover = t.hoverAppMs ?? 220;
-    const dwell = t.dwellAppMs ?? 110;
-    const land = await pointAt(target, t);
-    await page.waitForTimeout(wall(hover));
+  async function click(target: CursorTarget, t: CursorTiming): Promise<void> {
+    const land = await moveTo(await resolve(target), t.moveAppMs);
+    await page.waitForTimeout(wall(t.hoverAppMs));
     await page.mouse.click(land.x, land.y);
-    await page.waitForTimeout(wall(dwell));
+    await page.waitForTimeout(wall(t.dwellAppMs));
   }
 
   // Button-held move (one segment of a drag). Caller owns down()/up() so it can
@@ -187,20 +177,7 @@ export function createCursor(page: Page, opts: CursorOptions) {
     cur = c;
   }
 
-  // Hide the cursor before the final still so demo-end.png has no pointer. The
-  // mouse itself can't leave the viewport (CDP clamps pointer coords to it), so
-  // we glide to the nearest edge and fade the overlay element out directly.
-  async function exit(appMs = 450): Promise<void> {
-    const edge = { x: clamp(cur.x, 0, viewport.width), y: clamp(cur.y, 0, viewport.height) };
-    const target = { x: edge.x < viewport.width / 2 ? 0 : viewport.width, y: edge.y };
-    await moveTo(target, appMs);
-    await page.evaluate(() => {
-      const el = document.getElementById("__nolli_cursor");
-      if (el) el.style.opacity = "0";
-    });
-  }
-
-  return { moveTo, pointAt, click, drag, followPan, reach, appear, exit, location: () => cur };
+  return { moveTo, click, drag, followPan, reach, appear };
 }
 
 export type Cursor = ReturnType<typeof createCursor>;

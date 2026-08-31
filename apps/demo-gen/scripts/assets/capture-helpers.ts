@@ -6,12 +6,13 @@ export const LAUNCH_ARGS = [
   "--use-gl=angle",
   "--use-angle=swiftshader-webgl",
   "--force-color-profile=srgb",
+  // The app's DB host (db.nolli-map.com) CORS-allowlists localhost:5173 only;
+  // when the app runs on another port (5173 taken by another dev server), the
+  // DB fetch would be blocked and the app would boot to /error with no map.
+  // This browser is a throwaway capture instance, so relaxing CORS is safe.
+  "--disable-web-security",
 ];
 
-// Force the app into dark mode. The theme store reads localStorage('theme') at
-// init; setting it before first paint guarantees resolvedTheme='dark' regardless
-// of any persisted preference. colorScheme:'dark' also makes the system fallback
-// agree.
 export const DARK_INIT = `
   try { localStorage.setItem('theme', 'dark'); } catch (e) {}
 `;
@@ -128,7 +129,7 @@ export const CLOCK_INIT = `
 })();
 `;
 
-export async function newDarkContext(
+export async function applyBrowserCaptureContext(
   browser: Browser,
   extra: BrowserContextOptions = {},
 ) {
@@ -140,7 +141,7 @@ export async function newDarkContext(
   return context;
 }
 
-export async function waitForStable(page: Page) {
+export async function waitForToastDisappear(page: Page) {
   await page.waitForLoadState("networkidle");
   await page.evaluate(() => (document as Document).fonts.ready);
   // Wait for the map markers to actually render (architecture pins are
@@ -161,17 +162,8 @@ export async function waitForStable(page: Page) {
 type CaptureMap = { isMoving: () => boolean };
 
 // Wait for the in-flight camera move (`easeTo`/`panBy`, issued via
-// `window.__nolliMap` under `?capture=1`) to reach moveend. `page.evaluate`
-// returns the instant `easeTo` is *called* — not when the animation finishes —
-// so the next move MUST await this, otherwise `panBy` retargets mid-flight and
-// the sequence collapses. Resolves instantly if `__nolliMap` is absent (nothing
-// to wait for) so a lost handle never burns the whole timeout, and silently on
-// timeout so a stuck move never aborts the run.
-//
-// NOTE: Playwright's `waitForFunction` takes `(fn, arg, options)`; the options
-// object MUST be the 3rd arg. Passing `{timeout}` as the 2nd silently makes it
-// the predicate arg and falls back to the 30s default.
-export async function waitForMoveEnd(page: Page, timeoutMs = 6000) {
+// `window.__nolliMap` under `?capture=1`) to reach moveend.
+export async function waitForMapMoveEnd(page: Page, timeoutMs = 6000) {
   await page
     .waitForFunction(
       () => {
@@ -184,12 +176,7 @@ export async function waitForMoveEnd(page: Page, timeoutMs = 6000) {
     .catch(() => {});
 }
 
-// Node-side poll (real wall-time) for MapLibre tile-readiness. Used during the
-// off-camera warm-up before slow-mo is flipped. Returns whether the map reported
-// all tiles loaded (false = timed out). NOTE: keep page.evaluate predicates as
-// simple arrow functions — tsx decorates nested/async in-page functions with a
-// `__name` helper that is undefined once Playwright serializes the function to
-// the page, throwing "ReferenceError: __name is not defined".
+// Node-side poll (real wall-time) for MapLibre tile-readiness.
 export async function waitForTilesLoaded(
   page: Page,
   timeoutMs = 6000,

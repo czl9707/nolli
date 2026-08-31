@@ -1,4 +1,4 @@
-import { SoftBlurIn, type Phase } from "./SoftBlurIn";
+import { SoftBlurIn, type Phase } from "@nolli/remotion";
 import { SLOT_FRAMES } from "../lib/timeline";
 import { REEL_TYPE, type TypeRole } from "../lib/type";
 import type { ReelBuilding } from "../lib/config";

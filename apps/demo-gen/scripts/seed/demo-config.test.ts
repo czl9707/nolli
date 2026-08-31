@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { loadDemoConfig, DEFAULT_TUNING, SEAM_AFTER_BEAT_DEFAULT } from "./demo-config";
+import { loadDemoConfig, DEFAULT_TUNING } from "./demo-config";
 
 describe("loadDemoConfig", () => {
   let dir: string;
@@ -13,36 +13,27 @@ describe("loadDemoConfig", () => {
     expect(() => loadDemoConfig(dir)).toThrow(/pnpm seed/);
   });
 
-  it("reads journey + seamAfterBeat + tuning", () => {
-    writeFileSync(
-      join(dir, "demo.json"),
-      JSON.stringify({ journey: { hero: "a", far: "b" }, seamAfterBeat: 6 }),
-    );
+  it("reads journey + tuning", () => {
+    writeFileSync(join(dir, "demo.json"), JSON.stringify({ journey: ["a", "b"] }));
     const cfg = loadDemoConfig(dir);
-    expect(cfg.journey).toEqual({ hero: "a", far: "b" });
-    expect(cfg.seamAfterBeat).toBe(6);
-    expect(cfg.tuning.slowmo).toBe(DEFAULT_TUNING.slowmo);
-  });
-
-  it("fills seamAfterBeat default + tuning defaults for missing fields", () => {
-    writeFileSync(join(dir, "demo.json"), JSON.stringify({ journey: { hero: "a", far: "b" } }));
-    const cfg = loadDemoConfig(dir);
-    expect(cfg.seamAfterBeat).toBe(SEAM_AFTER_BEAT_DEFAULT);
+    expect(cfg.journey).toEqual(["a", "b"]);
     expect(cfg.tuning).toEqual(DEFAULT_TUNING);
   });
 
   it("ignores a tuning block in the file (tuning is code-only)", () => {
     writeFileSync(
       join(dir, "demo.json"),
-      JSON.stringify({ journey: { hero: "a", far: "b" }, tuning: { slowmo: 0.5 } }),
+      JSON.stringify({ journey: ["a", "b"], tuning: { slowmo: 0.5 } }),
     );
     const cfg = loadDemoConfig(dir);
     expect(cfg.tuning).toEqual(DEFAULT_TUNING);
     expect(cfg.tuning.slowmo).toBe(DEFAULT_TUNING.slowmo);
   });
 
-  it("throws when journey is missing", () => {
-    writeFileSync(join(dir, "demo.json"), JSON.stringify({ seamAfterBeat: 5 }));
+  it("throws when journey is missing or shorter than 2", () => {
+    writeFileSync(join(dir, "demo.json"), JSON.stringify({}));
+    expect(() => loadDemoConfig(dir)).toThrow(/journey/);
+    writeFileSync(join(dir, "demo.json"), JSON.stringify({ journey: ["a"] }));
     expect(() => loadDemoConfig(dir)).toThrow(/journey/);
   });
 });

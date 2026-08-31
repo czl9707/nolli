@@ -1,7 +1,7 @@
 import { AbsoluteFill, Img, interpolate, staticFile, useCurrentFrame } from "remotion";
 import { secToFrames, CLAMP, CTA_LINE_S } from "../lib/timeline";
 import { REEL_TYPE } from "../lib/type";
-import { NO_ANIM, SoftBlurIn } from "./SoftBlurIn";
+import { NO_ANIM, SoftBlurIn } from "@nolli/remotion";
 
 const LINE_END = secToFrames(CTA_LINE_S);
 const EXIT_F = 8;

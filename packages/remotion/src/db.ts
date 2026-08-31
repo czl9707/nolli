@@ -1,8 +1,11 @@
+// Node-only: download + query the read-only app DB snapshot. Imported via the
+// "@nolli/remotion/db" subpath from the capture scripts — never re-exported
+// from the package barrel, so Remotion's bundler (which starts at src/index.ts)
+// never pulls better-sqlite3 into a browser bundle.
 import Database from "better-sqlite3";
 import { existsSync, mkdirSync, createWriteStream, rename, unlink, rmSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import type { ReelBuilding } from "../src/lib/config";
 
 const DB_URL = "https://db.nolli-map.com/latest.db";
 const CACHE_DIR = process.env.NOLLI_DB_DIR ?? join(homedir(), ".nolli");
@@ -17,6 +20,8 @@ export async function ensureDb(fresh = false): Promise<string> {
   return CACHE_PATH;
 }
 
+// Download to a temp file and rename into place, so a reader never opens a
+// partially-written cache.
 async function downloadDb(dest: string): Promise<void> {
   const tmp = `${dest}.tmp-${process.pid}`;
   try {
@@ -33,9 +38,7 @@ async function downloadDb(dest: string): Promise<void> {
       rename(tmp, dest, (err) => (err ? reject(err) : resolve())),
     );
   } catch (err) {
-    await new Promise<void>((resolve) =>
-      unlink(tmp, () => resolve()),
-    );
+    await new Promise<void>((resolve) => unlink(tmp, () => resolve()));
     throw err;
   }
 }
@@ -49,6 +52,10 @@ function withDb<T>(dbPath: string, fn: (db: Database.Database) => T): T {
   }
 }
 
+// Resolve the architect's DB display name from a lowercase CLI slug.
+// The architects table has no slug column, so we match lower(name) against
+// the slug with hyphens turned back into spaces ("sanaa" -> "SANAA",
+// "tadao-ando" -> "Tadao Ando").
 export function resolveArchitectName(dbPath: string, slug: string): string {
   const key = slug.replace(/-/g, " ").toLowerCase();
   const row = withDb(dbPath, (db) =>
@@ -72,7 +79,9 @@ export function queryAllArchPins(dbPath: string): ArchPinRow[] {
   );
 }
 
-type DbRow = {
+/** One architect's buildings as raw shared columns — apps map to their own
+ *  row shapes. Ordered by year ascending. */
+export type ArchRow = {
   slug: string;
   name: string;
   year: number;
@@ -83,8 +92,8 @@ type DbRow = {
   cover: string | null;
 };
 
-export function queryArchitectBuildings(dbPath: string, architectName: string): ReelBuilding[] {
-  const rows = withDb(dbPath, (db) =>
+export function queryArchitectBuildings(dbPath: string, architectName: string): ArchRow[] {
+  return withDb(dbPath, (db) =>
     db
       .prepare(
         `
@@ -100,15 +109,6 @@ export function queryArchitectBuildings(dbPath: string, architectName: string): 
       ORDER BY a.year ASC
     `,
       )
-      .all(architectName) as DbRow[],
+      .all(architectName) as ArchRow[],
   );
-  return rows.map((r) => ({
-    slug: r.slug,
-    name: r.name,
-    year: r.year,
-    city: r.city ?? "—",
-    countryCode: r.cc ?? "",
-    coordinates: { lng: r.lng, lat: r.lat },
-    coverImage: r.cover ?? "",
-  }));
 }

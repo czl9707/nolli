@@ -2,7 +2,7 @@ import { mkdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import sharp from "sharp";
 import type { ReelBuilding } from "../src/lib/config";
-import { runCli } from "./runCli";
+import { runCli } from "@nolli/remotion/cli";
 import { dataDir } from "./paths";
 import { loadReelConfig } from "./staging";
 
