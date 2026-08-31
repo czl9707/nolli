@@ -17,7 +17,7 @@ function HeroIndexTransition({ data, indexPane }: { data: LandingData; indexPane
   const local = useSceneScroll()
   const direction = useRef<"none" | "forward" | "back">("none")
   const cameras = useMemo(() => {
-    const kept = data.indexPhotos.filter((p) => !HERO_EXCLUDE.has(p.slug))
+    const kept = data.heroPicks.filter((p) => !HERO_EXCLUDE.has(p.slug))
     const pts = kept.map((p) => p.coordinates)
     return {
       to: fitCamera(pts, { width: indexPane.width, height: indexPane.height }, { x: 100, top: 100, bottom: 240 }),

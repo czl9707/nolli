@@ -49,9 +49,7 @@ function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect 
 
   // Paris comes free with the landing data; the other cities preload once
   const dataSource = useDbStore((s) => s.dataSource)
-  const [byCity, setByCity] = useState<Record<string, ArchSummary[]>>(() => ({
-    Paris: data.cluster,
-  }))
+  const [byCity, setByCity] = useState<Record<string, ArchSummary[]>>(() => ({}))
   useEffect(() => {
     if (!dataSource) return
     let cancelled = false
@@ -79,7 +77,7 @@ function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect 
     const out: Record<string, ArchSummary[]> = {}
     for (const name of CITIES) {
       if (name === "Paris") {
-        out.Paris = data.indexPhotos
+        out.Paris = data.heroPicks
         continue
       }
       const items = byCity[name]
@@ -87,10 +85,10 @@ function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect 
       out[name] = pickIndexPhotos(items, items[0].coordinates, PICKS_PER_CITY)
     }
     return out
-  }, [byCity, data.indexPhotos])
+  }, [byCity, data.heroPicks])
 
   const [selected, setSelected] = useState<string>("Paris")
-  const picks = picksByCity[selected] ?? data.indexPhotos
+  const picks = picksByCity[selected] ?? data.heroPicks
 
   const cameraFor = useCallback(
     (cityPicks: ArchSummary[]) =>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { cityIdByName, computeStats, pickIndexPhotos } from "./shape"
+import { cityIdByName, pickIndexPhotos } from "./shape"
 import type { ArchSummary } from "@nolli/data"
 
 const s = (id: number, over: Partial<ArchSummary> = {}): ArchSummary => ({
@@ -11,15 +11,6 @@ const s = (id: number, over: Partial<ArchSummary> = {}): ArchSummary => ({
   coordinates: { lng: id * 0.001, lat: 48.86 },
   cover: { image: "", width: 1, height: 1 },
   ...over,
-})
-
-describe("computeStats", () => {
-  it("counts architectures and distinct architects", () => {
-    expect(computeStats([s(1, { architect: "x" }), s(2, { architect: "x" }), s(3)])).toEqual({
-      architectures: 3,
-      architects: 2,
-    })
-  })
 })
 
 describe("cityIdByName", () => {

@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react"
-import { useDbStore, type Arch, type ArchSummary } from "@nolli/data"
+import { useDbStore, type ArchSummary } from "@nolli/data"
 import { CLUSTER_CITY, HERO_SLUG } from "./constants"
-import { cityIdByName, computeStats, pickIndexPhotos } from "./shape"
+import { cityIdByName, pickIndexPhotos } from "./shape"
 
 export type LandingData = {
-  summaries: ArchSummary[]
-  cluster: ArchSummary[]
-  indexPhotos: ArchSummary[]
-  hero: Arch
-  stats: { architectures: number; architects: number }
+  /** every architecture, passed to the spine's shared map */
+  mapSummaries: ArchSummary[]
+  /** Paris picks the hero reveal shows — the index reuses them as its Paris set */
+  heroPicks: ArchSummary[]
 }
 
 export function useLandingData() {
@@ -30,13 +29,10 @@ export function useLandingData() {
         const hero = await dataSource.getArchBySlug(HERO_SLUG)
         if (!hero) throw new Error(`hero architecture "${HERO_SLUG}" not found`)
         if (cancelled) return
-        const indexPhotos = pickIndexPhotos(cluster, hero.coordinates, 10)
+        const heroPicks = pickIndexPhotos(cluster, hero.coordinates, 10)
         setData({
-          summaries,
-          cluster,
-          indexPhotos,
-          hero,
-          stats: computeStats(summaries),
+          mapSummaries: summaries,
+          heroPicks,
         })
       } catch (e) {
         if (!cancelled) setErr(e as Error)

@@ -36,7 +36,7 @@ export const heroHold = (data: LandingData): HoldScene => ({
 
 function HeroLedge({ data }: { data: LandingData }) {
   const map = useSpineMap()
-  const picks = data.indexPhotos
+  const picks = data.heroPicks
   const { sx, sy } = useCursorSprings()
   const { nearest, active } = usePlatePicks(sx, sy, picks, map)
   // the reveal roams only the top-left pane

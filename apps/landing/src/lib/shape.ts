@@ -1,12 +1,5 @@
 import type { ArchSummary, FilterOptions } from "@nolli/data"
 
-export function computeStats(summaries: ArchSummary[]) {
-  return {
-    architectures: summaries.length,
-    architects: new Set(summaries.map((s) => s.architect)).size,
-  }
-}
-
 export function cityIdByName(options: FilterOptions, name: string): number | null {
   const hit = options.cities.find((c) => c.name.toLowerCase() === name.toLowerCase())
   return hit ? hit.id : null
