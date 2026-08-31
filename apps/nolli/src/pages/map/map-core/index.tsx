@@ -8,7 +8,7 @@ import {
   MarkerContent,
   useMap,
 } from "@nolli/map"
-import { TRANSITION_SHORT } from "@nolli/ui"
+import { TRANSITION_SHORT, useIsMobile } from "@nolli/ui"
 import { useArchDetailStore } from "@/stores/arch-detail"
 import { useLayout } from "@/hooks/use-layout"
 import { useDbStore } from "@/stores/db"
@@ -18,7 +18,6 @@ import { useArchNavigate } from "@/hooks/use-arch-navigate"
 import { useUserLocation } from "./use-user-location"
 import userLocationStyles from "./user-location.module.css"
 import controlsStyles from "./map-controls.module.css"
-import { useIsMobile } from "@/hooks/use-is-mobile"
 
 /**
  * Flies the map to the selected architecture. Rendered as a child of <ArchMap>

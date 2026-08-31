@@ -16,9 +16,8 @@ import {
 } from "framer-motion"
 import type { MapRef } from "@nolli/map"
 import type { ArchSummary } from "@nolli/data"
-import { Caption, Note } from "@nolli/ui"
+import { Caption, Note, useIsMobile } from "@nolli/ui"
 import { useOverlayPortal } from "@/spine/spine"
-import { useIsMobile } from "@/lib/use-is-mobile"
 import markerStyles from "./index.markers.module.css"
 import styles from "./hero-reveal.module.css"
 

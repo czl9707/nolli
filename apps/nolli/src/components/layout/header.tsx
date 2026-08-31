@@ -1,9 +1,8 @@
 import { ThemeToggle } from "@/components/layout/theme-toggle"
 import { useSidebarStore } from "@/stores/sidebar"
-import { Button, H5 } from "@nolli/ui"
+import { Button, H5, useIsMobile } from "@nolli/ui"
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react"
 import { Link } from "react-router"
-import { useIsMobile } from "@/hooks/use-is-mobile"
 import { useLayout } from "@/hooks/use-layout"
 import styles from "./header.module.css"
 

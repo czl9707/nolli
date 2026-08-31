@@ -10,7 +10,7 @@ import {
 import { Dialog as RadixDialog } from "radix-ui"
 import { useSidebarStore } from "@/stores/sidebar"
 import { useAuthStore } from "@/stores/auth"
-import { useIsMobile } from "@/hooks/use-is-mobile"
+import { useIsMobile } from "@nolli/ui"
 import { useLayout } from "@/hooks/use-layout"
 import { motion, AnimatePresence } from "framer-motion"
 import { TRANSITION_INSTANT } from "@nolli/ui"
