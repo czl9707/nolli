@@ -43,15 +43,21 @@ body {
   letter-spacing: 0.04em;
 }
 
-/* Boot cover: opaque ink block in the map's own background colour, carrying
-   the hero headline. It paints before any data arrives and fades out once
-   the map has settled, so boot reads as the hero arriving, not a loader. */
-.boot-cover {
-  position: fixed;
-  inset: 0;
-  z-index: 30;
-  color: rgb(var(--color-primary-background));
-  pointer-events: none;
+/* Spine boot: the scenes sit at opacity 0 until the map has settled, then
+   fade in together — the hero arriving IS the loading animation. */
+.spine-boot {
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+}
+
+.spine-boot--on {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spine-boot {
+    transition: none;
+  }
 }
 
 .boot-msg--err {

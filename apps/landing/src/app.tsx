@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { motion, useReducedMotion } from "framer-motion"
 import { Body2 } from "@nolli/ui"
-import { MAP_COLORS } from "@nolli/map"
 import { useLandingData, type LandingData } from "@/lib/landing-data"
 import { HERO_CAMERA } from "@/lib/constants"
 import { Spine } from "@/spine/spine"
@@ -9,7 +7,6 @@ import type { PxRect, SpineScene } from "@/spine/timeline"
 import { heroHold } from "@/scenes/hero-ledge"
 import { heroIndexTransition } from "@/scenes/hero-index-transition"
 import { indexHold } from "@/scenes/index-ledge"
-import { HeroHeadline } from "@/scenes/hero.chrome"
 import { ScrollThumb } from "@/components/scroll-thumb"
 
 const INDEX_SHAPE = "[data-spine-shape='index']"
@@ -62,8 +59,18 @@ export function App() {
   const { status, data, error } = useLandingData()
   const scenes = useSpineScenes(data)
   const [revealed, setRevealed] = useState(false)
-  const [coverGone, setCoverGone] = useState(false)
   const onMapIdle = useCallback(() => setRevealed(true), [])
+
+  // hold the scroll spine still until the map can be seen
+  useEffect(() => {
+    if (revealed) return
+    const body = document.body
+    const prev = body.style.overflow
+    body.style.overflow = "hidden"
+    return () => {
+      body.style.overflow = prev
+    }
+  }, [revealed])
 
   if (status === "error") {
     return (
@@ -79,37 +86,10 @@ export function App() {
     <main>
       <ScrollThumb />
       {data && scenes && (
-        <Spine scenes={scenes} summaries={data.summaries} camera={HERO_CAMERA} onMapIdle={onMapIdle} />
+        <div className={revealed ? "spine-boot spine-boot--on" : "spine-boot"}>
+          <Spine scenes={scenes} summaries={data.summaries} camera={HERO_CAMERA} onMapIdle={onMapIdle} />
+        </div>
       )}
-      {!coverGone && <BootCover revealed={revealed} onGone={() => setCoverGone(true)} />}
     </main>
-  )
-}
-
-/** Ink cover over the not-yet-settled map. Same background colour as the map
- * style and the same headline as the hero chrome, so its fade-out reads as
- * the hero arriving rather than a loader finishing. */
-function BootCover({ revealed, onGone }: { revealed: boolean; onGone: () => void }) {
-  const reduced = useReducedMotion()
-  // hold the scroll spine still until the map can be seen
-  useEffect(() => {
-    const body = document.body
-    const prev = body.style.overflow
-    body.style.overflow = "hidden"
-    return () => {
-      body.style.overflow = prev
-    }
-  }, [])
-  return (
-    <motion.div
-      className="boot-cover"
-      style={{ background: MAP_COLORS.dark.bg }}
-      initial={{ opacity: 1 }}
-      animate={{ opacity: revealed ? 0 : 1 }}
-      transition={{ duration: reduced ? 0 : 0.5, ease: "easeOut" }}
-      onAnimationComplete={() => revealed && onGone()}
-    >
-      <HeroHeadline />
-    </motion.div>
   )
 }
