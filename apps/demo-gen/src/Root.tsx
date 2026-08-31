@@ -1,6 +1,6 @@
 import { Composition } from "remotion";
 import { DemoComposition } from "./DemoComposition";
-import { FPS } from "./lib/constants";
+import { FPS, VIDEO } from "./lib/constants";
 import { totalDuration, DEFAULT_FONT_VARIANT, type VideoConfig } from "./lib/scenes";
 
 // Placeholder config so Remotion Studio renders without --props. Real renders
@@ -14,8 +14,8 @@ export const RemotionRoot = () => {
       component={DemoComposition}
       durationInFrames={300}
       fps={FPS}
-      width={1920}
-      height={1080}
+      width={VIDEO.width}
+      height={VIDEO.height}
       defaultProps={{ config: placeholderConfig }}
       calculateMetadata={({ props }) => ({
         durationInFrames: Math.max(1, totalDuration(props.config.scenes)),

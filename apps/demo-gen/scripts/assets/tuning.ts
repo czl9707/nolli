@@ -1,5 +1,6 @@
 import type { Page } from "playwright";
 import type { Tuning } from "../seed/demo-config";
+import { VIDEO } from "../../src/lib/constants";
 
 // ── Journey tuning ─────────────────────────────────────────────────────────
 // All durations are APP-ms (the units the final real-time clip shows). Under
@@ -16,7 +17,8 @@ export const setTuning = (t: Tuning): void => {
   JOURNEY = t;
 };
 
-export const VIEWPORT = { width: 1920, height: 1080 };
+// The capture viewport IS the output video frame.
+export const VIEWPORT = VIDEO;
 
 // app-ms wait under the journey's slow-mo factor.
 export const appWait = (page: Page, appMs: number) =>

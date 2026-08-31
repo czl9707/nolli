@@ -13,7 +13,6 @@ export type BuildingRow = {
 export type Manifest = {
   architect: string;
   slug: string;
-  count: number;
   buildings: BuildingRow[];
 };
 
@@ -24,7 +23,6 @@ export function rowsToManifest(
   return {
     architect: opts.architect,
     slug: opts.slug,
-    count: rows.length,
     buildings: rows,
   };
 }

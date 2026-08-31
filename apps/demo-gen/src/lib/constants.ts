@@ -1,4 +1,8 @@
 export const FPS = 30;
+/** Output video dimensions — the capture viewport matches (scripts/assets/tuning.ts). */
+export const VIDEO = { width: 1920, height: 1080 } as const;
+/** Theme background token (stamped dark in DemoComposition). */
+export const BG = "rgb(var(--color-primary-background))";
 /** Frames per still image scene (0.6s @ 30fps + margin). */
 export const STILL_FRAMES = 18;
 

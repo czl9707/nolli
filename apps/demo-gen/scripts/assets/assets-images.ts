@@ -2,12 +2,16 @@ import { chromium } from "playwright";
 import { mkdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { runCli, readJsonOr } from "@nolli/remotion/cli";
-import { applyBrowserCaptureContext, waitForToastDisappear, LAUNCH_ARGS } from "./capture-helpers";
+import {
+  BASE_URL,
+  BOARD_PHOTO,
+  LIGHTBOX_FRAME,
+  LAUNCH_ARGS,
+  applyBrowserCaptureContext,
+  waitForToastDisappear,
+} from "./capture-helpers";
 import type { Manifest } from "../seed/manifest";
-
-const VIEWPORT = { width: 1920, height: 1080 };
-
-const BASE_URL = process.env.BASE_URL ?? "http://localhost:5173";
+import { VIEWPORT } from "./tuning";
 
 // Capture BOTH types (detail + board lightbox) for every building of one slug
 // into out/<slug>/images/. The base manifest (out/<slug>/manifest.json from
@@ -41,20 +45,15 @@ export async function generateImages(slug: string) {
         await page.screenshot({ path: join(outDir, detailRel), fullPage: false });
         detailImgs.push(detailRel);
 
-        // Board view with the cover photo opened in the lightbox. Hash-proof
-        // selectors carried over from the legacy capture.ts: polaroid wrappers
-        // carry inline `transform: rotate(...)` (NOT rotateX/rotateZ like map
-        // pins), and every BoardItem renders a pushpin <img src="/images/pin.png">
-        // which must be excluded. A force-click is required: the board viewport
-        // calls preventDefault() on pointerdown, which can swallow Playwright's
-        // click.
+        // Board view with the cover photo opened in the lightbox. Selectors
+        // (BOARD_PHOTO / LIGHTBOX_FRAME) live in capture-helpers. A force-click
+        // is required: the board viewport calls preventDefault() on
+        // pointerdown, which can swallow Playwright's click.
         await page.goto(`${BASE_URL}/arch/${b.slug}/board?capture=1`);
         await waitForToastDisappear(page);
-        const photo = page
-          .locator('div[style*="rotate("] img:not([src*="pin.png"])')
-          .first();
+        const photo = page.locator(BOARD_PHOTO).first();
         await photo.click({ force: true });
-        await page.locator('div[style*="aspect-ratio"]').waitFor({ state: "visible" });
+        await page.locator(LIGHTBOX_FRAME).waitFor({ state: "visible" });
         await page.waitForTimeout(600); // BoardModal fade-in
         const boardRel = `images/${b.slug}-board.png`;
         await page.screenshot({ path: join(outDir, boardRel), fullPage: false });

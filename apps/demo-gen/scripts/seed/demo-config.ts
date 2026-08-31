@@ -1,5 +1,6 @@
 import { join } from "node:path";
 import { readJsonOr } from "@nolli/remotion/cli";
+import { MAP_TRANSITION_LONG } from "@nolli/ui/constants";
 import { FPS } from "../../src/lib/constants";
 
 // Building slugs the demo visits, in order: open on the first, real-navigate
@@ -15,7 +16,10 @@ export const DEFAULT_TUNING = {
   visitZoom: 14,
   establishHold: 1000,
   flyHold: 400,
-  navLandMs: 2100,
+  // The nav flyTo itself runs at @nolli/ui's MAP_TRANSITION_LONG (app-ms) +
+  // a short settle before the arrival pan — derived so it tracks the constant
+  // instead of freezing it (page-ops' flyTo already reads the live value).
+  navLandMs: MAP_TRANSITION_LONG * 1000 + 300,
   mapPanCount: 2,
   // boardOpenSettle absorbs the "Go to Pin Board" morph-in (framer-motion) +
   // the inset camera flyTo (a real setTimeout, unscaled by slow-mo, so it lands

@@ -1,6 +1,7 @@
 import { AbsoluteFill, Series } from "remotion";
 import { useFontsReady } from "@nolli/remotion";
 import { SceneRenderer } from "./scenes/Scene";
+import { BG } from "./lib/constants";
 import { durationOf, DEFAULT_FONT_VARIANT, type VideoConfig } from "./lib/scenes";
 
 // The dark tokens in @nolli/ui/global.css are scoped to body[data-theme='dark'];
@@ -12,8 +13,6 @@ if (typeof document !== "undefined") {
 }
 
 export type DemoCompositionProps = { config: VideoConfig };
-
-const BG = "rgb(var(--color-primary-background))";
 
 // The whole timeline is data-driven: each entry in config.scenes becomes a
 // Series.Sequence whose length is derived from its type. Reorder/edits live in

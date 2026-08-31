@@ -3,7 +3,6 @@ import {
   durationOf,
   totalDuration,
   segmentDuration,
-  exitStartFrame,
   DEFAULT_TEXT_SIZE,
   DEFAULT_FONT_VARIANT,
 } from "./scenes";
@@ -20,9 +19,6 @@ describe("segmentDuration", () => {
   it("adds an exit wipe window when exit is true", () => {
     expect(segmentDuration(5, 8, true)).toBe(8 + OUTRO.typeFrames + OUTRO.hold + OUTRO.exitFrames);
   });
-  it("exit start is entrance + reveal window + hold", () => {
-    expect(exitStartFrame(8)).toBe(8 + OUTRO.typeFrames + OUTRO.hold);
-  });
 });
 
 describe("durationOf", () => {
@@ -32,9 +28,9 @@ describe("durationOf", () => {
   it("image = STILL_FRAMES", () => {
     expect(durationOf({ type: "image", src: "x.png" })).toBe(STILL_FRAMES);
   });
-  it("video = ceil(frames / playbackRate)", () => {
+  it("video = ceil(frames / playbackRate) - 1 (one frame inside the clip's end)", () => {
     expect(durationOf({ type: "video", src: "m.mp4", frames: 300, playbackRate: 2 })).toBe(
-      Math.ceil(300 / 2),
+      Math.ceil(300 / 2) - 1,
     );
   });
   it("video without an ffprobed frame count throws", () => {

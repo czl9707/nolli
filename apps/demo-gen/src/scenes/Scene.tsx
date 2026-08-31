@@ -2,13 +2,11 @@ import { AbsoluteFill, interpolate, useCurrentFrame } from "remotion";
 import { NO_ANIM, SoftBlurIn } from "@nolli/remotion";
 import { SceneImage } from "./SceneImage";
 import { SceneVideo } from "./SceneVideo";
-const BG = "rgb(var(--color-primary-background))";
 const FG = "rgb(var(--color-primary-foreground))";
 const FG_SECONDARY = "rgb(var(--color-secondary-foreground))";
-import { OUTRO, LOGO_WORD } from "../lib/constants";
+import { OUTRO, LOGO_WORD, BG } from "../lib/constants";
 import {
   DEFAULT_TEXT_SIZE,
-  exitStartFrame,
   type Scene,
   type FontVariant,
   type TextScene,
@@ -16,8 +14,10 @@ import {
 
 const family = (v: FontVariant) => (v === "sans" ? "var(--font-sans)" : "var(--font-playful)");
 
-// Nolli brand mark — the geometric favicon icon, inlined (no staticFile).
-// Paths copied from apps/nolli/public/favicon.svg; fill overridden to #EDEAE1.
+// Nolli brand mark — the geometric favicon icon, inlined (assemble points
+// Remotion's publicDir at out/<slug>, so a public/ dir would never bundle).
+// Byte-identical to apps/nolli/public/favicon.svg, fill included — re-sync
+// if the favicon changes.
 const NolliMark: React.FC<{ size: number }> = ({ size }) => (
   <svg
     width={size}
@@ -45,12 +45,14 @@ export const SegmentText: React.FC<{ scene: TextScene; fontVariant: FontVariant 
 }) => {
   const size = scene.size ?? DEFAULT_TEXT_SIZE;
   const color = scene.color === "fgSecondary" ? FG_SECONDARY : FG;
+  // Exit wipe starts after the reveal window + hold (text cards enter on frame 0).
+  const exitStart = OUTRO.typeFrames + OUTRO.hold;
   return (
     <AbsoluteFill style={{ backgroundColor: BG, justifyContent: "center", alignItems: "center" }}>
       <SoftBlurIn
         text={scene.text}
         start={{ when: 0, last: OUTRO.typeFrames, enabled: true }}
-        end={{ when: exitStartFrame(0), last: exitStartFrame(0) + OUTRO.exitFrames, enabled: true }}
+        end={{ when: exitStart, last: exitStart + OUTRO.exitFrames, enabled: true }}
         style={{ fontFamily: family(fontVariant), fontSize: size, color }}
       />
     </AbsoluteFill>

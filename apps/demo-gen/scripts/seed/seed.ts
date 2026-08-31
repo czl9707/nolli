@@ -28,18 +28,13 @@ const boardSrc = (b: BuildingRow) => `images/${b.slug}-board.png`;
 // The journey always defaults to opening on the earliest building (year-ascending)
 // plus one random other; to visit different buildings, edit "journey" in
 // demo.json after seeding.
-export function writeManifest(dir: string, manifest: Manifest): void {
-  const out = join(dir, "manifest.json");
-  writeFileSync(out, JSON.stringify(manifest, null, 2));
-}
-
 function resolveAndWriteManifest(dbPath: string, dir: string, slug: string): Manifest {
   const architect = resolveArchitectName(dbPath, slug);
   const rows = queryArchitectBuildings(dbPath, architect).map(toBuildingRow);
   if (rows.length === 0) throw new Error(`No buildings found for "${architect}".`);
   const manifest = rowsToManifest(rows, { architect, slug });
-  writeManifest(dir, manifest);
-  console.log(`Wrote ${join(dir, "manifest.json")} (${manifest.count} buildings).`);
+  writeFileSync(join(dir, "manifest.json"), JSON.stringify(manifest, null, 2));
+  console.log(`Wrote ${join(dir, "manifest.json")} (${manifest.buildings.length} buildings).`);
   return manifest;
 }
 
@@ -58,7 +53,7 @@ export function buildScenes(manifest: Manifest): Scene[] {
   scenes.push({ type: "video", src: "demo-1.mp4", playbackRate: DEMO_RATE });
   scenes.push({ type: "text", text: manifest.architect, size: 132, color: "fg" });
   for (const b of manifest.buildings) scenes.push({ type: "image", src: boardSrc(b) });
-  scenes.push({ type: "text", text: countText(manifest.count), size: 104, color: "fg" });
+  scenes.push({ type: "text", text: countText(manifest.buildings.length), size: 104, color: "fg" });
   for (const b of manifest.buildings) scenes.push({ type: "image", src: detailSrc(b) });
   scenes.push({ type: "text", text: NOW_TEXT, size: 104, color: "fg" });
   scenes.push({ type: "logo" });

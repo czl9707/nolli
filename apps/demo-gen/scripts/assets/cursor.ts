@@ -1,5 +1,6 @@
 import type { Locator, Page } from "playwright";
 import { path } from "ghost-cursor";
+import type { NolliCaptureMap } from "./page-ops";
 
 // Local mirror of ghost-cursor's Vector/TimedVector/BoundingBox shapes — defined
 // here so this module's types don't pull in ghost-cursor's puppeteer-typed .d.ts.
@@ -52,6 +53,74 @@ export async function pointOf(
     : { x: viewport.width / 2, y: viewport.height / 2 };
 }
 
+// Page-side half of the cursor: a purely-presentational overlay so the pointer
+// is visible in the CDP screencast (headless Chromium never composites the
+// native OS cursor, so clicks/drags would otherwise be invisible on camera).
+// pointer-events:none, hidden until the first pointermove. All motion comes
+// from real page.mouse events — this element just follows them — so hover
+// states are untouched. Press feedback (a small shrink toward the tip) fires
+// on pointerdown/up.
+//
+// The element is appended to documentElement on DOMContentLoaded (NOT at
+// document_start): addInitScript runs before the HTML parser finishes, and any
+// nodes appended then are discarded when the parser rebuilds the tree. The
+// window-level listeners are installed immediately (window is stable across the
+// parse) and lazily create the element on the first pointermove as a fallback.
+//
+// Also installs window.__nolliCursorFollow — the pan-follow protocol dragMap()
+// consumes: during a map panBy it mirrors the cursor to the map's REAL
+// per-frame content offset (project(centerAtPanStart) read each rAF), so the
+// cursor is locked to the pan exactly — same easing, no Node/CDP drift. rAF +
+// setTimeout here are the CLOCK_INIT-slowed variants, so this stays on the
+// capture's app-time clock in lockstep with MapLibre's own rAF-driven pan.
+// Resolves on moveend (or a safety timeout) with the final pixel offset so the
+// caller can update its Node-side cursor coordinate.
+export const CURSOR_INIT = `
+(() => {
+  if (window.__nolliCursor) return;
+  window.__nolliCursor = true;
+  let el = null;
+  const ensure = () => {
+    if (el || !document.documentElement) return;
+    const style = document.createElement('style');
+    style.textContent = '#__nolli_cursor{position:fixed;top:0;left:0;width:24px;height:24px;pointer-events:none;z-index:2147483647;opacity:0;transition:opacity .12s ease-out;will-change:transform}#__nolli_cursor svg{display:block;transition:transform .08s ease-out;transform-origin:2px 2px}#__nolli_cursor.__pressed svg{transform:scale(.82)}';
+    el = document.createElement('div');
+    el.id = '__nolli_cursor';
+    el.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" style="filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.55))"><path d="M2 2 L2 18 L7.5 14 L11 22 L14 21 L10.5 13 L16 13 Z" fill="#fff" stroke="rgba(0,0,0,.5)" stroke-width="1" stroke-linejoin="round"/></svg>';
+    document.documentElement.appendChild(style);
+    document.documentElement.appendChild(el);
+  };
+  const setPos = (x, y) => { if (el) el.style.transform = 'translate3d(' + (x - 2) + 'px,' + (y - 2) + 'px,0)'; };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ensure, { once: true });
+  else ensure();
+  window.__nolliCursorFollow = (sx, sy) => new Promise((resolve) => {
+    const m = window.__nolliMap;
+    const e = document.getElementById('__nolli_cursor');
+    if (!m || !e || !m.getCenter || !m.project) return resolve({ fx: 0, fy: 0 });
+    const c0 = m.getCenter();
+    const p0 = m.project([c0.lng, c0.lat]);
+    e.style.opacity = '1';
+    let done = false;
+    const place = () => {
+      const p = m.project([c0.lng, c0.lat]);
+      e.style.transform = 'translate3d(' + (sx + (p.x - p0.x) - 2) + 'px,' + (sy + (p.y - p0.y) - 2) + 'px,0)';
+    };
+    const finish = () => {
+      if (done) return; done = true; place();
+      const p = m.project([c0.lng, c0.lat]);
+      resolve({ fx: p.x - p0.x, fy: p.y - p0.y });
+    };
+    const loop = () => { if (done) return; place(); requestAnimationFrame(loop); };
+    requestAnimationFrame(loop);
+    if (m.once) m.once('moveend', finish);
+    setTimeout(finish, 4000);
+  });
+  window.addEventListener('pointermove', (e) => { ensure(); if (el) { el.style.opacity = '1'; setPos(e.clientX, e.clientY); } }, { capture: true });
+  window.addEventListener('pointerdown', (e) => { ensure(); if (el) { el.classList.add('__pressed'); setPos(e.clientX, e.clientY); } }, { capture: true });
+  window.addEventListener('pointerup', () => { if (el) el.classList.remove('__pressed'); }, { capture: true });
+})();
+`;
+
 export function createCursor(page: Page, opts: CursorOptions) {
   const { slowmo, viewport, hoverAppMs, dwellAppMs } = opts;
   // Start at screen center — the cursor is revealed there by appear() at capture
@@ -103,47 +172,32 @@ export function createCursor(page: Page, opts: CursorOptions) {
     await page.waitForTimeout(wall(dwellAppMs));
   }
 
-  // One gesture, two drags:
-  // - map mode (map=true): pressless camera drag. The map pans itself by
-  //   (point − cur) and the cursor rides along via an in-page rAF loop
-  //   (window.__nolliCursorFollow, installed by CURSOR_INIT) that reads the
-  //   map's real per-frame content offset, so the cursor locks to whatever
-  //   easing MapLibre uses — no Node/CDP drift. Resolves on moveend, then folds
-  //   the final pixel offset into cur so the next move is continuous. No
-  //   synthetic pointer: a pointerdown on the map would start a real map drag
-  //   fighting the panBy.
-  // - pointer mode: a real held-button drag — down, a settle so React commits
-  //   isPanning (board pans gate pointermove on it; Playwright's batched mouse
-  //   moves can all land before the commit, leaving every move a no-op), a
-  //   ghost-cursor Bézier to `point`, then up.
-  async function drag(point: Vec, appMs: number, map?: boolean): Promise<void> {
-    if (map) {
-      await page.evaluate(
-        ({ dx, dy, duration }) => {
-          const m = (window as unknown as {
-            __nolliMap?: { panBy: (off: [number, number], o: { duration: number }) => void };
-          }).__nolliMap;
-          m?.panBy([dx, dy], { duration });
-        },
-        { dx: point.x - cur.x, dy: point.y - cur.y, duration: appMs },
-      );
-      const off = await page.evaluate(
-        (s) =>
-          (window as unknown as {
-            __nolliCursorFollow?: (x: number, y: number) => Promise<{ fx: number; fy: number }>;
-          }).__nolliCursorFollow?.(s.x, s.y) ?? Promise.resolve({ fx: 0, fy: 0 }),
-        cur,
-      );
-      cur = {
-        x: clamp(cur.x + off.fx, 0, viewport.width),
-        y: clamp(cur.y + off.fy, 0, viewport.height),
-      };
-      return;
-    }
-    await page.mouse.down();
-    await page.waitForTimeout(wall(150));
-    await move(point, appMs);
-    await page.mouse.up();
+  // Pressless camera drag: the map pans itself by (point − cur) and the cursor
+  // rides along via an in-page rAF loop (window.__nolliCursorFollow, installed
+  // by CURSOR_INIT) that reads the map's real per-frame content offset, so the
+  // cursor locks to whatever easing MapLibre uses — no Node/CDP drift. Resolves
+  // on moveend, then folds the final pixel offset into cur so the next move is
+  // continuous. No synthetic pointer: a pointerdown on the map would start a
+  // real map drag fighting the panBy.
+  async function dragMap(point: Vec, appMs: number): Promise<void> {
+    await page.evaluate(
+      ({ dx, dy, duration }) => {
+        const m = (window as unknown as { __nolliMap?: Pick<NolliCaptureMap, "panBy"> }).__nolliMap;
+        m?.panBy([dx, dy], { duration });
+      },
+      { dx: point.x - cur.x, dy: point.y - cur.y, duration: appMs },
+    );
+    const off = await page.evaluate(
+      (s) =>
+        (window as unknown as {
+          __nolliCursorFollow?: (x: number, y: number) => Promise<{ fx: number; fy: number }>;
+        }).__nolliCursorFollow?.(s.x, s.y) ?? Promise.resolve({ fx: 0, fy: 0 }),
+      cur,
+    );
+    cur = {
+      x: clamp(cur.x + off.fx, 0, viewport.width),
+      y: clamp(cur.y + off.fy, 0, viewport.height),
+    };
   }
 
   // A small, human-like reposition just before a drag — the hand settling on the
@@ -182,7 +236,7 @@ export function createCursor(page: Page, opts: CursorOptions) {
     reposition,
     move,
     click,
-    drag,
+    dragMap,
     // Read-only current position (callers compute drag endpoints as pos+delta).
     pos: () => ({ ...cur }) as Readonly<Vec>,
   };

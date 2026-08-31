@@ -4,9 +4,9 @@ import { join, resolve } from "node:path";
 import { runCli, readJsonOr } from "@nolli/remotion/cli";
 import { loadDemoConfig, type DemoConfig } from "../seed/demo-config";
 import type { BuildingRow, Manifest } from "../seed/manifest";
-import { LAUNCH_ARGS, waitForMapMoveEnd } from "./capture-helpers";
+import { LAUNCH_ARGS, waitForMapMoveEnd, BOARD_PHOTO, LIGHTBOX_BACKDROP } from "./capture-helpers";
 import { createCursor, pointOf } from "./cursor";
-import { startRecording, endRecording, resampleTimeline, muxChunk, padHold, type MasterFrame } from "./recorder";
+import { startRecording, endRecording, resampleTimeline, muxClip, padHold, type MasterFrame } from "./recorder";
 import { JOURNEY, setTuning, appWait, VIEWPORT } from "./tuning";
 import {
   flyTo,
@@ -113,23 +113,26 @@ async function captureDemo(
       // entrance to actually finish — the settled hold is padded into the
       // recording afterwards (a static page emits no frames to record).
       async () => {
-        const photo = page.locator('div[style*="rotate("] img:not([src*="pin.png"])').first();
+        const photo = page.locator(BOARD_PHOTO).first();
         await clickOn(photo);
         beat("photo clicked");
         // Playwright "visible" fires at mount — mid-fade, while the modal
         // backdrop is still at opacity ~0. The real entrance-done signal is the
         // backdrop (BoardModal's framer motion.div) reaching full opacity.
-        await page
+        // A timeout here means the click missed (the raw mouse.click doesn't
+        // verify hit-targeting) — log it loudly instead of padding a board frame.
+        const gateOk = await page
           .waitForFunction(
-            () => {
-              const el = document.querySelector("div[class*='backdrop']");
+            (selector) => {
+              const el = document.querySelector(selector);
               return !!el && Number(getComputedStyle(el).opacity) >= 0.999;
             },
-            undefined,
+            LIGHTBOX_BACKDROP,
             { timeout: 8000, polling: 120 },
           )
-          .catch(() => {});
-        beat("backdrop opacity 1");
+          .then(() => true)
+          .catch(() => false);
+        beat(gateOk ? "backdrop opacity 1" : "BACKDROP GATE TIMED OUT — lightbox never opened");
         // Let any trailing frames (inset-map repaints) land, then stop — the
         // hold itself is padHold below.
         await appWait(page, 300);
@@ -149,7 +152,7 @@ async function captureDemo(
   if (master.length < 30) {
     throw new Error(`Demo capture failed: only ${master.length} frames.`);
   }
-  const clipAbs = await muxChunk(outDir, resampleTimeline(master), 1);
+  const clipAbs = await muxClip(outDir, resampleTimeline(master));
   console.log(`Wrote ${clipAbs}`);
 }
 

@@ -8,11 +8,6 @@ export function segmentDuration(textLen: number, typeStart: number, exit = false
   return typeStart + typed + OUTRO.hold + (exit ? OUTRO.exitFrames : 0);
 }
 
-// Frame at which a segment's exit wipe begins (entrance + reveal + hold).
-export function exitStartFrame(typeStart: number): number {
-  return typeStart + OUTRO.typeFrames + OUTRO.hold;
-}
-
 export type FontVariant = "sans" | "playful";
 export type ColorToken = "fg" | "fgSecondary";
 

@@ -1,7 +1,7 @@
 import type { Browser, Page } from "playwright";
 import { MAP_TRANSITION_SHORT, MAP_TRANSITION_LONG } from "@nolli/ui/constants";
 import {
-  LAUNCH_ARGS,
+  BASE_URL,
   applyBrowserCaptureContext,
   waitForToastDisappear,
   waitForTilesLoaded,
@@ -16,16 +16,14 @@ import { JOURNEY, appWait, VIEWPORT } from "./tuning";
 // pointer input (cursor + pan helpers). The narrative that sequences these ops
 // lives in assets-demo.ts.
 
-const BASE_URL = process.env.BASE_URL ?? "http://localhost:5173";
-
 const rand = (min: number, max: number) => min + Math.random() * (max - min);
 const signed = (n: number) => `${n >= 0 ? "+" : ""}${n}`;
 
 // The map handle MapCaptureBridge exposes under ?capture=1 — the structural
-// type every in-page evaluate shim casts window.__nolliMap to. (The cast is
-// repeated per shim: evaluate callbacks serialize and run in the page, so they
-// can't close over a Node-side accessor.)
-type NolliCaptureMap = {
+// type every in-page evaluate shim casts window.__nolliMap to (shims declare
+// only the members they touch via Pick). The app side assigns the whole live
+// MapLibre instance, so this describes the used subset, not a wrapper.
+export type NolliCaptureMap = {
   getZoom: () => number;
   getCenter: () => { lng: number; lat: number };
   getBounds: () => { contains: (p: [number, number]) => boolean };
@@ -41,6 +39,8 @@ type NolliCaptureMap = {
   panBy: (off: [number, number], o: { duration: number }) => void;
   jumpTo: (o: { center: [number, number]; zoom: number }) => void;
   project?: (lngLat: [number, number]) => { x: number; y: number };
+  isMoving: () => boolean;
+  areTilesLoaded: () => boolean;
 };
 
 // ── Camera ──────────────────────────────────────────────────────────────────
@@ -252,7 +252,7 @@ export async function panMapAround(
     // real per-frame offset, resolving on moveend (which also waits out the pan).
     await cursor.reposition();
     const at = cursor.pos();
-    await cursor.drag({ x: at.x + p.dx, y: at.y + p.dy }, p.dur, true);
+    await cursor.dragMap({ x: at.x + p.dx, y: at.y + p.dy }, p.dur);
     const after = await mapCenter(page);
     if (
       !Number.isNaN(before.lng) &&

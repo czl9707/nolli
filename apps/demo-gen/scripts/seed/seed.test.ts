@@ -14,7 +14,6 @@ import type { Manifest } from "./manifest";
 const manifest: Manifest = {
   architect: "Mies",
   slug: "mies",
-  count: 2,
   buildings: [
     { slug: "a", name: "A", year: 1, city: "X", cc: "US", latitude: 0, longitude: 0 },
     { slug: "b", name: "B", year: 2, city: "Y", cc: "US", latitude: 0, longitude: 90 },
