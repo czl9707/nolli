@@ -2,7 +2,7 @@ import { useMemo } from "react"
 import { MapMarker, MarkerContent } from "../map-core/map"
 import type { ArchSummary } from "@nolli/data"
 import { hashId, jitter } from "@nolli/board"
-import { Body2, Body3 } from "@nolli/ui"
+import { Note } from "@nolli/ui"
 import styles from "./photo-marker.module.css"
 
 // Cap the cover image so oversized photos don't dominate the map — both
@@ -62,8 +62,8 @@ export function PhotoMarker({
               crossOrigin="anonymous"
             />
             <figcaption className={styles.caption} style={{ width }}>
-              <Body2 className={styles.name}>{building.name}</Body2>
-              <Body3 className={styles.architect}>{building.architect}</Body3>
+              <Note className={styles.name}>{building.name}</Note>
+              <Note className={styles.architect}>{building.architect}</Note>
             </figcaption>
           </div>
           <img

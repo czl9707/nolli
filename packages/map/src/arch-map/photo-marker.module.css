@@ -4,7 +4,7 @@
    box-shadow would shadow the plain rectangle (same approach as @nolli/board). */
 .wrap {
   position: relative;
-  filter: drop-shadow(4px 4px 4px rgb(var(--color-paper-foreground) / 0.2));
+  filter: drop-shadow(4px 4px 4px rgb(var(--color-paper-foreground) / .4));
 }
 
 /* White "mat" frame around the photo + caption; the clip-path (inline) cuts the
@@ -32,16 +32,19 @@
 }
 
 .name {
+  font-weight: 500;
   max-width: 100%;
   text-overflow: ellipsis;
   overflow: hidden;
 }
 
 .architect {
+  font-weight: 500;
+  font-size: 0.8rem;
   max-width: 100%;
   text-overflow: ellipsis;
   overflow: hidden;
-  opacity: 0.7;
+  opacity: 0.8;
 }
 
 .pin {

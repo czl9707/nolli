@@ -11,15 +11,6 @@
   opacity: var(--index-photo-o);
 }
 
-/* captions in the playful hand — Body2/Body3 hardcode font-family via
-   --typography-bodyX-fontFamily, which postcss bakes to the sans stack at
-   build, so a var override on the marker can't reach it; out-specify the
-   module class instead (figcaption is the photo-marker caption block) */
-.indexMarker :global(figcaption p),
-.heroMarker :global(figcaption p) {
-  font-family: var(--font-playful);
-}
-
 /* index gates the container's data-photo-markers flag from its ramp's
    start (before that the hero's markers own the container ungated) */
 :global([data-photo-markers="off"]) .indexMarker {
