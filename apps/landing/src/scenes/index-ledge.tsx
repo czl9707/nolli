@@ -13,6 +13,7 @@ import type { HoldScene, PxRect } from "@/spine/timeline"
 import type { LandingData } from "@/lib/landing-data"
 import { fitCamera } from "@/lib/camera"
 import { cityIdByName, pickIndexPhotos } from "@/lib/shape"
+import { HERO_EXCLUDE } from "./hero-ledge"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
 import markerStyles from "./index.markers.module.css"
 import styles from "./index-ledge.module.css"
@@ -103,12 +104,15 @@ function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect 
 
   // restoration path only: deep-linked or reloaded into the hold jumps to
   // the city camera; entering forward, the transition's flight has already
-  // landed close to it, and a jumpTo here would snip that flight
+  // landed close to it, and a jumpTo here would snip that flight. Paris is
+  // filtered through HERO_EXCLUDE so the restoration fit matches the one
+  // the transition landed on (all 10 vs the fitted 8 would jump the zoom)
   const picksRef = useRef(picks)
   picksRef.current = picks
   useEffect(() => {
     if (!map || local.get() < 0) return
-    map.jumpTo(cameraFor(picksRef.current))
+    const kept = picksRef.current.filter((p) => !HERO_EXCLUDE.has(p.slug))
+    map.jumpTo(cameraFor(kept))
   }, [map, local, cameraFor])
 
   const onSelect = useCallback(
