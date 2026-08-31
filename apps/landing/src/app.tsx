@@ -8,6 +8,7 @@ import { heroHold } from "@/scenes/hero-ledge"
 import { heroIndexTransition } from "@/scenes/hero-index-transition"
 import { indexHold } from "@/scenes/index-ledge"
 import { ScrollThumb } from "@/components/scroll-thumb"
+import { SiteHeader } from "@/components/site-header"
 
 const INDEX_SHAPE = "[data-spine-shape='index']"
 
@@ -75,6 +76,11 @@ export function App() {
 
   return (
     <main data-boot={revealed ? undefined : ""}>
+      {/* app chrome — fixed at this level it stacks above the spine's scene
+          flow (z2) without a portal; main is no stacking context */}
+      <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 20 }}>
+        <SiteHeader />
+      </div>
       <ScrollThumb />
       {data && scenes && (
         <div className={revealed ? "spine-boot spine-boot--on" : "spine-boot"}>

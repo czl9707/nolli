@@ -2,7 +2,6 @@
 import {
   createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState,
 } from "react"
-import { createPortal } from "react-dom"
 import {
   motion, useMotionValue, useMotionValueEvent, useScroll, useTransform,
   type MotionValue,
@@ -10,7 +9,6 @@ import {
 import type { MapRef, SceneCamera } from "@nolli/map"
 import type { ArchSummary } from "@nolli/data"
 import { LandingMap } from "@/components/landing-map"
-import { SiteHeader } from "@/components/site-header"
 import { buildTimeline, shapeAt, type PxRect, type SpineScene } from "./timeline"
 
 type SpineCtx = {
@@ -163,12 +161,6 @@ export function Spine({
               <div ref={setMapPortal} style={{ position: "absolute", inset: 0, pointerEvents: "none" }} />
             </LandingMap>
           </motion.div>
-          {createPortal(
-            <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 20 }}>
-              <SiteHeader />
-            </div>,
-            document.body,
-          )}
         </div>
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 2, pointerEvents: "none" }}>
           {timeline.segments.map(({ scene }) => (
