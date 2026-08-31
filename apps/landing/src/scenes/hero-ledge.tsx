@@ -1,11 +1,10 @@
 // Hero hold scene on the spine (prototype variant A "Ledger" hero). The
 // spine's map layer IS the hero map; photo markers render through the map
-// portal so they ride the layer, while the reveal renders through the
-// overlay portal — bounded to the first 100svh, not the layer — and the
-// pane-split content overlay scrolls in the flow wrapper. The hold's
-// height equals the component's, so everything scrolls off naturally and
-// the reveal rides up with the page, unveiling the map through the
-// transition.
+// portal so they ride the layer, while the reveal (veil/plate/crosshairs)
+// renders in this tree — first child of the sticky section, so it pins
+// during the hold and rides up with the page through the transition,
+// unveiling the map. The hold's height equals the component's, so the
+// pane-split content scrolls off naturally with it.
 import { useEffect, useRef } from "react"
 import { createPortal } from "react-dom"
 import { motion, useReducedMotion, useTransform } from "framer-motion"
@@ -42,7 +41,8 @@ function HeroLedge({ data }: { data: LandingData }) {
 
   // content scrolls off naturally (hold height == component height); a tail
   // fade over the last stretch keeps the exit from dragging. The veil,
-  // plate and crosshairs ride up with the page instead (CursorReveal)
+  // plate and crosshairs ride up with the page instead (CursorReveal, in
+  // this section's own tree)
   const local = useSceneScroll()
   const fade = useTransform(local, [80, 100], [1, 0])
   // hero photo markers stand down over the transition entry, so they don't
@@ -116,7 +116,6 @@ function HeroLedge({ data }: { data: LandingData }) {
         map={map}
         sx={sx}
         sy={sy}
-        local={local}
         tagTr={CLUSTER_CITY}
       />
       <HeroPhotoMarkers picks={picks} />
