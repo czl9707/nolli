@@ -1,8 +1,9 @@
 // Hero hold scene on the spine (prototype variant A "Ledger" hero). The
 // spine's map layer IS the hero map; the reveal and photo markers render
 // through the map portal so they ride the layer, while the pane-split
-// content overlay scrolls in the flow wrapper and fades out over the last
-// stretch of the hold, handing the transition a bare map.
+// content overlay scrolls in the flow wrapper — the hold's height equals
+// the component's, so everything scrolls off naturally and the reveal
+// rides up with the page, unveiling the map through the transition.
 import { useEffect, useRef } from "react"
 import { createPortal } from "react-dom"
 import { motion, useReducedMotion, useTransform } from "framer-motion"
@@ -39,10 +40,14 @@ function HeroLedge({ data }: { data: LandingData }) {
   // the reveal roams only the top-left pane
   const boundsRef = useRef<HTMLDivElement | null>(null)
 
-  // exit fade: content and veil fade over the last stretch of the hold, so
-  // the transition scene starts from a bare map
+  // content scrolls off naturally (hold height == component height); a tail
+  // fade over the last stretch keeps the exit from dragging. The veil,
+  // plate and crosshairs ride up with the page instead (CursorReveal)
   const local = useSceneScroll()
-  const fade = useTransform(local, [140, 178], [1, 0])
+  const fade = useTransform(local, [80, 100], [1, 0])
+  // hero photo markers stand down over the transition entry, so they don't
+  // stack over the index markers during the index hold
+  const photoO = useTransform(local, [100, 140], [1, 0])
 
   // fit the picks to the PANE and center them there, so the photo cards land
   // inside the reveal area: outliers excluded, camera fitted to pane px with
@@ -87,23 +92,23 @@ function HeroLedge({ data }: { data: LandingData }) {
     }
   }, [fade, snap])
 
-  // hero photo markers stand down with the exit fade: their opacity comes
-  // from --hero-photo-o on the map container (index.markers.module.css), so
-  // they fade with the content instead of stacking over the index markers
-  // during the index hold
+  // hero photo markers stand down over the transition entry: their opacity
+  // comes from --hero-photo-o on the map container (index.markers.module.css),
+  // so they fade out early in the transition instead of stacking over the
+  // index markers during the index hold
   useEffect(() => {
     if (!map) return
     const el = map.getContainer()
     const apply = (v: number) => {
       el.style.setProperty("--hero-photo-o", String(v))
     }
-    apply(fade.get())
-    const un = fade.on("change", apply)
+    apply(photoO.get())
+    const un = photoO.on("change", apply)
     return () => {
       un()
       el.style.removeProperty("--hero-photo-o")
     }
-  }, [map, fade])
+  }, [map, photoO])
 
   return (
     <section data-spine-shape="hero" className={styles.hero}>
@@ -112,7 +117,7 @@ function HeroLedge({ data }: { data: LandingData }) {
         map={map}
         sx={sx}
         sy={sy}
-        fade={fade}
+        local={local}
         tagTr={CLUSTER_CITY}
       />
       <HeroPhotoMarkers picks={picks} />

@@ -3,11 +3,11 @@
 // layer, not the scrolling flow wrapper); the portal root doubles as the
 // surface every offset is written against. All coordinates are
 // surface-local / viewport px each frame; the plate clamps to `boundsRef`
-// so it stays inside the reveal pane.
+// so it stays inside the reveal pane. Past the hero hold the whole reveal
+// rides up with the page 1:1 (exitYpx), unveiling the map from the top.
 import { useEffect, useRef, useState, type RefObject } from "react"
 import { createPortal } from "react-dom"
 import {
-  motion,
   useMotionValue,
   useReducedMotion,
   useSpring,
@@ -22,6 +22,16 @@ import markerStyles from "./index.markers.module.css"
 import styles from "./hero-reveal.module.css"
 
 export const PLATE = { w: 360, h: 280 }
+
+/** Hero hold height in vh — the reveal rides up with the page from here. */
+const HOLD_VH = 100
+
+/** Vertical px the reveal root rides up with the page once the hero hold
+ * ends (scene-local vh past the hold): the veil, plate and crosshairs leave
+ * THROUGH THE TOP with the page instead of lingering at the cursor — 1:1
+ * with scroll, clamped below at 0, no easing. */
+const exitYpx = (localVh: number) =>
+  -Math.max(0, localVh - HOLD_VH) * (window.innerHeight / 100)
 
 /** Class applied to every photo marker the hero mounts — the clip driver
  * matches on it (and it exempts the markers from the spine's
@@ -76,15 +86,16 @@ function plateRect(
 
 /** Veil + plate + furniture over the spine map, plus the marker clip driver.
  * Renders into the spine's map portal; the portal root is the surface. The
- * plate roams `boundsRef` if given (a pane), else the surface. `fade` is the
- * scene's exit ramp — the whole reveal (veil included) rides it out. Snap
- * mode (touch / reduced motion) renders nothing — markers show unclipped. */
+ * plate roams `boundsRef` if given (a pane), else the surface. `local` is the
+ * hero scene's local scroll in vh — past the hold (100vh) the whole reveal
+ * rides up with the page, unveiling the map from the top. Snap mode (touch /
+ * reduced motion) renders nothing — markers show unclipped. */
 export function CursorReveal({
   boundsRef,
   map,
   sx,
   sy,
-  fade,
+  local,
   tagTl = "Architecture",
   tagTr,
 }: {
@@ -92,7 +103,7 @@ export function CursorReveal({
   map: MapRef | null
   sx: MotionValue<number>
   sy: MotionValue<number>
-  fade?: MotionValue<number>
+  local: MotionValue<number>
   tagTl?: string
   tagTr?: string
 }) {
@@ -102,8 +113,9 @@ export function CursorReveal({
   const rootRef = useRef<HTMLDivElement | null>(null)
   const clampEl = () => boundsRef?.current ?? rootRef.current
 
-  // veil hole vars (surface-local) + plate transform + crosshair lines,
-  // written per frame so scroll and resize stay correct without listeners
+  // veil hole vars (surface-local) + plate transform + crosshair lines +
+  // the page-exit ride, written per frame so scroll and resize stay correct
+  // without listeners
   useEffect(() => {
     if (snap || !mapPortal) return
     const root = rootRef.current
@@ -113,13 +125,18 @@ export function CursorReveal({
       raf = 0
       const el = clampEl()
       if (!el) return
+      const ey = exitYpx(local.get())
+      root.style.transform = ey ? `translateY(${ey}px)` : ""
       const p = plateRect(el, root, sx, sy)
+      // rect is measured WITH the exit ride applied — un-translate it so
+      // every offset below is surface-local and rides the root for free
+      const top0 = p.rect.top - ey
       const ox = p.left - p.rect.left
-      const oy = p.top - p.rect.top
+      const oy = p.top - top0
       root.style.setProperty("--pl", `${ox}px`)
       root.style.setProperty("--pt", `${oy}px`)
       root.style.setProperty("--pr", `${p.right - p.rect.left}px`)
-      root.style.setProperty("--pb", `${p.bottom - p.rect.top}px`)
+      root.style.setProperty("--pb", `${p.bottom - top0}px`)
       const plate = root.querySelector<HTMLElement>("[data-plate]")
       if (plate) plate.style.transform = `translate(${ox}px, ${oy}px)`
       const furn = root.querySelector<HTMLElement>("[data-furniture]")
@@ -131,27 +148,30 @@ export function CursorReveal({
       setPx("[data-cxvl]", "left", ox)
       setPx("[data-cxvr]", "left", p.right - p.rect.left)
       setPx("[data-cxht]", "top", oy)
-      setPx("[data-cxhb]", "top", p.bottom - p.rect.top)
+      setPx("[data-cxhb]", "top", p.bottom - top0)
     }
     const schedule = () => {
       if (!raf) raf = requestAnimationFrame(write)
     }
     const u1 = sx.on("change", schedule)
     const u2 = sy.on("change", schedule)
+    const u3 = local.on("change", schedule)
     window.addEventListener("scroll", schedule, { passive: true })
     window.addEventListener("resize", schedule)
     schedule()
     return () => {
       u1()
       u2()
+      u3()
       window.removeEventListener("scroll", schedule)
       window.removeEventListener("resize", schedule)
       if (raf) cancelAnimationFrame(raf)
     }
     // mapPortal: the effect re-arms when the portal mounts the root
-  }, [snap, mapPortal, boundsRef, sx, sy])
+  }, [snap, mapPortal, boundsRef, sx, sy, local])
 
-  // coords readout — plate-centre lat/lng straight to the DOM
+  // coords readout — plate-centre lat/lng straight to the DOM (the plate's
+  // ridden position once the exit ride has begun)
   const coordsRef = useRef<HTMLSpanElement>(null)
   useEffect(() => {
     if (snap || !map || !mapPortal) return
@@ -160,20 +180,24 @@ export function CursorReveal({
       const surface = rootRef.current
       if (!el || !surface || !coordsRef.current) return
       const p = plateRect(el, surface, sx, sy)
-      const c = map.unproject([(p.left + p.right) / 2, (p.top + p.bottom) / 2])
+      const ey = exitYpx(local.get())
+      const c = map.unproject([(p.left + p.right) / 2, (p.top + p.bottom) / 2 + ey])
       coordsRef.current.textContent = `${Math.abs(c.lat).toFixed(4)}° ${c.lat >= 0 ? "N" : "S"}  ${Math.abs(c.lng).toFixed(4)}° ${c.lng >= 0 ? "E" : "W"}`
     }
     const schedule = () => requestAnimationFrame(update)
     const u1 = sx.on("change", schedule)
     const u2 = sy.on("change", schedule)
+    const u3 = local.on("change", schedule)
     schedule()
     return () => {
       u1()
       u2()
+      u3()
     }
-  }, [snap, map, mapPortal, boundsRef, sx, sy])
+  }, [snap, map, mapPortal, boundsRef, sx, sy, local])
 
-  // clip photo markers to the plate rect
+  // clip photo markers to the plate rect (ridden up with the exit ride —
+  // the markers stay in the map layer, only the plate moves)
   useEffect(() => {
     if (snap || !map || !mapPortal) return
     let raf = 0
@@ -183,6 +207,9 @@ export function CursorReveal({
       const surface = rootRef.current
       if (!el || !surface) return
       const p = plateRect(el, surface, sx, sy)
+      const ey = exitYpx(local.get())
+      const top = p.top + ey
+      const bottom = p.bottom + ey
       // scoped to THIS map — any other map on the page keeps its markers
       // unclipped
       const contents = Array.from(
@@ -199,16 +226,16 @@ export function CursorReveal({
         if (
           box.right < p.left - OVERHANG.left ||
           box.left > p.right + OVERHANG.right ||
-          box.bottom < p.top - OVERHANG.top ||
-          box.top > p.bottom + OVERHANG.bottom
+          box.bottom < top - OVERHANG.top ||
+          box.top > bottom + OVERHANG.bottom
         ) {
           el.style.clipPath = "inset(0 0 100% 0)"
           continue
         }
-        const ct = Math.max(p.top - box.top, -OVERHANG.top)
+        const ct = Math.max(top - box.top, -OVERHANG.top)
         const cl = Math.max(p.left - box.left, -OVERHANG.left)
         const crr = Math.max(box.right - p.right, -OVERHANG.right)
-        const cb = Math.max(box.bottom - p.bottom, -OVERHANG.bottom)
+        const cb = Math.max(box.bottom - bottom, -OVERHANG.bottom)
         el.style.clipPath = `inset(${ct}px ${crr}px ${cb}px ${cl}px)`
       }
     }
@@ -217,22 +244,24 @@ export function CursorReveal({
     }
     const u1 = sx.on("change", schedule)
     const u2 = sy.on("change", schedule)
+    const u3 = local.on("change", schedule)
     map.on("move", schedule)
     window.addEventListener("scroll", schedule, { passive: true })
     schedule()
     return () => {
       u1()
       u2()
+      u3()
       map.off("move", schedule)
       window.removeEventListener("scroll", schedule)
       if (raf) cancelAnimationFrame(raf)
     }
-  }, [snap, map, mapPortal, boundsRef, sx, sy])
+  }, [snap, map, mapPortal, boundsRef, sx, sy, local])
 
   if (snap) return null
   if (!mapPortal) return null
   return createPortal(
-    <motion.div ref={rootRef} className={styles.root} style={{ opacity: fade }}>
+    <div ref={rootRef} className={styles.root}>
       <div className={styles.veil} aria-hidden />
       {/* crosshair guides — full-height verticals at the plate's left/right,
           full-width horizontals at its top/bottom; same styling as pane
@@ -258,7 +287,7 @@ export function CursorReveal({
         </Caption>
         <span ref={coordsRef} className={styles.coords} />
       </div>
-    </motion.div>,
+    </div>,
     mapPortal,
   )
 }
