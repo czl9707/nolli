@@ -81,7 +81,21 @@ export function Spine({
           const el = document.querySelector(ref)
           if (!el) throw new Error(`spine shape selector '${ref}' matched nothing`)
           const r = el.getBoundingClientRect()
-          out[ref] = { left: r.left, top: r.top, width: r.width, height: r.height }
+          // Sticky-aware top: an anchor measured at scroll 0 sits at its
+          // natural flow position, but an anchor inside a sticky component
+          // sticks elsewhere — its offset WITHIN the component is
+          // scroll-independent, so stickyTop + (r.top - s.top) equals its
+          // stuck-position top whether measured stuck or not.
+          let top = r.top
+          for (let a = el.parentElement; a && a !== wrapperRef.current; a = a.parentElement) {
+            if (getComputedStyle(a).position === "sticky") {
+              const stickyTop = parseFloat(getComputedStyle(a).top)
+              const s = a.getBoundingClientRect()
+              top = stickyTop + (r.top - s.top)
+              break
+            }
+          }
+          out[ref] = { left: r.left, top, width: r.width, height: r.height }
         }
       }
       setRects(out)
