@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react"
-import { useNavigate } from "react-router"
+import { useNavigate, useSearchParams } from "react-router"
 import { ArchMap } from "@nolli/map"
 import {
   flyToArchCinematic,
@@ -53,11 +53,57 @@ function MapFlyNavigator() {
 }
 
 /**
+ * Under `?capture=1`, exposes the live MapLibre instance on `window.__nolliMap`
+ * so the demo-gen capture scripts can drive the camera (`flyTo`/`jumpTo`/
+ * `panBy`) and poll tile-readiness (`areTilesLoaded`/`isMoving`) directly.
+ * No-op outside capture.
+ */
+function MapCaptureBridge() {
+  const { map } = useMap()
+  useEffect(() => {
+    if (!map) return
+    const w = window as unknown as { __nolliMap?: unknown }
+    w.__nolliMap = map
+    return () => {
+      delete w.__nolliMap
+    }
+  }, [map])
+  return null
+}
+
+/**
+ * Under `?capture=1`, exposes the same nav the sidebar suggestion cards use
+ * (navigateArch: select + `/arch/:slug` push → MapFlyNavigator flies), so the
+ * demo-gen capture can drive a real arch→arch transition deterministically.
+ * navigateArch carries the current ?search, so `capture` stays set and
+ * MapCaptureBridge stays mounted through the transition.
+ */
+function ArchNavCaptureBridge() {
+  const navigateArch = useArchNavigate()
+  useEffect(() => {
+    const w = window as unknown as {
+      __nolliNavigateArch?: (slug: string, shouldFlyTo?: boolean) => void
+    }
+    w.__nolliNavigateArch = (slug, shouldFlyTo = true) => {
+      navigateArch(slug, shouldFlyTo, "push")
+    }
+    return () => {
+      delete w.__nolliNavigateArch
+    }
+  }, [navigateArch])
+  return null
+}
+
+/**
  * Thin wrapper around the shared <ArchMap>. Reads nolli stores and feeds them
  * as props; passes MapFlyNavigator as a child. Owns db-error navigation.
  */
 export function MapCore() {
   const navigate = useNavigate()
+  // Opt-in WebGL readback for screenshot/video capture (?capture=1). Sets
+  // preserveDrawingBuffer so the map canvas isn't blank when screenshotted.
+  const [searchParams] = useSearchParams()
+  const capture = searchParams.get("capture") === "1"
   const filteredArchs = useFilterStore((s) => s.filteredArchs)
   const selected = useArchDetailStore((s) => s.selected)
   // Lift the selected architecture onto the map even when a filter has excluded it,
@@ -86,6 +132,7 @@ export function MapCore() {
       <MapControlsOffset />
       <ArchMap
         architectures={architectures}
+        capture={capture}
         selectedSlug={selected?.slug}
         onArchClick={(slug) => {
           navigateArch(slug, false, "replace")
@@ -103,6 +150,8 @@ export function MapCore() {
           />
         )}
         <MapFlyNavigator />
+        {capture && <MapCaptureBridge />}
+        {capture && <ArchNavCaptureBridge />}
       {userLocation && (
         <MapMarker
           longitude={userLocation.longitude}

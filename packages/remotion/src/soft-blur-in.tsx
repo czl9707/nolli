@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import { interpolate, useCurrentFrame } from "remotion";
-import { CLAMP } from "../lib/timeline";
 
 /** A timed phase of the soft-blur animation (entrance or exit): begins at
  *  `when`, completes at `last`; `enabled: false` skips the phase. */
@@ -18,6 +17,7 @@ export type CharStyle = { opacity: number; blur: number; translateY: number };
 const CHAR_REVEAL_F = 8;
 const ENTRANCE_BLUR_PX = 14;
 const ENTRANCE_RISE_PX = 14;
+const CLAMP = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 
 /** Per-char stagger is DERIVED from the entrance window so the last char
  *  settles exactly at `start.last`. Exit is synchronous. */

@@ -1,0 +1,31 @@
+{
+  "name": "@nolli/remotion",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./db": "./src/db.ts",
+    "./cli": "./src/cli.ts",
+    "./config": "./src/config.ts"
+  },
+  "sideEffects": false,
+  "peerDependencies": {
+    "react": "*",
+    "remotion": "*"
+  },
+  "devDependencies": {
+    "@types/react": "*",
+    "typescript": "*",
+    "vitest": "*",
+    "@types/better-sqlite3": "*"
+  },
+  "dependencies": {
+    "@remotion/cli": "4",
+    "better-sqlite3": "^12.11.1"
+  }
+}
