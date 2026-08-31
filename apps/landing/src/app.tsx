@@ -2,32 +2,65 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { motion, useReducedMotion } from "framer-motion"
 import { Body2 } from "@nolli/ui"
 import { MAP_COLORS } from "@nolli/map"
-import { useLandingData } from "@/lib/landing-data"
-import { LandingStage } from "@/stage/stage"
-import { heroScene } from "@/scenes/hero"
-import { indexScene } from "@/scenes/index"
-import { ctaScene } from "@/scenes/cta"
-import { FooterScene } from "@/scenes/footer"
+import { useLandingData, type LandingData } from "@/lib/landing-data"
+import { HERO_CAMERA } from "@/lib/constants"
+import { Spine } from "@/spine/spine"
+import type { PxRect, SpineScene } from "@/spine/timeline"
+import { heroHold } from "@/scenes/hero-ledge"
+import { heroIndexTransition } from "@/scenes/hero-index-transition"
+import { indexHold } from "@/scenes/index-ledge"
 import { HeroHeadline } from "@/scenes/hero.chrome"
 import { ScrollThumb } from "@/components/scroll-thumb"
 
-const FACTORIES = [heroScene, indexScene, ctaScene]
+const INDEX_SHAPE = "[data-spine-shape='index']"
+
+/** First-frame guess at the index pane — right side of the viewport, roughly
+ * where the ledger split lands it. Only width/height feed the cameras, and
+ * the post-paint measure replaces the guess a tick later. */
+const indexPaneGuess = (): PxRect => ({
+  left: window.innerWidth * 0.55,
+  top: window.innerHeight * 0.1,
+  width: window.innerWidth * 0.4,
+  height: window.innerHeight * 0.8,
+})
+
+/** Scene list for the spine. The index pane rect comes from the DOM, which
+ * only exists once the spine has mounted these scenes — so the first render
+ * goes out on the guess and a post-paint measure swaps in the real geometry
+ * (rebuilding the scenes, which re-runs the spine's shape measurement).
+ * Re-measured on resize. */
+function useSpineScenes(data: LandingData | null | undefined): SpineScene[] | null {
+  const [indexPane, setIndexPane] = useState<PxRect>(indexPaneGuess)
+  useEffect(() => {
+    const measure = () => {
+      const el = document.querySelector<HTMLElement>(INDEX_SHAPE)
+      if (!el) return
+      const r = el.getBoundingClientRect()
+      setIndexPane((prev) =>
+        prev.left === r.left && prev.top === r.top && prev.width === r.width && prev.height === r.height
+          ? prev
+          : { left: r.left, top: r.top, width: r.width, height: r.height },
+      )
+    }
+    const t = window.setTimeout(measure, 0)
+    window.addEventListener("resize", measure)
+    return () => {
+      window.clearTimeout(t)
+      window.removeEventListener("resize", measure)
+    }
+  }, [data])
+  return useMemo(
+    () =>
+      data
+        ? [heroHold(data), heroIndexTransition(data, indexPane), indexHold(data, indexPane)]
+        : null,
+    [data, indexPane],
+  )
+}
 
 export function App() {
   const { status, data, error } = useLandingData()
-  // viewport state re-runs the factories so the index plate re-fits on resize
-  const [vp, setVp] = useState(() => ({ w: window.innerWidth, h: window.innerHeight }))
-  useEffect(() => {
-    const onResize = () => setVp({ w: window.innerWidth, h: window.innerHeight })
-    window.addEventListener("resize", onResize)
-    return () => window.removeEventListener("resize", onResize)
-  }, [])
-
-  const registry = useMemo(
-    () => (data ? FACTORIES.map((f) => f({ data, viewport: vp })) : null),
-    [data, vp],
-  )
-
+  const scenes = useSpineScenes(data)
   const [revealed, setRevealed] = useState(false)
   const [coverGone, setCoverGone] = useState(false)
   const onMapIdle = useCallback(() => setRevealed(true), [])
@@ -45,11 +78,8 @@ export function App() {
   return (
     <main>
       <ScrollThumb />
-      {data && registry && (
-        <>
-          <LandingStage scenes={registry} summaries={data.summaries} onMapIdle={onMapIdle} />
-          <FooterScene data={data} />
-        </>
+      {data && scenes && (
+        <Spine scenes={scenes} summaries={data.summaries} camera={HERO_CAMERA} onMapIdle={onMapIdle} />
       )}
       {!coverGone && <BootCover revealed={revealed} onGone={() => setCoverGone(true)} />}
     </main>
