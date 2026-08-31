@@ -141,8 +141,6 @@ export function Spine({
   useLayoutEffect(() => {
     if (!mapReady) return
     mapRef.current?.jumpTo({ center: camera.center, zoom: camera.zoom })
-    const c = mapRef.current?.getContainer()
-    c?.setAttribute("data-arch-markers", "off")
   }, [mapReady, camera])
 
   // boot reveal signal: first idle render, or a fallback if tiles stall

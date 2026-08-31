@@ -61,20 +61,12 @@ export function App() {
   const [revealed, setRevealed] = useState(false)
   const onMapIdle = useCallback(() => setRevealed(true), [])
 
-  // hold the scroll spine still until the map can be seen
-  useEffect(() => {
-    if (revealed) return
-    const body = document.body
-    const prev = body.style.overflow
-    body.style.overflow = "hidden"
-    return () => {
-      body.style.overflow = prev
-    }
-  }, [revealed])
+  // the scroll spine stays still until the map can be seen: <main data-boot>
+  // below + the body:has(main[data-boot]) lock in global.css
 
   if (status === "error") {
     return (
-      <main>
+      <main data-boot={revealed ? undefined : ""}>
         <Body2 asChild>
           <p className="boot-msg boot-msg--err">{error?.message ?? "failed to load map data"}</p>
         </Body2>
@@ -83,7 +75,7 @@ export function App() {
   }
 
   return (
-    <main>
+    <main data-boot={revealed ? undefined : ""}>
       <ScrollThumb />
       {data && scenes && (
         <div className={revealed ? "spine-boot spine-boot--on" : "spine-boot"}>

@@ -7,7 +7,10 @@ export const LandingMap = forwardRef<
   { summaries: ArchSummary[]; children?: ReactNode }
 >(function LandingMap({ summaries, children }, ref) {
   return (
-    <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+    // data-arch-markers: the photo markers own the screen for the whole
+    // spine — normal pin/cluster markers stay stood down
+    // (index.markers.module.css)
+    <div data-arch-markers="off" style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
       <ArchMap ref={ref} architectures={summaries} ready={true}>
         {children}
       </ArchMap>

@@ -43,6 +43,13 @@ body {
   letter-spacing: 0.04em;
 }
 
+/* Boot scroll lock: until the map reveals, the spine is a flat plate with
+   nothing to scroll to. app.tsx renders <main data-boot> while locked;
+   :has() carries it to the body from the React-rendered element. */
+body:has(main[data-boot]) {
+  overflow: hidden;
+}
+
 /* Spine boot: the scenes sit at opacity 0 until the map has settled, then
    fade in together — the hero arriving IS the loading animation. */
 .spine-boot {
