@@ -11,16 +11,16 @@ Nolli app. Templated: one manifest per architect drives the whole thing.
 Driven by an ordered `scenes[]` list in `video.json` (written by `seed`,
 editable freely): `video (demo-1) → text (name) → image* (board) → text (count)
 → image* (detail) → text (now) → logo`. The list leads with the demo (the
-journey → board reveal, ending on a visible hold), then alternates text → image
-sets. The default cut uses **one** demo chunk. Each image entry is one photo;
-reordering or cutting the video is a `video.json` edit, not code.
+journey → board reveal → photo open), then alternates text → image sets. Each
+image entry is one photo; reordering or cutting the video is a `video.json`
+edit, not code.
 
 Note: leading with the demo means the social-media preview thumbnail is the
 demo's first frame, not a still photo.
 
 - **`text`** — typed outro-style segment (name / count / "Now available in").
 - **`image`** — a hard-cut still, one entry per photo.
-- **`video`** — a captured demo chunk. Each entry has its own `playbackRate`
+- **`video`** — a captured demo clip. Each entry has its own `playbackRate`
   (demo runs at 2×).
 - **`logo`** — the Nolli logo card.
 
@@ -50,9 +50,7 @@ Both written by `seed` into `out/<slug>/`. Edit them; rerun the affected step.
   }
   ```
 
-  The default cut is one demo chunk. `assets:demo` still captures the full
-  journey as two chunks (`demo-1.mp4`, `demo-2.mp4`); add a second `video`
-  entry to use the long-form demo.
+  The default cut uses the single captured demo clip (`demo-1.mp4`).
 
 - **`demo.json`** — the recording config for `assets:demo`, kept minimal:
 
@@ -63,9 +61,8 @@ Both written by `seed` into `out/<slug>/`. Edit them; rerun the affected step.
   ```
 
   The journey is the list of buildings the demo visits, in order: it opens on
-  the first, real-navigates to each subsequent one, and runs the board section
-  on the last. Needs ≥2 slugs. The capture is split into two chunks with a hard
-  cut after the board reveal; chunk 1 is the default cut.
+  the first, real-navigates to each subsequent one, and runs the board + photo
+  section on the last. Needs ≥2 slugs.
 
 ## Prerequisites
 
@@ -114,9 +111,8 @@ pnpm assets:demo <slug>     # just the map journey
 - **demo** — reads `demo.json`. Drives the real app through the journey (the
   slug list, in order) via the `?capture=1` handles (`window.__nolliMap` for the
   camera, `window.__nolliNavigateArch` for the real arch→arch navigation),
-  captured with a slow-mo CDP screencast and resampled to real-time 30 fps. The
-  recording is split into two chunks with a **hard cut** after the board reveal.
-  Writes `out/<slug>/demo-1.mp4` and `demo-2.mp4`.
+  captured with a slow-mo CDP screencast and resampled to real-time 30 fps.
+  Writes `out/<slug>/demo-1.mp4`.
   **Needs the dev server.**
 
 ### 3. Assemble — render the final video
@@ -142,17 +138,14 @@ pnpm assemble ludwig-mies-van-der-rohe
 
 - **Skip the demo** — drop the `video` entry from `video.json`. `assemble` then
   renders a stills-only cut.
-- **Long-form demo** — `assets:demo` captures two chunks; the default
-  `video.json` uses only `demo-1.mp4`. Add a second `video` entry
-  (`demo-2.mp4`) to use the long-form demo.
 - **Re-tune the journey** — all capture tuning (zooms, holds, pan counts /
   distance / speed, slow-mo) lives in `DEFAULT_TUNING` in
   `scripts/seed/demo-config.ts` (code, not config). Edit it, then re-run
-  `assets:demo` and `assemble`. The final-cut playback speed of each demo
-  chunk is the `playbackRate` on its `video` entry in `video.json` (default `2`).
+  `assets:demo` and `assemble`. The final-cut playback speed of the demo
+  clip is the `playbackRate` on its `video` entry in `video.json` (default `2`).
 - **Longer journey** — `demo.json`'s `journey` accepts any number of building
   slugs: the demo opens on the first, real-navigates to each subsequent one,
-  and runs the board section on the last.
+  and runs the board + photo section on the last.
 - **Text reveal speed** — every `text` segment reveals its text over one fixed
   window, `OUTRO.typeFrames` in `src/lib/constants.ts` (≈0.75s @30fps), followed by
   `OUTRO.hold`. Independent of text length.
@@ -175,5 +168,5 @@ pnpm assemble ludwig-mies-van-der-rohe
   lower it).
 - The journey needs **≥2 buildings** for an architect (it navigates between
   them); fewer throws a clear error.
-- `assets:demo` asserts the board drag-pan actually moved (catches a silent
+- `assets:demo` asserts each look-around pan actually moved (catches a silent
   capture failure loudly).

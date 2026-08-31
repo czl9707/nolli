@@ -3,7 +3,7 @@ import { readJsonOr } from "@nolli/remotion/cli";
 import { FPS } from "../../src/lib/constants";
 
 // Building slugs the demo visits, in order: open on the first, real-navigate
-// through the middles, board + lightbox section on the last.
+// through the middles, board + photo lightbox on the last.
 export type Journey = string[];
 
 // Canonical capture tuning. demo.json does NOT carry tuning — re-tuning is a
@@ -11,23 +11,22 @@ export type Journey = string[];
 export const DEFAULT_TUNING = {
   slowmo: 0.4,
   establishZoom: 10,
-  diveZoom: 14,
+  // The zoom we visit buildings at: the opening dive and the nav-arrival warm-up.
+  visitZoom: 14,
   establishHold: 1000,
-  flyZoom: 14,
   flyHold: 400,
   navLandMs: 2100,
   mapPanCount: 2,
-  // Beat 5 is split: boardOpenSettle absorbs the "Go to Pin Board" morph-in
-  // (framer-motion) + the inset camera flyTo (a real setTimeout, unscaled by
-  // slow-mo, so it lands in app-time faster than its delay suggests). boardHold
-  // is then a PURE static pause after the bloom finishes — readable even after
-  // the final-cut 2× playbackRate. Together ~3.5s app.
+  // boardOpenSettle absorbs the "Go to Pin Board" morph-in (framer-motion) +
+  // the inset camera flyTo (a real setTimeout, unscaled by slow-mo, so it lands
+  // in app-time faster than its delay suggests). boardHold is then a PURE
+  // static pause after the bloom finishes — readable even after the final-cut
+  // 2× playbackRate. Together ~3.5s app.
   boardOpenSettle: 2000,
   boardHold: 1500,
+  // Final beat: held after the lightbox entrance fully settles — the clip ends here.
   detailHold: 2000,
-  detailCloseHold: 500,
 
-  panCount: 2,
   // Look-around fan half-widths (deg): pan 1 glances OUT away from the pin on a
   // wide fan; pan 2 glances BACK toward the pin on a narrow one.
   panOutFanHalf: 60,
@@ -38,8 +37,6 @@ export const DEFAULT_TUNING = {
   panDurMax: 400,
   panHold: 500,
 
-  mapReturnMs: 3000,
-  mapReturnHold: 1000,
   screencastQuality: 92,
   maxFrames: 24 * FPS,
 

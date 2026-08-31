@@ -7,8 +7,6 @@ type Vec = { x: number; y: number };
 type TimedVec = Vec & { timestamp: number };
 type Box = { x: number; y: number; width: number; height: number };
 
-export type CursorTarget = Locator | Vec;
-
 export type CursorOptions = {
   // The capture slow-mo factor. Every app-ms of motion is waited as appMs/slowmo
   // wall-ms, matching assets-demo's appWait so the cursor moves in the same
@@ -16,14 +14,10 @@ export type CursorOptions = {
   slowmo: number;
   // Viewport in CSS px (for clamping + center fallback).
   viewport: { width: number; height: number };
-};
-
-export type CursorTiming = {
-  /** app-ms for the approach to a click target. */
-  moveAppMs: number;
-  /** app-ms to hover on the target before pressing — the "arrive" beat. */
+  // click(): app-ms to hover at the cursor's spot before pressing — the
+  // "I'm here" beat the viewer needs to read the click.
   hoverAppMs: number;
-  /** app-ms to settle after releasing. */
+  // click(): app-ms to settle after releasing.
   dwellAppMs: number;
 };
 
@@ -40,8 +34,26 @@ const centerOf = (b: Box): Vec => {
   return { x: b.x + b.width / 2 + jx, y: b.y + b.height / 2 + jy };
 };
 
+// Resolve a Locator to a near-center point in its bounding box. Retries once
+// after waiting for visible (some targets — a just-bloomed polaroid — aren't
+// laid out the instant we ask); falls back to viewport center only if it never
+// materializes.
+export async function pointOf(
+  locator: Locator,
+  viewport: { width: number; height: number },
+): Promise<Vec> {
+  let box = await locator.boundingBox();
+  if (!box) {
+    await locator.waitFor({ state: "visible", timeout: 2000 }).catch(() => {});
+    box = await locator.boundingBox();
+  }
+  return box
+    ? centerOf(box)
+    : { x: viewport.width / 2, y: viewport.height / 2 };
+}
+
 export function createCursor(page: Page, opts: CursorOptions) {
-  const { slowmo, viewport } = opts;
+  const { slowmo, viewport, hoverAppMs, dwellAppMs } = opts;
   // Start at screen center — the cursor is revealed there by appear() at capture
   // start (no glide-in; that read as a bad initial move).
   let cur: Vec = { x: viewport.width / 2, y: viewport.height / 2 };
@@ -69,90 +81,79 @@ export function createCursor(page: Page, opts: CursorOptions) {
     for (const p of steps) {
       const dt = p.timestamp - prev;
       prev = p.timestamp;
-      const x = clamp(p.x, 0, viewport.width);
-      const y = clamp(p.y, 0, viewport.height);
-      await page.mouse.move(x, y);
+      await page.mouse.move(clamp(p.x, 0, viewport.width), clamp(p.y, 0, viewport.height));
       await page.waitForTimeout(wall((dt * appMs) / span));
     }
     return { x: clamp(end.x, 0, viewport.width), y: clamp(end.y, 0, viewport.height) };
   }
 
-  // Build a timed path from `cur` to `end` (a point or an element box).
-  function plan(end: Vec | Box): { pts: TimedVec[]; land: Vec } {
-    const pts = path(cur, end, { useTimestamps: true }) as TimedVec[];
-    // For a box target, ghost-cursor ends inside it — use the last point as the
-    // landing coordinate so a subsequent click lands where the viewer saw the
-    // cursor arrive. For a point target, snap to the exact point.
-    const last = pts[pts.length - 1];
-    const land: Vec =
-      "width" in end ? { x: last.x, y: last.y } : { x: (end as Vec).x, y: (end as Vec).y };
-    return { pts, land };
+  // Ghost-cursor Bézier from cur to `point`, landed exactly on it.
+  async function move(point: Vec, appMs: number): Promise<void> {
+    const pts = path(cur, point, { useTimestamps: true }) as TimedVec[];
+    cur = await runPath(pts, appMs, point);
   }
 
-  async function moveTo(end: Vec | Box, appMs: number): Promise<Vec> {
-    const { pts, land } = plan(end);
-    const arrived = await runPath(pts, appMs, land);
-    cur = arrived;
-    return arrived;
+  // Press/release at the current spot, with the hover beat before and dwell
+  // after. Callers pair it with move(): one decisive move onto the target,
+  // then click — without the hover the cursor seems to barely graze the target
+  // before the action fires.
+  async function click(): Promise<void> {
+    await page.waitForTimeout(wall(hoverAppMs));
+    await page.mouse.click(cur.x, cur.y);
+    await page.waitForTimeout(wall(dwellAppMs));
   }
 
-  // Resolve a target (Locator → a near-center point in its bounding box, or a
-  // literal point) to a ghost-cursor end. Retries once after waiting for visible
-  // (some targets — a just-bloomed polaroid — aren't laid out the instant we
-  // ask); falls back to viewport center only if it never materializes.
-  async function resolve(target: CursorTarget): Promise<Vec> {
-    if ("x" in target && "y" in target) return target as Vec;
-    const loc = target as Locator;
-    let box = await loc.boundingBox();
-    if (!box) {
-      await loc.waitFor({ state: "visible", timeout: 2000 }).catch(() => {});
-      box = await loc.boundingBox();
+  // One gesture, two drags:
+  // - map mode (map=true): pressless camera drag. The map pans itself by
+  //   (point − cur) and the cursor rides along via an in-page rAF loop
+  //   (window.__nolliCursorFollow, installed by CURSOR_INIT) that reads the
+  //   map's real per-frame content offset, so the cursor locks to whatever
+  //   easing MapLibre uses — no Node/CDP drift. Resolves on moveend, then folds
+  //   the final pixel offset into cur so the next move is continuous. No
+  //   synthetic pointer: a pointerdown on the map would start a real map drag
+  //   fighting the panBy.
+  // - pointer mode: a real held-button drag — down, a settle so React commits
+  //   isPanning (board pans gate pointermove on it; Playwright's batched mouse
+  //   moves can all land before the commit, leaving every move a no-op), a
+  //   ghost-cursor Bézier to `point`, then up.
+  async function drag(point: Vec, appMs: number, map?: boolean): Promise<void> {
+    if (map) {
+      await page.evaluate(
+        ({ dx, dy, duration }) => {
+          const m = (window as unknown as {
+            __nolliMap?: { panBy: (off: [number, number], o: { duration: number }) => void };
+          }).__nolliMap;
+          m?.panBy([dx, dy], { duration });
+        },
+        { dx: point.x - cur.x, dy: point.y - cur.y, duration: appMs },
+      );
+      const off = await page.evaluate(
+        (s) =>
+          (window as unknown as {
+            __nolliCursorFollow?: (x: number, y: number) => Promise<{ fx: number; fy: number }>;
+          }).__nolliCursorFollow?.(s.x, s.y) ?? Promise.resolve({ fx: 0, fy: 0 }),
+        cur,
+      );
+      cur = {
+        x: clamp(cur.x + off.fx, 0, viewport.width),
+        y: clamp(cur.y + off.fy, 0, viewport.height),
+      };
+      return;
     }
-    return box ? centerOf(box) : { x: viewport.width / 2, y: viewport.height / 2 };
-  }
-
-  // Approach → HOVER (the "I'm here" beat the viewer needs to read the click) →
-  // press → release. The hover is the important part: without it the cursor
-  // seems to barely graze the target before the action fires.
-  async function click(target: CursorTarget, t: CursorTiming): Promise<void> {
-    const land = await moveTo(await resolve(target), t.moveAppMs);
-    await page.waitForTimeout(wall(t.hoverAppMs));
-    await page.mouse.click(land.x, land.y);
-    await page.waitForTimeout(wall(t.dwellAppMs));
-  }
-
-  // Button-held move (one segment of a drag). Caller owns down()/up() so it can
-  // keep the React isPanning-commit settle between them (see panBoard).
-  async function drag(to: Vec, appMs: number): Promise<void> {
-    await moveTo(to, appMs);
-  }
-
-  // Mirror a map panBy to the cursor with perfect sync: an in-page rAF loop
-  // (installed by CURSOR_INIT as window.__nolliCursorFollow) reads the map's real
-  // per-frame content offset and sets the overlay transform directly, so the
-  // cursor locks to whatever easing MapLibre uses — no Node/CDP drift. Resolves on
-  // moveend; we then fold the final pixel offset into our Node-side coordinate so
-  // the next move is continuous.
-  async function followPan(): Promise<void> {
-    const start = { x: cur.x, y: cur.y };
-    const off = await page.evaluate(
-      (s) =>
-        (window as unknown as {
-          __nolliCursorFollow?: (x: number, y: number) => Promise<{ fx: number; fy: number }>;
-        }).__nolliCursorFollow?.(s.x, s.y) ?? Promise.resolve({ fx: 0, fy: 0 }),
-      start,
-    );
-    cur = { x: clamp(cur.x + off.fx, 0, viewport.width), y: clamp(cur.y + off.fy, 0, viewport.height) };
+    await page.mouse.down();
+    await page.waitForTimeout(wall(150));
+    await move(point, appMs);
+    await page.mouse.up();
   }
 
   // A small, human-like reposition just before a drag — the hand settling on the
   // map. Picks a random point in the central region of the viewport (NOT an
   // offset from the current cursor: after a pan the cursor can sit near an edge,
   // and a random ±offset would wander it off the map). Two extras vs a plain
-  // moveTo: (1) guarantee a meaningful travel distance so it reads as a move, not
+  // move: (1) guarantee a meaningful travel distance so it reads as a move, not
   // a twitch; (2) scale the duration by distance so a SHORT reposition is quick
   // instead of a fixed slow crawl (the first reach, from center, was the victim).
-  async function reach(): Promise<void> {
+  async function reposition(): Promise<void> {
     let tx = viewport.width * (0.3 + Math.random() * 0.4);
     let ty = viewport.height * (0.3 + Math.random() * 0.4);
     const dx = tx - cur.x;
@@ -165,8 +166,7 @@ export function createCursor(page: Page, opts: CursorOptions) {
       ty = clamp(cur.y + dy * k, viewport.height * 0.25, viewport.height * 0.75);
       dist = Math.hypot(tx - cur.x, ty - cur.y);
     }
-    const appMs = clamp(dist / 1.8, 70, 120);
-    await moveTo({ x: tx, y: ty }, appMs);
+    await move({ x: tx, y: ty }, clamp(dist / 1.8, 70, 120));
   }
 
   // Reveal the cursor at screen center at capture start (a single pointermove —
@@ -177,7 +177,15 @@ export function createCursor(page: Page, opts: CursorOptions) {
     cur = c;
   }
 
-  return { moveTo, click, drag, followPan, reach, appear };
+  return {
+    appear,
+    reposition,
+    move,
+    click,
+    drag,
+    // Read-only current position (callers compute drag endpoints as pos+delta).
+    pos: () => ({ ...cur }) as Readonly<Vec>,
+  };
 }
 
 export type Cursor = ReturnType<typeof createCursor>;

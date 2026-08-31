@@ -12,7 +12,7 @@ const BASE_URL = process.env.BASE_URL ?? "http://localhost:5173";
 // Capture BOTH types (detail + board lightbox) for every building of one slug
 // into out/<slug>/images/. The base manifest (out/<slug>/manifest.json from
 // `pnpm seed <slug>`) is read for the building list.
-export async function runImages(slug: string) {
+export async function generateImages(slug: string) {
   const outDir = resolve("out", slug);
   const manifest = readJsonOr<Manifest>(resolve("out", slug, "manifest.json"), "Run `pnpm seed <slug>` first.");
   if (!manifest.buildings?.length)
@@ -81,6 +81,6 @@ export async function runImages(slug: string) {
 if (process.argv[1] && resolve(process.argv[1]) === import.meta.filename) {
   runCli("assets:images", async (slug) => {
     console.log(`assets:images — ${slug}`);
-    await runImages(slug);
+    await generateImages(slug);
   });
 }

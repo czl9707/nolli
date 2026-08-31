@@ -50,11 +50,9 @@ export function freshJourney(manifest: Manifest): Journey {
   return [first.slug, second?.slug ?? first.slug];
 }
 
-// Scene order leads with the demo (journey → board reveal), then alternates
-// text → images → text → images → text → logo: name, board photos, count,
-// detail photos, "Now available in". The default cut uses ONE demo chunk; to
-// ship the long-form demo, add the demo-2 entry here or in video.json (its
-// capture is still produced by assets:demo).
+// Scene order leads with the demo (journey → board reveal → photo open), then
+// alternates text → images → text → images → text → logo: name, board photos,
+// count, detail photos, "Now available in".
 export function buildScenes(manifest: Manifest): Scene[] {
   const scenes: Scene[] = [];
   scenes.push({ type: "video", src: "demo-1.mp4", playbackRate: DEMO_RATE });

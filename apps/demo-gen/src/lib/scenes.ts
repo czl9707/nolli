@@ -50,7 +50,11 @@ export function durationOf(scene: Scene): number {
       if (scene.frames === undefined) {
         throw new Error(`video scene "${scene.src}" has no frame count — run \`pnpm assemble\` first.`);
       }
-      return Math.ceil(scene.frames / (scene.playbackRate ?? DEFAULT_PLAYBACK_RATE));
+      // One frame short of the clip's scaled length: the composition's final
+      // frames seek to the clip's literal last decodable frame, and the
+      // extractor can land just past it (black flash). Staying a frame inside
+      // is invisible at 30fps and keeps the tail clean.
+      return Math.max(1, Math.ceil(scene.frames / (scene.playbackRate ?? DEFAULT_PLAYBACK_RATE)) - 1);
     case "logo":
       return segmentDuration(LOGO_WORD.length, OUTRO.logo.typeStart);
   }
