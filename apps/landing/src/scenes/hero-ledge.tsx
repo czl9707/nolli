@@ -27,7 +27,7 @@ export const heroHold = (data: LandingData): HoldScene => ({
   kind: "hold",
   id: "hero",
   shape: "[data-spine-shape='hero']",
-  heightVh: 180,
+  heightVh: 100,
   Component: () => <HeroLedge data={data} />,
 })
 
