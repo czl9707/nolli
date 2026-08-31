@@ -6,6 +6,9 @@
   position: sticky;
   top: 10svh;
   height: 80svh;
+  box-sizing: border-box;
+  /* closing rule — every internal split draws one, the screen edge too */
+  border-bottom: 1px solid rgb(var(--color-primary-foreground) / 0.25);
 }
 
 .splits {
