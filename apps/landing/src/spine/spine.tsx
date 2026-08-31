@@ -1,6 +1,6 @@
 // src/spine/spine.tsx
 import {
-  createContext, useCallback, useContext, useEffect, useMemo, useRef, useState,
+  createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState,
 } from "react"
 import { createPortal } from "react-dom"
 import {
@@ -106,12 +106,15 @@ export function Spine({
   useEffect(() => { apply(scrollVh.get()) }, [apply, scrollVh])
   useMotionValueEvent(scrollVh, "change", apply)
 
-  // initial placement: scenes own the camera afterwards
+  // initial placement: scenes own the camera afterwards. Layout effect so
+  // the placement lands before ANY scene's passive fit effect — passive
+  // effects run child-first, which would let a scene's jumpTo be clobbered
+  // by this one.
   const setRef = useCallback((m: MapRef | null) => {
     mapRef.current = m
     setMapReady(!!m)
   }, [])
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!mapReady) return
     mapRef.current?.jumpTo({ center: camera.center, zoom: camera.zoom })
     const c = mapRef.current?.getContainer()
