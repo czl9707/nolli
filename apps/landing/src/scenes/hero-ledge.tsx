@@ -17,7 +17,7 @@ import { CLUSTER_CITY } from "@/lib/constants"
 import { fitCamera } from "@/lib/camera"
 import { useLinger } from "@/lib/use-linger"
 import type { LandingData } from "@/lib/landing-data"
-import { CursorReveal, HERO_MARKER_CLASS, useCursorSprings, usePlatePicks } from "./hero-reveal"
+import { CursorReveal, useCursorSprings, usePlatePicks } from "./hero-reveal"
 import markerStyles from "@/components/photo-markers.module.css"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
 import styles from "./hero-ledge.module.css"
@@ -45,13 +45,7 @@ function HeroLedge({ data }: { data: LandingData }) {
   const picks = data.heroPicks
   const { sx, sy } = useCursorSprings()
   const { nearest, active } = usePlatePicks(sx, sy, picks, map)
-  // the reveal roams only the top-left pane
   const boundsRef = useRef<HTMLDivElement | null>(null)
-
-  // content scrolls off naturally (hold height == component height); the
-  // veil, plate and crosshairs ride up with the page instead (CursorReveal,
-  // in this section's own tree)
-  const local = useSceneScroll()
 
   useEffect(() => {
     const pane = boundsRef.current
@@ -77,13 +71,10 @@ function HeroLedge({ data }: { data: LandingData }) {
   // css on the section (snap mode never hides the system cursor)
   const reduced = useReducedMotion()
   const snap = useIsMobile() || !!reduced
-
-  // hero photo markers stand down at the transition entry (hold end): the
-  // on-class flip fades them out early in the transition
-  // (photo-markers.module.css), so they don't stack over the index markers
-  // during the index hold
-  const [markersOn, setMarkersOn] = useState(() => local.get() < SCENE_REAL_HEIGHTVH)
-  useMotionValueEvent(local, "change", (v) => setMarkersOn(v < SCENE_REAL_HEIGHTVH))
+  
+  const localScrollDist = useSceneScroll()
+  const [markersOn, setMarkersOn] = useState(() => localScrollDist.get() < SCENE_REAL_HEIGHTVH)
+  useMotionValueEvent(localScrollDist, "change", (v) => setMarkersOn(v < SCENE_REAL_HEIGHTVH))
 
   return (
     <section data-spine-shape="hero" className={snap ? styles.hero : `${styles.hero} ${styles.cursorHide}`}>
@@ -94,56 +85,49 @@ function HeroLedge({ data }: { data: LandingData }) {
         tagTr={CLUSTER_CITY}
       />
       <HeroPhotoMarkers picks={picks} on={markersOn} />
-      <Screen>
-        <div className={styles.splits}>
-          <HSplit>
-            <Pane size="var(--size-header-height)" />
-            <Pane>
-              <VSplit>
-                <Pane size="calc(100vw - var(--grid-col) - max(var(--grid-padding), calc(var(--grid-col) * 2)))">
-                  <HSplit>
-                    <Pane size="75%">
-                      <div ref={boundsRef} className={styles.revealBounds} />
-                    </Pane>
-                    <Pane className={styles.headlineBody}>
-                      <HeroHeadline />
-                    </Pane>
-                  </HSplit>
-                </Pane>
-                <Pane size="calc(var(--grid-col) + max(var(--grid-padding), calc(var(--grid-col) * 2)))">
-                  <HSplit>
-                    <Pane size="75%" className={styles.pickBody}>
-                      <PickList picks={picks} active={active} />
-                    </Pane>
-                    <Pane className={styles.captionBody}>
-                      <NearestCaption nearest={nearest} />
-                    </Pane>
-                  </HSplit>
-                </Pane>
-              </VSplit>
-            </Pane>
-          </HSplit>
-        </div>
+      <Screen className={styles.screen}>
+        <HSplit>
+          <Pane size="var(--size-header-height)" />
+          <Pane>
+            <VSplit>
+              <Pane size="calc(100vw - var(--grid-col) - max(var(--grid-padding), calc(var(--grid-col) * 2)))">
+                <HSplit>
+                  <Pane size="80%">
+                    <div ref={boundsRef} className={styles.revealBoundsCell} />
+                  </Pane>
+                  <Pane className={styles.headlineCell}>
+                    <HeroHeadline />
+                  </Pane>
+                </HSplit>
+              </Pane>
+              <Pane size="calc(var(--grid-col) + max(var(--grid-padding), calc(var(--grid-col) * 2)))">
+                <HSplit>
+                  <Pane size="80%" className={styles.pickCell}>
+                    <PickList picks={picks} active={active} />
+                  </Pane>
+                  <Pane className={styles.captionCell}>
+                    <NearestCaption nearest={nearest} />
+                  </Pane>
+                </HSplit>
+              </Pane>
+            </VSplit>
+          </Pane>
+        </HSplit>
       </Screen>
     </section>
   )
 }
 
-/** Hero-owned photo markers, portalled into the spine's map layer so they
- * ride the map (clipped to the cursor plate by the reveal). Mounted only
- * while the hero owns the screen — the linger keeps them around for the
- * exit fade, the .on class drives it. */
 function HeroPhotoMarkers({ picks, on }: { picks: ArchSummary[]; on: boolean }) {
   const [mounted, visible] = useLinger(on, 400)
   const map = useSpineMap()
   const mapPortal = useMapPortal()
   if (!map || !mapPortal || !mounted) return null
-  const base = `${markerStyles.photoMarker} ${HERO_MARKER_CLASS}`
-  const cls = visible ? `${base} ${markerStyles.on}` : base
+  const cls = visible ? `${markerStyles.photoMarker} ${markerStyles.on}` : markerStyles.photoMarker
   return createPortal(
     <MapContext.Provider value={{ map, isLoaded: !!map }}>
       {picks.map((a) => (
-        <PhotoMarker key={a.slug} building={a} className={cls} />
+        <PhotoMarker key={a.slug} building={a} className={cls} data={{ "photo-marker": "hero" }} />
       ))}
     </MapContext.Provider>,
     mapPortal,
@@ -160,9 +144,10 @@ const HEADLINE_LINES = [
 function HeroHeadline() {
   const reduced = useReducedMotion()
   return (
-    <H1 className={styles.headline}>
+    <H1>
       {HEADLINE_LINES.map((line, i) => (
         <motion.div
+          className={styles.headlineLine}
           key={i}
           initial={reduced ? false : { opacity: 0, y: 10, filter: "blur(4px)" }}
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
@@ -185,11 +170,11 @@ function PickList({ picks, active }: { picks: ArchSummary[]; active: ReadonlySet
       transition={{ duration: 0.5, delay: 0.9, ease: "easeOut" }}
     >
       {picks.map((p) => (
-        <Body3 asChild key={p.slug}>
-          <li className={`${styles.pick} ${active.has(p.slug) ? styles.pickActive : ""}`}>
+        <Body2 asChild key={p.slug}>
+          <li className={`${styles.pick}`} data-picked={`${active.has(p.slug)}`}>
             {p.name}
           </li>
-        </Body3>
+        </Body2>
       ))}
     </motion.ul>
   )
@@ -203,13 +188,11 @@ function NearestCaption({ nearest }: { nearest: ArchSummary | null }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.15 }}
     >
-      <Body1 asChild>
-        <div className={styles.captionName}>{nearest?.name ?? ""}</div>
+      <Body1 className={styles.captionName}>
+        {nearest?.name ?? ""}
       </Body1>
-      <Body2 asChild>
-        <div className={styles.captionMeta}>
-          {nearest ? `${nearest.architect}, ${nearest.year}` : ""}
-        </div>
+      <Body2 className={styles.captionMeta}>
+        {nearest ? `${nearest.architect}, ${nearest.year}` : ""}
       </Body2>
     </motion.div>
   )

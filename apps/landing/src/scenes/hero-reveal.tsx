@@ -20,11 +20,9 @@ import styles from "./hero-reveal.module.css"
 
 export const PLATE = { w: 360, h: 280 }
 
-/** Inert class applied to every photo marker the hero mounts — the clip
- * driver matches on it to crop only the hero's set to the plate. A plain
- * string (not module css) so the shared .photoMarker class stays
- * identical across scenes. */
-export const HERO_MARKER_CLASS = "hero-pick"
+/** data-photo-marker value the hero's markers carry — the clip driver
+ * selects on it to crop only the hero's set to the plate. */
+const HERO_SET = "hero"
 
 const OVERHANG = { top: 14, right: 10, bottom: 10, left: 10 }
 
@@ -165,18 +163,13 @@ export function CursorReveal({
 
       // hero markers crop to the plate — the plate rides up with the page
       // during the transition while the markers stay in the pinned map
-      // layer, so scroll re-runs this too. Scoped to THIS map's markers
-      // carrying our class; any other map keeps its markers unclipped.
+      // layer, so scroll re-runs this too. Scoped to THIS map's hero set;
+      // any other map keeps its markers unclipped.
       if (map) {
-        const contents = Array.from(
-          map.getContainer().querySelectorAll<HTMLElement>(".maplibregl-marker"),
+        const contents = map.getContainer().querySelectorAll<HTMLElement>(
+          `[data-photo-marker="${HERO_SET}"]`,
         )
-          .map((root) => root.firstElementChild as HTMLElement | null)
-          .filter(
-            (el): el is HTMLElement =>
-              !!el && el.classList.contains(HERO_MARKER_CLASS) && el.isConnected,
-          )
-        for (const el of contents) clipToPlate(el, p)
+        for (const el of contents) if (el.isConnected) clipToPlate(el, p)
       }
     }
     const schedule = () => {

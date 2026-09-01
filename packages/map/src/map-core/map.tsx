@@ -431,14 +431,18 @@ type MarkerContentProps = {
   children?: ReactNode
   /** Additional CSS classes for the marker container */
   className?: string
+  /** Data attributes for the marker container — selection seams for
+   * consumers driving markers imperatively (e.g. clip drivers) */
+  data?: Record<string, string>
 }
 
-function MarkerContent({ children, className }: MarkerContentProps) {
+function MarkerContent({ children, className, data }: MarkerContentProps) {
   const { marker } = useMarkerContext()
 
   return createPortal(
     <div
       className={`${markerStyles.markerContent}${className ? ` ${className}` : ""}`}
+      {...data}
     >
       {children || <DefaultMarkerIcon />}
     </div>,

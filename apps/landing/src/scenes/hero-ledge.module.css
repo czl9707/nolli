@@ -18,32 +18,42 @@
   pointer-events: auto;
 }
 
-.splits {
+.screen {
   position: absolute;
   inset: 0;
   z-index: 1;
 }
 
 /* the reveal is bounded by the empty top-left pane */
-.revealBounds {
+.revealBoundsCell {
   position: absolute;
   inset: 0;
 }
 
 /* hero cells — margin panes flank the track panes, so padding is inner */
-.headlineBody {
+.headlineCell {
   display: flex;
   align-items: flex-end;
   padding: 0 1.5rem 2.5svh 1.5rem;
 }
 
-.pickBody {
+.headlineLine {
+  font-family: var(--font-sans);
+  font-weight: 400;
+}
+
+.accent {
+  font-family: var(--font-playful);
+  color: var(--hero-accent);
+}
+
+.pickCell {
   display: flex;
   justify-content: flex-start;
   padding: 2svh 1.5rem 1rem 1.5rem;
 }
 
-.captionBody {
+.captionCell {
   display: flex;
   align-items: flex-end;
   justify-content: flex-start;
@@ -51,50 +61,32 @@
   padding: 1.5rem 1.5rem 2.5svh 1.5rem;
 }
 
-/* headline */
-.headline {
-  margin: 0;
-  font-size: clamp(2.6rem, 5.4vw, 3.8rem);
-  max-width: 22ch;
-}
 
-.accent {
-  color: var(--hero-accent);
-}
 
-/* pick list */
 .pickList {
   list-style: none;
   margin: 0;
   padding: 0;
   text-align: left;
-  max-width: 30ch;
-}
-
-.pickList .pick {
-  line-height: 2;
-  font-size: 1rem;
 }
 
 .pick {
   opacity: 0.3;
   transition: opacity 0.4s ease;
+  line-height: 2;
+
+  &[data-picked="true"] {
+    opacity: 1;
+    font-weight: 500;
+  }
 }
 
-.pickActive {
-  opacity: 1;
-  font-weight: 600;
-}
-
-/* nearest caption */
 .captionName {
   font-weight: 600;
-  font-size: 1.3rem;
-  line-height: 1.25;
+  font-size: 1.25rem;
 }
 
 .captionMeta {
   opacity: 0.75;
-  margin-top: 0.15rem;
-  font-size: 1.05rem;
+  line-height: 1.75;
 }
