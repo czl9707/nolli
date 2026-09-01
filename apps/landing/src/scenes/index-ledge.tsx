@@ -22,6 +22,9 @@ const CITIES = ["Paris", "New York", "Tokyo", "London", "Chicago", "Berlin"] as 
 
 const PICKS_PER_CITY = 8
 
+/** City grid row height. */
+const CITY_ROW_H = "4rem"
+
 /** Marker visibility window in scene-local vh: flag on at the landing
  * run-in, off again at the exit window (fade length lives in
  * photo-markers.module.css). EXIT_END_VH bounds the content fade below.
@@ -160,28 +163,24 @@ function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect 
                     </H1>
                     <Statement />
                   </Pane>
-                  {/* auto = content height: the fixed 4rem rows size this
-                      pane, the dossier fills the rest */}
-                  <Pane size="auto">
-                    <VSplit>
-                      <Pane size="calc(var(--grid-col) * 2)">
-                        <CityColumn
-                          cities={CITIES.slice(0, 3)}
-                          selected={selected}
-                          loaded={Object.keys(picksByCity)}
-                          onSelect={onSelect}
-                        />
-                      </Pane>
-                      <Pane size="calc(var(--grid-col) * 2)">
-                        <CityColumn
-                          cities={CITIES.slice(3)}
-                          selected={selected}
-                          loaded={Object.keys(picksByCity)}
-                          onSelect={onSelect}
-                        />
-                      </Pane>
-                    </VSplit>
-                  </Pane>
+                  <CityRow
+                    cities={CITIES.slice(0, 2)}
+                    selected={selected}
+                    loaded={Object.keys(picksByCity)}
+                    onSelect={onSelect}
+                  />
+                  <CityRow
+                    cities={CITIES.slice(2, 4)}
+                    selected={selected}
+                    loaded={Object.keys(picksByCity)}
+                    onSelect={onSelect}
+                  />
+                  <CityRow
+                    cities={CITIES.slice(4, 6)}
+                    selected={selected}
+                    loaded={Object.keys(picksByCity)}
+                    onSelect={onSelect}
+                  />
                 </HSplit>
               </Pane>
               <Pane size="calc(var(--grid-col) * 8)">
@@ -212,9 +211,9 @@ function Statement() {
   )
 }
 
-/** One column of the 2x3 city grid — three fixed-height rows, each row IS
- * the button. */
-function CityColumn({
+/** One row of the city grid — fixed-height pane, split into two cells;
+ * each cell IS the button. */
+function CityRow({
   cities,
   selected,
   loaded,
@@ -226,34 +225,37 @@ function CityColumn({
   onSelect: (name: string) => void
 }) {
   return (
-    <div className={styles.cityColumn}>
-      {cities.map((name) => {
-        const ready = loaded.includes(name)
-        const cls = [
-          styles.cityCell,
-          name === selected ? styles.cityCellActive : "",
-          ready ? "" : styles.cityCellPending,
-        ]
-          .filter(Boolean)
-          .join(" ")
-        return (
-          <div
-            key={name}
-            className={cls}
-            onClick={() => ready && onSelect(name)}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault()
-                if (ready) onSelect(name)
-              }
-            }}
-          >
-            {name}
-          </div>
-        )
-      })}
-    </div>
+    <Pane size={CITY_ROW_H}>
+      <VSplit>
+        {cities.map((name) => {
+          const ready = loaded.includes(name)
+          const cls = [
+            styles.cityCell,
+            name === selected ? styles.cityCellActive : "",
+            ready ? "" : styles.cityCellPending,
+          ]
+            .filter(Boolean)
+            .join(" ")
+          return (
+            <Pane key={name}>
+              <div
+                className={cls}
+                onClick={() => ready && onSelect(name)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault()
+                    if (ready) onSelect(name)
+                  }
+                }}
+              >
+                {name}
+              </div>
+            </Pane>
+          )
+        })}
+      </VSplit>
+    </Pane>
   )
 }

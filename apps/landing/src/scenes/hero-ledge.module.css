@@ -9,8 +9,20 @@
   /* above the transition overlay (later sibling) so the closing rule and
      the ride-off content stay visible as the gradient slides over */
   z-index: 1;
-  /* closing rule — every internal split draws one, the screen edge too */
+}
+
+/* closing rule — every internal split draws one, the screen edge too.
+ * Drawn as an overlay, not border-bottom: the full-bleed veil is a CHILD
+ * of this section and children paint over the parent's border. */
+.hero::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
   border-bottom: var(--rule);
+  z-index: 2;
+  pointer-events: none;
 }
 
 /* the plate IS the cursor while the pointer is inside the hero — the
