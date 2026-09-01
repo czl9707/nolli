@@ -5,7 +5,7 @@
 // tail.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { createPortal } from "react-dom"
-import { motion, useTransform } from "framer-motion"
+import { motion, useMotionValueEvent, useTransform } from "framer-motion"
 import { Body1, H1 } from "@nolli/ui"
 import { MapContext, PhotoMarker, flyToSceneCinematic } from "@nolli/map"
 import { useDbStore, type ArchSummary } from "@nolli/data"
@@ -123,10 +123,16 @@ function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect 
   )
 
   const fade = useTransform(local, [EXIT_START_VH, EXIT_END_VH], [1, 0])
+  // markers own the screen from the landing run-in to the exit window
+  const [markersOn, setMarkersOn] = useState(() => {
+    const v = local.get()
+    return v >= -RAMP_VH && v < EXIT_START_VH
+  })
+  useMotionValueEvent(local, "change", (v) => setMarkersOn(v >= -RAMP_VH && v < EXIT_START_VH))
 
   return (
     <Screen className={styles.index}>
-      <IndexPhotoMarkers picks={picks} />
+      <IndexPhotoMarkers picks={picks} on={markersOn} />
       <motion.div className={styles.splits} style={{ opacity: fade }}>
         <HSplit>
           <Pane size="var(--size-header-height)" />
@@ -238,41 +244,24 @@ function CityColumn({
 }
 
 /** Photo markers pinned at real coords — MapMarker tracks the camera natively.
- * Marker contents portal into the spine's map layer, outside any fade
- * wrapper, so visibility is a binary container flag (photo-markers.module
- * css transitions the flip): on at the landing run-in, off at the exit
- * window or scrolled back above the run-in. While ours are on screen the
- * container also keeps the normal pin/cluster markers stood down (the
- * spine sets data-arch-markers="off"; our class exempts us from that
- * sweep). */
-function IndexPhotoMarkers({ picks }: { picks: ArchSummary[] }) {
+ * Marker contents portal into the spine's map layer; visibility is the on
+ * class (photo-markers.module.css transitions the flip), toggled at the
+ * landing run-in and off again at the exit window or scrolled back above
+ * the run-in. While ours are on screen the container also keeps the normal
+ * pin/cluster markers stood down (the spine sets data-arch-markers="off";
+ * our class exempts us from that sweep). */
+function IndexPhotoMarkers({ picks, on }: { picks: ArchSummary[]; on: boolean }) {
   const map = useSpineMap()
   const mapPortal = useMapPortal()
-  const local = useSceneScroll()
-
-  useEffect(() => {
-    if (!map) return
-    const el = map.getContainer()
-    const apply = () => {
-      const v = local.get()
-      if (v >= -RAMP_VH && v < EXIT_START_VH) el.dataset.photoMarkers = "on"
-      else el.removeAttribute("data-photo-markers")
-    }
-    apply()
-    const un = local.on("change", apply)
-    return () => {
-      un()
-      el.removeAttribute("data-photo-markers")
-    }
-  }, [map, local])
 
   if (!mapPortal || !map) return null
+  const cls = on ? `${markerStyles.indexMarker} ${markerStyles.on}` : markerStyles.indexMarker
   // markers mount from the scene tree (outside the spine's map), so
   // re-supply MapContext at the portal source for the MapMarker internals
   return createPortal(
     <MapContext.Provider value={{ map, isLoaded: !!map }}>
       {picks.map((a) => (
-        <PhotoMarker key={a.slug} building={a} className={markerStyles.indexMarker} />
+        <PhotoMarker key={a.slug} building={a} className={cls} />
       ))}
     </MapContext.Provider>,
     mapPortal,

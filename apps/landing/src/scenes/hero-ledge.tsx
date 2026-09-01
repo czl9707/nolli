@@ -5,9 +5,9 @@
 // during the hold and rides up with the page through the transition,
 // unveiling the map. The hold's height equals the component's, so the
 // pane-split content scrolls off naturally with it.
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
-import { motion, useReducedMotion, useTransform } from "framer-motion"
+import { motion, useMotionValueEvent, useReducedMotion, useTransform } from "framer-motion"
 import { Body1, Body2, Body3, H1, useIsMobile } from "@nolli/ui"
 import type { ArchSummary } from "@nolli/data"
 import { MapContext, PhotoMarker } from "@nolli/map"
@@ -17,6 +17,7 @@ import { CLUSTER_CITY, HERO_CAMERA } from "@/lib/constants"
 import { fitCamera } from "@/lib/camera"
 import type { LandingData } from "@/lib/landing-data"
 import { CursorReveal, PHOTO_MARKER_CLASS, useCursorSprings, usePlatePicks } from "./hero-reveal"
+import markerStyles from "@/components/photo-markers.module.css"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
 import styles from "./hero-ledge.module.css"
 
@@ -93,24 +94,11 @@ function HeroLedge({ data }: { data: LandingData }) {
   }, [fade, snap])
 
   // hero photo markers stand down at the transition entry (hold end): the
-  // binary data-hero-photo flag on the map container carries the on/off
-  // (photo-markers.module.css transitions the flip), so they fade out
-  // early in the transition instead of stacking over the index markers
+  // on-class flip fades them out early in the transition
+  // (photo-markers.module.css), so they don't stack over the index markers
   // during the index hold
-  useEffect(() => {
-    if (!map) return
-    const el = map.getContainer()
-    const apply = () => {
-      if (local.get() < HOLD_END_VH) el.dataset.heroPhoto = "on"
-      else el.removeAttribute("data-hero-photo")
-    }
-    apply()
-    const un = local.on("change", apply)
-    return () => {
-      un()
-      el.removeAttribute("data-hero-photo")
-    }
-  }, [map, local])
+  const [markersOn, setMarkersOn] = useState(() => local.get() < HOLD_END_VH)
+  useMotionValueEvent(local, "change", (v) => setMarkersOn(v < HOLD_END_VH))
 
   return (
     <section data-spine-shape="hero" className={styles.hero}>
@@ -121,7 +109,7 @@ function HeroLedge({ data }: { data: LandingData }) {
         sy={sy}
         tagTr={CLUSTER_CITY}
       />
-      <HeroPhotoMarkers picks={picks} />
+      <HeroPhotoMarkers picks={picks} on={markersOn} />
       <Screen>
         <motion.div className={styles.splits} style={{ opacity: fade }}>
           <HSplit>
@@ -158,15 +146,17 @@ function HeroLedge({ data }: { data: LandingData }) {
 }
 
 /** Hero-owned photo markers, portalled into the spine's map layer so they
- * ride the map (clipped to the cursor plate by the reveal). */
-function HeroPhotoMarkers({ picks }: { picks: ArchSummary[] }) {
+ * ride the map (clipped to the cursor plate by the reveal). `on` toggles
+ * the fade class. */
+function HeroPhotoMarkers({ picks, on }: { picks: ArchSummary[]; on: boolean }) {
   const map = useSpineMap()
   const mapPortal = useMapPortal()
   if (!map || !mapPortal) return null
+  const cls = on ? `${PHOTO_MARKER_CLASS} ${markerStyles.on}` : PHOTO_MARKER_CLASS
   return createPortal(
     <MapContext.Provider value={{ map, isLoaded: !!map }}>
       {picks.map((a) => (
-        <PhotoMarker key={a.slug} building={a} className={PHOTO_MARKER_CLASS} />
+        <PhotoMarker key={a.slug} building={a} className={cls} />
       ))}
     </MapContext.Provider>,
     mapPortal,
