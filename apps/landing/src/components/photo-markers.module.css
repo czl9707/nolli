@@ -1,33 +1,24 @@
 /* Photo markers portalled into the spine's map layer (via useMapPortal) —
-   shared by the hero and index scenes. Visibility is a class the owning
-   scene toggles from scroll bounds (state flips once per crossing); the
-   transition below does the fade. Rules target the content div, not the
-   marker root (maplibre writes its own inline opacity there). */
+   shared by the hero and index scenes; each scene toggles the .on class
+   from scroll bounds (state flips once per crossing) and the transition
+   does the fade. Targets the content div, not the marker root (maplibre
+   writes its own inline opacity there). The hero's clip driver
+   (hero-reveal.tsx) discriminates its set via the inert HERO_MARKER_CLASS
+   string instead of this module. */
 
-/* index-owned photo markers (index-ledge.tsx) */
-.indexMarker {
+.photoMarker {
   opacity: 0;
   transition: opacity 0.4s ease;
 }
 
-/* hero-owned photo markers (hero-reveal.tsx) — while the plate owns the
-   screen the per-marker clip-path (hero-reveal.tsx) crops them to the
-   plate */
-.heroMarker {
-  opacity: 0;
-  transition: opacity 0.4s ease;
-}
-
-.on.indexMarker,
-.on.heroMarker {
+.on.photoMarker {
   opacity: 1;
 }
 
 /* normal pins/clusters stand down while the photo markers own the screen —
    hide every maplibre marker root except the ones carrying a photo marker
-   content (.indexMarker/.heroMarker are module-scoped, so :has() here
-   matches only ours); LandingMap sets data-arch-markers="off" for the
-   whole spine */
-:global([data-arch-markers="off"]) :global(.maplibregl-marker):not(:has(.indexMarker)):not(:has(.heroMarker)) {
+   content (.photoMarker is module-scoped, so :has() here matches only
+   ours); LandingMap sets data-arch-markers="off" for the whole spine */
+:global([data-arch-markers="off"]) :global(.maplibregl-marker):not(:has(.photoMarker)) {
   visibility: hidden;
 }

@@ -15,15 +15,15 @@ import {
 import type { MapRef } from "@nolli/map"
 import type { ArchSummary } from "@nolli/data"
 import { Caption, Note, useIsMobile } from "@nolli/ui"
-import markerStyles from "@/components/photo-markers.module.css"
 import styles from "./hero-reveal.module.css"
 
 export const PLATE = { w: 360, h: 280 }
 
-/** Class applied to every photo marker the hero mounts — the clip driver
- * matches on it (and it exempts the markers from the spine's
- * cluster stand-down). */
-export const PHOTO_MARKER_CLASS = markerStyles.heroMarker
+/** Inert class applied to every photo marker the hero mounts — the clip
+ * driver matches on it to crop only the hero's set to the plate. A plain
+ * string (not module css) so the shared .photoMarker class stays
+ * identical across scenes. */
+export const HERO_MARKER_CLASS = "hero-pick"
 
 const OVERHANG = { top: 14, right: 10, bottom: 10, left: 10 }
 
@@ -189,7 +189,7 @@ export function CursorReveal({
         .map((root) => root.firstElementChild as HTMLElement | null)
         .filter(
           (el): el is HTMLElement =>
-            !!el && el.classList.contains(PHOTO_MARKER_CLASS) && el.isConnected,
+            !!el && el.classList.contains(HERO_MARKER_CLASS) && el.isConnected,
         )
       for (const el of contents) {
         const root = el.parentElement!

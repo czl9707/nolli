@@ -255,7 +255,7 @@ function IndexPhotoMarkers({ picks, on }: { picks: ArchSummary[]; on: boolean })
   const mapPortal = useMapPortal()
 
   if (!mapPortal || !map) return null
-  const cls = on ? `${markerStyles.indexMarker} ${markerStyles.on}` : markerStyles.indexMarker
+  const cls = on ? `${markerStyles.photoMarker} ${markerStyles.on}` : markerStyles.photoMarker
   // markers mount from the scene tree (outside the spine's map), so
   // re-supply MapContext at the portal source for the MapMarker internals
   return createPortal(

@@ -16,7 +16,7 @@ import type { HoldScene } from "@/spine/timeline"
 import { CLUSTER_CITY, HERO_CAMERA } from "@/lib/constants"
 import { fitCamera } from "@/lib/camera"
 import type { LandingData } from "@/lib/landing-data"
-import { CursorReveal, PHOTO_MARKER_CLASS, useCursorSprings, usePlatePicks } from "./hero-reveal"
+import { CursorReveal, HERO_MARKER_CLASS, useCursorSprings, usePlatePicks } from "./hero-reveal"
 import markerStyles from "@/components/photo-markers.module.css"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
 import styles from "./hero-ledge.module.css"
@@ -152,7 +152,8 @@ function HeroPhotoMarkers({ picks, on }: { picks: ArchSummary[]; on: boolean }) 
   const map = useSpineMap()
   const mapPortal = useMapPortal()
   if (!map || !mapPortal) return null
-  const cls = on ? `${PHOTO_MARKER_CLASS} ${markerStyles.on}` : PHOTO_MARKER_CLASS
+  const base = `${markerStyles.photoMarker} ${HERO_MARKER_CLASS}`
+  const cls = on ? `${base} ${markerStyles.on}` : base
   return createPortal(
     <MapContext.Provider value={{ map, isLoaded: !!map }}>
       {picks.map((a) => (
