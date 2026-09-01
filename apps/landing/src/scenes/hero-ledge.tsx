@@ -7,7 +7,7 @@
 // pane-split content scrolls off naturally with it.
 import { useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
-import { motion, useMotionValueEvent, useReducedMotion, useTransform } from "framer-motion"
+import { motion, useMotionValueEvent, useReducedMotion } from "framer-motion"
 import { Body1, Body2, Body3, H1, useIsMobile } from "@nolli/ui"
 import type { ArchSummary } from "@nolli/data"
 import { MapContext, PhotoMarker } from "@nolli/map"
@@ -44,12 +44,10 @@ function HeroLedge({ data }: { data: LandingData }) {
   // the reveal roams only the top-left pane
   const boundsRef = useRef<HTMLDivElement | null>(null)
 
-  // content scrolls off naturally (hold height == component height); a tail
-  // fade over the last stretch keeps the exit from dragging. The veil,
-  // plate and crosshairs ride up with the page instead (CursorReveal, in
-  // this section's own tree)
+  // content scrolls off naturally (hold height == component height); the
+  // veil, plate and crosshairs ride up with the page instead (CursorReveal,
+  // in this section's own tree)
   const local = useSceneScroll()
-  const fade = useTransform(local, [80, 100], [1, 0])
 
   // fit the picks to the PANE and center them there, so the photo cards land
   // inside the reveal area: outliers excluded, camera fitted to pane px with
@@ -76,22 +74,10 @@ function HeroLedge({ data }: { data: LandingData }) {
     map.jumpTo({ center: [c1.lng, c1.lat], zoom: fit.zoom })
   }, [map, picks])
 
-  // the plate IS the cursor while the hero owns the screen; it stands down
-  // with the exit fade (snap mode never hides the system cursor)
+  // the plate IS the cursor while the pointer is inside the scene — plain
+  // css on the section (snap mode never hides the system cursor)
   const reduced = useReducedMotion()
   const snap = useIsMobile() || !!reduced
-  useEffect(() => {
-    if (snap) return
-    const apply = (v: number) => {
-      document.body.style.cursor = v > 0.5 ? "none" : ""
-    }
-    apply(fade.get())
-    const un = fade.on("change", apply)
-    return () => {
-      un()
-      document.body.style.cursor = ""
-    }
-  }, [fade, snap])
 
   // hero photo markers stand down at the transition entry (hold end): the
   // on-class flip fades them out early in the transition
@@ -101,7 +87,7 @@ function HeroLedge({ data }: { data: LandingData }) {
   useMotionValueEvent(local, "change", (v) => setMarkersOn(v < HOLD_END_VH))
 
   return (
-    <section data-spine-shape="hero" className={styles.hero}>
+    <section data-spine-shape="hero" className={snap ? styles.hero : `${styles.hero} ${styles.cursorHide}`}>
       <CursorReveal
         boundsRef={boundsRef}
         map={map}
@@ -111,7 +97,7 @@ function HeroLedge({ data }: { data: LandingData }) {
       />
       <HeroPhotoMarkers picks={picks} on={markersOn} />
       <Screen>
-        <motion.div className={styles.splits} style={{ opacity: fade }}>
+        <div className={styles.splits}>
           <HSplit>
             <Pane size="var(--size-header-height)" />
             <Pane>
@@ -139,7 +125,7 @@ function HeroLedge({ data }: { data: LandingData }) {
               </VSplit>
             </Pane>
           </HSplit>
-        </motion.div>
+        </div>
       </Screen>
     </section>
   )

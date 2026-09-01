@@ -10,6 +10,14 @@
   border-bottom: 1px solid rgb(var(--color-primary-foreground) / 0.25);
 }
 
+/* the plate IS the cursor while the pointer is inside the hero — the
+   section must be hit-testable for cursor:none to resolve (nothing
+   beneath it takes pointer events; snap mode skips this class) */
+.cursorHide {
+  cursor: none;
+  pointer-events: auto;
+}
+
 .splits {
   position: absolute;
   inset: 0;
