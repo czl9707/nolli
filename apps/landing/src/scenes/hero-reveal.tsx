@@ -14,15 +14,17 @@ import {
 } from "framer-motion"
 import type { MapRef } from "@nolli/map"
 import type { ArchSummary } from "@nolli/data"
-import { Caption, Note, useIsMobile } from "@nolli/ui"
+import { Body3, useIsMobile } from "@nolli/ui"
 import { useSpineMap } from "@/spine/spine"
 import styles from "./hero-reveal.module.css"
 
 export const PLATE = { w: 360, h: 280 }
 
-/** data-photo-marker value the hero's markers carry — the clip driver
- * selects on it to crop only the hero's set to the plate. */
-const HERO_SET = "hero"
+/** Inert class applied to every photo marker the hero mounts — the clip
+ * driver matches on it to crop only the hero's set to the plate. A plain
+ * string (not module css) so the shared .photoMarker class stays
+ * identical across scenes. */
+export const HERO_MARKER_CLASS = "hero-pick"
 
 const OVERHANG = { top: 14, right: 10, bottom: 10, left: 10 }
 
@@ -163,13 +165,18 @@ export function CursorReveal({
 
       // hero markers crop to the plate — the plate rides up with the page
       // during the transition while the markers stay in the pinned map
-      // layer, so scroll re-runs this too. Scoped to THIS map's hero set;
-      // any other map keeps its markers unclipped.
+      // layer, so scroll re-runs this too. Scoped to THIS map's markers
+      // carrying our class; any other map keeps its markers unclipped.
       if (map) {
-        const contents = map.getContainer().querySelectorAll<HTMLElement>(
-          `[data-photo-marker="${HERO_SET}"]`,
+        const contents = Array.from(
+          map.getContainer().querySelectorAll<HTMLElement>(".maplibregl-marker"),
         )
-        for (const el of contents) if (el.isConnected) clipToPlate(el, p)
+          .map((root) => root.firstElementChild as HTMLElement | null)
+          .filter(
+            (el): el is HTMLElement =>
+              !!el && el.classList.contains(HERO_MARKER_CLASS) && el.isConnected,
+          )
+        for (const el of contents) clipToPlate(el, p)
       }
     }
     const schedule = () => {
@@ -200,21 +207,23 @@ export function CursorReveal({
       <span data-cxht className={`${styles.cx} ${styles.cxH}`} aria-hidden />
       <span data-cxhb className={`${styles.cx} ${styles.cxH}`} aria-hidden />
       <div data-plate className={styles.plate} style={{ width: PLATE.w, height: PLATE.h }}>
-        <Note asChild>
+        <Body3 asChild>
           <span className={styles.tagTl}>{tagTl}</span>
-        </Note>
+        </Body3>
         {tagTr && (
-          <Note asChild>
+          <Body3 asChild>
             <span className={styles.tagTr}>{tagTr}</span>
-          </Note>
+          </Body3>
         )}
         <span className={styles.dot} />
       </div>
       <div data-furniture className={styles.furniture} style={{ width: PLATE.w, height: PLATE.h }}>
-        <Caption asChild>
+        <Body3 asChild>
           <span className={styles.north}>N ↑</span>
-        </Caption>
-        <span ref={coordsRef} className={styles.coords} />
+        </Body3>
+        <Body3 asChild>
+          <span ref={coordsRef} className={styles.coords} />
+        </Body3>
       </div>
     </div>
   )

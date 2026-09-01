@@ -263,7 +263,7 @@ function IndexPhotoMarkers({ picks, on }: { picks: ArchSummary[]; on: boolean })
   return createPortal(
     <MapContext.Provider value={{ map, isLoaded: !!map }}>
       {picks.map((a) => (
-        <PhotoMarker key={a.slug} building={a} className={cls} data={{ "photo-marker": "index" }} />
+        <PhotoMarker key={a.slug} building={a} className={cls} />
       ))}
     </MapContext.Provider>,
     mapPortal,

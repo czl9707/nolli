@@ -17,7 +17,7 @@ import { CLUSTER_CITY } from "@/lib/constants"
 import { fitCamera } from "@/lib/camera"
 import { useLinger } from "@/lib/use-linger"
 import type { LandingData } from "@/lib/landing-data"
-import { CursorReveal, useCursorSprings, usePlatePicks } from "./hero-reveal"
+import { CursorReveal, HERO_MARKER_CLASS, useCursorSprings, usePlatePicks } from "./hero-reveal"
 import markerStyles from "@/components/photo-markers.module.css"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
 import styles from "./hero-ledge.module.css"
@@ -123,11 +123,12 @@ function HeroPhotoMarkers({ picks, on }: { picks: ArchSummary[]; on: boolean }) 
   const map = useSpineMap()
   const mapPortal = useMapPortal()
   if (!map || !mapPortal || !mounted) return null
-  const cls = visible ? `${markerStyles.photoMarker} ${markerStyles.on}` : markerStyles.photoMarker
+  const base = `${markerStyles.photoMarker} ${HERO_MARKER_CLASS}`
+  const cls = visible ? `${base} ${markerStyles.on}` : base
   return createPortal(
     <MapContext.Provider value={{ map, isLoaded: !!map }}>
       {picks.map((a) => (
-        <PhotoMarker key={a.slug} building={a} className={cls} data={{ "photo-marker": "hero" }} />
+        <PhotoMarker key={a.slug} building={a} className={cls} />
       ))}
     </MapContext.Provider>,
     mapPortal,

@@ -3,8 +3,8 @@
    scroll bounds (use-linger holds the exit around for this fade) and the
    .on class + transition animates both directions. Targets the content
    div, not the marker root (maplibre writes its own inline opacity
-   there). Sets discriminate via data-photo-marker="hero"/"index" on the
-   same div (the hero's clip driver selects on it). */
+   there). The hero's clip driver (hero-reveal.tsx) discriminates its set
+   via the inert HERO_MARKER_CLASS string instead of this module. */
 
 .photoMarker {
   opacity: 0;
@@ -17,7 +17,8 @@
 
 /* normal pins/clusters stand down while the photo markers own the screen —
    hide every maplibre marker root except the ones carrying a photo marker
-   content; LandingMap sets data-arch-markers="off" for the whole spine */
-:global([data-arch-markers="off"]) :global(.maplibregl-marker):not(:has([data-photo-marker])) {
+   content (.photoMarker is module-scoped, so :has() here matches only
+   ours); LandingMap sets data-arch-markers="off" for the whole spine */
+:global([data-arch-markers="off"]) :global(.maplibregl-marker):not(:has(.photoMarker)) {
   visibility: hidden;
 }
