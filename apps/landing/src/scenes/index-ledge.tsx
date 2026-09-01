@@ -132,8 +132,8 @@ function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect 
           <Pane size="var(--size-header-height)" />
           <Pane>
             <VSplit>
-              <Pane size="var(--pad)" />
-              <Pane size="calc(var(--col-width) * 4)">
+              <Pane size="var(--grid-padding)" />
+              <Pane size="calc(var(--grid-col) * 4)">
                 <HSplit>
                   <Pane size="55%" className={styles.cityBody}>
                     <H1 asChild>
@@ -143,7 +143,7 @@ function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect 
                   </Pane>
                   <Pane>
                     <VSplit>
-                      <Pane size="calc(var(--col-width) * 2)">
+                      <Pane size="calc(var(--grid-col) * 2)">
                         <CityColumn
                           cities={CITIES.slice(0, 3)}
                           selected={selected}
@@ -151,7 +151,7 @@ function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect 
                           onSelect={onSelect}
                         />
                       </Pane>
-                      <Pane size="calc(var(--col-width) * 2)">
+                      <Pane size="calc(var(--grid-col) * 2)">
                         <CityColumn
                           cities={CITIES.slice(3)}
                           selected={selected}
@@ -163,10 +163,10 @@ function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect 
                   </Pane>
                 </HSplit>
               </Pane>
-              <Pane size="calc(var(--col-width) * 8)">
+              <Pane size="calc(var(--grid-col) * 8)">
                 <div data-spine-shape="index" className={styles.mapPane} />
               </Pane>
-              <Pane size="var(--pad)" />
+              <Pane size="var(--grid-padding)" />
             </VSplit>
           </Pane>
         </HSplit>

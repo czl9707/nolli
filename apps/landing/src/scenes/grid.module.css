@@ -3,11 +3,11 @@
    into panes whose sibling borders are the split lines. */
 
 .screen {
-  --pad: max(
+  --grid-padding: max(
     calc((100vw - var(--landing-plate-max, 80rem)) / 2),
     var(--spacing-group)
   );
-  --col-width: calc((100vw - 2 * var(--pad)) / 12);
+  --grid-col: calc((100vw - 2 * var(--grid-padding)) / 12);
   position: relative;
   height: 100svh;
   overflow: hidden;

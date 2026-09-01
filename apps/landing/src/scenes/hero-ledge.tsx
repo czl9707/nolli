@@ -31,6 +31,10 @@ export const heroHold = (data: LandingData): HoldScene => ({
   Component: () => <HeroLedge data={data} />,
 })
 
+/** Hold end in scene-local vh — marker visibility flips here (fade length
+ * lives in photo-markers.module.css). */
+const HOLD_END_VH = 100
+
 function HeroLedge({ data }: { data: LandingData }) {
   const map = useSpineMap()
   const picks = data.heroPicks
@@ -45,9 +49,6 @@ function HeroLedge({ data }: { data: LandingData }) {
   // this section's own tree)
   const local = useSceneScroll()
   const fade = useTransform(local, [80, 100], [1, 0])
-  // hero photo markers stand down over the transition entry, so they don't
-  // stack over the index markers during the index hold
-  const photoO = useTransform(local, [100, 140], [1, 0])
 
   // fit the picks to the PANE and center them there, so the photo cards land
   // inside the reveal area: outliers excluded, camera fitted to pane px with
@@ -91,23 +92,25 @@ function HeroLedge({ data }: { data: LandingData }) {
     }
   }, [fade, snap])
 
-  // hero photo markers stand down over the transition entry: their opacity
-  // comes from --hero-photo-o on the map container (photo-markers.module.css),
-  // so they fade out early in the transition instead of stacking over the
-  // index markers during the index hold
+  // hero photo markers stand down at the transition entry (hold end): the
+  // binary data-hero-photo flag on the map container carries the on/off
+  // (photo-markers.module.css transitions the flip), so they fade out
+  // early in the transition instead of stacking over the index markers
+  // during the index hold
   useEffect(() => {
     if (!map) return
     const el = map.getContainer()
-    const apply = (v: number) => {
-      el.style.setProperty("--hero-photo-o", String(v))
+    const apply = () => {
+      if (local.get() < HOLD_END_VH) el.dataset.heroPhoto = "on"
+      else el.removeAttribute("data-hero-photo")
     }
-    apply(photoO.get())
-    const un = photoO.on("change", apply)
+    apply()
+    const un = local.on("change", apply)
     return () => {
       un()
-      el.style.removeProperty("--hero-photo-o")
+      el.removeAttribute("data-hero-photo")
     }
-  }, [map, photoO])
+  }, [map, local])
 
   return (
     <section data-spine-shape="hero" className={styles.hero}>
@@ -125,7 +128,7 @@ function HeroLedge({ data }: { data: LandingData }) {
             <Pane size="var(--size-header-height)" />
             <Pane>
               <VSplit>
-                <Pane size="calc(100vw - var(--col-width) - max(var(--pad), calc(var(--col-width) * 2)))">
+                <Pane size="calc(100vw - var(--grid-col) - max(var(--grid-padding), calc(var(--grid-col) * 2)))">
                   <HSplit>
                     <Pane size="75%">
                       <div ref={boundsRef} className={styles.revealBounds} />
@@ -135,7 +138,7 @@ function HeroLedge({ data }: { data: LandingData }) {
                     </Pane>
                   </HSplit>
                 </Pane>
-                <Pane size="calc(var(--col-width) + max(var(--pad), calc(var(--col-width) * 2)))">
+                <Pane size="calc(var(--grid-col) + max(var(--grid-padding), calc(var(--grid-col) * 2)))">
                   <HSplit>
                     <Pane size="75%" className={styles.pickBody}>
                       <PickList picks={picks} active={active} />
