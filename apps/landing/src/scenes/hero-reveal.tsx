@@ -14,7 +14,7 @@ import {
 } from "framer-motion"
 import type { MapRef } from "@nolli/map"
 import type { ArchSummary } from "@nolli/data"
-import { Caption, Note, useIsMobile } from "@nolli/ui"
+import { Note, useIsMobile } from "@nolli/ui"
 import { useSpineMap } from "@/spine/spine"
 import styles from "./hero-reveal.module.css"
 
@@ -218,10 +218,12 @@ export function CursorReveal({
         <span className={`${styles.frame} ${styles.dot}`} />
       </div>
       <div data-furniture className={styles.furniture} style={{ width: PLATE.w, height: PLATE.h }}>
-        <Caption asChild>
+        <Note asChild>
           <span className={`${styles.frame} ${styles.north}`}>N ↑</span>
-        </Caption>
-        <span ref={coordsRef} className={`${styles.frame} ${styles.coords}`} />
+        </Note>
+        <Note asChild>
+          <span ref={coordsRef} className={`${styles.frame} ${styles.coords}`} />
+        </Note>
       </div>
     </div>
   )

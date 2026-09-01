@@ -49,12 +49,13 @@
 }
 
 /* frame annotations — everything pinned around the plate/furniture box
-   shares one base (absolute + ink + no wrap); the per-element classes
-   only place it */
+   is the same Note + .frame base (ink, no wrap, tabular digits so the
+   coords readout doesn't jitter); the per-element classes only place it */
 .frame {
   position: absolute;
   color: rgb(var(--color-primary-foreground) / 0.85);
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .tagTl {
@@ -72,16 +73,11 @@
 .north {
   left: 12px;
   top: calc(100% + 8px);
-  letter-spacing: 0.08em;
 }
 
 .coords {
   right: 12px;
   top: calc(100% + 10px);
-  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
-  font-size: 0.7rem;
-  letter-spacing: 0.1em;
-  font-variant-numeric: tabular-nums;
 }
 
 .dot {
