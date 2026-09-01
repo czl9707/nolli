@@ -2,9 +2,9 @@
 // lines render in the hero scene's own tree: the hero section is sticky
 // for its full 100svh and then scrolls off 1:1 with the page, so the
 // reveal pins during the hold and rides up through the transition for
-// free. All coordinates are root-local px each frame; the plate clamps to
-// `boundsRef` so it stays inside the reveal pane, and the root clips the
-// lines at the screen edges.
+// free. All coordinates are root-local px each frame; the plate clamps
+// to `boundsRef` so it stays inside the reveal pane, and the root clips
+// the lines at the screen edges.
 import { useEffect, useRef, useState, type RefObject } from "react"
 import {
   useMotionValue,
@@ -15,8 +15,8 @@ import {
 import type { MapRef } from "@nolli/map"
 import type { ArchSummary } from "@nolli/data"
 import { Caption, Note, useIsMobile } from "@nolli/ui"
-import styles from "./hero-reveal.module.css"
 import { useSpineMap } from "@/spine/spine"
+import styles from "./hero-reveal.module.css"
 
 export const PLATE = { w: 360, h: 280 }
 
@@ -46,17 +46,16 @@ export function useCursorSprings() {
 }
 
 /** Plate rect in viewport px, fully clamped inside the bounds element.
- * `rect` is the SURFACE box — downstream offsets (veil vars, transforms,
- * crosshair lines) are surface-local, while the clamp keeps the plate inside
- * the bounds pane. */
+ * `rect` is the ROOT box — every offset the frame writes is root-local,
+ * while the clamp keeps the plate inside the bounds pane. */
 function plateRect(
   bounds: HTMLElement,
-  surface: HTMLElement,
+  root: HTMLElement,
   sx: MotionValue<number>,
   sy: MotionValue<number>,
 ) {
   const b = bounds.getBoundingClientRect()
-  const r = surface.getBoundingClientRect()
+  const r = root.getBoundingClientRect()
   const clampAxis = (v: number, start: number, end: number, size: number) =>
     end - start >= size
       ? Math.min(Math.max(v, start + size / 2), end - size / 2)
@@ -72,7 +71,32 @@ function plateRect(
   }
 }
 
-/** Veil + plate + furniture over the spine map, plus the marker clip driver.
+/** Clip a photo-marker content div to the plate rect (px viewport coords).
+ * Markers fully outside get collapsed; OVERHANG lets the card bleed a
+ * little past the plate edge while sliding in/out. */
+function clipToPlate(el: HTMLElement, p: { left: number; top: number; right: number; bottom: number }) {
+  const root = el.parentElement!
+  const box = root.getBoundingClientRect()
+  if (
+    box.right < p.left - OVERHANG.left ||
+    box.left > p.right + OVERHANG.right ||
+    box.bottom < p.top - OVERHANG.top ||
+    box.top > p.bottom + OVERHANG.bottom
+  ) {
+    el.style.clipPath = "inset(0 0 100% 0)"
+    return
+  }
+  const ct = Math.max(p.top - box.top, -OVERHANG.top)
+  const cl = Math.max(p.left - box.left, -OVERHANG.left)
+  const cr = Math.max(box.right - p.right, -OVERHANG.right)
+  const cb = Math.max(box.bottom - p.bottom, -OVERHANG.bottom)
+  el.style.clipPath = `inset(${ct}px ${cr}px ${cb}px ${cl}px)`
+}
+
+/** Veil + plate + furniture over the spine map, plus the marker clip driver
+ * and the coords readout — ONE rAF loop writes all of it per frame:
+ * geometry first (veil hole vars, plate/furniture transforms, crosshair
+ * guides), then the coords text, then the hero markers' clip-paths.
  * Renders in the hero scene's tree (first child of the sticky hero
  * section): pinned during the hold, riding up with the page once the
  * section releases. The plate roams `boundsRef` if given (a pane), else
@@ -93,136 +117,83 @@ export function CursorReveal({
 }) {
   const reduced = useReducedMotion()
   const snap = useIsMobile() || !!reduced
+  const map = useSpineMap()
   const rootRef = useRef<HTMLDivElement | null>(null)
-  const clampEl = () => boundsRef?.current ?? rootRef.current
-  const map = useSpineMap();
+  const coordsRef = useRef<HTMLSpanElement>(null)
 
-  // veil hole vars (root-local) + plate transform + crosshair lines,
-  // written per frame so scroll and resize stay correct without listeners
   useEffect(() => {
     if (snap) return
     const root = rootRef.current
     if (!root) return
     let raf = 0
-    const write = () => {
+
+    const frame = () => {
       raf = 0
-      const el = clampEl()
-      if (!el) return
-      const p = plateRect(el, root, sx, sy)
+      const bounds = boundsRef?.current ?? root
+      if (!bounds) return
+      const p = plateRect(bounds, root, sx, sy)
       const ox = p.left - p.rect.left
       const oy = p.top - p.rect.top
+
+      // veil hole + plate/furniture position
       root.style.setProperty("--pl", `${ox}px`)
       root.style.setProperty("--pt", `${oy}px`)
       root.style.setProperty("--pr", `${p.right - p.rect.left}px`)
       root.style.setProperty("--pb", `${p.bottom - p.rect.top}px`)
-      const plate = root.querySelector<HTMLElement>("[data-plate]")
-      if (plate) plate.style.transform = `translate(${ox}px, ${oy}px)`
-      const furn = root.querySelector<HTMLElement>("[data-furniture]")
-      if (furn) furn.style.transform = `translate(${ox}px, ${oy}px)`
+      const setTf = (sel: string, x: number, y: number) => {
+        const el = root.querySelector<HTMLElement>(sel)
+        if (el) el.style.transform = `translate(${x}px, ${y}px)`
+      }
+      setTf("[data-plate]", ox, oy)
+      setTf("[data-furniture]", ox, oy)
+      // crosshair guides — full-height verticals at the plate's left/right,
+      // full-width horizontals at its top/bottom
       const setPx = (sel: string, prop: "left" | "top", v: number) => {
-        const el2 = root.querySelector<HTMLElement>(sel)
-        if (el2) el2.style[prop] = `${v}px`
+        const el = root.querySelector<HTMLElement>(sel)
+        if (el) el.style[prop] = `${v}px`
       }
       setPx("[data-cxvl]", "left", ox)
       setPx("[data-cxvr]", "left", p.right - p.rect.left)
       setPx("[data-cxht]", "top", oy)
       setPx("[data-cxhb]", "top", p.bottom - p.rect.top)
+
+      // coords readout — plate-centre lat/lng straight to the DOM
+      if (map && coordsRef.current) {
+        const c = map.unproject([(p.left + p.right) / 2, (p.top + p.bottom) / 2])
+        coordsRef.current.textContent = `${Math.abs(c.lat).toFixed(4)}° ${c.lat >= 0 ? "N" : "S"}  ${Math.abs(c.lng).toFixed(4)}° ${c.lng >= 0 ? "E" : "W"}`
+      }
+
+      // hero markers crop to the plate — the plate rides up with the page
+      // during the transition while the markers stay in the pinned map
+      // layer, so scroll re-runs this too. Scoped to THIS map's markers
+      // carrying our class; any other map keeps its markers unclipped.
+      if (map) {
+        const contents = Array.from(
+          map.getContainer().querySelectorAll<HTMLElement>(".maplibregl-marker"),
+        )
+          .map((root) => root.firstElementChild as HTMLElement | null)
+          .filter(
+            (el): el is HTMLElement =>
+              !!el && el.classList.contains(HERO_MARKER_CLASS) && el.isConnected,
+          )
+        for (const el of contents) clipToPlate(el, p)
+      }
     }
     const schedule = () => {
-      if (!raf) raf = requestAnimationFrame(write)
+      if (!raf) raf = requestAnimationFrame(frame)
     }
     const u1 = sx.on("change", schedule)
     const u2 = sy.on("change", schedule)
+    if (map) map.on("move", schedule)
     window.addEventListener("scroll", schedule, { passive: true })
     window.addEventListener("resize", schedule)
     schedule()
     return () => {
       u1()
       u2()
+      if (map) map.off("move", schedule)
       window.removeEventListener("scroll", schedule)
       window.removeEventListener("resize", schedule)
-      if (raf) cancelAnimationFrame(raf)
-    }
-  }, [snap, boundsRef, sx, sy])
-
-  // coords readout — plate-centre lat/lng straight to the DOM
-  const coordsRef = useRef<HTMLSpanElement>(null)
-  useEffect(() => {
-    if (snap || !map) return
-    const update = () => {
-      const el = clampEl()
-      const surface = rootRef.current
-      if (!el || !surface || !coordsRef.current) return
-      const p = plateRect(el, surface, sx, sy)
-      const c = map.unproject([(p.left + p.right) / 2, (p.top + p.bottom) / 2])
-      coordsRef.current.textContent = `${Math.abs(c.lat).toFixed(4)}° ${c.lat >= 0 ? "N" : "S"}  ${Math.abs(c.lng).toFixed(4)}° ${c.lng >= 0 ? "E" : "W"}`
-    }
-    const schedule = () => requestAnimationFrame(update)
-    const u1 = sx.on("change", schedule)
-    const u2 = sy.on("change", schedule)
-    window.addEventListener("scroll", schedule, { passive: true })
-    schedule()
-    return () => {
-      u1()
-      u2()
-      window.removeEventListener("scroll", schedule)
-    }
-  }, [snap, map, boundsRef, sx, sy])
-
-  // clip photo markers to the plate rect — the plate rides up with the
-  // page during the transition while the markers stay in the pinned map
-  // layer, so the clip is re-run on scroll
-  useEffect(() => {
-    if (snap || !map) return
-    let raf = 0
-    const update = () => {
-      raf = 0
-      const el = clampEl()
-      const surface = rootRef.current
-      if (!el || !surface) return
-      const p = plateRect(el, surface, sx, sy)
-      // scoped to THIS map — any other map on the page keeps its markers
-      // unclipped
-      const contents = Array.from(
-        map.getContainer().querySelectorAll<HTMLElement>(".maplibregl-marker"),
-      )
-        .map((root) => root.firstElementChild as HTMLElement | null)
-        .filter(
-          (el): el is HTMLElement =>
-            !!el && el.classList.contains(HERO_MARKER_CLASS) && el.isConnected,
-        )
-      for (const el of contents) {
-        const root = el.parentElement!
-        const box = root.getBoundingClientRect()
-        if (
-          box.right < p.left - OVERHANG.left ||
-          box.left > p.right + OVERHANG.right ||
-          box.bottom < p.top - OVERHANG.top ||
-          box.top > p.bottom + OVERHANG.bottom
-        ) {
-          el.style.clipPath = "inset(0 0 100% 0)"
-          continue
-        }
-        const ct = Math.max(p.top - box.top, -OVERHANG.top)
-        const cl = Math.max(p.left - box.left, -OVERHANG.left)
-        const crr = Math.max(box.right - p.right, -OVERHANG.right)
-        const cb = Math.max(box.bottom - p.bottom, -OVERHANG.bottom)
-        el.style.clipPath = `inset(${ct}px ${crr}px ${cb}px ${cl}px)`
-      }
-    }
-    const schedule = () => {
-      if (!raf) raf = requestAnimationFrame(update)
-    }
-    const u1 = sx.on("change", schedule)
-    const u2 = sy.on("change", schedule)
-    map.on("move", schedule)
-    window.addEventListener("scroll", schedule, { passive: true })
-    schedule()
-    return () => {
-      u1()
-      u2()
-      map.off("move", schedule)
-      window.removeEventListener("scroll", schedule)
       if (raf) cancelAnimationFrame(raf)
     }
   }, [snap, map, boundsRef, sx, sy])
@@ -231,9 +202,6 @@ export function CursorReveal({
   return (
     <div ref={rootRef} className={styles.root}>
       <div className={styles.veil} aria-hidden />
-      {/* crosshair guides — full-height verticals at the plate's left/right,
-          full-width horizontals at its top/bottom; same styling as pane
-          borders */}
       <span data-cxvl className={`${styles.cx} ${styles.cxV}`} aria-hidden />
       <span data-cxvr className={`${styles.cx} ${styles.cxV}`} aria-hidden />
       <span data-cxht className={`${styles.cx} ${styles.cxH}`} aria-hidden />
