@@ -1,10 +1,10 @@
 /* Photo markers portalled into the spine's map layer (via useMapPortal) —
-   shared by the hero and index scenes; each scene toggles the .on class
-   from scroll bounds (state flips once per crossing) and the transition
-   does the fade. Targets the content div, not the marker root (maplibre
-   writes its own inline opacity there). The hero's clip driver
-   (hero-reveal.tsx) discriminates its set via the inert HERO_MARKER_CLASS
-   string instead of this module. */
+   shared by the hero and index scenes. Each scene mounts its set across
+   scroll bounds (use-linger holds the exit around for this fade) and the
+   .on class + transition animates both directions. Targets the content
+   div, not the marker root (maplibre writes its own inline opacity
+   there). The hero's clip driver (hero-reveal.tsx) discriminates its set
+   via the inert HERO_MARKER_CLASS string instead of this module. */
 
 .photoMarker {
   opacity: 0;

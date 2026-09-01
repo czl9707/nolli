@@ -13,8 +13,9 @@ import type { ArchSummary } from "@nolli/data"
 import { MapContext, PhotoMarker } from "@nolli/map"
 import { useSceneScroll, useSpineMap, useMapPortal } from "@/spine/spine"
 import type { HoldScene } from "@/spine/timeline"
-import { CLUSTER_CITY, HERO_CAMERA } from "@/lib/constants"
+import { CLUSTER_CITY } from "@/lib/constants"
 import { fitCamera } from "@/lib/camera"
+import { useLinger } from "@/lib/use-linger"
 import type { LandingData } from "@/lib/landing-data"
 import { CursorReveal, HERO_MARKER_CLASS, useCursorSprings, usePlatePicks } from "./hero-reveal"
 import markerStyles from "@/components/photo-markers.module.css"
@@ -34,10 +35,10 @@ export const heroHold = (data: LandingData): HoldScene => ({
 
 /** Hold end in scene-local vh — marker visibility flips here (fade length
  * lives in photo-markers.module.css). */
-const HOLD_END_VH = 100
+const SCENE_REAL_HEIGHTVH = 100
 
 /** Inner fit padding inside the reveal pane (px). */
-const FIT_PAD = { x: 100, top: 100, bottom: 240 }
+const FIT_PAD = { x: 100, top: 50, bottom: 240 }
 
 function HeroLedge({ data }: { data: LandingData }) {
   const map = useSpineMap()
@@ -52,19 +53,10 @@ function HeroLedge({ data }: { data: LandingData }) {
   // in this section's own tree)
   const local = useSceneScroll()
 
-  // fit the picks into the reveal PANE: fit against viewport dims with the
-  // pane's offset as asymmetric padding — one jumpTo, and no dependence on
-  // the map container's size at mount (the spine sizes the layer after this
-  // effect's first run on a cold load, which used to corrupt a
-  // viewport-assuming unproject offset)
   useEffect(() => {
     const pane = boundsRef.current
     if (!map || !pane) return
 
-    if (!picks.length) {
-      map.jumpTo({ center: HERO_CAMERA.center, zoom: HERO_CAMERA.zoom })
-      return
-    }
     const b = pane.getBoundingClientRect()
     const vw = window.innerWidth
     const vh = window.innerHeight
@@ -90,8 +82,8 @@ function HeroLedge({ data }: { data: LandingData }) {
   // on-class flip fades them out early in the transition
   // (photo-markers.module.css), so they don't stack over the index markers
   // during the index hold
-  const [markersOn, setMarkersOn] = useState(() => local.get() < HOLD_END_VH)
-  useMotionValueEvent(local, "change", (v) => setMarkersOn(v < HOLD_END_VH))
+  const [markersOn, setMarkersOn] = useState(() => local.get() < SCENE_REAL_HEIGHTVH)
+  useMotionValueEvent(local, "change", (v) => setMarkersOn(v < SCENE_REAL_HEIGHTVH))
 
   return (
     <section data-spine-shape="hero" className={snap ? styles.hero : `${styles.hero} ${styles.cursorHide}`}>
@@ -138,14 +130,16 @@ function HeroLedge({ data }: { data: LandingData }) {
 }
 
 /** Hero-owned photo markers, portalled into the spine's map layer so they
- * ride the map (clipped to the cursor plate by the reveal). `on` toggles
- * the fade class. */
+ * ride the map (clipped to the cursor plate by the reveal). Mounted only
+ * while the hero owns the screen — the linger keeps them around for the
+ * exit fade, the .on class drives it. */
 function HeroPhotoMarkers({ picks, on }: { picks: ArchSummary[]; on: boolean }) {
+  const [mounted, visible] = useLinger(on, 400)
   const map = useSpineMap()
   const mapPortal = useMapPortal()
-  if (!map || !mapPortal) return null
+  if (!map || !mapPortal || !mounted) return null
   const base = `${markerStyles.photoMarker} ${HERO_MARKER_CLASS}`
-  const cls = on ? `${base} ${markerStyles.on}` : base
+  const cls = visible ? `${base} ${markerStyles.on}` : base
   return createPortal(
     <MapContext.Provider value={{ map, isLoaded: !!map }}>
       {picks.map((a) => (

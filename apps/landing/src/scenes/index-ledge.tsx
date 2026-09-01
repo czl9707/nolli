@@ -14,6 +14,7 @@ import type { HoldScene, PxRect } from "@/spine/timeline"
 import type { LandingData } from "@/lib/landing-data"
 import { fitCamera } from "@/lib/camera"
 import { cityIdByName, pickIndexPhotos } from "@/lib/shape"
+import { useLinger } from "@/lib/use-linger"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
 import markerStyles from "@/components/photo-markers.module.css"
 import styles from "./index-ledge.module.css"
@@ -251,11 +252,12 @@ function CityColumn({
  * pin/cluster markers stood down (the spine sets data-arch-markers="off";
  * our class exempts us from that sweep). */
 function IndexPhotoMarkers({ picks, on }: { picks: ArchSummary[]; on: boolean }) {
+  const [mounted, visible] = useLinger(on, 400)
   const map = useSpineMap()
   const mapPortal = useMapPortal()
 
-  if (!mapPortal || !map) return null
-  const cls = on ? `${markerStyles.photoMarker} ${markerStyles.on}` : markerStyles.photoMarker
+  if (!mapPortal || !map || !mounted) return null
+  const cls = visible ? `${markerStyles.photoMarker} ${markerStyles.on}` : markerStyles.photoMarker
   // markers mount from the scene tree (outside the spine's map), so
   // re-supply MapContext at the portal source for the MapMarker internals
   return createPortal(
