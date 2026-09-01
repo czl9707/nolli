@@ -6,8 +6,11 @@
   top: 0;
   height: 100svh;
   box-sizing: border-box;
+  /* above the transition overlay (later sibling) so the closing rule and
+     the ride-off content stay visible as the gradient slides over */
+  z-index: 1;
   /* closing rule — every internal split draws one, the screen edge too */
-  border-bottom: 1px solid rgb(var(--color-primary-foreground) / 0.25);
+  border-bottom: var(--rule);
 }
 
 /* the plate IS the cursor while the pointer is inside the hero — the

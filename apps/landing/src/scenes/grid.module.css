@@ -57,9 +57,9 @@
 }
 
 .rowSplit > .pane:not(:first-child) {
-  border-left: 1px solid rgb(var(--color-primary-foreground) / .25);
+  border-left: var(--rule);
 }
 
 .colSplit > .pane:not(:first-child) {
-  border-top: 1px solid rgb(var(--color-primary-foreground) / .25);
+  border-top: var(--rule);
 }

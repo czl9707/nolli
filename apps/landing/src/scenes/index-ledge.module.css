@@ -8,7 +8,7 @@
   height: 80svh;
   box-sizing: border-box;
   /* closing rule — every internal split draws one, the screen edge too */
-  border-bottom: 1px solid rgb(var(--color-primary-foreground) / 0.25);
+  border-bottom: var(--rule);
 }
 
 .splits {
@@ -64,7 +64,7 @@
 }
 
 .cityCell + .cityCell {
-  border-top: 1px solid rgb(var(--color-primary-foreground) / 0.25);
+  border-top: var(--rule);
 }
 
 .cityCell:hover {

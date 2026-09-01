@@ -25,10 +25,10 @@ const PICKS_PER_CITY = 8
 /** Marker visibility window in scene-local vh: flag on at the landing
  * run-in, off again at the exit window (fade length lives in
  * photo-markers.module.css). EXIT_END_VH bounds the content fade below.
- * Local scroll counts up through the preceding transition — crossing
- * ENTRY_VH fires the flight in from the hero camera. */
-const ENTRY_VH = -110
-const ENTRY_REARM_VH = -118
+ * The entry flight fires at our own top edge (scene-local 0) so the scene
+ * owns the screen when it starts; ENTRY_REARM_VH is hysteresis only. */
+const ENTRY_VH = 0
+const ENTRY_REARM_VH = -10
 const RAMP_VH = 30
 const EXIT_START_VH = 170
 const EXIT_END_VH = 199
@@ -154,13 +154,15 @@ function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect 
               <Pane size="var(--grid-padding)" />
               <Pane size="calc(var(--grid-col) * 4)">
                 <HSplit>
-                  <Pane size="55%" className={styles.cityBody}>
+                  <Pane className={styles.cityBody}>
                     <H1 asChild>
                       <h2 className={styles.city}>{selected}</h2>
                     </H1>
                     <Statement />
                   </Pane>
-                  <Pane>
+                  {/* auto = content height: the fixed 4rem rows size this
+                      pane, the dossier fills the rest */}
+                  <Pane size="auto">
                     <VSplit>
                       <Pane size="calc(var(--grid-col) * 2)">
                         <CityColumn

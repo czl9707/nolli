@@ -33,12 +33,12 @@ export const heroHold = (data: LandingData): HoldScene => ({
 })
 
 /** Hold end in scene-local vh — marker visibility flips here (fade length
- * lives in photo-markers.module.css). Local scroll keeps counting through
- * the following transition: armed once we're committed into it, the
- * crossing back down flies home. */
+ * lives in photo-markers.module.css). Local scroll keeps counting past the
+ * hold: armed once we're committed into the transition, the crossing back
+ * down to our own edge flies home. */
 const SCENE_REAL_HEIGHTVH = 100
 const RETURN_ARM_VH = 115
-const RETURN_FIRE_VH = 102
+const RETURN_FIRE_VH = 100
 
 /** Inner fit padding inside the reveal pane (px). */
 const FIT_PAD = { x: 100, top: 50, bottom: 240 }

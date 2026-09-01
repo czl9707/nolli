@@ -2,6 +2,8 @@
 
 :root {
   --hero-accent: #ee8a33;
+  /* hairline rule — every split line, closing rule and row divider */
+  --rule: 1px solid rgb(var(--color-primary-foreground) / 0.25);
 }
 
 html,
