@@ -42,13 +42,18 @@
   font-weight: 700;
 }
 
-/* 2x3 city grid — each pane IS the button; the spine's scene wrappers
-   disable pointer events, so the cells re-enable them */
+/* 2x3 city grid — three fixed-height rows per column, each row IS the
+   button; the spine's scene wrappers disable pointer events, so the cells
+   re-enable them */
+.cityColumn {
+  display: flex;
+  flex-direction: column;
+}
+
 .cityCell {
-  position: absolute;
-  inset: 0;
   display: flex;
   align-items: center;
+  height: 4rem;
   padding: 0 1.25rem;
   font-size: 1.2rem;
   opacity: 0.55;
@@ -56,6 +61,10 @@
   transition: opacity 150ms ease;
   user-select: none;
   pointer-events: auto;
+}
+
+.cityCell + .cityCell {
+  border-top: 1px solid rgb(var(--color-primary-foreground) / 0.25);
 }
 
 .cityCell:hover {

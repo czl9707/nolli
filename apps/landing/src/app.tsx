@@ -50,7 +50,7 @@ function useSpineScenes(data: LandingData | null | undefined): SpineScene[] | nu
   return useMemo(
     () =>
       data
-        ? [heroHold(data), heroIndexTransition(data, indexPane), indexHold(data, indexPane)]
+        ? [heroHold(data), heroIndexTransition(), indexHold(data, indexPane)]
         : null,
     [data, indexPane],
   )

@@ -6,19 +6,18 @@
 // unveiling the map. The hold's height equals the component's, so the
 // pane-split content scrolls off naturally with it.
 import { useEffect, useRef, useState } from "react"
-import { createPortal } from "react-dom"
 import { motion, useMotionValueEvent, useReducedMotion } from "framer-motion"
-import { Body1, Body2, Body3, H1, useIsMobile } from "@nolli/ui"
+import { Body1, Body2, H1, useIsMobile } from "@nolli/ui"
 import type { ArchSummary } from "@nolli/data"
-import { MapContext, PhotoMarker } from "@nolli/map"
-import { useSceneScroll, useSpineMap, useMapPortal } from "@/spine/spine"
+import type { SceneCamera } from "@nolli/map"
+import { flyToSceneCinematic } from "@nolli/map"
+import { useSceneScroll, useSpineMap } from "@/spine/spine"
 import type { HoldScene } from "@/spine/timeline"
 import { CLUSTER_CITY } from "@/lib/constants"
 import { fitCamera } from "@/lib/camera"
-import { useLinger } from "@/lib/use-linger"
 import type { LandingData } from "@/lib/landing-data"
+import { PhotoMarkers } from "@/components/photo-markers"
 import { CursorReveal, HERO_MARKER_CLASS, useCursorSprings, usePlatePicks } from "./hero-reveal"
-import markerStyles from "@/components/photo-markers.module.css"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
 import styles from "./hero-ledge.module.css"
 
@@ -34,8 +33,12 @@ export const heroHold = (data: LandingData): HoldScene => ({
 })
 
 /** Hold end in scene-local vh — marker visibility flips here (fade length
- * lives in photo-markers.module.css). */
+ * lives in photo-markers.module.css). Local scroll keeps counting through
+ * the following transition: armed once we're committed into it, the
+ * crossing back down flies home. */
 const SCENE_REAL_HEIGHTVH = 100
+const RETURN_ARM_VH = 115
+const RETURN_FIRE_VH = 102
 
 /** Inner fit padding inside the reveal pane (px). */
 const FIT_PAD = { x: 100, top: 50, bottom: 240 }
@@ -46,6 +49,7 @@ function HeroLedge({ data }: { data: LandingData }) {
   const { sx, sy } = useCursorSprings()
   const { nearest, active } = usePlatePicks(sx, sy, picks, map)
   const boundsRef = useRef<HTMLDivElement | null>(null)
+  const camRef = useRef<SceneCamera | null>(null)
 
   useEffect(() => {
     const pane = boundsRef.current
@@ -64,6 +68,7 @@ function HeroLedge({ data }: { data: LandingData }) {
         bottom: vh - b.bottom + FIT_PAD.bottom,
       },
     )
+    camRef.current = cam
     map.jumpTo({ center: cam.center, zoom: cam.zoom })
   }, [map, picks])
 
@@ -71,10 +76,21 @@ function HeroLedge({ data }: { data: LandingData }) {
   // css on the section (snap mode never hides the system cursor)
   const reduced = useReducedMotion()
   const snap = useIsMobile() || !!reduced
-  
+
   const localScrollDist = useSceneScroll()
   const [markersOn, setMarkersOn] = useState(() => localScrollDist.get() < SCENE_REAL_HEIGHTVH)
   useMotionValueEvent(localScrollDist, "change", (v) => setMarkersOn(v < SCENE_REAL_HEIGHTVH))
+
+  // fly home when scroll hands the screen back
+  const armed = useRef(false)
+  useMotionValueEvent(localScrollDist, "change", (v) => {
+    if (!map || !camRef.current) return
+    if (v > RETURN_ARM_VH) armed.current = true
+    else if (armed.current && v <= RETURN_FIRE_VH) {
+      armed.current = false
+      flyToSceneCinematic(map, camRef.current)
+    }
+  })
 
   return (
     <section data-spine-shape="hero" className={snap ? styles.hero : `${styles.hero} ${styles.cursorHide}`}>
@@ -84,7 +100,7 @@ function HeroLedge({ data }: { data: LandingData }) {
         sy={sy}
         tagTr={CLUSTER_CITY}
       />
-      <HeroPhotoMarkers picks={picks} on={markersOn} />
+      <PhotoMarkers picks={picks} on={markersOn} className={HERO_MARKER_CLASS} />
       <Screen className={styles.screen}>
         <HSplit>
           <Pane size="var(--size-header-height)" />
@@ -115,23 +131,6 @@ function HeroLedge({ data }: { data: LandingData }) {
         </HSplit>
       </Screen>
     </section>
-  )
-}
-
-function HeroPhotoMarkers({ picks, on }: { picks: ArchSummary[]; on: boolean }) {
-  const [mounted, visible] = useLinger(on, 400)
-  const map = useSpineMap()
-  const mapPortal = useMapPortal()
-  if (!map || !mapPortal || !mounted) return null
-  const base = `${markerStyles.photoMarker} ${HERO_MARKER_CLASS}`
-  const cls = visible ? `${base} ${markerStyles.on}` : base
-  return createPortal(
-    <MapContext.Provider value={{ map, isLoaded: !!map }}>
-      {picks.map((a) => (
-        <PhotoMarker key={a.slug} building={a} className={cls} />
-      ))}
-    </MapContext.Provider>,
-    mapPortal,
   )
 }
 

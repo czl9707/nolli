@@ -22,7 +22,7 @@ export type TransitionScene = {
   fromShape: ShapeRef
   toShape: ShapeRef
   heightVh: number
-  /** camera choreography for the morph — fires boundary flights */
+  /** visual overlay for the morph; the shape interpolation is the spine's */
   Component?: () => ReactNode
 }
 

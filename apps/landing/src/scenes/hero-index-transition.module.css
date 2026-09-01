@@ -1,0 +1,9 @@
+/* Veil for the hero → index morph — full height of the transition wrapper
+   (120vh), ink at the hero edge fading to transparent so the sticky
+   viewport slides down the gradient as the page scrolls, unveiling the
+   map. */
+.veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgb(18 18 18 / 0.92), transparent);
+}

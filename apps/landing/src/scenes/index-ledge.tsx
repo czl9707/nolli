@@ -4,19 +4,17 @@
 // the city dossier + 2x3 city-button grid and fades out over the hold's
 // tail.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { createPortal } from "react-dom"
 import { motion, useMotionValueEvent, useTransform } from "framer-motion"
 import { Body1, H1 } from "@nolli/ui"
-import { MapContext, PhotoMarker, flyToSceneCinematic } from "@nolli/map"
+import { flyToSceneCinematic } from "@nolli/map"
 import { useDbStore, type ArchSummary } from "@nolli/data"
-import { useMapPortal, useSceneScroll, useSpineMap } from "@/spine/spine"
+import { useSceneScroll, useSpineMap } from "@/spine/spine"
 import type { HoldScene, PxRect } from "@/spine/timeline"
 import type { LandingData } from "@/lib/landing-data"
 import { fitCamera } from "@/lib/camera"
 import { cityIdByName, pickIndexPhotos } from "@/lib/shape"
-import { useLinger } from "@/lib/use-linger"
+import { PhotoMarkers } from "@/components/photo-markers"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
-import markerStyles from "@/components/photo-markers.module.css"
 import styles from "./index-ledge.module.css"
 
 /** Hand-picked city index — Paris leads (continuity with the hero dwell). */
@@ -26,7 +24,11 @@ const PICKS_PER_CITY = 8
 
 /** Marker visibility window in scene-local vh: flag on at the landing
  * run-in, off again at the exit window (fade length lives in
- * photo-markers.module.css). EXIT_END_VH bounds the content fade below. */
+ * photo-markers.module.css). EXIT_END_VH bounds the content fade below.
+ * Local scroll counts up through the preceding transition — crossing
+ * ENTRY_VH fires the flight in from the hero camera. */
+const ENTRY_VH = -110
+const ENTRY_REARM_VH = -118
 const RAMP_VH = 30
 const EXIT_START_VH = 170
 const EXIT_END_VH = 199
@@ -101,13 +103,23 @@ function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect 
     [indexPane],
   )
 
-  // restoration path only: deep-linked or reloaded into the hold jumps to
-  // the city camera; entering forward, the transition's flight has already
-  // landed close to it, and a jumpTo here would snip that flight. Paris is
-  // filtered through HERO_EXCLUDE so the restoration fit matches the one
-  // the transition landed on (all 10 vs the fitted 8 would jump the zoom)
+  // fly in as the transition hands us the screen; hysteresis via ENTRY_REARM_VH
+  // keeps a jittering scroll from refiring
   const picksRef = useRef(picks)
   picksRef.current = picks
+  const entered = useRef(local.get() >= ENTRY_VH)
+  useMotionValueEvent(local, "change", (v) => {
+    if (v >= ENTRY_VH) {
+      if (entered.current || !map) return
+      entered.current = true
+      flyToSceneCinematic(map, cameraFor(picksRef.current))
+    } else if (v < ENTRY_REARM_VH) {
+      entered.current = false
+    }
+  })
+
+  // restoration path only: deep-linked or reloaded into the hold jumps to
+  // the city camera (the entry flight above never fires on mount)
   useEffect(() => {
     if (!map || local.get() < 0) return
     map.jumpTo(cameraFor(picksRef.current))
@@ -133,7 +145,7 @@ function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect 
 
   return (
     <Screen className={styles.index}>
-      <IndexPhotoMarkers picks={picks} on={markersOn} />
+      <PhotoMarkers picks={picks} on={markersOn} />
       <motion.div className={styles.splits} style={{ opacity: fade }}>
         <HSplit>
           <Pane size="var(--size-header-height)" />
@@ -198,7 +210,8 @@ function Statement() {
   )
 }
 
-/** One column of the 2x3 city grid — three panes, each pane IS the button. */
+/** One column of the 2x3 city grid — three fixed-height rows, each row IS
+ * the button. */
 function CityColumn({
   cities,
   selected,
@@ -211,7 +224,7 @@ function CityColumn({
   onSelect: (name: string) => void
 }) {
   return (
-    <HSplit>
+    <div className={styles.cityColumn}>
       {cities.map((name) => {
         const ready = loaded.includes(name)
         const cls = [
@@ -222,50 +235,23 @@ function CityColumn({
           .filter(Boolean)
           .join(" ")
         return (
-          <Pane key={name}>
-            <div
-              className={cls}
-              onClick={() => ready && onSelect(name)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault()
-                  if (ready) onSelect(name)
-                }
-              }}
-            >
-              {name}
-            </div>
-          </Pane>
+          <div
+            key={name}
+            className={cls}
+            onClick={() => ready && onSelect(name)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault()
+                if (ready) onSelect(name)
+              }
+            }}
+          >
+            {name}
+          </div>
         )
       })}
-    </HSplit>
-  )
-}
-
-/** Photo markers pinned at real coords — MapMarker tracks the camera natively.
- * Marker contents portal into the spine's map layer; visibility is the on
- * class (photo-markers.module.css transitions the flip), toggled at the
- * landing run-in and off again at the exit window or scrolled back above
- * the run-in. While ours are on screen the container also keeps the normal
- * pin/cluster markers stood down (the spine sets data-arch-markers="off";
- * our class exempts us from that sweep). */
-function IndexPhotoMarkers({ picks, on }: { picks: ArchSummary[]; on: boolean }) {
-  const [mounted, visible] = useLinger(on, 400)
-  const map = useSpineMap()
-  const mapPortal = useMapPortal()
-
-  if (!mapPortal || !map || !mounted) return null
-  const cls = visible ? `${markerStyles.photoMarker} ${markerStyles.on}` : markerStyles.photoMarker
-  // markers mount from the scene tree (outside the spine's map), so
-  // re-supply MapContext at the portal source for the MapMarker internals
-  return createPortal(
-    <MapContext.Provider value={{ map, isLoaded: !!map }}>
-      {picks.map((a) => (
-        <PhotoMarker key={a.slug} building={a} className={cls} />
-      ))}
-    </MapContext.Provider>,
-    mapPortal,
+    </div>
   )
 }
