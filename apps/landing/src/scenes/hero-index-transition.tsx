@@ -18,8 +18,8 @@ function HeroIndexTransition({ data, indexPane }: { data: LandingData; indexPane
   const cameras = useMemo(() => {
     const pts = data.heroPicks.map((p) => p.coordinates)
     return {
-      to: fitCamera(pts, { width: indexPane.width, height: indexPane.height }, { x: 100, top: 100, bottom: 240 }),
-      back: fitCamera(pts, { width: window.innerWidth, height: window.innerHeight }, { x: 100, top: 100, bottom: 240 }),
+      to: fitCamera(pts, { width: indexPane.width, height: indexPane.height }, { left: 100, right: 100, top: 100, bottom: 240 }),
+      back: fitCamera(pts, { width: window.innerWidth, height: window.innerHeight }, { left: 100, right: 100, top: 100, bottom: 240 }),
     }
   }, [data, indexPane])
 

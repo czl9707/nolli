@@ -32,7 +32,7 @@ const EXIT_END_VH = 199
 
 /** Fit padding in pane px: photo cards hang below the pin, so the
  * south-most pick needs far more room below it than the north-most above. */
-const FIT_PADDING = { x: 100, top: 100, bottom: 240 }
+const FIT_PADDING = { left: 100, right: 100, top: 100, bottom: 240 }
 
 export const indexHold =
   (data: LandingData, indexPane: PxRect): HoldScene => ({

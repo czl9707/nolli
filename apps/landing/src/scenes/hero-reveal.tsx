@@ -16,6 +16,7 @@ import type { MapRef } from "@nolli/map"
 import type { ArchSummary } from "@nolli/data"
 import { Caption, Note, useIsMobile } from "@nolli/ui"
 import styles from "./hero-reveal.module.css"
+import { useSpineMap } from "@/spine/spine"
 
 export const PLATE = { w: 360, h: 280 }
 
@@ -79,14 +80,12 @@ function plateRect(
  * show unclipped. */
 export function CursorReveal({
   boundsRef,
-  map,
   sx,
   sy,
   tagTl = "Architecture",
   tagTr,
 }: {
   boundsRef?: RefObject<HTMLDivElement | null>
-  map: MapRef | null
   sx: MotionValue<number>
   sy: MotionValue<number>
   tagTl?: string
@@ -96,6 +95,7 @@ export function CursorReveal({
   const snap = useIsMobile() || !!reduced
   const rootRef = useRef<HTMLDivElement | null>(null)
   const clampEl = () => boundsRef?.current ?? rootRef.current
+  const map = useSpineMap();
 
   // veil hole vars (root-local) + plate transform + crosshair lines,
   // written per frame so scroll and resize stay correct without listeners

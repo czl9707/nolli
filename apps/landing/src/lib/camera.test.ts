@@ -30,4 +30,17 @@ describe("fitCamera", () => {
     expect(cam.center[1]).toBeGreaterThan(48.84)
     expect(cam.zoom).toBe(18)
   })
+
+  it("asymmetric side padding parks the camera east, picks land west", () => {
+    // hero-reveal pane shape: thin left pad, fat right pad
+    const cam = fitCamera([{ lng: 2.35, lat: 48.85 }], { width: 800, height: 620 }, {
+      left: 10,
+      right: 410,
+      top: 120,
+      bottom: 340,
+    })
+    // camera center pushed east of the point → the point renders left of
+    // the screen center, i.e. inside a left pane
+    expect(cam.center[0]).toBeGreaterThan(2.35)
+  })
 })

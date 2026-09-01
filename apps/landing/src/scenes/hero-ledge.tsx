@@ -36,6 +36,9 @@ export const heroHold = (data: LandingData): HoldScene => ({
  * lives in photo-markers.module.css). */
 const HOLD_END_VH = 100
 
+/** Inner fit padding inside the reveal pane (px). */
+const FIT_PAD = { x: 100, top: 100, bottom: 240 }
+
 function HeroLedge({ data }: { data: LandingData }) {
   const map = useSpineMap()
   const picks = data.heroPicks
@@ -49,29 +52,33 @@ function HeroLedge({ data }: { data: LandingData }) {
   // in this section's own tree)
   const local = useSceneScroll()
 
-  // fit the picks to the PANE and center them there, so the photo cards land
-  // inside the reveal area: outliers excluded, camera fitted to pane px with
-  // moderate padding, then shifted so the fitted midpoint projects to the
-  // pane center instead of the viewport center
+  // fit the picks into the reveal PANE: fit against viewport dims with the
+  // pane's offset as asymmetric padding — one jumpTo, and no dependence on
+  // the map container's size at mount (the spine sizes the layer after this
+  // effect's first run on a cold load, which used to corrupt a
+  // viewport-assuming unproject offset)
   useEffect(() => {
     const pane = boundsRef.current
     if (!map || !pane) return
+
     if (!picks.length) {
       map.jumpTo({ center: HERO_CAMERA.center, zoom: HERO_CAMERA.zoom })
       return
     }
     const b = pane.getBoundingClientRect()
-    const fit = fitCamera(
+    const vw = window.innerWidth
+    const vh = window.innerHeight
+    const cam = fitCamera(
       picks.map((p) => p.coordinates),
-      { width: b.width, height: b.height },
-      { x: 100, top: 100, bottom: 240 },
+      { width: vw, height: vh },
+      {
+        left: b.left + FIT_PAD.x,
+        right: vw - b.right + FIT_PAD.x,
+        top: b.top + FIT_PAD.top,
+        bottom: vh - b.bottom + FIT_PAD.bottom,
+      },
     )
-    map.jumpTo({ center: fit.center, zoom: fit.zoom })
-    const c1 = map.unproject([
-      window.innerWidth - (b.left + b.width / 2),
-      window.innerHeight - (b.top + b.height / 2),
-    ])
-    map.jumpTo({ center: [c1.lng, c1.lat], zoom: fit.zoom })
+    map.jumpTo({ center: cam.center, zoom: cam.zoom })
   }, [map, picks])
 
   // the plate IS the cursor while the pointer is inside the scene — plain
@@ -90,7 +97,6 @@ function HeroLedge({ data }: { data: LandingData }) {
     <section data-spine-shape="hero" className={snap ? styles.hero : `${styles.hero} ${styles.cursorHide}`}>
       <CursorReveal
         boundsRef={boundsRef}
-        map={map}
         sx={sx}
         sy={sy}
         tagTr={CLUSTER_CITY}
