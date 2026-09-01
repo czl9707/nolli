@@ -14,7 +14,7 @@ import {
 } from "framer-motion"
 import type { MapRef } from "@nolli/map"
 import type { ArchSummary } from "@nolli/data"
-import { Note, useIsMobile } from "@nolli/ui"
+import { useIsMobile } from "@nolli/ui"
 import { useSpineMap } from "@/spine/spine"
 import styles from "./hero-reveal.module.css"
 
@@ -207,23 +207,13 @@ export function CursorReveal({
       <span data-cxht className={`${styles.cx} ${styles.cxH}`} aria-hidden />
       <span data-cxhb className={`${styles.cx} ${styles.cxH}`} aria-hidden />
       <div data-plate className={styles.plate} style={{ width: PLATE.w, height: PLATE.h }}>
-        <Note asChild>
-          <span className={`${styles.frame} ${styles.tagTl}`}>{tagTl}</span>
-        </Note>
-        {tagTr && (
-          <Note asChild>
-            <span className={`${styles.frame} ${styles.tagTr}`}>{tagTr}</span>
-          </Note>
-        )}
+        <span className={`${styles.frame} ${styles.tagTl}`}>{tagTl}</span>
+        {tagTr && <span className={`${styles.frame} ${styles.tagTr}`}>{tagTr}</span>}
         <span className={`${styles.frame} ${styles.dot}`} />
       </div>
       <div data-furniture className={styles.furniture} style={{ width: PLATE.w, height: PLATE.h }}>
-        <Note asChild>
-          <span className={`${styles.frame} ${styles.north}`}>N ↑</span>
-        </Note>
-        <Note asChild>
-          <span ref={coordsRef} className={`${styles.frame} ${styles.coords}`} />
-        </Note>
+        <span className={`${styles.frame} ${styles.north}`}>N ↑</span>
+        <span ref={coordsRef} className={`${styles.frame} ${styles.coords}`} />
       </div>
     </div>
   )

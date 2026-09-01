@@ -49,12 +49,14 @@
 }
 
 /* frame annotations — everything pinned around the plate/furniture box
-   is the same Note + .frame base (ink, no wrap, tabular digits so the
+   shares the .frame base (mono, ink, no wrap, tabular digits so the
    coords readout doesn't jitter); the per-element classes only place it */
 .frame {
   position: absolute;
   color: rgb(var(--color-primary-foreground) / 0.85);
   white-space: nowrap;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 0.75rem;
   font-variant-numeric: tabular-nums;
 }
 
