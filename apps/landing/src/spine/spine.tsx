@@ -133,13 +133,16 @@ export function Spine({
     mapRef.current?.jumpTo({ center: camera.center, zoom: camera.zoom })
   }, [mapReady, camera])
 
-  // boot reveal signal: first idle render, or a fallback if tiles stall
+  // boot reveal signal: first idle render, or a fallback if tiles stall.
+  // Only the map layer waits — the scenes render from frame one, so their
+  // entrance animations play visibly while the map loads in behind them
+  const [mapVeilOff, setMapVeilOff] = useState(false)
   useEffect(() => {
     if (!mapReady) return
     const map = mapRef.current
     if (!map) return
     let done = false
-    const fire = () => { if (!done) { done = true; onMapIdle?.() } }
+    const fire = () => { if (!done) { done = true; setMapVeilOff(true); onMapIdle?.() } }
     map.once("idle", fire)
     const t = setTimeout(fire, 4000)
     return () => { clearTimeout(t); map.off("idle", fire) }
@@ -153,7 +156,7 @@ export function Spine({
     <Ctx.Provider value={ctx}>
       <div ref={wrapperRef} style={{ position: "relative", height: `${timeline.totalVh + 100}vh` }}>
         <div style={{ position: "sticky", top: 0, height: "100svh", overflow: "hidden" }}>
-          <motion.div style={{
+          <motion.div className={mapVeilOff ? "spine-boot spine-boot--on" : "spine-boot"} style={{
             position: "absolute", left: layerX, top: layerY, width: layerW, height: layerH,
             overflow: "hidden",
           }}>

@@ -83,9 +83,7 @@ export function App() {
       </div>
       <ScrollThumb />
       {data && scenes && (
-        <div className={revealed ? "spine-boot spine-boot--on" : "spine-boot"}>
-          <Spine scenes={scenes} summaries={data.mapSummaries} camera={HERO_CAMERA} onMapIdle={onMapIdle} />
-        </div>
+        <Spine scenes={scenes} summaries={data.mapSummaries} camera={HERO_CAMERA} onMapIdle={onMapIdle} />
       )}
     </main>
   )

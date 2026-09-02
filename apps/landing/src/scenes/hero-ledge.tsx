@@ -68,7 +68,7 @@ function HeroLedge({ data }: { data: LandingData }) {
       picks.map((p) => p.coordinates),
       { width: vw, height: vh },
       {
-        left: b.left + FIT_PAD.x,
+        left: b.left + 150 + FIT_PAD.x, /* 150 is a magic number to keep image away from the left col*/
         right: vw - b.right + FIT_PAD.x,
         top: b.top + FIT_PAD.top,
         bottom: vh - b.bottom + FIT_PAD.bottom,
@@ -163,7 +163,7 @@ const HEADLINE_LINES = [
   <><span className={styles.accent}>Architecture</span> Lives.</>,
 ]
 
-const SECONDARY ="I can name hundreds of Architectures, but I can't pin them on the map. Nolli the map for Architecture."
+const SECONDARY ="You likely can name hundreds of Architectures, but can you pin them on the map? Nolli is the map for Architecture."
 
 function Lede() {
   const reduced = useReducedMotion()
