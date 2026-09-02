@@ -4,7 +4,7 @@
 
 .screen {
   --grid-padding: max(
-    calc((100vw - var(--landing-plate-max, 80rem)) / 2),
+    calc((100vw - var(--landing-plate-max)) / 2),
     var(--spacing-group)
   );
   --grid-col: calc((100vw - 2 * var(--grid-padding)) / 12);
@@ -56,10 +56,18 @@
   flex-grow: 1;
 }
 
+/* filled pane — the map's building tile as the pane's ground */
+.paneFilled {
+  background-image: var(--pattern-building);
+  position: absolute;
+  inset: 0;
+  opacity: 0.2;
+}
+
 .rowSplit > .pane:not(:first-child) {
-  border-left: var(--rule);
+  border-left: var(--border);
 }
 
 .colSplit > .pane:not(:first-child) {
-  border-top: var(--rule);
+  border-top: var(--border);
 }

@@ -1,6 +1,6 @@
 // Grid primitives for the landing spine. Layout system: a Screen is cut
 // into panes; scenes only decide how screens split.
-import type { CSSProperties, ReactNode } from "react"
+import { type ReactNode, forwardRef } from "react"
 import styles from "./grid.module.css"
 
 /** Full-bleed layer inside a screen (map background) — covers the whole
@@ -26,33 +26,56 @@ export function Screen({ children, className }: { children: ReactNode; className
   return <section className={[styles.screen, className].filter(Boolean).join(" ")}>{children}</section>
 }
 
-/** Horizontal splits: children stack top-to-bottom, each declaring its height. */
-export function HSplit({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={[styles.splitCell, styles.colSplit, className].filter(Boolean).join(" ")}>{children}</div>
-}
+export const HSplit = forwardRef<HTMLDivElement, { children: ReactNode; className?: string }>(
+  function HSplit({ children, className }, ref) {
+    return (
+      <div
+        ref={ref}
+        className={[styles.splitCell, styles.colSplit, className].filter(Boolean).join(" ")}
+      >
+        {children}
+      </div>
+    )
+  }
+)
 
-/** Vertical splits: children stack left-to-right, each declaring its width. */
-export function VSplit({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={[styles.splitCell, styles.rowSplit, className].filter(Boolean).join(" ")}>{children}</div>
-}
+export const VSplit = forwardRef<HTMLDivElement, { children: ReactNode; className?: string }>(
+  function VSplit({ children, className }, ref) {
+    return (
+      <div
+        ref={ref}
+        className={[styles.splitCell, styles.rowSplit, className].filter(Boolean).join(" ")}
+      >
+        {children}
+      </div>
+    )
+  }
+)
+
 
 export function Pane({
   size,
+  filled,
   className,
   children,
 }: {
   /** Width/height as any CSS length — compose from var(--grid-padding) and
    * var(--grid-col). Omit to fill the rest. */
   size?: string
+  /** Tile the pane with the building pattern (map fill texture). */
+  filled?: boolean
   className?: string
   children?: ReactNode
 }) {
   const fill = size === undefined
   return (
     <div
-      className={[styles.pane, fill ? styles.paneFill : "", className].filter(Boolean).join(" ")}
+      className={[styles.pane, fill ? styles.paneFill : "", className]
+        .filter(Boolean)
+        .join(" ")}
       style={{ flexBasis: size }}
     >
+      {filled && <div className={styles.paneFilled} />}
       {children}
     </div>
   )

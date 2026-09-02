@@ -1,5 +1,9 @@
 /* Hero ledge on the spine — sticky full-viewport hold; the map itself is
-   the spine's layer below, this tree is the content overlay above it. */
+   the spine's layer below, this tree is the content overlay above it.
+   Layout: left column = lede (bottom-left) + CTA pane (plate-sized, the
+   pane IS the CTA); big cell right = map stage with the reveal-lit pick
+   index; drawing-sheet title block strip closes the scene. Plate bounds =
+   everything above the strip. */
 
 .hero {
   position: sticky;
@@ -20,7 +24,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  border-bottom: var(--rule);
+  border-bottom: var(--border);
   z-index: 2;
   pointer-events: none;
 }
@@ -39,69 +43,151 @@
   z-index: 1;
 }
 
-/* the reveal is bounded by the empty top-left pane */
-.revealBoundsCell {
-  position: absolute;
-  inset: 0;
+
+/* ── lede (left column, bottom-left corner) ───────────────────────────── */
+
+.ledePane {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: var(--spacing-component);
 }
 
-/* hero cells — margin panes flank the track panes, so padding is inner */
-.headlineCell {
+.lede {
   display: flex;
-  align-items: flex-end;
-  padding: 0 1.5rem 2.5svh 1.5rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.25rem;
 }
 
 .headlineLine {
-  font-family: var(--font-sans);
   font-weight: 400;
-}
 
-.accent {
-  font-family: var(--font-playful);
-  color: var(--hero-accent);
-}
-
-.pickCell {
-  display: flex;
-  justify-content: flex-start;
-  padding: 2svh 1.5rem 1rem 1.5rem;
-}
-
-.captionCell {
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-start;
-  text-align: left;
-  padding: 1.5rem 1.5rem 2.5svh 1.5rem;
-}
-
-
-
-.pickList {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  text-align: left;
-}
-
-.pick {
-  opacity: 0.3;
-  transition: opacity 0.4s ease;
-  line-height: 2;
-
-  &[data-picked="true"] {
-    opacity: 1;
-    font-weight: 500;
+  .accent {
+    color: rgb(var(--color-accent-foreground));
   }
 }
 
-.captionName {
-  font-weight: 600;
-  font-size: 1.25rem;
+.secondary {
+  margin: 0;
+  line-height: 1.6;
 }
 
-.captionMeta {
-  opacity: 0.75;
-  line-height: 1.75;
+/* ── CTA pane — the pane IS the CTA, plate-sized ─────────────────────── */
+
+.ctaPane {
+  position: absolute;
+  inset: 0;
+  color: inherit;
+  text-decoration: none;
+  pointer-events: auto;
+  cursor: none;
+}
+
+/* one face = the whole cell. Resting face: label + plate hint over the
+ * sheet tile. Armed face: accent ground, dark text, arrow. Arming rolls
+ * the old face out and the new one in. No :hover anywhere; the system
+ * cursor is invisible on this screen, so the plate proxy (deep-penetration
+ * test) and keyboard focus are the armed states */
+.ctaFace {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+}
+
+.ctaFace[data-armed="true"] {
+  background: rgb(var(--color-accent-foreground));
+  color: rgb(var(--color-accent-background));
+  cursor: pointer;
+}
+
+.ctaIcon {
+  margin-left: .35em;
+}
+
+.ctaText {
+  display: flex;
+  align-items: center;
+  transition: transform 0.15s ease;
+}
+
+/* ── pick index (bottom-right of the big cell) ───────────────────────── */
+
+/* anchored so the rows start at the INFO pane's left split below — the
+ * list sits directly over the info block */
+.pickIndex {
+  position: absolute;
+  box-sizing: border-box;
+  width: calc(var(--grid-col) * 4);
+  right: 0;
+  bottom: var(--spacing-component);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  padding-left: var(--spacing-component);
+  text-align: left;
+  pointer-events: none;
+}
+
+.pickRow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-paragraph);
+  line-height: 2;
+  opacity: 0.3;
+  transition: opacity var(--transition-instant) ease;
+}
+
+.pickRow[data-picked="true"] {
+  opacity: 1;
+}
+
+.pickNum {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  opacity: 0.5;
+}
+
+/* ── title block strip ───────────────────────────────────────────────── */
+
+
+.monoLabel {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  opacity: 0.5;
+  line-height: 1;
+}
+
+.blockPane {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: .25rem;
+  padding: 0 var(--spacing-component);
+}
+
+/* fixed-height clip the info block rolls inside */
+.rollClip {
+  position: relative;
+  overflow: hidden;
+}
+
+.blockValue {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.blockValueBig {
+  font-size: 1.05rem;
+  font-weight: 500;
 }

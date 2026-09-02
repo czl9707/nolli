@@ -10,7 +10,7 @@
   background: rgb(var(--color-primary-background) / 0.45);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border-bottom: var(--rule);
+  border-bottom: var(--border);
 }
 
 .row {

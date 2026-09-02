@@ -1,9 +1,15 @@
 @import "@nolli/ui/global.css";
+@import "@fontsource-variable/red-hat-mono";
 
 body {
-  --hero-accent: #ee8a33;
-  /* hairline rule — every split line, closing rule and row divider */
-  --rule: 1px solid rgb(var(--color-primary-foreground) / 0.25);
+  --font-mono: "Red Hat Mono Variable", ui-monospace, monospace;
+  --pattern-building: url("/patterns/light/building.png");
+  --color-accent-background: 23 23 23 !important;
+  --color-accent-foreground: 227 182 77 !important;
+}
+
+body[data-theme="dark"] {
+  --pattern-building: url("/patterns/dark/building.png");
 }
 
 html,
@@ -12,9 +18,6 @@ body,
   height: 100%;
 }
 
-/* Native scrollbar hidden: it claimed layout width and shifted the viewport
-   when it appeared. The ScrollThumb component draws an overlay indicator
-   instead. */
 html {
   scrollbar-width: none;
 }
@@ -31,9 +34,6 @@ body {
   background: rgb(var(--color-primary-background));
   color: rgb(var(--color-primary-foreground));
   overscroll-behavior-y: none;
-  /* index plate container rule — slots.ts reads this (getComputedStyle) so
-     CSS and the spine share one definition. Flat max; the padding rule in
-     indexSlot shrinks it intact on narrow viewports. */
   --landing-plate-max: 80rem;
 }
 

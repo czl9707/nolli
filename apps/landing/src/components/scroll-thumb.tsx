@@ -59,7 +59,7 @@ export function ScrollThumb() {
         width: WIDTH,
         height: geo.thumbH,
         borderRadius: WIDTH,
-        background: "var(--hero-accent)",
+        background: "var(--color-accent-foreground)",
         translateY: y,
         opacity,
         pointerEvents: "none",

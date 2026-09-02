@@ -18,7 +18,7 @@ import { useIsMobile } from "@nolli/ui"
 import { useSpineMap } from "@/spine/spine"
 import styles from "./hero-reveal.module.css"
 
-export const PLATE = { w: 360, h: 280 }
+export const PLATE = { w: 480, h: 280 }
 
 /** Inert class applied to every photo marker the hero mounts — the clip
  * driver matches on it to crop only the hero's set to the plate. A plain

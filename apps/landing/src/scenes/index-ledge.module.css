@@ -8,7 +8,7 @@
   height: 80svh;
   box-sizing: border-box;
   /* closing rule — every internal split draws one, the screen edge too */
-  border-bottom: var(--rule);
+  border-bottom: var(--border);
 }
 
 .splits {
