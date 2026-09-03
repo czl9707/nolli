@@ -9,6 +9,39 @@
   box-sizing: border-box;
   /* closing rule — every internal split draws one, the screen edge too */
   border-bottom: var(--border);
+  /* the pinned lead line rises above the scene mid-transition — this
+     branch of the pane chain must not clip (overrides .screen/.pane,
+     same rules later in the cascade) */
+  overflow: visible;
+}
+
+/* dossier panes — see .index: overflow opened for the lead track */
+.index .contentPane,
+.index .dossierPane,
+.index .cityBody {
+  overflow: visible;
+}
+
+/* lead line — lives in the dossier pane, pinned by its track. The track
+   (absolute, pulled 50vh above the pane's first text line) is the
+   sticky's containing block: the line rides in with the scene, holds its
+   docked spot (sticky top = that line's viewport position when docked)
+   from mid-transition while the scene rises to meet it, and the track's
+   tail (50vh + one line) releases it exactly as the scene exhausts its
+   scroll budget. */
+.leadTrack {
+  position: absolute;
+  top: calc(2.5svh - 50vh);
+  left: 1.5rem;
+  right: 0;
+  height: calc(50vh + 1.5rem);
+}
+
+.lead {
+  position: sticky;
+  top: calc(10svh + var(--size-header-height) + 2.5svh);
+  margin: 0;
+  line-height: 1.5rem;
 }
 
 .splits {
@@ -29,45 +62,78 @@
   padding: 2.5svh 1.5rem 1rem 1.5rem;
 }
 
-.city {
-  font-size: clamp(2.4rem, 3.6vw, 3.6rem);
-  margin: 0 0 1rem;
-}
-
-.statement {
+.statementText {
+  /* clear the lead line's slot above */
+  margin: 2.5rem 0 0;
   line-height: 1.4;
 }
 
-.statement strong {
+.statementText strong {
   font-weight: 700;
 }
 
 /* city grid — each pane IS the button; the spine's scene wrappers disable
-   pointer events, so the cells re-enable them */
+   pointer events, so the cells re-enable them. Two faces: rest rides the
+   building tile (the CTA pane's ground) with a dim label; lifted clears
+   the fill and goes full color. Hover previews lifted, selection holds it */
 .cityCell {
+  position: absolute;
+  inset: 0;
+  font-size: 1.2rem;
+  cursor: pointer;
+  user-select: none;
+  pointer-events: auto;
+}
+
+.cityCellSelected {
+  cursor: default;
+}
+
+.cityCellPending {
+  cursor: progress;
+}
+
+/* the roll window — also the selected label's ground */
+.cityClip {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.cityFace {
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
   padding: 0 1.25rem;
-  font-size: 1.2rem;
-  opacity: 0.55;
-  cursor: pointer;
-  transition: opacity 150ms ease;
-  user-select: none;
-  pointer-events: auto;
+  white-space: nowrap;
+  color: rgb(var(--color-primary-foreground) / 0.55);
+  transition: color var(--transition-instant) ease;
 }
 
-.cityCell:hover {
-  opacity: 0.85;
-}
-
-.cityCellActive {
-  opacity: 1;
-  font-weight: 700;
-}
-
-.cityCellPending {
+/* resting face rides the building tile */
+.cityFace::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: var(--pattern-building);
   opacity: 0.2;
-  cursor: progress;
+}
+
+/* armed face — fill rolled away */
+.cityFace[data-armed="true"] {
+  color: rgb(var(--color-primary-foreground));
+}
+
+.cityFace[data-armed="true"]::before {
+  display: none;
+}
+
+.cityCellPending .cityFace {
+  color: rgb(var(--color-primary-foreground) / 0.2);
+}
+
+.cityCellPending .cityFace::before {
+  display: none;
 }

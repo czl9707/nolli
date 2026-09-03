@@ -4,8 +4,8 @@
 // the city dossier + 2x3 city-button grid and fades out over the hold's
 // tail.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { motion, useMotionValueEvent, useTransform } from "framer-motion"
-import { Body1, H1 } from "@nolli/ui"
+import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useTransform } from "framer-motion"
+import { Body1 } from "@nolli/ui"
 import { flyToSceneCinematic } from "@nolli/map"
 import { useDbStore, type ArchSummary } from "@nolli/data"
 import { useSceneScroll, useSpineMap } from "@/spine/spine"
@@ -147,21 +147,19 @@ function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect 
   useMotionValueEvent(local, "change", (v) => setMarkersOn(v >= -RAMP_VH && v < EXIT_START_VH))
 
   return (
-    <Screen className={styles.index}>
-      <PhotoMarkers picks={picks} on={markersOn} />
+    <>
+      <Screen className={styles.index}>
+        <PhotoMarkers picks={picks} on={markersOn} />
       <motion.div className={styles.splits} style={{ opacity: fade }}>
         <HSplit>
           <Pane size="var(--size-header-height)" />
-          <Pane>
+          <Pane className={styles.contentPane}>
             <VSplit>
               <Pane size="var(--grid-padding)" />
-              <Pane size="calc(var(--grid-col) * 4)">
+              <Pane size="calc(var(--grid-col) * 4)" className={styles.dossierPane}>
                 <HSplit>
                   <Pane className={styles.cityBody}>
-                    <H1 asChild>
-                      <h2 className={styles.city}>{selected}</h2>
-                    </H1>
-                    <Statement />
+                    <Statement city={selected} />
                   </Pane>
                   <CityRow
                     cities={CITIES.slice(0, 2)}
@@ -191,23 +189,29 @@ function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect 
           </Pane>
         </HSplit>
       </motion.div>
-    </Screen>
+      </Screen>
+    </>
   )
 }
 
-function Statement() {
+/** Dossier copy. The lead line rides the lead track — a tall box pulled
+ * above the pane, the sticky's containing block — so it pins at the
+ * line's docked spot from mid-transition and settles here once the scene
+ * lands. Plain text otherwise. */
+function Statement({ city }: { city: string }) {
   return (
-    <Body1 asChild>
-      <p className={styles.statement}>
-        Google Maps treats a masterpiece no differently.
-        <br />
-        ArchDaily curates everything about it.
-        <br />
-        <strong>Nolli pins it on the map.</strong>
-        <br />
-        <strong>Don't miss the masterpiece.</strong>
-      </p>
-    </Body1>
+    <div className={styles.statement}>
+      <div className={styles.leadTrack}>
+        <Body1 asChild>
+          <p className={styles.lead}>Travelling to {city} …</p>
+        </Body1>
+      </div>
+      <Body1 asChild>
+        <p className={styles.statementText}>
+          Nolli has <strong>Everything Worth Seeing.</strong>
+        </p>
+      </Body1>
+    </div>
   )
 }
 
@@ -227,35 +231,87 @@ function CityRow({
   return (
     <Pane size={CITY_ROW_H}>
       <VSplit>
-        {cities.map((name) => {
-          const ready = loaded.includes(name)
-          const cls = [
-            styles.cityCell,
-            name === selected ? styles.cityCellActive : "",
-            ready ? "" : styles.cityCellPending,
-          ]
-            .filter(Boolean)
-            .join(" ")
-          return (
-            <Pane key={name}>
-              <div
-                className={cls}
-                onClick={() => ready && onSelect(name)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault()
-                    if (ready) onSelect(name)
-                  }
-                }}
-              >
-                {name}
-              </div>
-            </Pane>
-          )
-        })}
+        {cities.map((name) => (
+          <CityCell
+            key={name}
+            name={name}
+            selected={name === selected}
+            ready={loaded.includes(name)}
+            onSelect={onSelect}
+          />
+        ))}
       </VSplit>
+    </Pane>
+  )
+}
+
+/** One city cell. Two faces roll in the clip — rest rides the building
+ * tile with a dim label; lifted clears the fill and goes full color.
+ * Hover/focus previews lifted; selection holds it, and handing selection
+ * over rolls the old cell back to rest. */
+function CityCell({
+  name,
+  selected,
+  ready,
+  onSelect,
+}: {
+  name: string
+  selected: boolean
+  ready: boolean
+  onSelect: (name: string) => void
+}) {
+  const [armed, setArmed] = useState(false)
+  const reduced = useReducedMotion()
+  // listeners stay attached even while selected — a leave during selection
+  // must still clear armed, or the cell would re-show the armed face once
+  // deselected. The face itself only arms when interactive.
+  const faceArmed = armed && ready && !selected
+  // selected and armed share the lifted face: selection holds it, hover
+  // previews it, and handing selection over rolls the old cell back to rest
+  const lifted = selected || faceArmed
+  const cls = [
+    styles.cityCell,
+    selected ? styles.cityCellSelected : "",
+    ready ? "" : styles.cityCellPending,
+  ]
+    .filter(Boolean)
+    .join(" ")
+  const arm = (v: boolean) => () => setArmed(v)
+  return (
+    <Pane>
+      <div
+        className={cls}
+        onClick={() => ready && onSelect(name)}
+        role="button"
+        tabIndex={ready ? 0 : -1}
+        aria-pressed={selected}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault()
+            if (ready) onSelect(name)
+          }
+        }}
+        onMouseEnter={arm(true)}
+        onMouseLeave={arm(false)}
+        onFocus={arm(true)}
+        onBlur={arm(false)}
+      >
+        <span className={styles.cityClip}>
+          <AnimatePresence mode="popLayout" initial={false}>
+            <motion.span
+              key={lifted ? "lifted" : "rest"}
+              className={styles.cityFace}
+              data-armed={lifted}
+              initial={reduced ? false : { y: "100%" }}
+              animate={{ y: 0 }}
+              exit={reduced ? undefined : { y: "-100%" }}
+              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            >
+              {name}
+            </motion.span>
+          </AnimatePresence>
+        </span>
+      </div>
     </Pane>
   )
 }
