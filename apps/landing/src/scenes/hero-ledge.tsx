@@ -2,11 +2,12 @@
 // markers render through the map portal so they ride the layer, while the
 // reveal (veil/plate/crosshairs) renders in this tree — first child of the
 // sticky section, so it pins during the hold and rides up with the page
-// through the transition, unveiling the map. Layout: a left column carries
-// the lede (bottom-left) and the CTA pane (the whole pane is the CTA, sized
-// exactly like the plate; arming rolls the whole cell between its faces); the big cell
-// right of it is the map stage with the reveal-lit pick index; the
-// drawing-sheet title block strip closes the scene. The plate's bounds span
+// through the transition, unveiling the map. Layout: the big map cell
+// carries the lede, vertically centered; the plate column sits on the RIGHT
+// — picked-arch list in its growing top cell, the CTA pane below (the whole
+// pane is the CTA, sized like the plate; arming rolls the whole cell); the
+// mirrored title-block strip closes the scene (Info left, plate-wide, then
+// fill, then Scale + Sheet right, under the column). The reveal bounds span
 // everything above the strip.
 import { useEffect, useRef, useState } from "react"
 import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, type MotionValue } from "framer-motion"
@@ -38,11 +39,13 @@ export const heroHold = (data: LandingData): HoldScene => ({
  * lives in photo-markers.module.css). Local scroll keeps counting past the
  * hold: armed once we're committed into the transition, the crossing back
  * down to our own edge flies home. */
-const SCENE_REAL_HEIGHTVH = 100
+const SCENE_REAL_VH = 100
 const RETURN_ARM_VH = 115
 const RETURN_FIRE_VH = 100
 
-/** Inner fit padding inside the reveal bounds (px). */
+/** Camera fit insets off the stage rect (px): left clears the centered lede,
+ * x pads the column side, top/bottom keep the pin band level with the lede
+ * (horizontal separation keeps them apart). */
 const FIT_PAD = { x: 100, top: 50, bottom: 240 }
 
 const BOTTOM_BAR_HEIGHT = "5rem"
@@ -54,13 +57,14 @@ function HeroLedge({ data }: { data: LandingData }) {
   const picks = data.heroPicks
   const { sx, sy } = useCursorSprings()
   const { nearest, active } = usePlatePicks(sx, sy, picks, map)
+  // reveal bounds = the whole top area above the strip; the camera fits to
+  // the stage alone so pins stay clear of the column
   const boundsRef = useRef<HTMLDivElement | null>(null)
   const camRef = useRef<SceneCamera | null>(null)
 
   useEffect(() => {
     const pane = boundsRef.current
     if (!map || !pane) return
-
     const b = pane.getBoundingClientRect()
     const vw = window.innerWidth
     const vh = window.innerHeight
@@ -68,8 +72,8 @@ function HeroLedge({ data }: { data: LandingData }) {
       picks.map((p) => p.coordinates),
       { width: vw, height: vh },
       {
-        left: b.left + 150 + FIT_PAD.x, /* 150 is a magic number to keep image away from the left col*/
-        right: vw - b.right + FIT_PAD.x,
+        left: b.left + FIT_PAD.x,
+        right: vw - b.right + FIT_PAD.x, 
         top: b.top + FIT_PAD.top,
         bottom: vh - b.bottom + FIT_PAD.bottom,
       },
@@ -84,8 +88,8 @@ function HeroLedge({ data }: { data: LandingData }) {
   const snap = useIsMobile() || !!reduced
 
   const localScrollDist = useSceneScroll()
-  const [markersOn, setMarkersOn] = useState(() => localScrollDist.get() < SCENE_REAL_HEIGHTVH)
-  useMotionValueEvent(localScrollDist, "change", (v) => setMarkersOn(v < SCENE_REAL_HEIGHTVH))
+  const [markersOn, setMarkersOn] = useState(() => localScrollDist.get() < SCENE_REAL_VH)
+  useMotionValueEvent(localScrollDist, "change", (v) => setMarkersOn(v < SCENE_REAL_VH))
 
   // fly home when scroll hands the screen back
   const armed = useRef(false)
@@ -112,44 +116,42 @@ function HeroLedge({ data }: { data: LandingData }) {
       <Screen className={styles.screen}>
         <HSplit>
           <Pane size="var(--size-header-height)" />
-          <Pane>
-            <VSplit ref={boundsRef}>
-              <Pane size={`${PLATE.w}px`}>
-                <HSplit>
-                  <Pane className={styles.ledePane}>
-                    <Lede />
-                  </Pane>
-                  <Pane size={`${PLATE.h}px`} filled>
-                    <CtaPane sx={sx} sy={sy} />
-                  </Pane>
-                </HSplit>
-              </Pane>
-              <Pane>
-                <ul className={styles.pickIndex}>
-                  {picks.map((p, i) => (
-                    <li key={p.slug} className={styles.pickRow} data-picked={`${active.has(p.slug)}`}>
-                      <span className={styles.pickNum}>{String(i + 1).padStart(2, "0")}</span>
-                      <Body2 asChild>
-                        <span>{p.name}</span>
-                      </Body2>
-                    </li>
-                  ))}
-                </ul>
-              </Pane>
-            </VSplit>
-          </Pane>
+          <VSplit ref={boundsRef}>
+            <Pane className={styles.heroPane}>
+              <Lede />
+            </Pane>
+            <Pane size={`${PLATE.w}px`}>
+              <HSplit>
+                <Pane>
+                  <ul className={styles.pickList}>
+                    {picks.map((p, i) => (
+                      <li key={p.slug} className={styles.pickRow} data-picked={`${active.has(p.slug)}`}>
+                        <span className={styles.pickNum}>{String(i + 1).padStart(2, "0")}</span>
+                        <Body2 asChild>
+                          <span>{p.name}</span>
+                        </Body2>
+                      </li>
+                    ))}
+                  </ul>
+                </Pane>
+                <Pane size={`${PLATE.h}px`} filled>
+                  <CtaPane sx={sx} sy={sy} />
+                </Pane>
+              </HSplit>
+            </Pane>
+          </VSplit>
           <Pane size={BOTTOM_BAR_HEIGHT}>
             <VSplit>
+              <InfoBlock nearest={nearest} />
+              <Pane filled />
               <Pane size={`${PLATE.w / 2}px`} className={styles.blockPane}>
-                <span className={`${styles.monoLabel}`}>Sheet</span>
-                <span className={styles.blockValue}>France · Paris</span>
-              </Pane>
-              <Pane size={`${PLATE.w / 2}px`} className={styles.blockPane}>
-                <span className={`${styles.monoLabel}`}>Scale</span>
+                <span className={styles.monoLabel}>Scale</span>
                 <LiveValue>{scale}</LiveValue>
               </Pane>
-              <Pane filled />
-              <InfoBlock nearest={nearest} />
+              <Pane size={`${PLATE.w / 2}px`} className={styles.blockPane}>
+                <span className={styles.monoLabel}>Sheet</span>
+                <span className={styles.blockValue}>France · Paris</span>
+              </Pane>
             </VSplit>
           </Pane>
         </HSplit>
@@ -159,11 +161,11 @@ function HeroLedge({ data }: { data: LandingData }) {
 }
 
 const HEADLINE_LINES = [
-  <><span className={styles.accent}>Map</span> Unfolds,</>,
-  <><span className={styles.accent}>Architecture</span> Lives.</>,
+  <>The <span className={styles.accent}>Map</span> Where</>,
+  <><span className={styles.accent}>Architectures</span> Lives.</>,
 ]
 
-const SECONDARY ="You likely can name hundreds of Architectures, but can you pin them on the map? Nolli is the map for Architecture."
+const SECONDARY = "You likely can name hundreds of Architectures, but can you pin them on map? Nolli is the map for Architectures."
 
 function Lede() {
   const reduced = useReducedMotion()
@@ -198,7 +200,8 @@ function Lede() {
  * On the cursor-less screen the plate is the pointer: when it sweeps deep enough
  * into the pane, the whole cell rolls — the resting face (label + hint
  * over the sheet tile) slides out, the armed face (accent ground, arrow)
- * slides in. */
+ * slides in. The cursor arrives from the big cell to the LEFT, so the
+ * arming buffer guards the pane's left and top edges. */
 function CtaPane({ sx, sy }: { sx: MotionValue<number>; sy: MotionValue<number> }) {
   const ref = useRef<HTMLAnchorElement | null>(null)
   const [deep, setDeep] = useState(false)
@@ -214,8 +217,8 @@ function CtaPane({ sx, sy }: { sx: MotionValue<number>; sy: MotionValue<number> 
       const x = sx.get()
       const y = sy.get()
       const inDistance =
-        x >= r.left &&
-        x <= r.right - CTA_BUFFER &&
+        x >= r.left + CTA_BUFFER &&
+        x <= r.right &&
         y >= r.top + CTA_BUFFER &&
         y <= r.bottom
       setDeep(inDistance)
@@ -269,10 +272,10 @@ function CtaPane({ sx, sy }: { sx: MotionValue<number>; sy: MotionValue<number> 
               : { duration: 0.5, delay: 0.85, ease: "easeOut" }
           }
         >
-            <H3 className={styles.ctaText}>
-              Explore Nolli
-              <ArrowUpRight className={styles.ctaIcon} size={24} aria-hidden />
-            </H3>
+          <H3 className={styles.ctaText}>
+            Explore Nolli
+            <ArrowUpRight className={styles.ctaIcon} size={24} aria-hidden />
+          </H3>
         </motion.span>
       </AnimatePresence>
     </motion.a>
@@ -280,12 +283,12 @@ function CtaPane({ sx, sy }: { sx: MotionValue<number>; sy: MotionValue<number> 
 }
 
 /** Info block — the plate's nearest work rolls through the cell as the
- * plate moves to a new pick. */
+ * plate moves to a new pick. Plate-wide, flush with the column's edge. */
 function InfoBlock({ nearest }: { nearest: ArchSummary | null }) {
   const reduced = useReducedMotion()
   return (
-    <Pane size="calc(var(--grid-col) * 4)" className={styles.blockPane}>
-      <span className={`${styles.monoLabel}`}>Info</span>
+    <Pane size={`${PLATE.w}px`} className={styles.blockPane}>
+      <span className={styles.monoLabel}>Info</span>
       <div className={styles.rollClip}>
         <AnimatePresence initial={false} mode="popLayout">
           <motion.div

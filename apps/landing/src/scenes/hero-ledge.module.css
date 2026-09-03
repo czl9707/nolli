@@ -1,9 +1,10 @@
 /* Hero ledge on the spine — sticky full-viewport hold; the map itself is
    the spine's layer below, this tree is the content overlay above it.
-   Layout: left column = lede (bottom-left) + CTA pane (plate-sized, the
-   pane IS the CTA); big cell right = map stage with the reveal-lit pick
-   index; drawing-sheet title block strip closes the scene. Plate bounds =
-   everything above the strip. */
+   Layout: big map cell = lede, vertically centered; plate column on the
+   RIGHT = picked-arch list (growing top cell) + CTA pane (the pane IS the
+   CTA); mirrored title-block strip closes the scene (Info left, fill,
+   Scale + Sheet right, under the column). Plate bounds = everything above
+   the strip. */
 
 .hero {
   position: sticky;
@@ -43,25 +44,29 @@
   z-index: 1;
 }
 
+/* ── lede (big map cell, vertically centered) ─────────────────────────── */
 
-/* ── lede (left column, bottom-left corner) ───────────────────────────── */
-
-.ledePane {
+.heroPane {
   display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: var(--spacing-component);
+  align-items: center;
 }
 
+
 .lede {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 var(--spacing-component);
+  display: flex;
+  flex-direction: column;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 1.25rem;
+  gap: 1.5rem;
 }
 
 .headlineLine {
   font-weight: 400;
+  font-size: clamp(2.75rem, 4.6vw, 4rem);
 
   .accent {
     color: rgb(var(--color-accent-foreground));
@@ -71,6 +76,8 @@
 .secondary {
   margin: 0;
   line-height: 1.6;
+  font-size: 1.12rem;
+  max-width: 38ch;
 }
 
 /* ── CTA pane — the pane IS the CTA, plate-sized ─────────────────────── */
@@ -115,22 +122,13 @@
   transition: transform 0.15s ease;
 }
 
-/* ── pick index (bottom-right of the big cell) ───────────────────────── */
+/* ── pick list (top cell of the right column) ─────────────────────────── */
 
-/* anchored so the rows start at the INFO pane's left split below — the
- * list sits directly over the info block */
-.pickIndex {
-  position: absolute;
-  box-sizing: border-box;
-  width: calc(var(--grid-col) * 4);
-  right: 0;
-  bottom: var(--spacing-component);
+.pickList {
   list-style: none;
   margin: 0;
-  padding: 0;
-  padding-left: var(--spacing-component);
+  padding: var(--spacing-component);
   text-align: left;
-  pointer-events: none;
 }
 
 .pickRow {
