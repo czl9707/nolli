@@ -41,6 +41,48 @@
   margin: 0;
 }
 
+/* the rolling city — one line's clip; the roll is the swap animation */
+.leadCityClip {
+  position: relative; /* popLayout's exiting face is absolute — anchor it here */
+  display: inline-block;
+  vertical-align: bottom;
+  height: 1.2em;
+  overflow: hidden;
+}
+
+.leadCity {
+  display: block;
+  height: 1.2em;
+  line-height: 1.2em;
+  white-space: nowrap;
+  color: rgb(var(--color-accent-foreground));
+  font-weight: 600;
+}
+
+.statementText {
+  margin: 0;
+}
+
+/* what's on the map — the selected city's picks, blur-swapped on change */
+.archList {
+  list-style: none;
+  margin: 1.5rem 0 0;
+  padding: 0;
+}
+
+.archList li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-paragraph);
+  line-height: 1.8;
+}
+
+.archNum {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  opacity: 0.5;
+}
+
 /* city grid — each pane IS the button; the spine's scene wrappers disable
    pointer events, so the cells re-enable them. Two faces: rest rides the
    building tile (the CTA pane's ground) with a dim label; lifted clears

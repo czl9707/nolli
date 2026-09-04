@@ -4,7 +4,7 @@
 // the city dossier + 2x3 city-button grid and fades out over the hold's
 // tail.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useTransform } from "framer-motion"
+import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useTransform, type MotionValue } from "framer-motion"
 import { Body1, H3 } from "@nolli/ui"
 import { flyToSceneCinematic } from "@nolli/map"
 import { useDbStore, type ArchSummary } from "@nolli/data"
@@ -36,6 +36,23 @@ const TOTLE_VH = 200
 /** Fit padding in pane px: photo cards hang below the pin, so the
  * south-most pick needs far more room below it than the north-most above. */
 const FIT_PADDING = { left: 100, right: 100, top: 100, bottom: 240 }
+
+/** City-name pool for the pre-entry roll — names only, no data behind
+ * them; walking the list in order is travel texture, not destinations
+ * claimed. Won the prototype round against scramble/decode/flap/blur —
+ * ordered pass-through with the page's roll as the swap. */
+const CITY_POOL: string[] = [
+  "Kyoto", "Osaka", "London", "Barcelona", "Vienna", "Prague", "Lisbon",
+  "Copenhagen", "Stockholm", "New York", "Amsterdam", "Zurich", "Munich",
+  "Warsaw", "Athens", "Istanbul", "Cairo", "Dubai", "Mumbai", "Bangkok",
+  "Singapore", "Hong Kong", "Shanghai", "Seoul", "Sydney", "Melbourne",
+  "Tokyo", "Mexico City", "Buenos Aires", "Rio", "Chicago", "Toronto",
+  "Vancouver", "Berlin", "Paris", "Milan", "Rome", "Madrid", "Oslo",
+  "Helsinki",
+]
+
+/** Scroll vh between pre-entry roll steps. */
+const ROLL_STEP_VH = 6
 
 export const indexHold =
   (data: LandingData, indexPane: PxRect): HoldScene => ({
@@ -83,6 +100,7 @@ function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect 
 
   const [selected, setSelected] = useState<string>(CITIES[0])
   const picks = archPickesByCity[selected] ?? data.heroPicks
+  const displayCity = useCityDisplay(local, selected)
 
   const cameraFor = useCallback(
     (cityPicks: ArchSummary[]) =>
@@ -141,7 +159,7 @@ function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect 
                 <Pane size="calc(var(--grid-col) * 4)" className={styles.visibleOverflow}>
                   <HSplit>
                     <Pane className={`${styles.statementPane} ${styles.visibleOverflow}`}>
-                      <Statement city={selected} />
+                      <Statement leadCity={displayCity} listCity={selected} picks={picks} />
                     </Pane>
                     <CityRow
                       cities={CITIES.slice(0, 2)}
@@ -176,21 +194,85 @@ function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect 
   )
 }
 
+/** The lead line's city. Before the entry window it rolls through the
+ * city pool in order, a pure function of scroll distance — scrub back
+ * replays it. Inside the window it is the selection; the roll itself is
+ * the swap animation (in Statement), always upward. */
+function useCityDisplay(local: MotionValue<number>, selected: string) {
+  const [name, setName] = useState(selected)
+  const inHold = useRef(local.get() >= -ENTRY_VH)
+  useMotionValueEvent(local, "change", (v) => {
+    inHold.current = v >= -ENTRY_VH
+    if (inHold.current) {
+      setName(selected)
+      return
+    }
+    const step = Math.floor((-v - ENTRY_VH) / ROLL_STEP_VH)
+    const idx = ((step % CITY_POOL.length) + CITY_POOL.length) % CITY_POOL.length
+    setName(CITY_POOL[idx])
+  })
+  useEffect(() => {
+    if (inHold.current) setName(selected)
+  }, [selected])
+  return name
+}
+
 /** Dossier copy. The lead line rides the lead track — a tall box pulled
  * above the pane, the sticky's containing block — so it pins at the
  * line's docked spot from mid-transition and settles here once the scene
- * lands. Plain text otherwise. */
-function Statement({ city }: { city: string }) {
+ * lands. The city rolls through its faces; the architecture list under
+ * the statement swaps with a blur when the city changes. */
+function Statement({
+  leadCity,
+  listCity,
+  picks,
+}: {
+  leadCity: string
+  listCity: string
+  picks: ArchSummary[]
+}) {
+  const reduced = useReducedMotion()
   return (
     <>
       <div className={styles.leadTrack}>
         <H3 className={styles.lead}>
-          Travelling to <span className={styles.leadCity}>{city}</span>.
+          Travelling to{" "}
+          <span className={styles.leadCityClip}>
+            <AnimatePresence mode="popLayout" initial={false}>
+              <motion.span
+                key={leadCity}
+                className={styles.leadCity}
+                initial={reduced ? false : { y: "110%" }}
+                animate={{ y: 0 }}
+                exit={reduced ? undefined : { y: "-110%" }}
+                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              >
+                {leadCity}
+              </motion.span>
+            </AnimatePresence>
+          </span>.
         </H3>
       </div>
-      <Body1 className={styles.statementText}>
-          Nolli has Everything Worth Seeing.
+      <Body1 asChild>
+        <p className={styles.statementText}>Nolli has Architectures Worth Seeing.</p>
       </Body1>
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.ul
+          key={listCity}
+          className={styles.archList}
+          initial={reduced ? false : { opacity: 0, filter: "blur(6px)" }}
+          animate={{ opacity: 1, filter: "blur(0px)" }}
+          exit={reduced ? undefined : { opacity: 0, filter: "blur(6px)" }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+        >
+          {picks.map((p, i) => (
+            <li key={p.slug}>
+              <span className={styles.archNum}>{String(i + 1).padStart(2, "0")}</span>
+              <span>{p.name}</span>
+            </li>
+          ))}
+        </motion.ul>
+      </AnimatePresence>
     </>
   )
 }
