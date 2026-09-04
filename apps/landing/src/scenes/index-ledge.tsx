@@ -5,7 +5,7 @@
 // tail.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useTransform } from "framer-motion"
-import { Body1 } from "@nolli/ui"
+import { Body1, H3 } from "@nolli/ui"
 import { flyToSceneCinematic } from "@nolli/map"
 import { useDbStore, type ArchSummary } from "@nolli/data"
 import { useSceneScroll, useSpineMap } from "@/spine/spine"
@@ -17,24 +17,21 @@ import { PhotoMarkers } from "@/components/photo-markers"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
 import styles from "./index-ledge.module.css"
 
-/** Hand-picked city index — Paris leads (continuity with the hero dwell). */
-const CITIES = ["Paris", "New York", "Tokyo", "London", "Chicago", "Berlin"] as const
+const CITIES = ["London", "New York", "Paris", "Tokyo", "Chicago", "Berlin"] as const
 
 const PICKS_PER_CITY = 8
 
 /** City grid row height. */
-const CITY_ROW_H = "4rem"
+const CITY_ROW_H = "3.5rem"
 
-/** Marker visibility window in scene-local vh: flag on at the landing
- * run-in, off again at the exit window (fade length lives in
- * photo-markers.module.css). EXIT_END_VH bounds the content fade below.
- * The entry flight fires at our own top edge (scene-local 0) so the scene
- * owns the screen when it starts; ENTRY_REARM_VH is hysteresis only. */
-const ENTRY_VH = 0
-const ENTRY_REARM_VH = -10
-const RAMP_VH = 30
-const EXIT_START_VH = 170
-const EXIT_END_VH = 199
+/** Visibility windows in scene-local vh, all within TOTLE_VH ± ENTRY_VH:
+ * the entry flight fires and the markers flag on at −ENTRY_VH; the
+ * content fades and the markers flag off across TOTLE_VH − ENTRY_VH →
+ * TOTLE_VH (fade lengths live in their own css). ENTRY_REARM_VH is
+ * hysteresis only. */
+const ENTRY_VH = 20
+const ENTRY_REARM_VH = 20
+const TOTLE_VH = 200
 
 /** Fit padding in pane px: photo cards hang below the pin, so the
  * south-most pick needs far more room below it than the north-most above. */
@@ -45,7 +42,7 @@ export const indexHold =
     kind: "hold",
     id: "index",
     shape: "[data-spine-shape='index']",
-    heightVh: 200,
+    heightVh: TOTLE_VH,
     Component: () => <IndexLedge data={data} indexPane={indexPane} />,
   })
 
@@ -53,48 +50,39 @@ function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect 
   const map = useSpineMap()
   const local = useSceneScroll()
 
-  // Paris comes free with the landing data; the other cities preload once
   const dataSource = useDbStore((s) => s.dataSource)
-  const [byCity, setByCity] = useState<Record<string, ArchSummary[]>>(() => ({}))
+  const [archByCities, setArchByCities] = useState<Record<string, ArchSummary[]>>(() => ({}))
   useEffect(() => {
     if (!dataSource) return
-    let cancelled = false
     ;(async () => {
       try {
         const options = await dataSource.getFilterOptions()
         const entries = await Promise.all(
-          CITIES.filter((c) => c !== "Paris").map(async (name) => {
+          CITIES.map(async (name) => {
             const id = cityIdByName(options, name)
             if (!id) throw new Error(`index city "${name}" not found`)
             return [name, await dataSource.getAllArchitectures({ cityIds: [id] })] as const
           }),
         )
-        if (!cancelled) setByCity((prev) => ({ ...prev, ...Object.fromEntries(entries) }))
+        setArchByCities((prev) => ({ ...prev, ...Object.fromEntries(entries) }))
       } catch {
         // cities that didn't load stay dim in the grid
       }
     })()
-    return () => {
-      cancelled = true
-    }
   }, [dataSource])
 
-  const picksByCity = useMemo(() => {
+  const archPickesByCity = useMemo(() => {
     const out: Record<string, ArchSummary[]> = {}
     for (const name of CITIES) {
-      if (name === "Paris") {
-        out.Paris = data.heroPicks
-        continue
-      }
-      const items = byCity[name]
+      const items = archByCities[name]
       if (!items?.length) continue
       out[name] = pickIndexPhotos(items, items[0].coordinates, PICKS_PER_CITY)
     }
     return out
-  }, [byCity, data.heroPicks])
+  }, [archByCities])
 
-  const [selected, setSelected] = useState<string>("Paris")
-  const picks = picksByCity[selected] ?? data.heroPicks
+  const [selected, setSelected] = useState<string>(CITIES[0])
+  const picks = archPickesByCity[selected] ?? data.heroPicks
 
   const cameraFor = useCallback(
     (cityPicks: ArchSummary[]) =>
@@ -112,83 +100,77 @@ function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect 
   picksRef.current = picks
   const entered = useRef(local.get() >= ENTRY_VH)
   useMotionValueEvent(local, "change", (v) => {
-    if (v >= ENTRY_VH) {
+    if (v >= -ENTRY_VH && v < TOTLE_VH + ENTRY_REARM_VH) {
       if (entered.current || !map) return
       entered.current = true
       flyToSceneCinematic(map, cameraFor(picksRef.current))
-    } else if (v < ENTRY_REARM_VH) {
+    } else if (v < -ENTRY_VH - ENTRY_REARM_VH || v >= TOTLE_VH + ENTRY_REARM_VH) {
       entered.current = false
     }
   })
 
-  // restoration path only: deep-linked or reloaded into the hold jumps to
-  // the city camera (the entry flight above never fires on mount)
-  useEffect(() => {
-    if (!map || local.get() < 0) return
-    map.jumpTo(cameraFor(picksRef.current))
-  }, [map, local, cameraFor])
-
   const onSelect = useCallback(
     (name: string) => {
       setSelected(name)
-      const cityPicks = picksByCity[name]
+      const cityPicks = archPickesByCity[name]
       if (!map || !cityPicks?.length) return
       flyToSceneCinematic(map, cameraFor(cityPicks))
     },
-    [picksByCity, map, cameraFor],
+    [archPickesByCity, map, cameraFor],
   )
 
-  const fade = useTransform(local, [EXIT_START_VH, EXIT_END_VH], [1, 0])
-  // markers own the screen from the landing run-in to the exit window
+  const fade = useTransform(local, [TOTLE_VH - ENTRY_VH, TOTLE_VH], [1, 0])
+  // markers own the screen from the landing run-in (same edge the entry
+  // flight fires on) to the exit window
   const [markersOn, setMarkersOn] = useState(() => {
     const v = local.get()
-    return v >= -RAMP_VH && v < EXIT_START_VH
+    return v >= -ENTRY_VH && v < TOTLE_VH - ENTRY_VH
   })
-  useMotionValueEvent(local, "change", (v) => setMarkersOn(v >= -RAMP_VH && v < EXIT_START_VH))
+  useMotionValueEvent(local, "change", (v) => setMarkersOn(v >= -ENTRY_VH && v < TOTLE_VH - ENTRY_VH))
 
   return (
     <>
       <Screen className={styles.index}>
         <PhotoMarkers picks={picks} on={markersOn} />
-      <motion.div className={styles.splits} style={{ opacity: fade }}>
-        <HSplit>
-          <Pane size="var(--size-header-height)" />
-          <Pane className={styles.contentPane}>
-            <VSplit>
-              <Pane size="var(--grid-padding)" />
-              <Pane size="calc(var(--grid-col) * 4)" className={styles.dossierPane}>
-                <HSplit>
-                  <Pane className={styles.cityBody}>
-                    <Statement city={selected} />
-                  </Pane>
-                  <CityRow
-                    cities={CITIES.slice(0, 2)}
-                    selected={selected}
-                    loaded={Object.keys(picksByCity)}
-                    onSelect={onSelect}
-                  />
-                  <CityRow
-                    cities={CITIES.slice(2, 4)}
-                    selected={selected}
-                    loaded={Object.keys(picksByCity)}
-                    onSelect={onSelect}
-                  />
-                  <CityRow
-                    cities={CITIES.slice(4, 6)}
-                    selected={selected}
-                    loaded={Object.keys(picksByCity)}
-                    onSelect={onSelect}
-                  />
-                </HSplit>
-              </Pane>
-              <Pane size="calc(var(--grid-col) * 8)">
-                <div data-spine-shape="index" className={styles.mapPane} />
-              </Pane>
-              <Pane size="var(--grid-padding)" />
-            </VSplit>
-          </Pane>
-        </HSplit>
-      </motion.div>
+        <motion.div className={styles.splits} style={{ opacity: fade }}>
+          <HSplit>
+            <Pane size="var(--size-header-height)" />
+            <Pane className={styles.visibleOverflow}>
+              <VSplit>
+                <Pane size="var(--grid-padding)" />
+                <Pane size="calc(var(--grid-col) * 4)" className={styles.visibleOverflow}>
+                  <HSplit>
+                    <Pane className={`${styles.statementPane} ${styles.visibleOverflow}`}>
+                      <Statement city={selected} />
+                    </Pane>
+                    <CityRow
+                      cities={CITIES.slice(0, 2)}
+                      selected={selected}
+                      loaded={Object.keys(archByCities)}
+                      onSelect={onSelect}
+                    />
+                    <CityRow
+                      cities={CITIES.slice(2, 4)}
+                      selected={selected}
+                      loaded={Object.keys(archByCities)}
+                      onSelect={onSelect}
+                    />
+                    <CityRow
+                      cities={CITIES.slice(4, 6)}
+                      selected={selected}
+                      loaded={Object.keys(archByCities)}
+                      onSelect={onSelect}
+                    />
+                  </HSplit>
+                </Pane>
+                <Pane size="calc(var(--grid-col) * 8)">
+                  <div data-spine-shape="index" className={styles.mapPane} />
+                </Pane>
+                <Pane size="var(--grid-padding)" />
+              </VSplit>
+            </Pane>
+          </HSplit>
+        </motion.div>
       </Screen>
     </>
   )
@@ -200,18 +182,16 @@ function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect 
  * lands. Plain text otherwise. */
 function Statement({ city }: { city: string }) {
   return (
-    <div className={styles.statement}>
+    <>
       <div className={styles.leadTrack}>
-        <Body1 asChild>
-          <p className={styles.lead}>Travelling to {city} …</p>
-        </Body1>
+        <H3 className={styles.lead}>
+          Travelling to <span className={styles.leadCity}>{city}</span>.
+        </H3>
       </div>
-      <Body1 asChild>
-        <p className={styles.statementText}>
-          Nolli has <strong>Everything Worth Seeing.</strong>
-        </p>
+      <Body1 className={styles.statementText}>
+          Nolli has Everything Worth Seeing.
       </Body1>
-    </div>
+    </>
   )
 }
 

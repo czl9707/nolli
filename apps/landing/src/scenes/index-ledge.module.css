@@ -1,47 +1,15 @@
-/* Index ledge on the spine — sticky 80svh hold, self-centered at 10svh
-   ((100svh - 80svh) / 2); the map is the spine's layer landing on the empty
-   shape pane inside the split, this tree is the content around it. */
-
 .index {
   position: sticky;
   top: 10svh;
   height: 80svh;
   box-sizing: border-box;
-  /* closing rule — every internal split draws one, the screen edge too */
   border-bottom: var(--border);
-  /* the pinned lead line rises above the scene mid-transition — this
-     branch of the pane chain must not clip (overrides .screen/.pane,
-     same rules later in the cascade) */
   overflow: visible;
 }
 
 /* dossier panes — see .index: overflow opened for the lead track */
-.index .contentPane,
-.index .dossierPane,
-.index .cityBody {
+.index .visibleOverflow {
   overflow: visible;
-}
-
-/* lead line — lives in the dossier pane, pinned by its track. The track
-   (absolute, pulled 50vh above the pane's first text line) is the
-   sticky's containing block: the line rides in with the scene, holds its
-   docked spot (sticky top = that line's viewport position when docked)
-   from mid-transition while the scene rises to meet it, and the track's
-   tail (50vh + one line) releases it exactly as the scene exhausts its
-   scroll budget. */
-.leadTrack {
-  position: absolute;
-  top: calc(2.5svh - 50vh);
-  left: 1.5rem;
-  right: 0;
-  height: calc(50vh + 1.5rem);
-}
-
-.lead {
-  position: sticky;
-  top: calc(10svh + var(--size-header-height) + 2.5svh);
-  margin: 0;
-  line-height: 1.5rem;
 }
 
 .splits {
@@ -57,19 +25,20 @@
   inset: 0;
 }
 
-/* dossier */
-.cityBody {
-  padding: 2.5svh 1.5rem 1rem 1.5rem;
+.statementPane {
+  padding: var(--spacing-component);
 }
 
-.statementText {
-  /* clear the lead line's slot above */
-  margin: 2.5rem 0 0;
-  line-height: 1.4;
+.leadTrack {
+  height: calc(75vh + var(--spacing-group));
+  margin-top: -75vh;
+  margin-bottom: var(--spacing-component);
 }
 
-.statementText strong {
-  font-weight: 700;
+.lead {
+  position: sticky;
+  top: calc(25svh + var(--size-header-height));
+  margin: 0;
 }
 
 /* city grid — each pane IS the button; the spine's scene wrappers disable
