@@ -11,7 +11,7 @@
    whole card into the irregular torn-paper quadrilateral. */
 .card {
   background: #fff;
-  padding: 6px 6px 0;
+  padding: 6px;
 }
 
 .photo {
@@ -25,8 +25,7 @@
   flex-direction: column;
   white-space: nowrap;
   overflow: hidden;
-  padding-bottom: .25rem;
-  padding-top: .25rem;
+  margin-top: .25rem;
   box-sizing: border-box;
   color: rgb(var(--color-paper-foreground));
 }

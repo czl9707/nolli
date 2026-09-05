@@ -4,8 +4,6 @@ import { CLUSTER_CITY, HERO_SLUG } from "./constants"
 import { cityIdByName, pickIndexPhotos } from "./shape"
 
 export type LandingData = {
-  /** every architecture, passed to the spine's shared map */
-  mapSummaries: ArchSummary[]
   /** Paris picks the hero reveal shows — the index reuses them as its Paris set */
   heroPicks: ArchSummary[]
 }
@@ -21,7 +19,6 @@ export function useLandingData() {
     let cancelled = false
     ;(async () => {
       try {
-        const summaries = await dataSource.getAllArchitectures()
         const options = await dataSource.getFilterOptions()
         const cityId = cityIdByName(options, CLUSTER_CITY)
         if (!cityId) throw new Error(`cluster city "${CLUSTER_CITY}" not found`)
@@ -29,11 +26,7 @@ export function useLandingData() {
         const hero = await dataSource.getArchBySlug(HERO_SLUG)
         if (!hero) throw new Error(`hero architecture "${HERO_SLUG}" not found`)
         if (cancelled) return
-        const heroPicks = pickIndexPhotos(cluster, hero.coordinates, 10)
-        setData({
-          mapSummaries: summaries,
-          heroPicks,
-        })
+        setData({ heroPicks: pickIndexPhotos(cluster, hero.coordinates, 10) })
       } catch (e) {
         if (!cancelled) setErr(e as Error)
       }

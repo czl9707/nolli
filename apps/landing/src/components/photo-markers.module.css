@@ -9,16 +9,17 @@
 .photoMarker {
   opacity: 0;
   transition: opacity 0.4s ease;
+  /* re-enable per marker: LandingMap's wrapper stands the whole map down
+     (no drag), but hover needs live markers */
+  pointer-events: auto;
 }
 
-.on.photoMarker {
+.photoMarker[data-show] {
   opacity: 1;
 }
 
-/* normal pins/clusters stand down while the photo markers own the screen —
-   hide every maplibre marker root except the ones carrying a photo marker
-   content (.photoMarker is module-scoped, so :has() here matches only
-   ours); LandingMap sets data-arch-markers="off" for the whole spine */
-:global([data-arch-markers="off"]) :global(.maplibregl-marker):not(:has(.photoMarker)) {
-  visibility: hidden;
+/* the index hold's pins — framer drives their fade (animate prop); the
+   class only re-enables pointer events, like .photoMarker above */
+.indexPin {
+  pointer-events: auto;
 }

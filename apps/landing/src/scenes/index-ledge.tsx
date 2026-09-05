@@ -13,7 +13,7 @@ import type { HoldScene, PxRect } from "@/spine/timeline"
 import type { LandingData } from "@/lib/landing-data"
 import { fitCamera } from "@/lib/camera"
 import { cityIdByName, pickIndexPhotos } from "@/lib/shape"
-import { PhotoMarkers } from "@/components/photo-markers"
+import { IndexMarkers } from "@/components/index-markers"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
 import styles from "./index-ledge.module.css"
 
@@ -99,7 +99,13 @@ function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect 
   }, [archByCities])
 
   const [selected, setSelected] = useState<string>(CITIES[0])
+  // the carded pick — always one; hovering a row or marker moves the card
+  const [cardPick, setCardPick] = useState<string | null>(() => data.heroPicks[0]?.slug ?? null)
   const picks = archPickesByCity[selected] ?? data.heroPicks
+  // new city → card back to its first pick
+  useEffect(() => {
+    setCardPick(picks[0]?.slug ?? null)
+  }, [picks])
   const displayCity = useCityDisplay(local, selected)
 
   const cameraFor = useCallback(
@@ -157,7 +163,7 @@ function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect 
   return (
     <>
       <Screen className={styles.index}>
-        <PhotoMarkers picks={picks} on={markersOn} />
+        <IndexMarkers picks={picks} on={markersOn} selected={cardPick} onSelect={setCardPick} />
         <motion.div className={styles.splits} style={{ opacity: fade }}>
           <HSplit>
             <Pane size="var(--size-header-height)" />
@@ -167,7 +173,13 @@ function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect 
                 <Pane size="calc(var(--grid-col) * 4)" className={styles.visibleOverflow}>
                   <HSplit>
                     <Pane className={`${styles.statementPane} ${styles.visibleOverflow}`}>
-                      <Statement leadCity={displayCity} listCity={selected} picks={picks} />
+                      <Statement
+                        leadCity={displayCity}
+                        listCity={selected}
+                        picks={picks}
+                        carded={cardPick}
+                        onCard={setCardPick}
+                      />
                     </Pane>
                     <CityRow
                       cities={CITIES.slice(0, 2)}
@@ -257,10 +269,14 @@ function Statement({
   leadCity,
   listCity,
   picks,
+  carded,
+  onCard,
 }: {
   leadCity: string
   listCity: string
   picks: ArchSummary[]
+  carded: string | null
+  onCard: (slug: string) => void
 }) {
   const reduced = useReducedMotion()
   return (
@@ -294,6 +310,8 @@ function Statement({
               key={p.slug}
               variants={reduced ? undefined : itemVariants}
               custom={rowDelay(p.slug)}
+              data-hovered={carded === p.slug}
+              onMouseEnter={() => onCard(p.slug)}
             >
               <span className={styles.archNum}>{String(i + 1).padStart(2, "0")}</span>
               <Body2 className={styles.archName}>{p.name}</Body2>

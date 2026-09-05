@@ -69,7 +69,7 @@
   font-size: clamp(2.75rem, 4.6vw, 4rem);
 
   .accent {
-    color: rgb(var(--color-accent-foreground));
+    color: rgb(var(--color-hero-foreground));
   }
 }
 
@@ -107,8 +107,8 @@
 }
 
 .ctaFace[data-armed="true"] {
-  background: rgb(var(--color-accent-foreground));
-  color: rgb(var(--color-accent-background));
+  background: rgb(var(--color-hero-foreground));
+  color: rgb(var(--color-hero-background));
   cursor: pointer;
 }
 

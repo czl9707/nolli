@@ -4,8 +4,9 @@
 body {
   --font-mono: "Red Hat Mono Variable", ui-monospace, monospace;
   --pattern-building: url("/patterns/light/building.png");
-  --color-accent-background: 23 23 23 !important;
-  --color-accent-foreground: 227 182 77 !important;
+
+  --color-hero-foreground: 227 182 77;
+  --color-hero-background: 23 23 23;
 }
 
 body[data-theme="dark"] {

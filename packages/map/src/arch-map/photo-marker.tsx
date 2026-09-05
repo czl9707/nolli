@@ -1,4 +1,4 @@
-import { useMemo } from "react"
+import { useMemo, type ComponentProps } from "react"
 import { MapMarker, MarkerContent } from "../map-core/map"
 import type { ArchSummary } from "@nolli/data"
 import { hashId, jitter } from "@nolli/board"
@@ -13,6 +13,10 @@ export function PhotoMarker({
   maxHeight = 175,
   className,
   onClick,
+  onMouseEnter,
+  onMouseLeave,
+  noCaption,
+  ...rest
 }: {
   building: ArchSummary
   maxWidth?: number
@@ -20,7 +24,11 @@ export function PhotoMarker({
   /** Extra class on the marker content — lets consumers target it (e.g. fades). */
   className?: string
   onClick?: () => void
-}) {
+  onMouseEnter?: () => void
+  onMouseLeave?: () => void
+  /** Drop the caption strip — photo only (e.g. small hover cards). */
+  noCaption?: boolean
+} & Omit<ComponentProps<"div">, "className" | "onClick" | "onMouseEnter" | "onMouseLeave">) {
   const { lng, lat } = building.coordinates
 
   const { rotate, width, height } = useMemo(() => {
@@ -46,8 +54,10 @@ export function PhotoMarker({
       anchor="top"
       style={{ zIndex: Math.round(lat * 1000) }}
       onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
-      <MarkerContent className={className}>
+      <MarkerContent className={className} {...rest}>
         <div
           className={styles.wrap}
           style={{ transform: `rotate(${rotate}deg)` }}
@@ -61,10 +71,12 @@ export function PhotoMarker({
               height={height}
               crossOrigin="anonymous"
             />
-            <figcaption className={styles.caption} style={{ width }}>
-              <Note className={styles.name}>{building.name}</Note>
-              <Note className={styles.architect}>{building.architect}</Note>
-            </figcaption>
+            {!noCaption && (
+              <figcaption className={styles.caption} style={{ width }}>
+                <Note className={styles.name}>{building.name}</Note>
+                <Note className={styles.architect}>{building.architect}</Note>
+              </figcaption>
+            )}
           </div>
           <img
             className={styles.pin}

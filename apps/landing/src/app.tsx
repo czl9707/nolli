@@ -101,7 +101,7 @@ export function App() {
       </div>
       <ScrollThumb />
       {data && scenes && (
-        <Spine scenes={scenes} summaries={data.mapSummaries} camera={HERO_CAMERA} onMapIdle={onMapIdle} />
+        <Spine scenes={scenes} camera={HERO_CAMERA} onMapIdle={onMapIdle} />
       )}
     </main>
   )

@@ -7,7 +7,6 @@ import {
   type MotionValue,
 } from "framer-motion"
 import type { MapRef, SceneCamera } from "@nolli/map"
-import type { ArchSummary } from "@nolli/data"
 import { LandingMap } from "@/components/landing-map"
 import { buildTimeline, shapeAt, type PxRect, type SpineScene } from "./timeline"
 
@@ -46,10 +45,9 @@ export function useSceneScroll(id?: string): MotionValue<number> {
  * panes and linearly morphed across transition scenes; hold scenes mount in
  * flow wrappers and own their camera + content. */
 export function Spine({
-  scenes, summaries, camera, onMapIdle,
+  scenes, camera, onMapIdle,
 }: {
   scenes: SpineScene[]
-  summaries: ArchSummary[]
   camera: SceneCamera
   onMapIdle?: () => void
 }) {
@@ -160,7 +158,7 @@ export function Spine({
             position: "absolute", left: layerX, top: layerY, width: layerW, height: layerH,
             overflow: "hidden",
           }}>
-            <LandingMap ref={setRef} summaries={summaries}>
+            <LandingMap ref={setRef}>
               <div ref={setMapPortal} style={{ position: "absolute", inset: 0, pointerEvents: "none" }} />
             </LandingMap>
           </motion.div>

@@ -1,6 +1,6 @@
 // Scene-owned photo markers portalled into the spine's map layer — one
-// component for every scene's set. Visibility is the `on` class
-// (photo-markers.module.css transitions the flip) and useLinger holds the
+// component for every scene's set. Visibility is data-show
+// (photo-markers.module.css transitions the fade) and useLinger holds the
 // mount across the exit fade. `className` carries any scene discriminator
 // (the hero's clip driver matches its set by it).
 import { createPortal } from "react-dom"
@@ -23,11 +23,13 @@ export function PhotoMarkers({
   const map = useSpineMap()
   const mapPortal = useMapPortal()
   if (!map || !mapPortal || !mounted) return null
-  const cls = [styles.photoMarker, className, visible ? styles.on : ""].filter(Boolean).join(" ")
+  const cls = [styles.photoMarker, className].filter(Boolean).join(" ")
   return createPortal(
     <MapContext.Provider value={{ map, isLoaded: !!map }}>
       {picks.map((a) => (
-        <PhotoMarker key={a.slug} building={a} className={cls} />
+        // data-show with || undefined — a literal false would still render
+        // the attribute and match [data-show]
+        <PhotoMarker key={a.slug} building={a} className={cls} data-show={visible || undefined} />
       ))}
     </MapContext.Provider>,
     mapPortal,
