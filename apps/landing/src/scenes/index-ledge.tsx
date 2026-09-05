@@ -4,8 +4,8 @@
 // the city dossier + 2x3 city-button grid and fades out over the hold's
 // tail.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useTransform, type MotionValue } from "framer-motion"
-import { Body1, H3 } from "@nolli/ui"
+import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useTransform, type MotionValue, type Variants } from "framer-motion"
+import { Body1, Body2, H3 } from "@nolli/ui"
 import { flyToSceneCinematic } from "@nolli/map"
 import { useDbStore, type ArchSummary } from "@nolli/data"
 import { useSceneScroll, useSpineMap } from "@/spine/spine"
@@ -117,13 +117,21 @@ function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect 
   const picksRef = useRef(picks)
   picksRef.current = picks
   const entered = useRef(local.get() >= ENTRY_VH)
+  const flied = useRef(false)
   useMotionValueEvent(local, "change", (v) => {
     if (v >= -ENTRY_VH && v < TOTLE_VH + ENTRY_REARM_VH) {
-      if (entered.current || !map) return
+      // if (entered.current || !map) return
       entered.current = true
-      flyToSceneCinematic(map, cameraFor(picksRef.current))
     } else if (v < -ENTRY_VH - ENTRY_REARM_VH || v >= TOTLE_VH + ENTRY_REARM_VH) {
       entered.current = false
+    }
+
+    if (v >= 0 && v < TOTLE_VH) {
+      if (flied.current || !map) return
+      flied.current = true
+      flyToSceneCinematic(map, cameraFor(picksRef.current))
+    } else {
+      flied.current = false
     }
   })
 
@@ -202,7 +210,7 @@ function useCityDisplay(local: MotionValue<number>, selected: string) {
   const [name, setName] = useState(selected)
   const inHold = useRef(local.get() >= -ENTRY_VH)
   useMotionValueEvent(local, "change", (v) => {
-    inHold.current = v >= -ENTRY_VH
+    inHold.current = v >= -ENTRY_VH - ENTRY_REARM_VH
     if (inHold.current) {
       setName(selected)
       return
@@ -217,11 +225,34 @@ function useCityDisplay(local: MotionValue<number>, selected: string) {
   return name
 }
 
+/** Arch-list swap choreography: rows blur in and out in a scattered order —
+ * a stable pseudo-random delay per slug, so every swap shuffles the same
+ * way and a re-render never re-rolls it. */
+const itemVariants: Variants = {
+  hidden: { opacity: 0, filter: "blur(6px)" },
+  visible: (d: number) => ({
+    opacity: 1,
+    filter: "blur(0px)",
+    transition: { duration: 0.3, ease: "easeOut", delay: d },
+  }),
+  exit: (d: number) => ({
+    opacity: 0,
+    filter: "blur(6px)",
+    transition: { duration: 0.2, ease: "easeIn", delay: d * 0.6 },
+  }),
+}
+
+const rowDelay = (slug: string) => {
+  let h = 0
+  for (let i = 0; i < slug.length; i++) h = (h * 31 + slug.charCodeAt(i)) % 997
+  return (h / 997) * 0.24
+}
+
 /** Dossier copy. The lead line rides the lead track — a tall box pulled
  * above the pane, the sticky's containing block — so it pins at the
  * line's docked spot from mid-transition and settles here once the scene
  * lands. The city rolls through its faces; the architecture list under
- * the statement swaps with a blur when the city changes. */
+ * the statement swaps in a blur stagger when the city changes. */
 function Statement({
   leadCity,
   listCity,
@@ -257,19 +288,16 @@ function Statement({
         <p className={styles.statementText}>Nolli has Architectures Worth Seeing.</p>
       </Body1>
       <AnimatePresence mode="wait" initial={false}>
-        <motion.ul
-          key={listCity}
-          className={styles.archList}
-          initial={reduced ? false : { opacity: 0, filter: "blur(6px)" }}
-          animate={{ opacity: 1, filter: "blur(0px)" }}
-          exit={reduced ? undefined : { opacity: 0, filter: "blur(6px)" }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
-        >
+        <motion.ul key={listCity} className={styles.archList} initial="hidden" animate="visible" exit="exit">
           {picks.map((p, i) => (
-            <li key={p.slug}>
+            <motion.li
+              key={p.slug}
+              variants={reduced ? undefined : itemVariants}
+              custom={rowDelay(p.slug)}
+            >
               <span className={styles.archNum}>{String(i + 1).padStart(2, "0")}</span>
-              <span>{p.name}</span>
-            </li>
+              <Body2 className={styles.archName}>{p.name}</Body2>
+            </motion.li>
           ))}
         </motion.ul>
       </AnimatePresence>

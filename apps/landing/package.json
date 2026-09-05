@@ -17,6 +17,7 @@
     "@nolli/map": "workspace:*",
     "@nolli/ui": "workspace:*",
     "framer-motion": "^12.42.2",
+    "lenis": "^1.3.26",
     "lucide-react": "^1.23.0",
     "maplibre-gl": "^5.24.0",
     "react": "^19.2.4",

@@ -74,13 +74,17 @@
   display: flex;
   align-items: baseline;
   gap: var(--spacing-paragraph);
-  line-height: 1.8;
+  line-height: 2;
 }
 
 .archNum {
   font-family: var(--font-mono);
   font-size: 0.7rem;
   opacity: 0.5;
+}
+
+.archName {
+  opacity: 0.75;
 }
 
 /* city grid — each pane IS the button; the spine's scene wrappers disable
