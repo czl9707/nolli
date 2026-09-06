@@ -68,7 +68,7 @@ export function flyToSceneCinematic(
 ): void {
   const zoomDelta = Math.abs(camera.zoom - map.getZoom())
   const duration = map.getBounds().contains(camera.center)
-    ? MAP_TRANSITION_SHORT * 1000 + zoomDelta * 200
+    ? MAP_TRANSITION_SHORT * 1000 + zoomDelta * 300
     : MAP_TRANSITION_LONG * 1000
 
   map.stop()

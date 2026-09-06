@@ -41,24 +41,6 @@
   margin: 0;
 }
 
-/* the rolling city — one line's clip; the roll is the swap animation */
-.leadCityClip {
-  position: relative; /* popLayout's exiting face is absolute — anchor it here */
-  display: inline-block;
-  vertical-align: bottom;
-  height: 1.2em;
-  overflow: hidden;
-}
-
-.leadCity {
-  display: block;
-  height: 1.2em;
-  line-height: 1.2em;
-  white-space: nowrap;
-  color: rgb(var(--color-hero-foreground));
-  font-weight: 600;
-}
-
 .statementText {
   margin: 0;
 }
@@ -95,68 +77,7 @@
   opacity: 1;
 }
 
-/* city grid — each pane IS the button; the spine's scene wrappers disable
-   pointer events, so the cells re-enable them. Two faces: rest rides the
-   building tile (the CTA pane's ground) with a dim label; lifted clears
-   the fill and goes full color. Hover previews lifted, selection holds it */
-.cityCell {
-  position: absolute;
-  inset: 0;
+/* city grid — shared RollButton cells; overrides the cell default */
+.cityButton {
   font-size: 1.2rem;
-  cursor: pointer;
-  user-select: none;
-  pointer-events: auto;
-}
-
-.cityCellSelected {
-  cursor: default;
-}
-
-.cityCellPending {
-  cursor: progress;
-}
-
-/* the roll window — also the selected label's ground */
-.cityClip {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-}
-
-.cityFace {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  padding: 0 1.25rem;
-  white-space: nowrap;
-  color: rgb(var(--color-primary-foreground) / 0.55);
-  transition: color var(--transition-instant) ease;
-}
-
-/* resting face rides the building tile */
-.cityFace::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background-image: var(--pattern-building);
-  opacity: 0.2;
-}
-
-/* armed face — fill rolled away */
-.cityFace[data-armed="true"] {
-  color: rgb(var(--color-primary-foreground));
-}
-
-.cityFace[data-armed="true"]::before {
-  display: none;
-}
-
-.cityCellPending .cityFace {
-  color: rgb(var(--color-primary-foreground) / 0.2);
-}
-
-.cityCellPending .cityFace::before {
-  display: none;
 }

@@ -8,6 +8,8 @@ import type { PxRect, SpineScene } from "@/spine/timeline"
 import { heroHold } from "@/scenes/hero-ledge"
 import { heroIndexTransition } from "@/scenes/hero-index-transition"
 import { indexHold } from "@/scenes/index-ledge"
+import { indexArchTransition } from "@/scenes/index-arch-transition"
+import { archHold } from "@/scenes/arch-marquee"
 import { ScrollThumb } from "@/components/scroll-thumb"
 import { SiteHeader } from "@/components/site-header"
 
@@ -51,7 +53,7 @@ function useSpineScenes(data: LandingData | null | undefined): SpineScene[] | nu
   return useMemo(
     () =>
       data
-        ? [heroHold(data), heroIndexTransition(), indexHold(data, indexPane)]
+        ? [heroHold(data), heroIndexTransition(), indexHold(data, indexPane), indexArchTransition(), archHold(data)]
         : null,
     [data, indexPane],
   )

@@ -14,10 +14,12 @@ import type { LandingData } from "@/lib/landing-data"
 import { fitCamera } from "@/lib/camera"
 import { cityIdByName, pickIndexPhotos } from "@/lib/shape"
 import { IndexMarkers } from "@/components/index-markers"
+import { RollButton } from "@/components/roll-button"
+import { RollText } from "@/components/roll-text"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
 import styles from "./index-ledge.module.css"
 
-const CITIES = ["London", "New York", "Paris", "Tokyo", "Chicago", "Berlin"] as const
+const CITIES = ["New York", "London", "Paris", "Tokyo", "Chicago", "Berlin"] as const
 
 const PICKS_PER_CITY = 8
 
@@ -283,21 +285,7 @@ function Statement({
     <>
       <div className={styles.leadTrack}>
         <H3 className={styles.lead}>
-          Travelling to{" "}
-          <span className={styles.leadCityClip}>
-            <AnimatePresence mode="popLayout" initial={false}>
-              <motion.span
-                key={leadCity}
-                className={styles.leadCity}
-                initial={reduced ? false : { y: "110%" }}
-                animate={{ y: 0 }}
-                exit={reduced ? undefined : { y: "-110%" }}
-                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              >
-                {leadCity}
-              </motion.span>
-            </AnimatePresence>
-          </span>.
+          Travelling to <RollText text={leadCity} />.
         </H3>
       </div>
       <Body1 asChild>
@@ -353,10 +341,9 @@ function CityRow({
   )
 }
 
-/** One city cell. Two faces roll in the clip — rest rides the building
- * tile with a dim label; lifted clears the fill and goes full color.
- * Hover/focus previews lifted; selection holds it, and handing selection
- * over rolls the old cell back to rest. */
+/** One city cell — RollButton with the city arming model: hover/focus
+ * previews the focused face; selection holds it, and handing selection
+ * over rolls the old cell back to default. */
 function CityCell({
   name,
   selected,
@@ -369,57 +356,24 @@ function CityCell({
   onSelect: (name: string) => void
 }) {
   const [armed, setArmed] = useState(false)
-  const reduced = useReducedMotion()
   // listeners stay attached even while selected — a leave during selection
   // must still clear armed, or the cell would re-show the armed face once
   // deselected. The face itself only arms when interactive.
   const faceArmed = armed && ready && !selected
-  // selected and armed share the lifted face: selection holds it, hover
-  // previews it, and handing selection over rolls the old cell back to rest
-  const lifted = selected || faceArmed
-  const cls = [
-    styles.cityCell,
-    selected ? styles.cityCellSelected : "",
-    ready ? "" : styles.cityCellPending,
-  ]
-    .filter(Boolean)
-    .join(" ")
   const arm = (v: boolean) => () => setArmed(v)
   return (
-    <Pane>
-      <div
-        className={cls}
-        onClick={() => ready && onSelect(name)}
-        role="button"
-        tabIndex={ready ? 0 : -1}
-        aria-pressed={selected}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault()
-            if (ready) onSelect(name)
-          }
-        }}
-        onMouseEnter={arm(true)}
-        onMouseLeave={arm(false)}
-        onFocus={arm(true)}
-        onBlur={arm(false)}
-      >
-        <span className={styles.cityClip}>
-          <AnimatePresence mode="popLayout" initial={false}>
-            <motion.span
-              key={lifted ? "lifted" : "rest"}
-              className={styles.cityFace}
-              data-armed={lifted}
-              initial={reduced ? false : { y: "100%" }}
-              animate={{ y: 0 }}
-              exit={reduced ? undefined : { y: "-100%" }}
-              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-            >
-              {name}
-            </motion.span>
-          </AnimatePresence>
-        </span>
-      </div>
-    </Pane>
+    <RollButton
+      state={selected || faceArmed ? "focused" : "default"}
+      disabled={!ready}
+      className={styles.cityButton}
+      onClick={() => onSelect(name)}
+      aria-pressed={selected}
+      onMouseEnter={arm(true)}
+      onMouseLeave={arm(false)}
+      onFocus={arm(true)}
+      onBlur={arm(false)}
+    >
+      {name}
+    </RollButton>
   )
 }
