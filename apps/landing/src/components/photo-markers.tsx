@@ -5,7 +5,7 @@
 // (the hero's clip driver matches its set by it).
 import { createPortal } from "react-dom"
 import type { ArchSummary } from "@nolli/data"
-import { MapContext, PhotoMarker } from "@nolli/map"
+import { MapContext, ArchPhotoPinMarker } from "@nolli/map"
 import { useMapPortal, useSpineMap } from "@/spine/spine"
 import { useLinger } from "@/lib/use-linger"
 import styles from "./photo-markers.module.css"
@@ -29,7 +29,7 @@ export function PhotoMarkers({
       {picks.map((a) => (
         // data-show with || undefined — a literal false would still render
         // the attribute and match [data-show]
-        <PhotoMarker key={a.slug} building={a} className={cls} data-show={visible || undefined} />
+        <ArchPhotoPinMarker key={a.slug} building={a} className={cls} crossOrigin={null} data-show={visible || undefined} />
       ))}
     </MapContext.Provider>,
     mapPortal,

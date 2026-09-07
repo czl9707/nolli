@@ -5,7 +5,7 @@
 import { createPortal } from "react-dom"
 import { useEffect, useState } from "react"
 import type { ArchSummary } from "@nolli/data"
-import { ArchPinMarker, MapContext, PhotoMarker } from "@nolli/map"
+import { ArchPinMarker, MapContext, ArchPhotoPinMarker } from "@nolli/map"
 import { useMapPortal, useSpineMap } from "@/spine/spine"
 import { useLinger } from "@/lib/use-linger"
 import styles from "./photo-markers.module.css"
@@ -61,12 +61,12 @@ export function IndexMarkers({
         const b = picks.find((p) => p.slug === slug)
         if (!b) return null
         return (
-          <PhotoMarker
+          <ArchPhotoPinMarker
             key={slug}
             building={b}
             className={styles.photoMarker}
             data-show={slug === onSlug || undefined}
-            noCaption
+            crossOrigin={"anonymous"}
             onMouseEnter={() => onSelect(slug)}
           />
         )

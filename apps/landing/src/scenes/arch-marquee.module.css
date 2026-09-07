@@ -1,4 +1,4 @@
-/* Architect marquee hold — map band under a veil with the geo scatter on
+/* Architect marquee hold — map band under a veil with the works pinned on
    top, roster block docked along the bottom. */
 
 .screen {
@@ -10,13 +10,21 @@
   overflow: visible;
 }
 
-/* dim veil over the background map */
+/* shape anchor — empty in the DOM; the spine's map layer lands on its rect */
+.shape {
+  position: absolute;
+  inset: 0;
+}
+
+/* dim veil over the background map, inserted in the map's canvas container
+   between canvas and markers */
 .veil {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(120% 120% at 50% 40%, rgb(var(--color-hero-background) / 0.5), rgb(var(--color-hero-background) / 0.82)),
-    rgb(var(--color-primary-background) / 0.35);
+  opacity: 0;
+  pointer-events: none;
+  background: rgb(var(--color-primary-background) / 0.92);
+  transition: opacity 0.4s ease;
 }
 
 /* statement on the veil */
@@ -31,44 +39,7 @@
   gap: var(--spacing-component);
 }
 
-.statementSub {
-  margin: 0;
-  opacity: 0.75;
-}
-
-/* ── scatter ─────────────────────────────────────────────────────────────── */
-
-/* photo field clipped to its pane; hides while the map is in motion */
-.field {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  transition: opacity 0.25s ease;
-}
-
-.polaroid {
-  position: absolute;
-  /* <figure> UA margin (1em 40px) would offset every card */
-  margin: 0;
-  padding: 6px 6px 8px;
-  background: #f4f1e8;
-  color: #1a1a18;
-  box-shadow: 0 6px 24px rgb(0 0 0 / 0.45);
-  transform-origin: center;
-}
-
-.polaroid img {
-  display: block;
-  width: 100%;
-  object-fit: cover;
-}
-
-.polaroid figcaption {
-  margin-top: 5px;
-  font-family: var(--font-mono);
-  font-size: 0.55rem;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.accent {
+  font-weight: 600;
+  color: rgb(var(--color-hero-foreground));
 }

@@ -20,7 +20,7 @@
   position: absolute;
   inset: 0;
   /* flat deepest ink — no gradient; the map shows only through the plate */
-  background: rgb(18 18 18 / 0.92);
+  background: rgb(var(--color-primary-background) / 0.92);
   -webkit-mask-image: linear-gradient(
       to right,
       #000 0 var(--pl),
