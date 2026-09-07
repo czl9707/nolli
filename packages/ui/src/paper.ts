@@ -1,3 +1,5 @@
+import styles from "./paper.module.css"
+
 export function jitter(seed: number, max: number): number {
   const x = Math.sin(seed * 10000 + 1) * 10000
   return (x - Math.floor(x)) * max
@@ -20,3 +22,6 @@ export function paperClipPath(id: string): string {
   const bl = `${jitter(s + 6, j)}px calc(100% - ${jitter(s + 7, j)}px)`
   return `polygon(${tl}, ${tr}, ${br}, ${bl})`
 }
+
+/** The pinboard paper rule — bg + grass texture overlay, theme-aware. */
+export const paperSurface = styles.surface

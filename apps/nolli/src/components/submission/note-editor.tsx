@@ -2,7 +2,7 @@ import type { UseFormReturn } from "react-hook-form"
 import { useFieldArray } from "react-hook-form"
 import { X } from "lucide-react"
 import { Body2, Button, ScrollArea } from "@nolli/ui"
-import { hashId, jitter } from "@nolli/board"
+import { hashId, jitter } from "@nolli/ui"
 import type { FormValues } from "./shape-payload"
 import styles from "./note-editor.module.css"
 

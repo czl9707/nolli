@@ -1,0 +1,54 @@
+.root {
+  position: relative; /* the pin anchors here */
+  display: inline-block;
+}
+
+/* shadow on its own wrapper so it follows the torn clip edge — box-shadow
+   would shadow the plain rectangle */
+.shadow {
+  display: inline-block;
+  filter: drop-shadow(4px 4px 4px rgb(var(--color-paper-foreground) / 0.4));
+}
+
+.card {
+  padding: 8px;
+}
+
+.photo {
+  display: block;
+  background: rgb(var(--color-paper-background));
+}
+
+.caption {
+  display: flex;
+  flex-direction: column;
+  white-space: nowrap;
+  overflow: hidden;
+  margin-top: 0.25rem;
+  box-sizing: border-box;
+}
+
+.captionMain {
+  font-weight: 500;
+  max-width: 100%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.captionSub {
+  font-weight: 500;
+  font-size: 0.8rem;
+  max-width: 100%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  opacity: 0.8;
+}
+
+.pin {
+  position: absolute;
+  left: 50%;
+  top: -10px;
+  transform: translateX(-50%);
+  height: 26px;
+  filter: drop-shadow(var(--shadow-md));
+}

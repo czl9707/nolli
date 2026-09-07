@@ -3,8 +3,7 @@ import { useMemo, type ReactNode } from "react"
 import type { Position } from "./pin-board-layout"
 import { Pin } from "./pin"
 import styles from "./board-item.module.css"
-import paperStyles from "./paper-texture.module.css"
-import { paperClipPath } from "./paper-clip"
+import { paperClipPath, paperSurface } from "@nolli/ui"
 import { TRANSITION_SHORT, DELAY_START, ITEM_STAGGER } from "@nolli/ui"
 
 type BoardItemProps = {
@@ -48,7 +47,7 @@ export function BoardItem({
       onClick={onClick}
     >
       <motion.div
-        className={`${paperStyles.surface} ${styles.item} ${className ?? ""}`}
+        className={`${paperSurface} ${styles.item} ${className ?? ""}`}
         style={motionStyle}
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{

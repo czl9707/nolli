@@ -1,6 +1,6 @@
 import { useSelectionStore } from "@/stores/selection"
 import type { ArchSummary } from "@nolli/data"
-import { PhotoMarker } from "@nolli/map"
+import { ArchPhotoPinMarker } from "@nolli/map"
 
 /**
  * Photo cards for every pinned (selected) building. The summaries are resolved
@@ -16,7 +16,7 @@ export function PhotoMarkers() {
   return (
     <>
       {buildings.map((b) => (
-        <PhotoMarker key={b.slug} building={b} />
+        <ArchPhotoPinMarker key={b.slug} building={b} />
       ))}
     </>
   )

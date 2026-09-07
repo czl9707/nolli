@@ -15,9 +15,8 @@
   background-size: 128px 128px;
   opacity: 0.3;
   pointer-events: none;
-  
-  body[data-theme='dark'] & {
+
+  body[data-theme="dark"] & {
     background-image: url("/patterns/dark/grass.png");
   }
 }
-

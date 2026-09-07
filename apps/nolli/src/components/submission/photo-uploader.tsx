@@ -4,7 +4,7 @@ import { useFieldArray } from "react-hook-form"
 import { Loader2, X } from "lucide-react"
 import { toast } from "sonner"
 import { Body2, Body3, Button, Caption, ScrollArea } from "@nolli/ui"
-import { hashId, jitter } from "@nolli/board"
+import { hashId, jitter } from "@nolli/ui"
 import type { FormValues } from "./shape-payload"
 import styles from "./photo-uploader.module.css"
 

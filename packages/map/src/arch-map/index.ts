@@ -1,4 +1,4 @@
 export { ArchMap } from "./arch-map"
 export type { ArchMapProps } from "./arch-map"
 export { ArchPinMarker } from "./pin-marker"
-export { PhotoMarker } from "./photo-marker"
+export { ArchPhotoPinMarker } from "./photo-marker"

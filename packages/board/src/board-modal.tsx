@@ -1,9 +1,8 @@
 import { createPortal } from "react-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import type { ReactNode } from "react"
-import { TRANSITION_SHORT } from "@nolli/ui"
+import { TRANSITION_SHORT, paperSurface } from "@nolli/ui"
 import styles from "./board-modal.module.css"
-import paperStyles from "./paper-texture.module.css"
 
 export function BoardModal({
   open,
@@ -33,7 +32,7 @@ export function BoardModal({
             e.stopPropagation()
           }}
         >
-          <div className={paperStyles.surface}>
+          <div className={paperSurface}>
             {children}
           </div>
         </motion.div>

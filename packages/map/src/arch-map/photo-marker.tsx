@@ -1,13 +1,11 @@
 import { useMemo, type ComponentProps } from "react"
 import { MapMarker, MarkerContent } from "../map-core/map"
 import type { ArchSummary } from "@nolli/data"
-import { hashId, jitter } from "@nolli/board"
-import { Note } from "@nolli/ui"
-import styles from "./photo-marker.module.css"
+import { PaperPhoto } from "@nolli/ui"
 
 // Cap the cover image so oversized photos don't dominate the map — both
 // dimensions are bounded, fitting the intrinsic aspect ratio inside the box.
-export function PhotoMarker({
+export function ArchPhotoPinMarker({
   building,
   maxWidth = 160,
   maxHeight = 175,
@@ -15,7 +13,7 @@ export function PhotoMarker({
   onClick,
   onMouseEnter,
   onMouseLeave,
-  noCaption,
+  crossOrigin = "anonymous",
   ...rest
 }: {
   building: ArchSummary
@@ -26,13 +24,13 @@ export function PhotoMarker({
   onClick?: () => void
   onMouseEnter?: () => void
   onMouseLeave?: () => void
-  /** Drop the caption strip — photo only (e.g. small hover cards). */
-  noCaption?: boolean
+  /** Pass null on pages without COOP/COEP — the attribute forces a CORS
+   * fetch, which image hosts may not allow for that page's origin. */
+  crossOrigin?: "anonymous" | null
 } & Omit<ComponentProps<"div">, "className" | "onClick" | "onMouseEnter" | "onMouseLeave">) {
   const { lng, lat } = building.coordinates
 
-  const { rotate, width, height } = useMemo(() => {
-    const s = hashId(building.slug)
+  const { width, height } = useMemo(() => {
     const ratio = building.cover.width / building.cover.height
     let w = maxWidth
     let h = Math.round(w / ratio)
@@ -40,50 +38,31 @@ export function PhotoMarker({
       h = maxHeight
       w = Math.round(h * ratio)
     }
-    return {
-      rotate: jitter(s + 50, 4) - 2, // −2..+2°, like a board item
-      width: w,
-      height: h,
-    }
-  }, [building.slug, building.cover.width, building.cover.height, maxWidth, maxHeight])
+    return { width: w, height: h }
+  }, [building.cover.width, building.cover.height, maxWidth, maxHeight])
 
   return (
     <MapMarker
       longitude={lng}
       latitude={lat}
       anchor="top"
-      style={{ zIndex: Math.round(lat * 1000) }}
+      style={{ zIndex: Math.round((lat + 90) * 1000) }}
       onClick={onClick}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
       <MarkerContent className={className} {...rest}>
-        <div
-          className={styles.wrap}
-          style={{ transform: `rotate(${rotate}deg)` }}
-        >
-          <div className={styles.card}>
-            <img
-              className={styles.photo}
-              src={building.cover.image}
-              alt={building.name}
-              width={width}
-              height={height}
-              crossOrigin="anonymous"
-            />
-            {!noCaption && (
-              <figcaption className={styles.caption} style={{ width }}>
-                <Note className={styles.name}>{building.name}</Note>
-                <Note className={styles.architect}>{building.architect}</Note>
-              </figcaption>
-            )}
-          </div>
-          <img
-            className={styles.pin}
-            src="/images/pin.png"
-            alt=""
-          />
-        </div>
+        <PaperPhoto
+          src={building.cover.image}
+          alt={building.name}
+          width={width}
+          height={height}
+          caption={building.name}
+          captionSub={building.architect}
+          crossOrigin={crossOrigin}
+          seed={building.slug}
+          pin
+        />
       </MarkerContent>
     </MapMarker>
   )
