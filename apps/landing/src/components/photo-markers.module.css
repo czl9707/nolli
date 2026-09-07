@@ -1,5 +1,5 @@
 /* Photo markers portalled into the spine's map layer (via useMapPortal) —
-   shared by the hero and index scenes. Each scene mounts its set across
+   shared by the hero and city scenes. Each scene mounts its set across
    scroll bounds (use-linger holds the exit around for this fade) and the
    .on class + transition animates both directions. Targets the content
    div, not the marker root (maplibre writes its own inline opacity
@@ -18,8 +18,8 @@
   opacity: 1;
 }
 
-/* the index hold's pins — framer drives their fade (animate prop); the
+/* the city hold's pins — framer drives their fade (animate prop); the
    class only re-enables pointer events, like .photoMarker above */
-.indexPin {
+.cityPin {
   pointer-events: auto;
 }

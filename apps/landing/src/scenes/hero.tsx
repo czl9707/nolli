@@ -4,7 +4,7 @@
 // sticky section, so it pins during the hold and rides up with the page
 // through the transition, unveiling the map. Layout: the big map cell
 // carries the lede, vertically centered; the plate column sits on the RIGHT
-// — picked-arch list in its growing top cell, the CTA pane below (the whole
+// — arch list in its growing top cell, the CTA pane below (the whole
 // pane is the CTA, sized like the plate; arming rolls the whole cell); the
 // mirrored title-block strip closes the scene (Info left, plate-wide, then
 // fill, then Scale + Sheet right, under the column). The reveal bounds span
@@ -23,16 +23,16 @@ import { APP_URL, CLUSTER_CITY } from "@/lib/constants"
 import { fitCamera } from "@/lib/camera"
 import type { LandingData } from "@/lib/landing-data"
 import { PhotoMarkers } from "@/components/photo-markers"
-import { CursorReveal, HERO_MARKER_CLASS, PLATE, useCursorSprings, usePlatePicks } from "./hero-reveal"
+import { CursorReveal, HERO_MARKER_CLASS, PLATE, useCursorSprings, usePlateArchs } from "./hero-reveal"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
-import styles from "./hero-ledge.module.css"
+import styles from "./hero.module.css"
 
 export const heroHold = (data: LandingData): HoldScene => ({
   kind: "hold",
   id: "hero",
   shape: "[data-spine-shape='hero']",
   heightVh: 100,
-  Component: () => <HeroLedge data={data} />,
+  Component: () => <HeroScene data={data} />,
 })
 
 /** Hold end in scene-local vh — marker visibility flips here (fade length
@@ -52,11 +52,11 @@ const BOTTOM_BAR_HEIGHT = "5rem"
 
 const CTA_BUFFER = 90
 
-function HeroLedge({ data }: { data: LandingData }) {
+function HeroScene({ data }: { data: LandingData }) {
   const map = useSpineMap()
-  const picks = data.heroPicks
+  const archs = data.heroArchs
   const { sx, sy } = useCursorSprings()
-  const { nearest, active } = usePlatePicks(sx, sy, picks, map)
+  const { nearest, active } = usePlateArchs(sx, sy, archs, map)
   // reveal bounds = the whole top area above the strip; the camera fits to
   // the stage alone so pins stay clear of the column
   const boundsRef = useRef<HTMLDivElement | null>(null)
@@ -69,7 +69,7 @@ function HeroLedge({ data }: { data: LandingData }) {
     const vw = window.innerWidth
     const vh = window.innerHeight
     const cam = fitCamera(
-      picks.map((p) => p.coordinates),
+      archs.map((p) => p.coordinates),
       { width: vw, height: vh },
       {
         left: b.left + FIT_PAD.x,
@@ -80,7 +80,7 @@ function HeroLedge({ data }: { data: LandingData }) {
     )
     camRef.current = cam
     map.jumpTo({ center: cam.center, zoom: cam.zoom })
-  }, [map, picks])
+  }, [map, archs])
 
   // the plate IS the cursor while the pointer is inside the scene — plain
   // css on the section (snap mode never hides the system cursor)
@@ -112,7 +112,7 @@ function HeroLedge({ data }: { data: LandingData }) {
         sy={sy}
         tagTr={CLUSTER_CITY}
       />
-      <PhotoMarkers picks={picks} on={markersOn} className={HERO_MARKER_CLASS} />
+      <PhotoMarkers archs={archs} on={markersOn} className={HERO_MARKER_CLASS} />
       <Screen className={styles.screen}>
         <HSplit>
           <Pane size="var(--size-header-height)" />
@@ -123,10 +123,10 @@ function HeroLedge({ data }: { data: LandingData }) {
             <Pane size={`${PLATE.w}px`}>
               <HSplit>
                 <Pane>
-                  <ul className={styles.pickList}>
-                    {picks.map((p, i) => (
-                      <li key={p.slug} className={styles.pickRow} data-picked={`${active.has(p.slug)}`}>
-                        <span className={styles.pickNum}>{String(i + 1).padStart(2, "0")}</span>
+                  <ul className={styles.archList}>
+                    {archs.map((p, i) => (
+                      <li key={p.slug} className={styles.archRow} data-active={`${active.has(p.slug)}`}>
+                        <span className={styles.archNum}>{String(i + 1).padStart(2, "0")}</span>
                         <Body2 asChild>
                           <span>{p.name}</span>
                         </Body2>
@@ -283,7 +283,7 @@ function CtaPane({ sx, sy }: { sx: MotionValue<number>; sy: MotionValue<number> 
 }
 
 /** Info block — the plate's nearest work rolls through the cell as the
- * plate moves to a new pick. Plate-wide, flush with the column's edge. */
+ * plate moves to a new arch. Plate-wide, flush with the column's edge. */
 function InfoBlock({ nearest }: { nearest: ArchSummary | null }) {
   const reduced = useReducedMotion()
   return (

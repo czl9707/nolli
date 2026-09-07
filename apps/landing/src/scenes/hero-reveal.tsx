@@ -219,20 +219,20 @@ export function CursorReveal({
   )
 }
 
-/** Pick nearest the plate centre (caption) + the set inside the reveal
- * radius (pick-list highlight). Samples per frame, re-renders only on
+/** Arch nearest the plate centre (caption) + the set inside the reveal
+ * radius (arch-list highlight). Samples per frame, re-renders only on
  * membership change. */
-export function usePlatePicks(
+export function usePlateArchs(
   sx: MotionValue<number>,
   sy: MotionValue<number>,
-  picks: ArchSummary[],
+  archs: ArchSummary[],
   map: MapRef | null,
 ) {
   const [nearest, setNearest] = useState<ArchSummary | null>(null)
   const [active, setActive] = useState<ReadonlySet<string>>(new Set())
 
   useEffect(() => {
-    if (!map || !picks.length) return
+    if (!map || !archs.length) return
     let raf = 0
     const update = () => {
       raf = 0
@@ -241,7 +241,7 @@ export function usePlatePicks(
       let best: ArchSummary | null = null
       let bestD = Infinity
       const inside: string[] = []
-      for (const a of picks) {
+      for (const a of archs) {
         const p = map.project([a.coordinates.lng, a.coordinates.lat])
         const d = (p.x - cx) ** 2 + (p.y - cy) ** 2
         if (d < bestD) {
@@ -269,7 +269,7 @@ export function usePlatePicks(
       map.off("move", schedule)
       if (raf) cancelAnimationFrame(raf)
     }
-  }, [map, sx, sy, picks])
+  }, [map, sx, sy, archs])
 
   return { nearest, active }
 }

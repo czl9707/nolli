@@ -5,7 +5,7 @@ export function cityIdByName(options: FilterOptions, name: string): number | nul
   return hit ? hit.id : null
 }
 
-export function pickIndexPhotos(
+export function nearestPhotos(
   cluster: ArchSummary[],
   seed: ArchSummary["coordinates"],
   count = 5,
@@ -13,13 +13,13 @@ export function pickIndexPhotos(
   const d2 = (c: ArchSummary["coordinates"]) =>
     (c.lng - seed.lng) ** 2 + (c.lat - seed.lat) ** 2
   const pool = [...cluster].sort((a, b) => d2(a.coordinates) - d2(b.coordinates))
-  const picked = [pool.shift()!]
-  while (picked.length < count && pool.length) {
+  const chosen = [pool.shift()!]
+  while (chosen.length < count && pool.length) {
     let best = 0
     let bestDist = -1
     pool.forEach((cand, i) => {
       const nearest = Math.min(
-        ...picked.map((p) =>
+        ...chosen.map((p) =>
           (p.coordinates.lng - cand.coordinates.lng) ** 2 +
           (p.coordinates.lat - cand.coordinates.lat) ** 2,
         ),
@@ -29,7 +29,7 @@ export function pickIndexPhotos(
         best = i
       }
     })
-    picked.push(pool.splice(best, 1)[0])
+    chosen.push(pool.splice(best, 1)[0])
   }
-  return picked
+  return chosen
 }

@@ -1,7 +1,7 @@
 /* Hero ledge on the spine — sticky full-viewport hold; the map itself is
    the spine's layer below, this tree is the content overlay above it.
    Layout: big map cell = lede, vertically centered; plate column on the
-   RIGHT = picked-arch list (growing top cell) + CTA pane (the pane IS the
+   RIGHT = arch list (growing top cell) + CTA pane (the pane IS the
    CTA); mirrored title-block strip closes the scene (Info left, fill,
    Scale + Sheet right, under the column). Plate bounds = everything above
    the strip. */
@@ -122,16 +122,16 @@
   transition: transform 0.15s ease;
 }
 
-/* ── pick list (top cell of the right column) ─────────────────────────── */
+/* ── arch list (top cell of the right column) ─────────────────────────── */
 
-.pickList {
+.archList {
   list-style: none;
   margin: 0;
   padding: var(--spacing-component);
   text-align: left;
 }
 
-.pickRow {
+.archRow {
   display: flex;
   align-items: baseline;
   gap: var(--spacing-paragraph);
@@ -140,11 +140,11 @@
   transition: opacity var(--transition-instant) ease;
 }
 
-.pickRow[data-picked="true"] {
+.archRow[data-active="true"] {
   opacity: 1;
 }
 
-.pickNum {
+.archNum {
   font-family: var(--font-mono);
   font-size: 0.7rem;
   opacity: 0.5;

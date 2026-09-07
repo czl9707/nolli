@@ -11,11 +11,11 @@ import { useLinger } from "@/lib/use-linger"
 import styles from "./photo-markers.module.css"
 
 export function PhotoMarkers({
-  picks,
+  archs,
   on,
   className = "",
 }: {
-  picks: ArchSummary[]
+  archs: ArchSummary[]
   on: boolean
   className?: string
 }) {
@@ -26,7 +26,7 @@ export function PhotoMarkers({
   const cls = [styles.photoMarker, className].filter(Boolean).join(" ")
   return createPortal(
     <MapContext.Provider value={{ map, isLoaded: !!map }}>
-      {picks.map((a) => (
+      {archs.map((a) => (
         // data-show with || undefined — a literal false would still render
         // the attribute and match [data-show]
         <ArchPhotoPinMarker key={a.slug} building={a} className={cls} crossOrigin={null} data-show={visible || undefined} />

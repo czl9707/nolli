@@ -1,4 +1,4 @@
-.index {
+.city {
   position: sticky;
   top: 10svh;
   height: 80svh;
@@ -7,8 +7,8 @@
   overflow: visible;
 }
 
-/* dossier panes — see .index: overflow opened for the lead track */
-.index .visibleOverflow {
+/* dossier panes — see .city: overflow opened for the lead track */
+.city .visibleOverflow {
   overflow: visible;
 }
 
@@ -65,7 +65,7 @@
   opacity: 0.5;
 }
 
-/* rows sit dim like the hero's pick list; the row driving the map's photo
+/* rows sit dim like the hero's arch list; the row driving the map's photo
    card lifts to full. Targets the name, not the li — the swap variants
    animate li opacity inline, which would override a li-level dim */
 .archName {

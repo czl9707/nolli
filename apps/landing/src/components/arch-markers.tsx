@@ -1,4 +1,4 @@
-// The arch hold's marker set — every work is a photo card marker scattered
+// The architect hold's marker set — every work is a photo card marker scattered
 // around its building's coordinate (deterministic offset + tilt, like a
 // tossed print). The lit architect's cards sit full color and larger; the
 // rest darken via filter so overlaps stay solid. Portalled into the spine's
@@ -19,12 +19,12 @@ const DIM_MAX = { w: 132, h: 88 }
 const WORKS_SHOWN = 4
 
 export function ArchImageMarkers({
-  roster,
-  seletedId,
+  entries,
+  selectedId,
   on,
 }: {
-  roster: ArchEntry[]
-  seletedId: number
+  entries: ArchEntry[]
+  selectedId: number
   on: boolean
 }) {
   const [mounted, visible] = useLinger(on, 400)
@@ -34,9 +34,9 @@ export function ArchImageMarkers({
 
   return createPortal(
     <MapContext.Provider value={{ map, isLoaded: !!map }}>
-      {roster.flatMap((e) =>
+      {entries.flatMap((e) =>
         e.works.slice(0, WORKS_SHOWN).map((w) => (
-          <ArchImageMarker key={w.slug} work={w} selected={e.id === seletedId} visible={visible} />
+          <ArchImageMarker key={w.slug} work={w} selected={e.id === selectedId} visible={visible} />
         )),
       )}
     </MapContext.Provider>,

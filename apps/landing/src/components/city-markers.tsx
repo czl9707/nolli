@@ -1,5 +1,5 @@
-// The index hold's marker set — every pick carries a pin by default; one
-// pick is ALWAYS carded (the selection, first of the city by default) and
+// The city hold's marker set — every arch carries a pin by default; one
+// arch is ALWAYS carded (the selection, first of the city by default) and
 // hovering a row or marker MOVES the card. The outgoing card fades out in
 // place while the incoming fades in; its pin crossfades back underneath.
 import { createPortal } from "react-dom"
@@ -10,15 +10,15 @@ import { useMapPortal, useSpineMap } from "@/spine/spine"
 import { useLinger } from "@/lib/use-linger"
 import styles from "./photo-markers.module.css"
 
-export function IndexMarkers({
-  picks,
+export function CityMarkers({
+  archs,
   on,
   selected,
   onSelect,
 }: {
-  picks: ArchSummary[]
+  archs: ArchSummary[]
   on: boolean
-  /** Slug of the carded pick — always set once the scene has data. */
+  /** Slug of the carded arch — always set once the scene has data. */
   selected: string | null
   onSelect: (slug: string) => void
 }) {
@@ -46,19 +46,19 @@ export function IndexMarkers({
 
   return createPortal(
     <MapContext.Provider value={{ map, isLoaded: !!map }}>
-      {picks.map((p) => (
+      {archs.map((p) => (
         <ArchPinMarker
           key={p.slug}
           longitude={p.coordinates.lng}
           latitude={p.coordinates.lat}
-          className={styles.indexPin}
+          className={styles.cityPin}
           animate={{ opacity: visible && p.slug !== onSlug ? 1 : 0 }}
           transition={{ duration: 0.3 }}
           onMouseEnter={() => onSelect(p.slug)}
         />
       ))}
       {cards.map((slug) => {
-        const b = picks.find((p) => p.slug === slug)
+        const b = archs.find((p) => p.slug === slug)
         if (!b) return null
         return (
           <ArchPhotoPinMarker

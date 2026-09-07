@@ -1,6 +1,6 @@
-// Architect marquee hold on the spine. The map owns the screen under a dark
+// Architect ledger hold on the spine. The map owns the screen under a dark
 // veil — the works pin to their true coordinates, the lit architect's works
-// carded — and the roster closes the scene as one block of equal cells
+// carded — and the ledger closes the scene as one block of equal cells
 // along the bottom. Selection proves the statement: you can name an
 // architect's works; the map can place them.
 import { useEffect, useRef, useState } from "react"
@@ -16,29 +16,29 @@ import { ArchImageMarkers } from "@/components/arch-markers"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
 import { RollButton } from "@/components/roll-button"
 import { RollText } from "@/components/roll-text"
-import styles from "./arch-marquee.module.css"
+import styles from "./architect-ledger.module.css"
 
-const SCENE_ID = "arch"
+const SCENE_ID = "architect"
 const SCENE_VH = 160
 
-// world view widened so renderWorldCopies:false doesn't crop the roster's
+// world view widened so renderWorldCopies:false doesn't crop the ledger's
 // buildings (bounds ≈ −133°..157°)
 const WORLD: SceneCamera = { center: [12, 25], zoom: 1.05 }
 
-export const archHold = (data: LandingData): HoldScene => ({
+export const architectHold = (data: LandingData): HoldScene => ({
   kind: "hold",
   id: SCENE_ID,
-  shape: "[data-spine-shape='arch']",
+  shape: "[data-spine-shape='architect']",
   heightVh: SCENE_VH,
-  Component: () => <ArchMarquee roster={data.archRoster} />,
+  Component: () => <ArchitectLedger entries={data.architectLedger} />,
 })
 
-function ArchMarquee({ roster }: { roster: ArchEntry[] }) {
+function ArchitectLedger({ entries }: { entries: ArchEntry[] }) {
   const local = useSceneScroll(SCENE_ID)
   const map = useSpineMap()
   const flied = useRef(false)
-  const [selected, setSelected] = useState(roster[0]?.name ?? "")
-  const seletedEntry = roster.find((e) => e.name === selected) ?? roster[0]
+  const [selected, setSelected] = useState(entries[0]?.name ?? "")
+  const selectedEntry = entries.find((e) => e.name === selected) ?? entries[0]
 
   // markers own the map band across the same window the flight parks in
   const [markersOn, setMarkersOn] = useState(() => {
@@ -67,8 +67,8 @@ function ArchMarquee({ roster }: { roster: ArchEntry[] }) {
   })
 
   const rows: ArchEntry[][] = []
-  const perRow = Math.ceil(roster.length / 2)
-  for (let i = 0; i < roster.length; i += perRow) rows.push(roster.slice(i, i + perRow))
+  const perRow = Math.ceil(entries.length / 2)
+  for (let i = 0; i < entries.length; i += perRow) rows.push(entries.slice(i, i + perRow))
 
   return (
     <Screen className={styles.screen}>
@@ -80,13 +80,13 @@ function ArchMarquee({ roster }: { roster: ArchEntry[] }) {
             <Pane>
               <HSplit>
                 <Pane>
-                  <div className={styles.shape} aria-hidden data-spine-shape="arch" />
+                  <div className={styles.shape} aria-hidden data-spine-shape="architect" />
                   <MapVeil on={markersOn} />
-                  <ArchImageMarkers roster={roster} seletedId={seletedEntry?.id ?? -1} on={markersOn} />
-                  {seletedEntry && (
+                  <ArchImageMarkers entries={entries} selectedId={selectedEntry?.id ?? -1} on={markersOn} />
+                  {selectedEntry && (
                     <div className={styles.bandText}>
                       <H3>
-                        You can name the works of <RollText text={seletedEntry.name} />.
+                        You can name the works of <RollText text={selectedEntry.name} />.
                         <br />
                         <span className={styles.accent}>Nolli</span> help you pin them on the map.
                       </H3>

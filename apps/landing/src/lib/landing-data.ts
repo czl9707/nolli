@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useDbStore, type ArchSummary, type DataSource } from "@nolli/data"
-import { ARCH_ROSTER, CLUSTER_CITY, HERO_SLUG } from "./constants"
-import { cityIdByName, pickIndexPhotos } from "./shape"
+import { ARCHITECT_LEDGER, CLUSTER_CITY, HERO_SLUG } from "./constants"
+import { cityIdByName, nearestPhotos } from "./shape"
 
 export type ArchEntry = {
   id: number
@@ -10,28 +10,28 @@ export type ArchEntry = {
 }
 
 export type LandingData = {
-  /** Paris picks the hero reveal shows — the index reuses them as its Paris set */
-  heroPicks: ArchSummary[]
-  /** Architect-scene roster: curated names matched to the DB, each with its works */
-  archRoster: ArchEntry[]
+  /** Paris archs the hero reveal shows */
+  heroArchs: ArchSummary[]
+  /** Architect ledger: curated names matched to the DB, each with its works */
+  architectLedger: ArchEntry[]
 }
 
-/** Roster for the architect scene — curated names in order, falling back to
+/** Ledger for the architect scene — curated names in order, falling back to
  * the first DB architects when none match; entries need MIN_WORKS to show. */
 const MIN_WORKS = 2
 const MAX_ARCHS = 8
 
-async function loadArchRoster(dataSource: DataSource): Promise<ArchEntry[]> {
+async function loadArchitectLedger(dataSource: DataSource): Promise<ArchEntry[]> {
   const options = await dataSource.getFilterOptions()
   const byName = new Map(options.architects.map((a) => [a.name.toLowerCase(), a.id]))
-  const picks: { id: number; name: string }[] = []
-  for (const name of ARCH_ROSTER) {
+  const matched: { id: number; name: string }[] = []
+  for (const name of ARCHITECT_LEDGER) {
     const id = byName.get(name.toLowerCase())
-    if (id) picks.push({ id, name })
+    if (id) matched.push({ id, name })
   }
-  const roster = picks.length ? picks : options.architects.slice(0, MAX_ARCHS).map((a) => ({ id: a.id, name: a.name }))
+  const entries = matched.length ? matched : options.architects.slice(0, MAX_ARCHS).map((a) => ({ id: a.id, name: a.name }))
   const loaded = await Promise.all(
-    roster.map(async (a) => ({
+    entries.map(async (a) => ({
       ...a,
       works: await dataSource.getAllArchitectures({ architectIds: [a.id] }),
     })),
@@ -56,9 +56,9 @@ export function useLandingData() {
         const cluster = await dataSource.getAllArchitectures({ cityIds: [cityId] })
         const hero = await dataSource.getArchBySlug(HERO_SLUG)
         if (!hero) throw new Error(`hero architecture "${HERO_SLUG}" not found`)
-        const archRoster = await loadArchRoster(dataSource)
+        const architectLedger = await loadArchitectLedger(dataSource)
         if (cancelled) return
-        setData({ heroPicks: pickIndexPhotos(cluster, hero.coordinates, 10), archRoster })
+        setData({ heroArchs: nearestPhotos(cluster, hero.coordinates, 10), architectLedger })
       } catch (e) {
         if (!cancelled) setErr(e as Error)
       }

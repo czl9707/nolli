@@ -1,4 +1,4 @@
-// Index ledge on the spine (prototype variant A "Ledger" index). The map is
+// City ledger on the spine. The map is
 // the spine's layer landing on the empty shape pane; photo markers portal
 // into it and gate through a container flag, while the flow tree carries
 // the city dossier + 2x3 city-button grid and fades out over the hold's
@@ -10,18 +10,17 @@ import { flyToSceneCinematic } from "@nolli/map"
 import { useDbStore, type ArchSummary } from "@nolli/data"
 import { useSceneScroll, useSpineMap } from "@/spine/spine"
 import type { HoldScene, PxRect } from "@/spine/timeline"
-import type { LandingData } from "@/lib/landing-data"
 import { fitCamera } from "@/lib/camera"
-import { cityIdByName, pickIndexPhotos } from "@/lib/shape"
-import { IndexMarkers } from "@/components/index-markers"
+import { cityIdByName, nearestPhotos } from "@/lib/shape"
+import { CityMarkers } from "@/components/city-markers"
 import { RollButton } from "@/components/roll-button"
 import { RollText } from "@/components/roll-text"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
-import styles from "./index-ledge.module.css"
+import styles from "./city-ledger.module.css"
 
 const CITIES = ["New York", "London", "Paris", "Tokyo", "Chicago", "Berlin"] as const
 
-const PICKS_PER_CITY = 8
+const ARCHS_PER_CITY = 8
 
 /** City grid row height. */
 const CITY_ROW_H = "3.5rem"
@@ -36,7 +35,7 @@ const ENTRY_REARM_VH = 20
 const TOTLE_VH = 200
 
 /** Fit padding in pane px: photo cards hang below the pin, so the
- * south-most pick needs far more room below it than the north-most above. */
+ * south-most arch needs far more room below it than the north-most above. */
 const FIT_PADDING = { left: 100, right: 100, top: 100, bottom: 240 }
 
 /** City-name pool for the pre-entry roll — names only, no data behind
@@ -56,16 +55,16 @@ const CITY_POOL: string[] = [
 /** Scroll vh between pre-entry roll steps. */
 const ROLL_STEP_VH = 6
 
-export const indexHold =
-  (data: LandingData, indexPane: PxRect): HoldScene => ({
+export const cityHold =
+  (cityPane: PxRect): HoldScene => ({
     kind: "hold",
-    id: "index",
-    shape: "[data-spine-shape='index']",
+    id: "city",
+    shape: "[data-spine-shape='city']",
     heightVh: TOTLE_VH,
-    Component: () => <IndexLedge data={data} indexPane={indexPane} />,
+    Component: () => <CityLedger cityPane={cityPane} />,
   })
 
-function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect }) {
+function CityLedger({ cityPane }: { cityPane: PxRect }) {
   const map = useSpineMap()
   const local = useSceneScroll()
 
@@ -79,7 +78,7 @@ function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect 
         const entries = await Promise.all(
           CITIES.map(async (name) => {
             const id = cityIdByName(options, name)
-            if (!id) throw new Error(`index city "${name}" not found`)
+            if (!id) throw new Error(`city "${name}" not found`)
             return [name, await dataSource.getAllArchitectures({ cityIds: [id] })] as const
           }),
         )
@@ -90,40 +89,41 @@ function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect 
     })()
   }, [dataSource])
 
-  const archPickesByCity = useMemo(() => {
+  const archsByCity = useMemo(() => {
     const out: Record<string, ArchSummary[]> = {}
     for (const name of CITIES) {
       const items = archByCities[name]
       if (!items?.length) continue
-      out[name] = pickIndexPhotos(items, items[0].coordinates, PICKS_PER_CITY)
+      out[name] = nearestPhotos(items, items[0].coordinates, ARCHS_PER_CITY)
     }
     return out
   }, [archByCities])
 
   const [selected, setSelected] = useState<string>(CITIES[0])
-  // the carded pick — always one; hovering a row or marker moves the card
-  const [cardPick, setCardPick] = useState<string | null>(() => data.heroPicks[0]?.slug ?? null)
-  const picks = archPickesByCity[selected] ?? data.heroPicks
-  // new city → card back to its first pick
+  // the carded arch — always one once the city loads; hovering a row or
+  // marker moves the card
+  const [cardSlug, setCardSlug] = useState<string | null>(null)
+  const archs = archsByCity[selected] ?? []
+  // new city → card back to its first arch
   useEffect(() => {
-    setCardPick(picks[0]?.slug ?? null)
-  }, [picks])
+    setCardSlug(archs[0]?.slug ?? null)
+  }, [archs])
   const displayCity = useCityDisplay(local, selected)
 
   const cameraFor = useCallback(
-    (cityPicks: ArchSummary[]) =>
+    (cityArchs: ArchSummary[]) =>
       fitCamera(
-        cityPicks.map((p) => p.coordinates),
-        { width: indexPane.width, height: indexPane.height },
+        cityArchs.map((p) => p.coordinates),
+        { width: cityPane.width, height: cityPane.height },
         FIT_PADDING,
       ),
-    [indexPane],
+    [cityPane],
   )
 
   // fly in as the transition hands us the screen; hysteresis via ENTRY_REARM_VH
   // keeps a jittering scroll from refiring
-  const picksRef = useRef(picks)
-  picksRef.current = picks
+  const archsRef = useRef(archs)
+  archsRef.current = archs
   const entered = useRef(local.get() >= ENTRY_VH)
   const flied = useRef(false)
   useMotionValueEvent(local, "change", (v) => {
@@ -137,7 +137,7 @@ function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect 
     if (v >= 0 && v < TOTLE_VH) {
       if (flied.current || !map) return
       flied.current = true
-      flyToSceneCinematic(map, cameraFor(picksRef.current))
+      flyToSceneCinematic(map, cameraFor(archsRef.current))
     } else {
       flied.current = false
     }
@@ -146,11 +146,11 @@ function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect 
   const onSelect = useCallback(
     (name: string) => {
       setSelected(name)
-      const cityPicks = archPickesByCity[name]
-      if (!map || !cityPicks?.length) return
-      flyToSceneCinematic(map, cameraFor(cityPicks))
+      const cityArchs = archsByCity[name]
+      if (!map || !cityArchs?.length) return
+      flyToSceneCinematic(map, cameraFor(cityArchs))
     },
-    [archPickesByCity, map, cameraFor],
+    [archsByCity, map, cameraFor],
   )
 
   const fade = useTransform(local, [TOTLE_VH - ENTRY_VH, TOTLE_VH], [1, 0])
@@ -164,8 +164,8 @@ function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect 
 
   return (
     <>
-      <Screen className={styles.index}>
-        <IndexMarkers picks={picks} on={markersOn} selected={cardPick} onSelect={setCardPick} />
+      <Screen className={styles.city}>
+        <CityMarkers archs={archs} on={markersOn} selected={cardSlug} onSelect={setCardSlug} />
         <motion.div className={styles.splits} style={{ opacity: fade }}>
           <HSplit>
             <Pane size="var(--size-header-height)" />
@@ -178,9 +178,9 @@ function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect 
                       <Statement
                         leadCity={displayCity}
                         listCity={selected}
-                        picks={picks}
-                        carded={cardPick}
-                        onCard={setCardPick}
+                        archs={archs}
+                        cardSlug={cardSlug}
+                        onCard={setCardSlug}
                       />
                     </Pane>
                     <CityRow
@@ -204,7 +204,7 @@ function IndexLedge({ data, indexPane }: { data: LandingData; indexPane: PxRect 
                   </HSplit>
                 </Pane>
                 <Pane size="calc(var(--grid-col) * 8)">
-                  <div data-spine-shape="index" className={styles.mapPane} />
+                  <div data-spine-shape="city" className={styles.mapPane} />
                 </Pane>
                 <Pane size="var(--grid-padding)" />
               </VSplit>
@@ -270,14 +270,14 @@ const rowDelay = (slug: string) => {
 function Statement({
   leadCity,
   listCity,
-  picks,
-  carded,
+  archs,
+  cardSlug,
   onCard,
 }: {
   leadCity: string
   listCity: string
-  picks: ArchSummary[]
-  carded: string | null
+  archs: ArchSummary[]
+  cardSlug: string | null
   onCard: (slug: string) => void
 }) {
   const reduced = useReducedMotion()
@@ -293,12 +293,12 @@ function Statement({
       </Body1>
       <AnimatePresence mode="wait" initial={false}>
         <motion.ul key={listCity} className={styles.archList} initial="hidden" animate="visible" exit="exit">
-          {picks.map((p, i) => (
+          {archs.map((p, i) => (
             <motion.li
               key={p.slug}
               variants={reduced ? undefined : itemVariants}
               custom={rowDelay(p.slug)}
-              data-hovered={carded === p.slug}
+              data-hovered={cardSlug === p.slug}
               onMouseEnter={() => onCard(p.slug)}
             >
               <span className={styles.archNum}>{String(i + 1).padStart(2, "0")}</span>
