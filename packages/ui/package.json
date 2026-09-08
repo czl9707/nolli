@@ -6,7 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./assets/pin.png": "./src/assets/pin.png",
-    "./vite": "./src/build/shared-public.ts",
+    "./vite": "./src/vite/shared-public.mjs",
     "./global.css": "./src/styles/global.css",
     "./input.module.css": "./src/input.module.css",
     "./composition": "./src/composition/index.ts",
