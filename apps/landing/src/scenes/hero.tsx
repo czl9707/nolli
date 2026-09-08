@@ -47,7 +47,7 @@ const RETURN_FIRE_VH = 100
 /** Camera fit insets off the stage rect (px): left clears the centered lede,
  * x pads the column side, top/bottom keep the pin band level with the lede
  * (horizontal separation keeps them apart). */
-const FIT_PAD = { x: 100, top: 50, bottom: 240 }
+const FIT_PAD = { left: 100, right: 200, top: 50, bottom: 240 }
 
 const BOTTOM_BAR_HEIGHT = "5rem"
 
@@ -73,8 +73,8 @@ function HeroScene({ data }: { data: LandingData }) {
       archs.map((p) => p.coordinates),
       { width: vw, height: vh },
       {
-        left: b.left + FIT_PAD.x,
-        right: vw - b.right + FIT_PAD.x, 
+        left: b.left + FIT_PAD.left,
+        right: vw - b.right + FIT_PAD.right, 
         top: b.top + FIT_PAD.top,
         bottom: vh - b.bottom + FIT_PAD.bottom,
       },

@@ -12,6 +12,10 @@ export const ARCHITECT_LEDGER = [
   "Louis Kahn", "Le Corbusier",  "Frank Gehry", "Oscar Niemeyer", "SANAA", "Zaha Hadid", "Norman Foster", "Peter Zumthor",
 ]
 
+/** City-ledger names — matched against the DB's city options; cities that
+ * don't resolve stay dim in the grid. */
+export const CITY_LEDGER = ["New York", "London", "Paris", "Tokyo", "Chicago", "Berlin"] as const
+
 /** Curated photo deck for the stats scene — canonical modern landmarks,
  *  one per master. */
 export const STATS_DECK_SLUGS = [

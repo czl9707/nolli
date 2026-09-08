@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useDbStore, type ArchSummary, type DataSource } from "@nolli/data"
-import { ARCHITECT_LEDGER, CLUSTER_CITY, HERO_SLUG, STATS_DECK_SLUGS } from "./constants"
+import { ARCHITECT_LEDGER, CITY_LEDGER, CLUSTER_CITY, HERO_SLUG, STATS_DECK_SLUGS } from "./constants"
 import { cityIdByName, nearestPhotos } from "./shape"
 
 export type ArchEntry = {
@@ -24,6 +24,8 @@ export type LandingData = {
   heroArchs: ArchSummary[]
   /** Architect ledger: curated names matched to the DB, each with its works */
   architectLedger: ArchEntry[]
+  /** City ledger: carded archs per curated city, keyed by city name */
+  cityLedger: Record<string, ArchSummary[]>
   /** Collection counts + photo deck for the stats scene — live from the DB */
   stats: CollectionStats
 }
@@ -32,6 +34,28 @@ export type LandingData = {
  * the first DB architects when none match; entries need MIN_WORKS to show. */
 const MIN_WORKS = 2
 const MAX_ARCHS = 8
+
+/** Carded archs per city for the city scene. */
+const ARCHS_PER_CITY = 8
+
+async function loadCityLedger(dataSource: DataSource): Promise<Record<string, ArchSummary[]>> {
+  const options = await dataSource.getFilterOptions()
+  const out: Record<string, ArchSummary[]> = {}
+  await Promise.all(
+    CITY_LEDGER.map(async (name) => {
+      try {
+        const id = cityIdByName(options, name)
+        if (!id) throw new Error(`city "${name}" not found`)
+        const items = await dataSource.getAllArchitectures({ cityIds: [id] })
+        if (!items.length) return
+        out[name] = nearestPhotos(items, items[0].coordinates, ARCHS_PER_CITY)
+      } catch {
+        // cities that don't resolve stay dim in the grid
+      }
+    }),
+  )
+  return out
+}
 
 async function loadArchitectLedger(dataSource: DataSource): Promise<ArchEntry[]> {
   const options = await dataSource.getFilterOptions()
@@ -68,7 +92,10 @@ export function useLandingData() {
         const cluster = await dataSource.getAllArchitectures({ cityIds: [cityId] })
         const hero = await dataSource.getArchBySlug(HERO_SLUG)
         if (!hero) throw new Error(`hero architecture "${HERO_SLUG}" not found`)
-        const architectLedger = await loadArchitectLedger(dataSource)
+        const [architectLedger, cityLedger] = await Promise.all([
+          loadArchitectLedger(dataSource),
+          loadCityLedger(dataSource),
+        ])
         const all = await dataSource.getAllArchitectures()
         // cities/countries tables are get-or-created per building in the
         // seed, so distinct city country codes = countries with buildings
@@ -82,7 +109,7 @@ export function useLandingData() {
           worldArchs: await dataSource.getArchSummariesBySlugs(STATS_DECK_SLUGS),
         }
         if (cancelled) return
-        setData({ heroArchs: nearestPhotos(cluster, hero.coordinates, 10), architectLedger, stats })
+        setData({ heroArchs: nearestPhotos(cluster, hero.coordinates, 10), architectLedger, cityLedger, stats })
       } catch (e) {
         if (!cancelled) setErr(e as Error)
       }
