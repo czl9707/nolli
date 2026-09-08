@@ -22,9 +22,19 @@ export function Bleed({ children, className }: { children?: ReactNode; className
 // edge and is preceded only by grid-aligned panes. Any number of panes per
 // direction. Components live fully in one pane or are full screen (Bleed).
 
-export function Screen({ children, className }: { children: ReactNode; className?: string }) {
-  return <section className={[styles.screen, className].filter(Boolean).join(" ")}>{children}</section>
-}
+export const Screen = forwardRef<HTMLDivElement, { children: ReactNode; className?: string; style?: React.CSSProperties }>(
+  function Screen({ children, className, style }, ref) {
+    return (
+      <section
+        ref={ref}
+        className={[styles.screen, className].filter(Boolean).join(" ")}
+        style={style}
+      >
+        {children}
+      </section>
+    )
+  }
+)
 
 export const HSplit = forwardRef<HTMLDivElement, { children: ReactNode; className?: string }>(
   function HSplit({ children, className }, ref) {

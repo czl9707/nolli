@@ -20,6 +20,7 @@ import styles from "./architect-ledger.module.css"
 
 const SCENE_ID = "architect"
 const SCENE_VH = 160
+const VEIL_VISIBLE_VH = SCENE_VH - 80
 
 // world view widened so renderWorldCopies:false doesn't crop the ledger's
 // buildings (bounds ≈ −133°..157°)
@@ -43,15 +44,15 @@ function ArchitectLedger({ entries }: { entries: ArchEntry[] }) {
   // markers own the map band across the same window the flight parks in
   const [markersOn, setMarkersOn] = useState(() => {
     const v = local.get()
-    return v >= 0 && v < SCENE_VH
+    return v >= 0 && v < VEIL_VISIBLE_VH
   })
-  useMotionValueEvent(local, "change", (v) => setMarkersOn(v >= 0 && v < SCENE_VH))
+  useMotionValueEvent(local, "change", (v) => setMarkersOn(v >= 0 && v < VEIL_VISIBLE_VH))
 
   // the entry flight parks the camera at the world view when scroll hands
   // the scene the screen; the map layer may still be resizing out of the
   // shape morph, which mis-lands the ease — verify and snap if off
   useMotionValueEvent(local, "change", (v) => {
-    if (v >= 0 && v < SCENE_VH && map) {
+    if (v >= 0 && v < VEIL_VISIBLE_VH && map) {
       if (flied.current) return
       flied.current = true
       flyToSceneCinematic(map, WORLD)
@@ -73,50 +74,56 @@ function ArchitectLedger({ entries }: { entries: ArchEntry[] }) {
   return (
     <Screen className={styles.screen}>
       <HSplit>
-        <Pane size="var(--size-header-height)" />
         <Pane>
           <VSplit>
-            <Pane size="var(--grid-padding)" />
+            <Pane size="var(--grid-padding)" filled/>
             <Pane>
               <HSplit>
+                <Pane size="12svh" />
                 <Pane>
-                  <div className={styles.shape} aria-hidden data-spine-shape="architect" />
-                  <MapVeil on={markersOn} />
-                  <ArchImageMarkers entries={entries} selectedId={selectedEntry?.id ?? -1} on={markersOn} />
-                  {selectedEntry && (
-                    <div className={styles.bandText}>
-                      <H3>
-                        You can name the works of <RollText text={selectedEntry.name} />.
-                        <br />
-                        <span className={styles.accent}>Nolli</span> help you pin them on the map.
-                      </H3>
-                    </div>
-                  )}
+                  <HSplit>
+                    <Pane>
+                      <div className={styles.shape} aria-hidden data-spine-shape="architect" />
+                      <MapVeil on={markersOn} />
+                      <ArchImageMarkers entries={entries} selectedId={selectedEntry?.id ?? -1} on={markersOn} />
+                      {selectedEntry && (
+                        <div className={styles.bandText}>
+                          <H3>
+                            You can name the works of <RollText text={selectedEntry.name} />.
+                            <br />
+                            <span className={styles.accent}>Nolli</span> help you pin them on the map.
+                          </H3>
+                        </div>
+                      )}
+                    </Pane>
+                    {rows.map((row, r) => (
+                      <Pane key={r} size="3.5rem">
+                        <VSplit>
+                          {row.map((e) => (
+                            <RollButton
+                              key={e.id}
+                              size="calc(var(--grid-col) * 3)"
+                              state={e.name === selected ? "focused" : "default"}
+                              onClick={() => setSelected(e.name)}
+                              onMouseEnter={() => setSelected(e.name)}
+                              onFocus={() => setSelected(e.name)}
+                              aria-pressed={e.name === selected}
+                            >
+                              {e.name}
+                            </RollButton>
+                          ))}
+                        </VSplit>
+                      </Pane>
+                    ))}
+                  </HSplit>
                 </Pane>
-                {rows.map((row, r) => (
-                  <Pane key={r} size="3.5rem">
-                    <VSplit>
-                      {row.map((e) => (
-                        <RollButton
-                          key={e.id}
-                          size="calc(var(--grid-col) * 3)"
-                          state={e.name === selected ? "focused" : "default"}
-                          onClick={() => setSelected(e.name)}
-                          onMouseEnter={() => setSelected(e.name)}
-                          onFocus={() => setSelected(e.name)}
-                          aria-pressed={e.name === selected}
-                        >
-                          {e.name}
-                        </RollButton>
-                      ))}
-                    </VSplit>
-                  </Pane>
-                ))}
               </HSplit>
             </Pane>
-            <Pane size="var(--grid-padding)" />
+            <Pane size="var(--grid-padding)" filled/>
           </VSplit>
+
         </Pane>
+        <Pane size="8svh"/>
       </HSplit>
     </Screen>
   )

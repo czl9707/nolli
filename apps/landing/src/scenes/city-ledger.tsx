@@ -168,45 +168,54 @@ function CityLedger({ cityPane }: { cityPane: PxRect }) {
         <CityMarkers archs={archs} on={markersOn} selected={cardSlug} onSelect={setCardSlug} />
         <motion.div className={styles.splits} style={{ opacity: fade }}>
           <HSplit>
-            <Pane size="var(--size-header-height)" />
+            <Pane size="12svh" />
             <Pane className={styles.visibleOverflow}>
               <VSplit>
-                <Pane size="var(--grid-padding)" />
-                <Pane size="calc(var(--grid-col) * 4)" className={styles.visibleOverflow}>
+                <Pane size="var(--grid-padding)" filled/>
+                <Pane className={styles.visibleOverflow}>
                   <HSplit>
-                    <Pane className={`${styles.statementPane} ${styles.visibleOverflow}`}>
-                      <Statement
-                        leadCity={displayCity}
-                        listCity={selected}
-                        archs={archs}
-                        cardSlug={cardSlug}
-                        onCard={setCardSlug}
-                      />
+                    <Pane className={styles.visibleOverflow}>
+                      <VSplit>
+                        <Pane size="calc(var(--grid-col) * 4)" className={styles.visibleOverflow}>
+                          <HSplit>
+                            <Pane className={`${styles.statementPane} ${styles.visibleOverflow}`}>
+                              <Statement
+                                leadCity={displayCity}
+                                listCity={selected}
+                                archs={archs}
+                                cardSlug={cardSlug}
+                                onCard={setCardSlug}
+                              />
+                            </Pane>
+                            <CityRow
+                              cities={CITIES.slice(0, 2)}
+                              selected={selected}
+                              loaded={Object.keys(archByCities)}
+                              onSelect={onSelect}
+                            />
+                            <CityRow
+                              cities={CITIES.slice(2, 4)}
+                              selected={selected}
+                              loaded={Object.keys(archByCities)}
+                              onSelect={onSelect}
+                            />
+                            <CityRow
+                              cities={CITIES.slice(4, 6)}
+                              selected={selected}
+                              loaded={Object.keys(archByCities)}
+                              onSelect={onSelect}
+                            />
+                          </HSplit>
+                        </Pane>
+                        <Pane size="calc(var(--grid-col) * 8)">
+                          <div data-spine-shape="city" className={styles.mapPane} />
+                        </Pane>
+                      </VSplit>
                     </Pane>
-                    <CityRow
-                      cities={CITIES.slice(0, 2)}
-                      selected={selected}
-                      loaded={Object.keys(archByCities)}
-                      onSelect={onSelect}
-                    />
-                    <CityRow
-                      cities={CITIES.slice(2, 4)}
-                      selected={selected}
-                      loaded={Object.keys(archByCities)}
-                      onSelect={onSelect}
-                    />
-                    <CityRow
-                      cities={CITIES.slice(4, 6)}
-                      selected={selected}
-                      loaded={Object.keys(archByCities)}
-                      onSelect={onSelect}
-                    />
+                    <Pane size="8svh"/>
                   </HSplit>
                 </Pane>
-                <Pane size="calc(var(--grid-col) * 8)">
-                  <div data-spine-shape="city" className={styles.mapPane} />
-                </Pane>
-                <Pane size="var(--grid-padding)" />
+                <Pane size="var(--grid-padding)" filled/>
               </VSplit>
             </Pane>
           </HSplit>

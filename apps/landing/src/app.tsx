@@ -10,6 +10,8 @@ import { heroCityTransition } from "@/scenes/hero-city-transition"
 import { cityHold } from "@/scenes/city-ledger"
 import { cityArchitectTransition } from "@/scenes/city-architect-transition"
 import { architectHold } from "@/scenes/architect-ledger"
+import { architectStatsTransition } from "@/scenes/architect-stats-transition"
+import { statsHold } from "@/scenes/stats"
 import { ScrollThumb } from "@/components/scroll-thumb"
 import { SiteHeader } from "@/components/site-header"
 
@@ -53,7 +55,15 @@ function useSpineScenes(data: LandingData | null | undefined): SpineScene[] | nu
   return useMemo(
     () =>
       data
-        ? [heroHold(data), heroCityTransition(), cityHold(cityPane), cityArchitectTransition(), architectHold(data)]
+        ? [
+            heroHold(data),
+            heroCityTransition(),
+            cityHold(cityPane),
+            cityArchitectTransition(),
+            architectHold(data),
+            architectStatsTransition(),
+            statsHold(data),
+          ]
         : null,
     [data, cityPane],
   )

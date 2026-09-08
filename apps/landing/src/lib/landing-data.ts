@@ -9,11 +9,19 @@ export type ArchEntry = {
   works: ArchSummary[]
 }
 
+export type CollectionStats = {
+  buildings: number
+  architects: number
+  countries: number
+}
+
 export type LandingData = {
   /** Paris archs the hero reveal shows */
   heroArchs: ArchSummary[]
   /** Architect ledger: curated names matched to the DB, each with its works */
   architectLedger: ArchEntry[]
+  /** Collection counts for the stats scene — live from the DB */
+  stats: CollectionStats
 }
 
 /** Ledger for the architect scene — curated names in order, falling back to
@@ -57,8 +65,15 @@ export function useLandingData() {
         const hero = await dataSource.getArchBySlug(HERO_SLUG)
         if (!hero) throw new Error(`hero architecture "${HERO_SLUG}" not found`)
         const architectLedger = await loadArchitectLedger(dataSource)
+        // cities/countries tables are get-or-created per building in the
+        // seed, so distinct city country codes = countries with buildings
+        const stats: CollectionStats = {
+          buildings: await dataSource.getAllArchitectures().then((a) => a.length),
+          architects: options.architects.length,
+          countries: new Set(options.cities.map((c) => c.countryCode)).size,
+        }
         if (cancelled) return
-        setData({ heroArchs: nearestPhotos(cluster, hero.coordinates, 10), architectLedger })
+        setData({ heroArchs: nearestPhotos(cluster, hero.coordinates, 10), architectLedger, stats })
       } catch (e) {
         if (!cancelled) setErr(e as Error)
       }

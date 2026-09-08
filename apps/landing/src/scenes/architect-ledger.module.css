@@ -3,10 +3,8 @@
 
 .screen {
   position: sticky;
-  top: 10svh;
-  height: 80svh;
+  top: 0;
   box-sizing: border-box;
-  border-bottom: var(--border);
   overflow: visible;
 }
 
