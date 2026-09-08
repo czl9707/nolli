@@ -1,6 +1,7 @@
 import { useMemo, type ComponentProps } from "react"
 import { Note } from "./typography"
 import { hashId, jitter, paperClipPath, paperSurface } from "./paper"
+import pinUrl from "./assets/pin.png"
 import styles from "./paper-photo.module.css"
 
 // The shared photo card: paper surface + torn clip + seeded tilt + mat +
@@ -64,7 +65,7 @@ export function PaperPhoto({
           )}
         </div>
       </div>
-      {pin && <img className={styles.pin} src="/images/pin.png" alt="" />}
+      {pin && <img className={styles.pin} src={pinUrl} alt="" />}
     </div>
   )
 }

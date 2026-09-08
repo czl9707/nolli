@@ -2,6 +2,7 @@ import { motion } from "framer-motion"
 import type { CSSProperties } from "react"
 import { hashId, jitter } from "@nolli/ui"
 import { TRANSITION_SHORT, DELAY_START, ITEM_STAGGER } from "@nolli/ui"
+import pinUrl from "@nolli/ui/assets/pin.png"
 import styles from "./pin.module.css"
 
 type PinProps = {
@@ -19,7 +20,7 @@ export function Pin({ id, delay = 0, className, style, onClick }: PinProps) {
 
   return (
     <motion.img
-      src="/images/pin.png"
+      src={pinUrl}
       className={`${className} ${styles.pin}`}
       style={{
         transform: `translateX(-50%) rotate(${rotation}deg) scale(${scale})`,

@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./assets/pin.png": "./src/assets/pin.png",
     "./global.css": "./src/styles/global.css",
     "./input.module.css": "./src/input.module.css",
     "./composition": "./src/composition/index.ts",
