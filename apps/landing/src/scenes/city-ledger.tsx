@@ -3,24 +3,21 @@
 // into it and gate through a container flag, while the flow tree carries
 // the city dossier + 2x3 city-button grid and fades out over the hold's
 // tail.
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useTransform, type MotionValue, type Variants } from "framer-motion"
 import { Body1, Body2, H3 } from "@nolli/ui"
 import { flyToSceneCinematic } from "@nolli/map"
-import { useDbStore, type ArchSummary } from "@nolli/data"
+import type { ArchSummary } from "@nolli/data"
+import { type LandingData } from "@/lib/landing-data"
+import { CITY_LEDGER } from "@/lib/constants"
 import { useSceneScroll, useSpineMap } from "@/spine/spine"
-import type { HoldScene, PxRect } from "@/spine/timeline"
+import type { HoldScene } from "@/spine/timeline"
 import { fitCamera } from "@/lib/camera"
-import { cityIdByName, nearestPhotos } from "@/lib/shape"
 import { CityMarkers } from "@/components/city-markers"
 import { RollButton } from "@/components/roll-button"
 import { RollText } from "@/components/roll-text"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
 import styles from "./city-ledger.module.css"
-
-const CITIES = ["New York", "London", "Paris", "Tokyo", "Chicago", "Berlin"] as const
-
-const ARCHS_PER_CITY = 8
 
 /** City grid row height. */
 const CITY_ROW_H = "3.5rem"
@@ -55,51 +52,21 @@ const CITY_POOL: string[] = [
 /** Scroll vh between pre-entry roll steps. */
 const ROLL_STEP_VH = 6
 
-export const cityHold =
-  (cityPane: PxRect): HoldScene => ({
-    kind: "hold",
-    id: "city",
-    shape: "[data-spine-shape='city']",
-    heightVh: TOTLE_VH,
-    Component: () => <CityLedger cityPane={cityPane} />,
-  })
+export const cityHold = (data: LandingData): HoldScene => ({
+  kind: "hold",
+  id: "city",
+  shape: "[data-spine-shape='city']",
+  heightVh: TOTLE_VH,
+  Component: () => <CityLedger data={data} />,
+})
 
-function CityLedger({ cityPane }: { cityPane: PxRect }) {
+function CityLedger({ data }: { data: LandingData }) {
   const map = useSpineMap()
   const local = useSceneScroll()
+  const paneRef = useRef<HTMLDivElement | null>(null)
+  const archsByCity = data.cityLedger
 
-  const dataSource = useDbStore((s) => s.dataSource)
-  const [archByCities, setArchByCities] = useState<Record<string, ArchSummary[]>>(() => ({}))
-  useEffect(() => {
-    if (!dataSource) return
-    ;(async () => {
-      try {
-        const options = await dataSource.getFilterOptions()
-        const entries = await Promise.all(
-          CITIES.map(async (name) => {
-            const id = cityIdByName(options, name)
-            if (!id) throw new Error(`city "${name}" not found`)
-            return [name, await dataSource.getAllArchitectures({ cityIds: [id] })] as const
-          }),
-        )
-        setArchByCities((prev) => ({ ...prev, ...Object.fromEntries(entries) }))
-      } catch {
-        // cities that didn't load stay dim in the grid
-      }
-    })()
-  }, [dataSource])
-
-  const archsByCity = useMemo(() => {
-    const out: Record<string, ArchSummary[]> = {}
-    for (const name of CITIES) {
-      const items = archByCities[name]
-      if (!items?.length) continue
-      out[name] = nearestPhotos(items, items[0].coordinates, ARCHS_PER_CITY)
-    }
-    return out
-  }, [archByCities])
-
-  const [selected, setSelected] = useState<string>(CITIES[0])
+  const [selected, setSelected] = useState<string>(CITY_LEDGER[0])
   // the carded arch — always one once the city loads; hovering a row or
   // marker moves the card
   const [cardSlug, setCardSlug] = useState<string | null>(null)
@@ -110,15 +77,19 @@ function CityLedger({ cityPane }: { cityPane: PxRect }) {
   }, [archs])
   const displayCity = useCityDisplay(local, selected)
 
-  const cameraFor = useCallback(
-    (cityArchs: ArchSummary[]) =>
-      fitCamera(
-        cityArchs.map((p) => p.coordinates),
-        { width: cityPane.width, height: cityPane.height },
-        FIT_PADDING,
-      ),
-    [cityPane],
-  )
+  // camera fits the archs into the pane's measured px box — read at call
+  // time from the ref; every caller (entry flight, city pick) runs long
+  // after the pane has mounted
+  const cameraFor = useCallback((cityArchs: ArchSummary[]) => {
+    const pane = paneRef.current
+    if (!pane) return null
+    const { width, height } = pane.getBoundingClientRect()
+    return fitCamera(
+      cityArchs.map((p) => p.coordinates),
+      { width, height },
+      FIT_PADDING,
+    )
+  }, [])
 
   // fly in as the transition hands us the screen; hysteresis via ENTRY_REARM_VH
   // keeps a jittering scroll from refiring
@@ -136,8 +107,10 @@ function CityLedger({ cityPane }: { cityPane: PxRect }) {
 
     if (v >= 0 && v < TOTLE_VH) {
       if (flied.current || !map) return
+      const cam = cameraFor(archsRef.current)
+      if (!cam) return
       flied.current = true
-      flyToSceneCinematic(map, cameraFor(archsRef.current))
+      flyToSceneCinematic(map, cam)
     } else {
       flied.current = false
     }
@@ -148,7 +121,9 @@ function CityLedger({ cityPane }: { cityPane: PxRect }) {
       setSelected(name)
       const cityArchs = archsByCity[name]
       if (!map || !cityArchs?.length) return
-      flyToSceneCinematic(map, cameraFor(cityArchs))
+      const cam = cameraFor(cityArchs)
+      if (!cam) return
+      flyToSceneCinematic(map, cam)
     },
     [archsByCity, map, cameraFor],
   )
@@ -188,27 +163,27 @@ function CityLedger({ cityPane }: { cityPane: PxRect }) {
                               />
                             </Pane>
                             <CityRow
-                              cities={CITIES.slice(0, 2)}
+                              cities={CITY_LEDGER.slice(0, 2)}
                               selected={selected}
-                              loaded={Object.keys(archByCities)}
+                              loaded={Object.keys(archsByCity)}
                               onSelect={onSelect}
                             />
                             <CityRow
-                              cities={CITIES.slice(2, 4)}
+                              cities={CITY_LEDGER.slice(2, 4)}
                               selected={selected}
-                              loaded={Object.keys(archByCities)}
+                              loaded={Object.keys(archsByCity)}
                               onSelect={onSelect}
                             />
                             <CityRow
-                              cities={CITIES.slice(4, 6)}
+                              cities={CITY_LEDGER.slice(4, 6)}
                               selected={selected}
-                              loaded={Object.keys(archByCities)}
+                              loaded={Object.keys(archsByCity)}
                               onSelect={onSelect}
                             />
                           </HSplit>
                         </Pane>
                         <Pane size="calc(var(--grid-col) * 8)">
-                          <div data-spine-shape="city" className={styles.mapPane} />
+                          <div ref={paneRef} data-spine-shape="city" className={styles.mapPane} />
                         </Pane>
                       </VSplit>
                     </Pane>
