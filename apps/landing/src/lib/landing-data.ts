@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useDbStore, type ArchSummary, type DataSource } from "@nolli/data"
-import { ARCHITECT_LEDGER, CLUSTER_CITY, HERO_SLUG } from "./constants"
+import { ARCHITECT_LEDGER, CLUSTER_CITY, HERO_SLUG, STATS_DECK_SLUGS } from "./constants"
 import { cityIdByName, nearestPhotos } from "./shape"
 
 export type ArchEntry = {
@@ -13,6 +13,8 @@ export type CollectionStats = {
   buildings: number
   architects: number
   countries: number
+  /** Curated photo deck for the scene (STATS_DECK_SLUGS) */
+  worldArchs: ArchSummary[]
 }
 
 export type LandingData = {
@@ -20,7 +22,7 @@ export type LandingData = {
   heroArchs: ArchSummary[]
   /** Architect ledger: curated names matched to the DB, each with its works */
   architectLedger: ArchEntry[]
-  /** Collection counts for the stats scene — live from the DB */
+  /** Collection counts + photo deck for the stats scene — live from the DB */
   stats: CollectionStats
 }
 
@@ -65,12 +67,14 @@ export function useLandingData() {
         const hero = await dataSource.getArchBySlug(HERO_SLUG)
         if (!hero) throw new Error(`hero architecture "${HERO_SLUG}" not found`)
         const architectLedger = await loadArchitectLedger(dataSource)
+        const all = await dataSource.getAllArchitectures()
         // cities/countries tables are get-or-created per building in the
         // seed, so distinct city country codes = countries with buildings
         const stats: CollectionStats = {
-          buildings: await dataSource.getAllArchitectures().then((a) => a.length),
+          buildings: all.length,
           architects: options.architects.length,
           countries: new Set(options.cities.map((c) => c.countryCode)).size,
+          worldArchs: await dataSource.getArchSummariesBySlugs(STATS_DECK_SLUGS),
         }
         if (cancelled) return
         setData({ heroArchs: nearestPhotos(cluster, hero.coordinates, 10), architectLedger, stats })

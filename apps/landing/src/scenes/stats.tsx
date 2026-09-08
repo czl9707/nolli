@@ -4,11 +4,11 @@
 // fan at its foot); architects, countries and the where-you-are count
 // stand in a row beneath — badge marquees under the first two, the map
 // CTA closing the last.
-import { useEffect, useRef } from "react"
-import { motion, useInView, useMotionValue, useMotionValueEvent, useReducedMotion, useSpring, useTransform } from "framer-motion"
+import { useEffect, useRef, useState } from "react"
+import { motion, useInView, useMotionValue, useMotionValueEvent, useReducedMotion, useSpring, useTransform, type Transition } from "framer-motion"
 import { Badge, Body1, Caption, H2, H4, H6, Note, PaperPhoto } from "@nolli/ui"
 import type { ArchSummary } from "@nolli/data"
-import type { SceneCamera } from "@nolli/map"
+import { flyToSceneCinematic, type SceneCamera } from "@nolli/map"
 import { useSceneScroll, useSpineMap } from "@/spine/spine"
 import { useLinger } from "@/lib/use-linger"
 import { APP_URL } from "@/lib/constants"
@@ -42,7 +42,7 @@ export const statsHold = (data: LandingData): HoldScene => ({
   Component: () => (
     <StatsScene
       stats={data.stats}
-      photoPool={data.heroArchs}
+      photoPool={data.stats.worldArchs}
       architectNames={data.architectLedger.map((e) => e.name)}
     />
   ),
@@ -64,7 +64,7 @@ function StatsScene({ stats, photoPool, architectNames }: {
             <Pane>
               <HSplit>
                 <Pane>
-                  {/* <CameraGuard /> */}
+                  <CameraHold />
                   <HSplit>
                     <Pane className={`${styles.statementPane} ${styles.cell}`}>
                       <H2>
@@ -96,10 +96,12 @@ function StatsScene({ stats, photoPool, architectNames }: {
                           <BadgeRows items={COUNTRY_BADGES} />
                         </Pane>
                         <Pane size={`calc(var(--grid-col) * 4)`} className={styles.cell}>
-                          <NumberBlock
-                            value={WHERE.count} label="There are" delay={0.45} size="m"
-                            sub={`in ${WHERE.country} !`}
-                          />
+                          <WhereCta>
+                            <NumberBlock
+                              value={WHERE.count} label="There are" delay={0.45} size="m"
+                              sub={`in ${WHERE.country} !`}
+                            />
+                          </WhereCta>
                         </Pane>
                       </VSplit>
                     </Pane>
@@ -222,18 +224,64 @@ function BadgeRows({ items }: { items: string[] }) {
   )
 }
 
-/** Keeps the camera at the world view across the shape morph — the resize
- * can nudge the view, so verify on every scroll tick while in-scene and
- * snap back if off. */
-function CameraGuard() {
+/** Camera parks on the world view for the hold — entry flight once when
+ * scroll hands the scene the screen (architect-ledger pattern), then a
+ * moveend verify-and-snap: the map layer may still be settling out of
+ * the shape morph, which mis-lands the flight. */
+function CameraHold() {
   const map = useSpineMap()
   const local = useSceneScroll(SCENE_ID)
-  useMotionValueEvent(local, "change", () => {
+  const flied = useRef(false)
+  useMotionValueEvent(local, "change", (v) => {
     if (!map) return
-    const c = map.getCenter()
-    if (Math.abs(c.lng - WORLD.center[0]) > 1 || Math.abs(map.getZoom() - WORLD.zoom) > 0.05) {
-      map.jumpTo({ center: WORLD.center, zoom: WORLD.zoom })
+    if (v >= 0 && v < SCENE_VH) {
+      if (flied.current) return
+      flied.current = true
+      flyToSceneCinematic(map, WORLD)
+      map.once("moveend", () => {
+        const c = map.getCenter()
+        if (Math.abs(c.lng - WORLD.center[0]) > 1 || Math.abs(map.getZoom() - WORLD.zoom) > 0.05) {
+          map.jumpTo({ center: WORLD.center, zoom: WORLD.zoom })
+        }
+      })
+    } else {
+      flied.current = false
     }
   })
   return null
+}
+
+/** The where-you-are cell is the CTA — the whole pane, hero-CTA pattern.
+ * Hover/focus anywhere in the cell rolls it: the resting face (count
+ * block + underscored hint label) slides out the top, the armed face
+ * (accent ground, arrow) rolls up from below. The hint is inert text —
+ * the pane is the link. Faces stay mounted so the count-up never
+ * re-runs. */
+function WhereCta({ children }: { children: React.ReactNode }) {
+  const [armed, setArmed] = useState(false)
+  const reduced = useReducedMotion()
+  const roll: Transition = reduced ? { duration: 0 } : { duration: 0.45, ease: [0.22, 1, 0.36, 1] }
+  return (
+    <a
+      className={styles.whereCta}
+      href={APP_URL}
+      onMouseEnter={() => setArmed(true)}
+      onMouseLeave={() => setArmed(false)}
+      onFocus={() => setArmed(true)}
+      onBlur={() => setArmed(false)}
+    >
+      <motion.div className={styles.whereFace} animate={{ y: armed ? "-100%" : 0 }} transition={roll}>
+        {children}
+        <span className={styles.whereHint}>Open the map <span aria-hidden>→</span></span>
+      </motion.div>
+      <motion.div
+        className={`${styles.whereFace} ${styles.whereArmed}`}
+        initial={false}
+        animate={{ y: armed ? 0 : "100%" }}
+        transition={roll}
+      >
+        <H4>Open the map <span aria-hidden>→</span></H4>
+      </motion.div>
+    </a>
+  )
 }

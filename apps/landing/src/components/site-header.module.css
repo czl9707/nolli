@@ -7,7 +7,7 @@
   inset: 0 0 auto 0;
   pointer-events: none;
   color: rgb(var(--color-primary-foreground));
-  background: rgb(var(--color-primary-background) / 0.45);
+  background: rgb(var(--color-primary-background) / 0.75);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-bottom: var(--border);

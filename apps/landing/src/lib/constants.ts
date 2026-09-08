@@ -12,6 +12,16 @@ export const ARCHITECT_LEDGER = [
   "Louis Kahn", "Le Corbusier",  "Frank Gehry", "Oscar Niemeyer", "SANAA", "Zaha Hadid", "Norman Foster", "Peter Zumthor",
 ]
 
+/** Curated photo deck for the stats scene — canonical modern landmarks,
+ *  one per master. */
+export const STATS_DECK_SLUGS = [
+  "farnsworth-house",
+  "notre-dame-du-haut",
+  "salk-institute",
+  "guggenheim-museum",
+  "bauhaus-dessau",
+]
+
 export const WORLD_CAMERA: SceneCamera = { center: [10, 25], zoom: 1.5 }
 // Hero dwells on the cluster city itself — the cursor plate reveals the
 // photo pins there (bare map outside the plate)
