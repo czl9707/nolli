@@ -16,12 +16,21 @@ export type ReelConfig = {
   buildings: ReelBuilding[];
 };
 
-/** The reel's year range, from its (already chronologically sorted) buildings. */
+/** Depends on buildings being chronologically sorted (buildReelConfig sorts). */
 export const yearRange = (cfg: ReelConfig): string => {
   const years = cfg.buildings.map((b) => b.year);
   return `${Math.min(...years)}–${Math.max(...years)}`;
 };
 
-/** The reel's corner title — pure templates over ReelConfig so the seed
- *  needs no per-architect config fields. */
-export const reelTitle = (cfg: ReelConfig): string => cfg.architect;
+export const titleLead = "Architectures by";
+export const hookLead = "Architecture by";
+export const mapTail = "On a Map";
+
+/** Staged hero image URL for a building (written by scripts/assets.ts). */
+export const heroImagePath = (slug: string, buildingSlug: string): string =>
+  `data/${slug}/images/${buildingSlug}-hero.jpg`;
+
+export const reelTitleLines = (cfg: ReelConfig): [string, string] => [
+  `${titleLead} ${cfg.architect},`,
+  mapTail,
+];

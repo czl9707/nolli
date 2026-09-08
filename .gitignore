@@ -64,5 +64,6 @@ apps/nolli/scripts/_schema.mjs
 # playwright mcp artifacts
 .playwright-mcp
 .claude/skills/remotion-*
-.agents/skills/remotion-*
+.agents/*
 .superpowers
+skills-lock.json

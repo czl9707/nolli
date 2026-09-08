@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": false,
+    "rootDir": ".",
+    "baseUrl": ".",
+    "paths": {}
+  },
+  "include": [
+    "src",
+    "scripts",
+    "test",
+    "remotion.config.ts"
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "name": "demo-gen",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "seed": "tsx scripts/seed/seed.ts",
+    "assets": "tsx scripts/assets/assets.ts",
+    "assets:images": "tsx scripts/assets/assets-images.ts",
+    "assets:demo": "tsx scripts/assets/assets-demo.ts",
+    "assemble": "tsx scripts/assemble/assemble.ts",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@nolli/remotion": "workspace:*",
+    "@nolli/ui": "workspace:*",
+    "@remotion/bundler": "4",
+    "@remotion/cli": "4",
+    "@remotion/renderer": "4",
+    "ghost-cursor": "^1.4.2",
+    "playwright": "^1.40.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "remotion": "4"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.14",
+    "tsx": "^4.23.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.10"
+  }
+}

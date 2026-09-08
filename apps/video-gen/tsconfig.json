@@ -2,14 +2,32 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "types": ["node", "vitest/globals"],
+    "types": [
+      "node",
+      "vitest/globals"
+    ],
     "paths": {
-      "@/*": ["src/*"],
-      "@nolli/data": ["../../packages/data/src/index.ts"],
-      "@nolli/map": ["../../packages/map/src/index.ts"],
-      "@nolli/ui": ["../../packages/ui/src/index.ts"]
+      "@/*": [
+        "src/*"
+      ],
+      "@nolli/data": [
+        "../../packages/data/src/index.ts"
+      ],
+      "@nolli/map": [
+        "../../packages/map/src/index.ts"
+      ],
+      "@nolli/ui": [
+        "../../packages/ui/src/index.ts"
+      ]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "scripts/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "scripts/**/*.ts",
+    "remotion.config.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

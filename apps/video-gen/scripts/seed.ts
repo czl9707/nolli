@@ -1,14 +1,32 @@
 import { mkdirSync, writeFileSync } from "node:fs";
-import { ensureDb, resolveArchitectName, queryArchitectBuildings, queryAllArchPins } from "./db";
+import {
+  ensureDb,
+  resolveArchitectName,
+  queryArchitectBuildings,
+  queryAllArchPins,
+  type ArchRow,
+} from "@nolli/remotion/db";
+import type { ReelBuilding } from "../src/lib/config";
 import { buildReelConfig } from "./config-builder";
-import { runCli } from "./runCli";
+import { runCli } from "@nolli/remotion/cli";
 import { outDir, reelConfigPath, allArchPath } from "./paths";
 import { reelConfigExists } from "./staging";
+
+// Raw DB columns → the reel's building shape.
+const toReelBuilding = (r: ArchRow): ReelBuilding => ({
+  slug: r.slug,
+  name: r.name,
+  year: r.year,
+  city: r.city ?? "—",
+  countryCode: r.cc ?? "",
+  coordinates: { lng: r.lng, lat: r.lat },
+  coverImage: r.cover ?? "",
+});
 
 runCli("seed", async (slug, { fresh }) => {
   const dbPath = await ensureDb(fresh);
   const architect = resolveArchitectName(dbPath, slug);
-  const buildings = queryArchitectBuildings(dbPath, architect);
+  const buildings = queryArchitectBuildings(dbPath, architect).map(toReelBuilding);
   mkdirSync(outDir(slug), { recursive: true });
 
   const allPath = allArchPath();

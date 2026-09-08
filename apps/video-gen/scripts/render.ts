@@ -2,12 +2,8 @@ import { bundle } from "@remotion/bundler";
 import { renderMedia, selectComposition } from "@remotion/renderer";
 import { existsSync, mkdirSync, copyFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { runCli } from "./runCli";
+import { runCli, browserExecutable } from "@nolli/remotion/cli";
 import { outDir, dataDir, dataAllArchPath, allArchPath, reelConfigPath } from "./paths";
-
-const BROWSER =
-  process.env.REMOTION_BROWSER_EXECUTABLE ??
-  ["/usr/bin/google-chrome", "/usr/bin/chromium", "/usr/bin/chromium-browser"].find((p) => existsSync(p));
 
 function stageAssets(slug: string): void {
   const data = dataDir(slug);
@@ -24,7 +20,7 @@ function stageAssets(slug: string): void {
 }
 
 runCli("render", async (slug) => {
-  if (!BROWSER) throw new Error("No system Chrome/Chromium found. Set REMOTION_BROWSER_EXECUTABLE.");
+  const BROWSER = browserExecutable();
 
   stageAssets(slug);
 
@@ -37,9 +33,10 @@ runCli("render", async (slug) => {
 
   const maxFrames = process.env.REEL_MAX_FRAMES ? Number(process.env.REEL_MAX_FRAMES) : comp.durationInFrames;
   const composition = { ...comp, durationInFrames: Math.min(maxFrames, comp.durationInFrames) };
-  // Lower concurrency eases per-frame tile pressure on the vector tile source
-  // (a dropped tile leaves a blank hole in that frame).
-  const concurrency = process.env.REEL_CONCURRENCY ? Number(process.env.REEL_CONCURRENCY) : undefined;
+  // Each worker is a separate tab with its own MapLibre instance; with several,
+  // some tabs get captured mid-settle — visible as label blink after landings.
+  // Default 1 worker for deterministic output; raise via REEL_CONCURRENCY.
+  const concurrency = process.env.REEL_CONCURRENCY ? Number(process.env.REEL_CONCURRENCY) : 1;
 
   const outPathDir = outDir(slug);
   mkdirSync(outPathDir, { recursive: true });
@@ -50,6 +47,8 @@ runCli("render", async (slug) => {
     composition,
     serveUrl,
     codec: "h264",
+    // Size lever: 20 lands a 28s reel around ~70MB (default CRF ~18 → ~100MB).
+    crf: process.env.REEL_CRF ? Number(process.env.REEL_CRF) : 20,
     outputLocation: outPath,
     concurrency,
     chromiumOptions: { gl: "angle" },

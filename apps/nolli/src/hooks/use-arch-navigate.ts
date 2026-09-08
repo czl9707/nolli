@@ -5,7 +5,8 @@ import { useArchDetailStore } from "@/stores/arch-detail"
 export type NavMode = "push" | "replace"
 
 /**
- * Selects an arch and navigates to `/arch/:slug` in one step.
+ * Selects an arch and navigates to `/arch/:slug` in one step. The current
+ * query string is carried over (e.g. `?capture=1` under demo-gen capture).
  *
  * `mode` is the caller's intent:
  * - "push" always grows the back stack. Used by suggestion hops so Back
@@ -27,7 +28,9 @@ export function useArchNavigate() {
       const onDetail = window.location.pathname.startsWith("/arch/")
       void select(slug, shouldFlyTo).then((loaded) => {
         if (loaded) {
-          navigate(`/arch/${slug}`, { replace: mode === "replace" && onDetail })
+          navigate(`/arch/${slug}${window.location.search}`, {
+            replace: mode === "replace" && onDetail,
+          })
         }
       })
     },

@@ -1,4 +1,4 @@
-import { secToFrames, SLOT_FRAMES, CTA_S, WALK_START } from "./timeline";
+import { secToFrames, SLOT_FRAMES, CTA_S, HOOK_FRAMES } from "./timeline";
 import type { MapViewport } from "./viewport";
 import type { ReelBuilding } from "./config";
 
@@ -28,13 +28,9 @@ const FLY_FRAMES = Math.round(FLY_FRAC * SLOT_FRAMES);
 const HOLD_FRAMES = SLOT_FRAMES - FLY_FRAMES;
 const CTA_FRAMES = secToFrames(CTA_S);
 
-/**
- * Build the flat camera-segment chain:
- *   Hold(world) → Flight(world→b0) → Hold(b0) → Flight(b0→b1) → … → Hold(bN)
- * Contiguity is by REFERENCE: each Flight's `from` is the same object as the
- * preceding Hold's `at`, and each Hold's `at` is the same object as the
- * preceding Flight's `to`. The last Hold(bN) extends across the CTA beat.
- */
+/** Build Hold(world) → Flight→Hold per building. Contiguity is by REFERENCE:
+ *  each Flight's `from` is the preceding Hold's `at` object, and vice versa.
+ *  The last Hold extends across the CTA beat. */
 export function buildCameraSegments(
   buildings: ReelBuilding[],
   worldVP: MapViewport,
@@ -42,7 +38,7 @@ export function buildCameraSegments(
 ): Segment[] {
   const segs: Segment[] = [];
 
-  segs.push({ kind: "hold", at: worldVP, durationInFrames: WALK_START });
+  segs.push({ kind: "hold", at: worldVP, durationInFrames: HOOK_FRAMES });
 
   for (let i = 0; i < buildings.length; i++) {
     const b = buildings[i];

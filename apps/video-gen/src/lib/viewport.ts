@@ -5,18 +5,14 @@ export type MapViewport = { center: [number, number]; zoom: number };
 /** Cruise zoom held on each building; the composition's `maxZoom` clamps to this. */
 export const BUILDING_ZOOM = 15;
 
-/** Fixed opener framing: the whole-globe world view held across the HOOK beat
- *  (and the origin the first flight flies out of). The reel centers on a static
- *  world map, not the architect's building centroid. */
+/** The reel opens on the whole-globe world view, not the architect's centroid. */
 export const WORLD_VP: MapViewport = { center: [0, 0], zoom: 1 };
 
 export function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t;
 }
-// Clamp the flight arc so it never zooms out past this (maplibre's `minZoom`).
-// Kept at 6 (not lower) to limit how many remote vector tiles each hop sweeps —
-// at z4 a long hop pulls a continental tile set every frame and trips the tile
-// source's rate limit, stalling the render.
+// Kept at 6 (not lower): at z4 a long hop pulls a continental tile set every
+// frame and trips the tile source's rate limit, stalling the render.
 const FLIGHT_MIN_ZOOM = 6;
 // maplibre defaults: ρ (curve) and the larger render dimension of the map panel.
 const FLIGHT_CURVE = 1.42;
@@ -35,7 +31,6 @@ function toRad(d: number): number {
   return (d * Math.PI) / 180;
 }
 
-/** Great-circle distance between two lng/lat points, in km. */
 export function haversine(
   a: { lng: number; lat: number },
   b: { lng: number; lat: number },
@@ -49,8 +44,8 @@ export function haversine(
   return 2 * R * Math.asin(Math.sqrt(s));
 }
 
-// maplibre's default flyTo easing = CSS `ease` (cubic-bezier(0.25, 0.1, 0.25, 1)).
-// Remotion's Easing.bezier implements the same unit-bezier solve.
+// maplibre's default flyTo easing = CSS `ease`; Remotion's Easing.bezier
+// implements the same unit-bezier solve.
 export const FLIGHT_EASE = Easing.bezier(0.25, 0.1, 0.25, 1);
 
 /** Project lng/lat to CSS pixels at the given world size (Web Mercator). */
@@ -65,14 +60,9 @@ const sinh = Math.sinh;
 const cosh = Math.cosh;
 const tanh = Math.tanh;
 
-/**
- * maplibre's flyTo flight path (Van Wijk et al. 2003), ported from
- * maplibre-gl's camera.ts. Given start/end center+zoom and an eased progress
- * `t` in [0,1], returns the interpolated {center, zoom} along the arc.
- *
- * The zoom-out depth is determined NATURALLY by the path length (so it's
- * distance-aware without a hand-tuned floor) and clamped by `minZoom`.
- */
+/** maplibre's flyTo flight path (Van Wijk et al. 2003), ported from
+ *  maplibre-gl's camera.ts. The zoom-out depth falls out of the path length
+ *  (distance-aware, no hand-tuned floor) and is clamped by `minZoom`. */
 export function flightPath(opts: {
   from: { lng: number; lat: number };
   to: { lng: number; lat: number };
@@ -113,7 +103,6 @@ export function flightPath(opts: {
   let uAt = (s: number) =>
     u1 > 0 ? (w0 * (cosh(r0) * tanh(r0 + rho * s) - sinh(r0))) / (rho2 * u1) : 0;
 
-  // Degenerate / short-path fallback (no horizontal motion).
   if (Math.abs(u1) < 0.000002 || !isFinite(S)) {
     const k = w1 < w0 ? -1 : 1;
     S = Math.abs(Math.log(w1 / w0)) / rho;
