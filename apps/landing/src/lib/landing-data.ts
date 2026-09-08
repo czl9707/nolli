@@ -13,6 +13,8 @@ export type CollectionStats = {
   buildings: number
   architects: number
   countries: number
+  /** Architecture count per ISO-2 country code — powers the where-you-are card */
+  countryArchCounts: Record<string, number>
   /** Curated photo deck for the scene (STATS_DECK_SLUGS) */
   worldArchs: ArchSummary[]
 }
@@ -74,6 +76,9 @@ export function useLandingData() {
           buildings: all.length,
           architects: options.architects.length,
           countries: new Set(options.cities.map((c) => c.countryCode)).size,
+          countryArchCounts: Object.fromEntries(
+            (await dataSource.getCountryArchCounts()).map((c) => [c.code, c.count]),
+          ),
           worldArchs: await dataSource.getArchSummariesBySlugs(STATS_DECK_SLUGS),
         }
         if (cancelled) return

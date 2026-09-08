@@ -13,10 +13,13 @@ export type FilterOptions = {
   countries: readonly { code: string; name: string }[]
 }
 
+export type CountryArchCount = { code: string; count: number }
+
 export interface DataSource {
   getAllArchitectures(filter?: ArchFilter): Promise<ArchSummary[]>
   getArchBySlug(slug: string): Promise<Arch | null>
   getArchSummariesByIds(ids: number[]): Promise<ArchSummary[]>
   getArchSummariesBySlugs(slugs: string[]): Promise<ArchSummary[]>
   getFilterOptions(): Promise<FilterOptions>
+  getCountryArchCounts(): Promise<CountryArchCount[]>
 }

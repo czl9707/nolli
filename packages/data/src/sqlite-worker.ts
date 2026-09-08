@@ -1,9 +1,10 @@
 import sqlite3InitModule from "@sqlite.org/sqlite-wasm"
 import type { Database, Sqlite3Static, BindingSpec, BindableValue } from "@sqlite.org/sqlite-wasm"
 import type { WorkerInbound, WorkerResponse } from "./worker-protocol.type"
-import type { ArchFilter, FilterOptions } from "./data-source.type"
+import type { ArchFilter, FilterOptions, CountryArchCount } from "./data-source.type"
 import type { Arch, ArchLinks, ArchPhoto, ArchSummary } from "./architectures.type"
 import {
+  SQL_COUNTRY_ARCH_COUNTS,
   SQL_GET_ALL_ARCHITECTURES,
   SQL_GET_ARCHITECTS,
   SQL_GET_ARCHITECTURE_ID_BY_SLUG,
@@ -329,6 +330,13 @@ function handleGetArchSummariesBySlugs(slugs: string[]): ArchSummary[] {
   return query(sql, slugs).map(mapSummaryRow)
 }
 
+function handleGetCountryArchCounts(): CountryArchCount[] {
+  return query(SQL_COUNTRY_ARCH_COUNTS).map((r) => ({
+    code: r.code as string,
+    count: r.count as number,
+  }))
+}
+
 function handleGetFilterOptions(): FilterOptions {
   const architects = query(SQL_GET_ARCHITECTS).map((r) => ({
     id: r.id as number,
@@ -368,6 +376,9 @@ self.onmessage = async (e: MessageEvent<WorkerInbound>) => {
         break
       case "getFilterOptions":
         post({ type: "getFilterOptions", msgId, data: handleGetFilterOptions() })
+        break
+      case "getCountryArchCounts":
+        post({ type: "getCountryArchCounts", msgId, data: handleGetCountryArchCounts() })
         break
     }
   } catch (err) {

@@ -83,6 +83,14 @@ export const SQL_GET_COUNTRIES = `
 SELECT code, name FROM countries ORDER BY name
 `
 
+export const SQL_COUNTRY_ARCH_COUNTS = `
+SELECT c.code, COUNT(*) AS count
+FROM architectures a
+JOIN cities ci ON a.city_id = ci.id
+JOIN countries c ON ci.country_id = c.id
+GROUP BY c.code
+`
+
 export const SQL_GET_ARCHITECTURE_ID_BY_SLUG = `
 SELECT id FROM architectures WHERE slug = ?
 `

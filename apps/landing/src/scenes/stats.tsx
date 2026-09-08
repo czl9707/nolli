@@ -6,12 +6,12 @@
 // CTA closing the last.
 import { useEffect, useRef, useState } from "react"
 import { motion, useInView, useMotionValue, useMotionValueEvent, useReducedMotion, useSpring, useTransform, type Transition } from "framer-motion"
-import { Badge, Body1, Caption, H2, H4, H6, Note, PaperPhoto } from "@nolli/ui"
+import { Badge, H2, H4, H6, PaperPhoto, TRANSITION_SHORT } from "@nolli/ui"
 import type { ArchSummary } from "@nolli/data"
 import { flyToSceneCinematic, type SceneCamera } from "@nolli/map"
 import { useSceneScroll, useSpineMap } from "@/spine/spine"
-import { useLinger } from "@/lib/use-linger"
-import { APP_URL } from "@/lib/constants"
+import { APP_URL, ROLL_EASE } from "@/lib/constants"
+import { countryName, useWhereami } from "@/lib/whereami"
 import type { HoldScene } from "@/spine/timeline"
 import type { CollectionStats, LandingData } from "@/lib/landing-data"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
@@ -20,12 +20,12 @@ import styles from "./stats.module.css"
 const SCENE_ID = "stats"
 const SCENE_VH = 160
 
+// landing tail for the count-ups' completion rules
+const SETTLE_DURATION = 1.4
+const SETTLE_EASE: [number, number, number, number] = [0.16, 1, 0.3, 1]
+
 // same world view the architect hold parks on — this scene only verifies it
 const WORLD: SceneCamera = { center: [12, 25], zoom: 1.05 }
-
-// where-you-are card — country + count land from a worker /whereami route
-// (Cloudflare request.cf.country + a count from the DB); placeholders until
-const WHERE = { country: "France", count: 12 }
 
 // country badge list — real ISO codes + Intl.DisplayNames once the cities
 // data flows in; placeholder set until
@@ -97,10 +97,7 @@ function StatsScene({ stats, photoPool, architectNames }: {
                         </Pane>
                         <Pane size={`calc(var(--grid-col) * 4)`} className={styles.cell}>
                           <WhereCta>
-                            <NumberBlock
-                              value={WHERE.count} label="There are" delay={0.45} size="m"
-                              sub={`in ${WHERE.country} !`}
-                            />
+                            <WhereBlock stats={stats} />
                           </WhereCta>
                         </Pane>
                       </VSplit>
@@ -119,6 +116,24 @@ function StatsScene({ stats, photoPool, architectNames }: {
 }
 
 /* ── pieces ───────────────────────────────────────────────────────────── */
+
+/** The where-you-are number — visitor's country from /api/whereami, count
+ *  from the same DB snapshot as the neighboring numbers. Unknown country
+ *  (or zero works) falls back to the worldwide total. CountUp re-targets
+ *  when the geo lands, rolling between the two. */
+function WhereBlock({ stats }: { stats: CollectionStats }) {
+  const code = useWhereami()
+  const count = code ? stats.countryArchCounts[code] : undefined
+  return (
+    <NumberBlock
+      value={count ?? stats.buildings}
+      label="There are"
+      delay={0.45}
+      size="m"
+      sub={count ? `in ${countryName(code!)} !` : "Worldwide !"}
+    />
+  )
+}
 
 /** Time-based count-up when scrolled into view — spring physics (no fixed
  *  duration, natural settle), text rendered via useTransform so ticks don't
@@ -148,7 +163,7 @@ function CountUp({ to, delay = 0, className }: {
 
 /** Hairline that lands when the count-up lands — own in-view trigger, kept
  *  in lockstep via the shared delay. */
-function CompletionRule({ delay = 0, duration = 1.4 }: { delay?: number; duration?: number }) {
+function CompletionRule({ delay = 0, duration = SETTLE_DURATION }: { delay?: number; duration?: number }) {
   const ref = useRef<HTMLDivElement>(null)
   const on = useInView(ref, { once: true })
   const reduce = useReducedMotion()
@@ -158,7 +173,7 @@ function CompletionRule({ delay = 0, duration = 1.4 }: { delay?: number; duratio
       className={styles.rule}
       initial={false}
       animate={on ? { scaleX: 1 } : { scaleX: 0 }}
-      transition={reduce ? { duration: 0 } : { duration, delay, ease: [0.16, 1, 0.3, 1] }}
+      transition={reduce ? { duration: 0 } : { duration, delay, ease: SETTLE_EASE }}
     />
   )
 }
@@ -260,7 +275,7 @@ function CameraHold() {
 function WhereCta({ children }: { children: React.ReactNode }) {
   const [armed, setArmed] = useState(false)
   const reduced = useReducedMotion()
-  const roll: Transition = reduced ? { duration: 0 } : { duration: 0.45, ease: [0.22, 1, 0.36, 1] }
+  const roll: Transition = reduced ? { duration: 0 } : { duration: TRANSITION_SHORT, ease: ROLL_EASE }
   return (
     <a
       className={styles.whereCta}
