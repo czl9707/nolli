@@ -22,6 +22,9 @@ export const STATS_DECK_SLUGS = [
   "bauhaus-dessau",
 ]
 
+/** Cell roll easing — CSS mirror --ease-roll in styles/global.css */
+export const ROLL_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1]
+
 export const WORLD_CAMERA: SceneCamera = { center: [10, 25], zoom: 1.5 }
 // Hero dwells on the cluster city itself — the cursor plate reveals the
 // photo pins there (bare map outside the plate)

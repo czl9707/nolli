@@ -6,6 +6,8 @@
 // children.
 import { type ComponentPropsWithoutRef } from "react"
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion"
+import { TRANSITION_SHORT } from "@nolli/ui"
+import { ROLL_EASE } from "@/lib/constants"
 import { Pane } from "@/scenes/grid"
 import styles from "./roll-button.module.css"
 
@@ -54,7 +56,7 @@ export function RollButton({
             initial={reduced ? false : { y: "100%" }}
             animate={{ y: 0 }}
             exit={reduced ? undefined : { y: "-100%" }}
-            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: TRANSITION_SHORT, ease: ROLL_EASE }}
           >
             {children}
           </motion.span>

@@ -7,6 +7,9 @@ body {
 
   --color-hero-foreground: 227 182 77;
   --color-hero-background: 23 23 23;
+
+  /* cell roll easing — JS mirror ROLL_EASE in lib/constants */
+  --ease-roll: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 body[data-theme="dark"] {

@@ -119,7 +119,7 @@
 .ctaText {
   display: flex;
   align-items: center;
-  transition: transform 0.15s ease;
+  transition: transform var(--transition-instant) ease;
 }
 
 /* ── arch list (top cell of the right column) ─────────────────────────── */

@@ -12,7 +12,8 @@
 import { useEffect, useRef, useState } from "react"
 import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, type MotionValue } from "framer-motion"
 import { ArrowUpRight } from "lucide-react"
-import { Body2, H1, H3, useIsMobile } from "@nolli/ui"
+import { Body2, H1, H3, TRANSITION_SHORT, useIsMobile } from "@nolli/ui"
+import { ROLL_EASE } from "@/lib/constants"
 import type { MapRef } from "@nolli/map"
 import type { ArchSummary } from "@nolli/data"
 import type { SceneCamera } from "@nolli/map"
@@ -268,8 +269,8 @@ function CtaPane({ sx, sy }: { sx: MotionValue<number>; sy: MotionValue<number> 
           exit={reduced ? undefined : { y: "-100%" }}
           transition={
             booted.current
-              ? { duration: 0.45, ease: [0.22, 1, 0.36, 1] }
-              : { duration: 0.5, delay: 0.85, ease: "easeOut" }
+              ? { duration: TRANSITION_SHORT, ease: ROLL_EASE }
+              : { duration: TRANSITION_SHORT, delay: 0.85, ease: "easeOut" }
           }
         >
           <H3 className={styles.ctaText}>

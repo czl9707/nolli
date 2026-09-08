@@ -22,7 +22,7 @@
   opacity: 0;
   pointer-events: none;
   background: rgb(var(--color-primary-background) / 0.92);
-  transition: opacity 0.4s ease;
+  transition: opacity var(--transition-short) ease;
 }
 
 /* statement on the veil */

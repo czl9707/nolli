@@ -19,13 +19,13 @@
 }
 
 .face[data-roll="in"] {
-  animation: rollIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: rollIn var(--transition-short) var(--ease-roll) both;
 }
 
 .face[data-roll="out"] {
   position: absolute;
   inset: 0;
-  animation: rollOut 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: rollOut var(--transition-short) var(--ease-roll) both;
 }
 
 @keyframes rollIn {

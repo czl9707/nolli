@@ -6,7 +6,8 @@
 import { createPortal } from "react-dom"
 import { motion } from "framer-motion"
 import { MapContext, MapMarker, MarkerContent } from "@nolli/map"
-import { PaperPhoto, hashId, jitter } from "@nolli/ui"
+import { PaperPhoto, TRANSITION_SHORT, hashId, jitter } from "@nolli/ui"
+import { ROLL_EASE } from "@/lib/constants"
 import type { ArchSummary } from "@nolli/data"
 import { useMapPortal, useSpineMap } from "@/spine/spine"
 import { useLinger } from "@/lib/use-linger"
@@ -74,7 +75,7 @@ function ArchImageMarker({
             scale: selected ? 1.08 : 1,
             filter: selected ? "grayscale(0) brightness(1)" : "grayscale(0.7) brightness(0.5)",
           }}
-          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: TRANSITION_SHORT, ease: ROLL_EASE }}
         >
           <PaperPhoto
             src={work.cover.image}

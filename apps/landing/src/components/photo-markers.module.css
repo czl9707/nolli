@@ -8,7 +8,7 @@
 
 .photoMarker {
   opacity: 0;
-  transition: opacity 0.4s ease;
+  transition: opacity var(--transition-short) ease;
   /* re-enable per marker: LandingMap's wrapper stands the whole map down
      (no drag), but hover needs live markers */
   pointer-events: auto;
