@@ -5,6 +5,7 @@ import { join } from "path"
 import type { Plugin } from "vite"
 
 import { cloudflare } from "@cloudflare/vite-plugin"
+import { sharedPublic } from "@nolli/ui/vite"
 
 function copyFontFiles(): Plugin {
   return {
@@ -27,7 +28,12 @@ function copyFontFiles(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [react(), copyFontFiles(), cloudflare()],
+  plugins: [
+    react(),
+    copyFontFiles(),
+    sharedPublic(join(process.cwd(), "../../packages/ui/public")),
+    cloudflare(),
+  ],
   resolve: {
     alias: {
       "@": join(process.cwd(), "./src"),
