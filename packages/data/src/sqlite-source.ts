@@ -1,4 +1,4 @@
-import type { DataSource, ArchFilter, FilterOptions } from "./data-source.type"
+import type { DataSource, ArchFilter, FilterOptions, CountryArchCount } from "./data-source.type"
 import type { ArchSummary, Arch } from "./architectures.type"
 import type { WorkerRequest, WorkerResponse } from "./worker-protocol.type"
 
@@ -102,6 +102,14 @@ export class SqliteDataSource implements DataSource {
     return this.send({ type: "getFilterOptions" })
       .then((res) => {
         if (res.type === "getFilterOptions") return res.data
+        throw new Error(`Unexpected response: ${res.type}`)
+      })
+  }
+
+  getCountryArchCounts(): Promise<CountryArchCount[]> {
+    return this.send({ type: "getCountryArchCounts" })
+      .then((res) => {
+        if (res.type === "getCountryArchCounts") return res.data
         throw new Error(`Unexpected response: ${res.type}`)
       })
   }

@@ -72,11 +72,11 @@ const CLOCK_INIT = `
 // ── Board-package selectors ─────────────────────────────────────────────────
 // Hash-proof selectors encoding packages/board internals: polaroid wrappers
 // carry inline `transform: rotate(...)` (NOT rotateX/rotateZ like map pins),
-// every BoardItem renders a pushpin <img src="/images/pin.png"> which must be
-// excluded, and the modal's framer-motion backdrop is the only element whose
-// CSS-module class contains 'backdrop'. If packages/board changes shape, these
-// are the single place to update.
-export const BOARD_PHOTO = 'div[style*="rotate("] img:not([src*="pin.png"])';
+// every BoardItem renders a pushpin <img> whose CSS-module class contains
+// 'pin' which must be excluded, and the modal's framer-motion backdrop is the
+// only element whose CSS-module class contains 'backdrop'. If packages/board
+// changes shape, these are the single place to update.
+export const BOARD_PHOTO = 'div[style*="rotate("] img:not([class*="pin"])';
 export const LIGHTBOX_BACKDROP = "div[class*='backdrop']";
 export const LIGHTBOX_FRAME = 'div[style*="aspect-ratio"]';
 

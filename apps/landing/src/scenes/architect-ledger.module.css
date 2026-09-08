@@ -1,0 +1,43 @@
+/* Architect marquee hold — map band under a veil with the works pinned on
+   top, ledger block docked along the bottom. */
+
+.screen {
+  position: sticky;
+  top: 0;
+  box-sizing: border-box;
+  overflow: visible;
+}
+
+/* shape anchor — empty in the DOM; the spine's map layer lands on its rect */
+.shape {
+  position: absolute;
+  inset: 0;
+}
+
+/* dim veil over the background map, inserted in the map's canvas container
+   between canvas and markers */
+.veil {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  background: rgb(var(--color-primary-background) / 0.92);
+  transition: opacity var(--transition-short) ease;
+}
+
+/* statement on the veil */
+.bandText {
+  position: absolute;
+  left: var(--spacing-component);
+  bottom: var(--spacing-component);
+  z-index: 2;
+  max-width: calc(var(--grid-col) * 6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-component);
+}
+
+.accent {
+  font-weight: 600;
+  color: rgb(var(--color-hero-foreground));
+}

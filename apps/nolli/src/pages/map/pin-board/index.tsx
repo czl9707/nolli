@@ -12,13 +12,12 @@ import {
   MAP_SLOT_Y,
   layoutArchBoard,
 } from "@nolli/board"
-import { TRANSITION_SHORT, DELAY_START } from "@nolli/ui"
+import { TRANSITION_SHORT, DELAY_START, useIsMobile } from "@nolli/ui"
 import { MapCore } from "@/pages/map/map-core"
 import { PinBoardItem } from "./pin-board-item"
 import { Pin, useBoardPan } from "@nolli/board"
 import styles from "./board.module.css"
 import { useSidebarStore } from "@/stores/sidebar"
-import { useIsMobile } from "@/hooks/use-is-mobile"
 
 const EASE_TRANSITION = {
   duration: TRANSITION_SHORT,

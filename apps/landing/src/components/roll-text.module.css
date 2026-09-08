@@ -1,0 +1,49 @@
+/* RollText — the faces roll through the clip; data-roll picks the
+   direction. */
+
+.clip {
+  position: relative; /* the outgoing face is absolute — anchor it here */
+  display: inline-block;
+  vertical-align: bottom;
+  height: 1.2em;
+  overflow: hidden;
+}
+
+.face {
+  display: block;
+  height: 1.2em;
+  line-height: 1.2em;
+  white-space: nowrap;
+  color: rgb(var(--color-hero-foreground));
+  font-weight: 600;
+}
+
+.face[data-roll="in"] {
+  animation: rollIn var(--transition-short) var(--ease-roll) both;
+}
+
+.face[data-roll="out"] {
+  position: absolute;
+  inset: 0;
+  animation: rollOut var(--transition-short) var(--ease-roll) both;
+}
+
+@keyframes rollIn {
+  from {
+    transform: translateY(110%);
+  }
+}
+
+@keyframes rollOut {
+  to {
+    transform: translateY(-110%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* instant swap, but the end event still fires so the face unmounts */
+  .face[data-roll="in"],
+  .face[data-roll="out"] {
+    animation-duration: 0.01ms;
+  }
+}

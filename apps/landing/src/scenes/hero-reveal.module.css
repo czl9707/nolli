@@ -1,0 +1,119 @@
+/* Cursor-plate reveal over the spine map. The root lives in the hero
+   section's tree — bounded to its first 100svh, under the pane-split
+   content (.splits), so the veil and crosshair lines clip at the screen
+   edges and never cover the headline/pick content. One dim veil over the
+   map with the plate's rect punched out; markers render fully but crop to
+   the plate. */
+
+.root {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100svh;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.veil {
+  position: absolute;
+  inset: 0;
+  /* flat deepest ink — no gradient; the map shows only through the plate */
+  background: rgb(var(--color-primary-background) / 0.92);
+  -webkit-mask-image: linear-gradient(
+      to right,
+      #000 0 var(--pl),
+      transparent var(--pl) var(--pr),
+      #000 var(--pr)
+    ),
+    linear-gradient(to bottom, #000 0 var(--pt), transparent var(--pt) var(--pb), #000 var(--pb));
+  -webkit-mask-composite: source-over;
+  mask-image: linear-gradient(
+      to right,
+      #000 0 var(--pl),
+      transparent var(--pl) var(--pr),
+      #000 var(--pr)
+    ),
+    linear-gradient(to bottom, #000 0 var(--pt), transparent var(--pt) var(--pb), #000 var(--pb));
+  mask-composite: add;
+}
+
+.plate {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: var(--size-border-radius);
+  backdrop-filter: brightness(1.14) saturate(1.06);
+  z-index: 100000;
+}
+
+/* frame annotations — everything pinned around the plate/furniture box
+   shares the .frame base (mono, ink, no wrap, tabular digits so the
+   coords readout doesn't jitter); the per-element classes only place it */
+.frame {
+  position: absolute;
+  color: rgb(var(--color-primary-foreground) / 0.85);
+  white-space: nowrap;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.tagTl {
+  left: 12px;
+  top: -10px;
+  transform: translateY(-100%);
+}
+
+.tagTr {
+  right: 12px;
+  top: -10px;
+  transform: translateY(-100%);
+}
+
+.north {
+  left: 12px;
+  top: calc(100% + 8px);
+}
+
+.coords {
+  right: 12px;
+  top: calc(100% + 10px);
+}
+
+.dot {
+  left: 12px;
+  bottom: 12px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgb(var(--color-destructive));
+}
+
+/* crosshair guides — same styling as pane split borders */
+.cx {
+  position: absolute;
+  z-index: 99999;
+  pointer-events: none;
+  background: rgb(var(--color-primary-foreground) / 0.25);
+}
+
+.cxV {
+  top: 0;
+  bottom: 0;
+  width: 1px;
+}
+
+.cxH {
+  left: 0;
+  right: 0;
+  height: 1px;
+}
+
+.furniture {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 100001;
+}

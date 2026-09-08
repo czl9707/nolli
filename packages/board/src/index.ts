@@ -1,5 +1,4 @@
 export * from "./pin"
-export * from "./paper-clip"
 export * from "./pin-board-layout"
 export * from "./photo-item"
 export * from "./board-item"

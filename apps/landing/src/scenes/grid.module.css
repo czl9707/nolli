@@ -1,0 +1,73 @@
+/* Grid system for the landing spine. Screen = one 100svh viewport with
+   symmetric page margins on a global 12-col grid; HSplit/VSplit cut it
+   into panes whose sibling borders are the split lines. */
+
+.screen {
+  --grid-padding: max(
+    calc((100vw - var(--landing-plate-max)) / 2),
+    var(--spacing-group)
+  );
+  --grid-col: calc((100vw - 2 * var(--grid-padding)) / 12);
+  position: relative;
+  height: 100svh;
+  overflow: hidden;
+}
+
+/* full-bleed layer (map background) — inset 0 covers the whole screen */
+.bleed {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.splitCell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* ── pane model ──────────────────────────────────────────────────────────
+   HSplit/VSplit are flex rows/columns of Panes. Each Pane declares its own
+   size (any CSS length, none = fill). The border between siblings IS the
+   split line — auto-drawn, always kept. */
+
+.rowSplit {
+  display: flex;
+  flex-direction: row;
+}
+
+.colSplit {
+  display: flex;
+  flex-direction: column;
+}
+
+.pane {
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  min-height: 0;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.paneFill {
+  flex-grow: 1;
+}
+
+/* filled pane — the map's building tile as the pane's ground */
+.paneFilled {
+  background-image: var(--pattern-building);
+  position: absolute;
+  inset: 0;
+  opacity: 0.2;
+}
+
+.rowSplit > .pane:not(:first-child) {
+  border-left: var(--border);
+}
+
+.colSplit > .pane:not(:first-child) {
+  border-top: var(--border);
+}

@@ -1,0 +1,67 @@
+@import "@nolli/ui/global.css";
+@import "@fontsource-variable/red-hat-mono";
+
+body {
+  --font-mono: "Red Hat Mono Variable", ui-monospace, monospace;
+  --pattern-building: url("/patterns/light/building.png");
+
+  --color-hero-foreground: 227 182 77;
+  --color-hero-background: 23 23 23;
+
+  /* cell roll easing — JS mirror ROLL_EASE in lib/constants */
+  --ease-roll: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+body[data-theme="dark"] {
+  --pattern-building: url("/patterns/dark/building.png");
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+html {
+  scrollbar-width: none;
+}
+
+html::-webkit-scrollbar {
+  display: none;
+}
+
+body {
+  /* @nolli/ui sets width: 100vw, which includes the scrollbar — page-wide
+     children (the stage) then overflow by the scrollbar width and the browser
+     grows a horizontal scrollbar. 100% tracks the scrollbar-less html width. */
+  width: 100%;
+  background: rgb(var(--color-primary-background));
+  color: rgb(var(--color-primary-foreground));
+  overscroll-behavior-y: none;
+  --landing-plate-max: 80rem;
+}
+
+/* Boot scroll lock: until the map reveals, the spine is a flat plate with
+   nothing to scroll to. app.tsx renders <main data-boot> while locked;
+   :has() carries it to the body from the React-rendered element. */
+body:has(main[data-boot]) {
+  overflow: hidden;
+}
+
+/* Spine boot: only the map layer sits at opacity 0 until the map has
+   settled, then fades in — the scenes render from frame one so their
+   entrance animations play visibly while the map loads. */
+.spine-boot {
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+}
+
+.spine-boot--on {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spine-boot {
+    transition: none;
+  }
+}

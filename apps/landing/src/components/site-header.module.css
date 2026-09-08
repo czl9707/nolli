@@ -1,0 +1,57 @@
+/* Site header (prototype winner header-A "Topline"). Full-width frosted
+   strip over the map (translucent fill + backdrop blur + 1px bottom rule)
+   so the same ink reads over every scene. CTA is the app's Button. */
+
+.bar {
+  position: absolute;
+  inset: 0 0 auto 0;
+  pointer-events: none;
+  color: rgb(var(--color-primary-foreground));
+  background: rgb(var(--color-primary-background) / 0.75);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: var(--border);
+}
+
+.row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--size-header-height);
+  padding-left: var(--spacing-component);
+  padding-right: var(--spacing-component);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-paragraph);
+  text-decoration: none;
+  pointer-events: auto;
+}
+
+.mark {
+  display: block;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-component);
+  pointer-events: auto;
+}
+
+.links {
+  display: flex;
+  gap: var(--spacing-paragraph);
+}
+
+.links a {
+  color: rgb(var(--color-primary-foreground) / 0.75);
+  text-decoration: none;
+}
+
+.links a:hover {
+  color: rgb(var(--color-primary-foreground));
+}

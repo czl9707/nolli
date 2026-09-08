@@ -1,0 +1,5 @@
+.veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgb(var(--color-primary-background) / 0.75), transparent);
+}

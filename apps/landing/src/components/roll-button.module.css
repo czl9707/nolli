@@ -1,0 +1,56 @@
+/* RollButton — three faces roll through the clip; data-state picks the
+   ground. Typography comes in via the children; font-size set here only
+   gives raw-text callers a sane default (scenes override by className). */
+
+.button {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+  user-select: none;
+  pointer-events: auto;
+  overflow: hidden;
+}
+
+.face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+  white-space: nowrap;
+  color: rgb(var(--color-primary-foreground) / 0.55);
+}
+
+/* default face rides the building tile */
+.face[data-state="default"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: var(--pattern-building);
+  opacity: 0.2;
+}
+
+/* focused — fill rolled away, full color */
+.face[data-state="focused"] {
+  color: rgb(var(--color-primary-foreground));
+}
+
+/* active — accent ground, inverted text (hero CTA armed look) */
+.face[data-state="active"] {
+  background: rgb(var(--color-hero-foreground));
+  color: rgb(var(--color-hero-background));
+}
+
+/* disabled — pending data; dim, no tile, no interaction */
+.button[data-disabled] {
+  cursor: progress;
+}
+
+.button[data-disabled] .face {
+  color: rgb(var(--color-primary-foreground) / 0.2);
+}
+
+.button[data-disabled] .face::before {
+  display: none;
+}

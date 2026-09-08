@@ -1,0 +1,81 @@
+.city {
+  position: sticky;
+  top: 0;
+  box-sizing: border-box;
+  overflow: visible;
+}
+
+/* dossier panes — see .city: overflow opened for the lead track */
+.city .visibleOverflow {
+  overflow: visible;
+}
+
+.splits {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+/* the shape pane — empty in the DOM; the spine's map layer lands on its
+   rect (filling the pane exactly) */
+.mapPane {
+  position: absolute;
+  inset: 0;
+}
+
+.statementPane {
+  padding: var(--spacing-component);
+}
+
+.leadTrack {
+  height: calc(75vh + var(--spacing-group));
+  margin-top: -75vh;
+  margin-bottom: var(--spacing-component);
+}
+
+.lead {
+  position: sticky;
+  top: calc(25svh + var(--size-header-height));
+  margin: 0;
+}
+
+.statementText {
+  margin: 0;
+}
+
+.archList {
+  list-style: none;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  pointer-events: auto;
+}
+
+.archList li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-paragraph);
+  line-height: 2;
+}
+
+.archNum {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  opacity: 0.5;
+}
+
+/* rows sit dim like the hero's arch list; the row driving the map's photo
+   card lifts to full. Targets the name, not the li — the swap variants
+   animate li opacity inline, which would override a li-level dim */
+.archName {
+  opacity: 0.3;
+  transition: opacity var(--transition-instant) ease;
+}
+
+.archList li[data-hovered="true"] .archName {
+  opacity: 1;
+}
+
+/* city grid — shared RollButton cells; overrides the cell default */
+.cityButton {
+  font-size: 1.2rem;
+}

@@ -1,0 +1,25 @@
+/* Photo markers portalled into the spine's map layer (via useMapPortal) —
+   shared by the hero and city scenes. Each scene mounts its set across
+   scroll bounds (use-linger holds the exit around for this fade) and the
+   .on class + transition animates both directions. Targets the content
+   div, not the marker root (maplibre writes its own inline opacity
+   there). The hero's clip driver (hero-reveal.tsx) discriminates its set
+   via the inert HERO_MARKER_CLASS string instead of this module. */
+
+.photoMarker {
+  opacity: 0;
+  transition: opacity var(--transition-short) ease;
+  /* re-enable per marker: LandingMap's wrapper stands the whole map down
+     (no drag), but hover needs live markers */
+  pointer-events: auto;
+}
+
+.photoMarker[data-show] {
+  opacity: 1;
+}
+
+/* the city hold's pins — framer drives their fade (animate prop); the
+   class only re-enables pointer events, like .photoMarker above */
+.cityPin {
+  pointer-events: auto;
+}

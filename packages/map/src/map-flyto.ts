@@ -49,3 +49,33 @@ export function flyToArchIfNeeded(
     })
   }
 }
+
+export type SceneCamera = {
+  center: [number, number]
+  zoom: number
+}
+
+/** Cinematic scene-to-scene move for scripted choreography (landing spine).
+ * Unlike flyToArchCinematic: the destination zoom passes through unchanged
+ * (scene flights zoom out), and duration follows the same short/long rules.
+ * Uses easeTo, not flyTo: flyTo's zoom-out dip drops below the world-fit
+ * clamp (renderWorldCopies:false keeps the camera inside a single world
+ * copy), and fighting that clamp corrupts the easing so flights land
+ * off-target. easeTo interpolates directly and lands exactly. */
+export function flyToSceneCinematic(
+  map: MapLibreGL.Map,
+  camera: SceneCamera,
+): void {
+  const zoomDelta = Math.abs(camera.zoom - map.getZoom())
+  const duration = map.getBounds().contains(camera.center)
+    ? MAP_TRANSITION_SHORT * 1000 + zoomDelta * 300
+    : MAP_TRANSITION_LONG * 1000
+
+  map.stop()
+  map.easeTo({
+    center: camera.center,
+    zoom: camera.zoom,
+    duration,
+    easing: (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2),
+  })
+}

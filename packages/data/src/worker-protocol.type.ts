@@ -1,4 +1,4 @@
-import type { ArchFilter, FilterOptions } from "./data-source.type"
+import type { ArchFilter, FilterOptions, CountryArchCount } from "./data-source.type"
 import type { Arch, ArchSummary } from "./architectures.type"
 
 export type WorkerRequest =
@@ -8,6 +8,7 @@ export type WorkerRequest =
   | { type: "getArchSummariesByIds"; ids: number[] }
   | { type: "getArchSummariesBySlugs"; slugs: string[] }
   | { type: "getFilterOptions" }
+  | { type: "getCountryArchCounts" }
 
 export type WorkerResponse =
   | { type: "ready"; msgId: number; message?: string }
@@ -17,5 +18,6 @@ export type WorkerResponse =
   | { type: "getArchSummariesByIds"; msgId: number; data: ArchSummary[] }
   | { type: "getArchSummariesBySlugs"; msgId: number; data: ArchSummary[] }
   | { type: "getFilterOptions"; msgId: number; data: FilterOptions }
+  | { type: "getCountryArchCounts"; msgId: number; data: CountryArchCount[] }
 
 export type WorkerInbound = WorkerRequest & { msgId: number }

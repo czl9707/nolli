@@ -9,8 +9,7 @@ import {
   type PanInfo,
   AnimatePresence,
 } from "framer-motion"
-import { useIsMobile } from "@/hooks/use-is-mobile"
-import { TRANSITION_SHORT, TRANSITION_INSTANT } from "@nolli/ui"
+import { TRANSITION_SHORT, TRANSITION_INSTANT, useIsMobile } from "@nolli/ui"
 import styles from "./index.module.css"
 
 // ── Desktop: animated side panel ──

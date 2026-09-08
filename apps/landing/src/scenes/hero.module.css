@@ -1,0 +1,191 @@
+/* Hero ledge on the spine — sticky full-viewport hold; the map itself is
+   the spine's layer below, this tree is the content overlay above it.
+   Layout: big map cell = lede, vertically centered; plate column on the
+   RIGHT = arch list (growing top cell) + CTA pane (the pane IS the
+   CTA); mirrored title-block strip closes the scene (Info left, fill,
+   Scale + Sheet right, under the column). Plate bounds = everything above
+   the strip. */
+
+.hero {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  box-sizing: border-box;
+  /* above the transition overlay (later sibling) so the closing rule and
+     the ride-off content stay visible as the gradient slides over */
+  z-index: 1;
+}
+
+/* closing rule — every internal split draws one, the screen edge too.
+ * Drawn as an overlay, not border-bottom: the full-bleed veil is a CHILD
+ * of this section and children paint over the parent's border. */
+.hero::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-bottom: var(--border);
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* the plate IS the cursor while the pointer is inside the hero — the
+   section must be hit-testable for cursor:none to resolve (nothing
+   beneath it takes pointer events; snap mode skips this class) */
+.cursorHide {
+  cursor: none;
+  pointer-events: auto;
+}
+
+.screen {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+/* ── lede (big map cell, vertically centered) ─────────────────────────── */
+
+.heroPane {
+  display: flex;
+  align-items: center;
+}
+
+
+.lede {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 var(--spacing-component);
+  display: flex;
+  flex-direction: column;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.5rem;
+}
+
+.headlineLine {
+  font-weight: 400;
+  font-size: clamp(2.75rem, 4.6vw, 4rem);
+
+  .accent {
+    color: rgb(var(--color-hero-foreground));
+  }
+}
+
+.secondary {
+  margin: 0;
+  line-height: 1.6;
+  font-size: 1.12rem;
+  max-width: 38ch;
+}
+
+/* ── CTA pane — the pane IS the CTA, plate-sized ─────────────────────── */
+
+.ctaPane {
+  position: absolute;
+  inset: 0;
+  color: inherit;
+  text-decoration: none;
+  pointer-events: auto;
+  cursor: none;
+}
+
+/* one face = the whole cell. Resting face: label + plate hint over the
+ * sheet tile. Armed face: accent ground, dark text, arrow. Arming rolls
+ * the old face out and the new one in. No :hover anywhere; the system
+ * cursor is invisible on this screen, so the plate proxy (deep-penetration
+ * test) and keyboard focus are the armed states */
+.ctaFace {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+}
+
+.ctaFace[data-armed="true"] {
+  background: rgb(var(--color-hero-foreground));
+  color: rgb(var(--color-hero-background));
+  cursor: pointer;
+}
+
+.ctaIcon {
+  margin-left: .35em;
+}
+
+.ctaText {
+  display: flex;
+  align-items: center;
+  transition: transform var(--transition-instant) ease;
+}
+
+/* ── arch list (top cell of the right column) ─────────────────────────── */
+
+.archList {
+  list-style: none;
+  margin: 0;
+  padding: var(--spacing-component);
+  text-align: left;
+}
+
+.archRow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-paragraph);
+  line-height: 2;
+  opacity: 0.3;
+  transition: opacity var(--transition-instant) ease;
+}
+
+.archRow[data-active="true"] {
+  opacity: 1;
+}
+
+.archNum {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  opacity: 0.5;
+}
+
+/* ── title block strip ───────────────────────────────────────────────── */
+
+
+.monoLabel {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  opacity: 0.5;
+  line-height: 1;
+}
+
+.blockPane {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: .25rem;
+  padding: 0 var(--spacing-component);
+}
+
+/* fixed-height clip the info block rolls inside */
+.rollClip {
+  position: relative;
+  overflow: hidden;
+}
+
+.blockValue {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.blockValueBig {
+  font-size: 1.05rem;
+  font-weight: 500;
+}

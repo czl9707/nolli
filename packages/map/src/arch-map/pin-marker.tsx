@@ -23,6 +23,8 @@ type ArchPinMarkerProps = {
   animate?: TargetAndTransition | boolean
   /** Merged onto the marker's root alongside the base `.marker` class. */
   className?: string
+  onMouseEnter?: () => void
+  onMouseLeave?: () => void
 }
 
 export function ArchPinMarker({
@@ -35,10 +37,18 @@ export function ArchPinMarker({
   initial,
   animate,
   className,
+  onMouseEnter,
+  onMouseLeave,
 }: ArchPinMarkerProps) {
   const selectedAttr = selected ? "true" : undefined
   return (
-    <MapMarker longitude={longitude} latitude={latitude} transition={transition}>
+    <MapMarker
+      longitude={longitude}
+      latitude={latitude}
+      transition={transition}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
       <MarkerContent>
         <motion.div
           className={className ? `${styles.marker} ${className}` : styles.marker}

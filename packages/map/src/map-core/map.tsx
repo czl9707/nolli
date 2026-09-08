@@ -11,6 +11,7 @@ import {
   useState,
   type ReactNode,
   type CSSProperties,
+  type HTMLAttributes,
 } from "react"
 import { createPortal } from "react-dom"
 import { animate, type AnimationPlaybackControls, type Easing } from "framer-motion"
@@ -431,14 +432,15 @@ type MarkerContentProps = {
   children?: ReactNode
   /** Additional CSS classes for the marker container */
   className?: string
-}
+} & HTMLAttributes<HTMLDivElement>
 
-function MarkerContent({ children, className }: MarkerContentProps) {
+function MarkerContent({ children, className, ...rest }: MarkerContentProps) {
   const { marker } = useMarkerContext()
 
   return createPortal(
     <div
       className={`${markerStyles.markerContent}${className ? ` ${className}` : ""}`}
+      {...rest}
     >
       {children || <DefaultMarkerIcon />}
     </div>,
