@@ -11,7 +11,7 @@ import type { ArchSummary } from "@nolli/data"
 import { type LandingData } from "@/lib/landing-data"
 import { CITY_LEDGER } from "@/lib/constants"
 import { useSceneScroll, useSpineMap } from "@/spine/spine"
-import type { HoldScene, TransitionScene } from "@/spine/timeline"
+import { TRANSITION_LEAD_VH, type HoldScene, type TransitionScene } from "@/spine/timeline"
 import { fitCamera } from "@/lib/camera"
 import { CityMarkers } from "@/components/city-markers"
 import { RollButton } from "@/components/roll-button"
@@ -25,11 +25,11 @@ const CITY_ROW_H = "3.5rem"
 
 /** Visibility windows in scene-local vh: the markers flag on at
  * −ENTRY_VH; the content fades and the markers flag off across
- * TOTLE_VH − ENTRY_VH → TOTLE_VH (fade lengths live in their own css).
+ * SCENE_VH − ENTRY_VH → SCENE_VH (fade lengths live in their own css).
  * ENTRY_REARM_VH is hysteresis for the pre-entry roll. */
 const ENTRY_VH = 20
 const ENTRY_REARM_VH = 20
-const TOTLE_VH = 200
+const SCENE_VH = 200
 
 /** Fit padding in pane px: photo cards hang below the pin, so the
  * south-most arch needs far more room below it than the north-most above. */
@@ -56,7 +56,7 @@ export const cityHold = (data: LandingData): HoldScene => ({
   kind: "hold",
   id: "city",
   shape: "[data-spine-shape='city']",
-  heightVh: TOTLE_VH,
+  heightVh: SCENE_VH,
   Component: () => <CityLedger data={data} />,
 })
 
@@ -65,7 +65,7 @@ export const heroCityTransition = (): TransitionScene => ({
   id: "hero-city",
   fromShape: "[data-spine-shape='hero']",
   toShape: "[data-spine-shape='city']",
-  heightVh: 80,
+  heightVh: 20,
   Component: () => <div className={styles.veil} aria-hidden />,
 })
 
@@ -117,19 +117,19 @@ function CityLedger({ data }: { data: LandingData }) {
     [archsByCity, map, cameraFor],
   )
 
-  const fade = useTransform(local, [TOTLE_VH - ENTRY_VH, TOTLE_VH], [1, 0])
+  const fade = useTransform(local, [SCENE_VH - ENTRY_VH, SCENE_VH], [1, 0])
   // markers own the screen from the landing run-in (same edge the entry
   // flight fires on) to the exit window
   const [markersOn, setMarkersOn] = useState(() => {
     const v = local.get()
-    return v >= -ENTRY_VH && v < TOTLE_VH - ENTRY_VH
+    return v >= -ENTRY_VH && v < SCENE_VH - ENTRY_VH
   })
-  useMotionValueEvent(local, "change", (v) => setMarkersOn(v >= -ENTRY_VH && v < TOTLE_VH - ENTRY_VH))
+  useMotionValueEvent(local, "change", (v) => setMarkersOn(v >= -ENTRY_VH && v < SCENE_VH - ENTRY_VH))
 
   return (
     <>
       <Screen className={styles.city}>
-        <FlyTo untilVh={TOTLE_VH} target={() => cameraFor(archsRef.current)} />
+        <FlyTo untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={() => cameraFor(archsRef.current)} />
         <CityMarkers archs={archs} on={markersOn} selected={cardSlug} onSelect={setCardSlug} />
         <motion.div className={styles.splits} style={{ opacity: fade }}>
           <HSplit>
@@ -257,11 +257,9 @@ function Statement({
   const reduced = useReducedMotion()
   return (
     <>
-      <div className={styles.leadTrack}>
-        <H3 className={styles.lead}>
-          Travelling to <RollText text={leadCity} />.
-        </H3>
-      </div>
+      <H3 className={styles.lead}>
+        Travelling to <RollText text={leadCity} />.
+      </H3>
       <Body1 asChild>
         <p className={styles.statementText}>Nolli has Architectures Worth Seeing.</p>
       </Body1>

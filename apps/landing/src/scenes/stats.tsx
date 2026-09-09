@@ -11,7 +11,7 @@ import type { ArchSummary } from "@nolli/data"
 import { type SceneCamera } from "@nolli/map"
 import { APP_URL, ROLL_EASE } from "@/lib/constants"
 import { countryName, useWhereami } from "@/lib/whereami"
-import type { HoldScene, TransitionScene } from "@/spine/timeline"
+import { TRANSITION_LEAD_VH, type HoldScene, type TransitionScene } from "@/spine/timeline"
 import type { CollectionStats, LandingData } from "@/lib/landing-data"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
 import { FlyTo } from "./fly-to"
@@ -55,7 +55,7 @@ export const architectStatsTransition = (): TransitionScene => ({
   id: "architect-stats",
   fromShape: "[data-spine-shape='architect']",
   toShape: "[data-spine-shape='stats']",
-  heightVh: 60,
+  heightVh: 20,
   Component: () => <div className={styles.veil} aria-hidden />,
 })
 
@@ -75,7 +75,7 @@ function StatsScene({ stats, photoPool, architectNames }: {
             <Pane>
               <HSplit>
                 <Pane>
-                  <FlyTo sceneId={SCENE_ID} untilVh={SCENE_VH} target={WORLD} />
+                  <FlyTo sceneId={SCENE_ID} untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={WORLD} />
                   <HSplit>
                     <Pane className={`${styles.statementPane} ${styles.cell}`}>
                       <H2>
