@@ -17,7 +17,6 @@ import { ROLL_EASE } from "@/lib/constants"
 import type { MapRef } from "@nolli/map"
 import type { ArchSummary } from "@nolli/data"
 import type { SceneCamera } from "@nolli/map"
-import { flyToSceneCinematic } from "@nolli/map"
 import { useSceneScroll, useSpineMap } from "@/spine/spine"
 import type { HoldScene } from "@/spine/timeline"
 import { APP_URL, CLUSTER_CITY } from "@/lib/constants"
@@ -26,6 +25,7 @@ import type { LandingData } from "@/lib/landing-data"
 import { PhotoMarkers } from "@/components/photo-markers"
 import { CursorReveal, HERO_MARKER_CLASS, PLATE, useCursorSprings, usePlateArchs } from "./hero-reveal"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
+import { FlyTo } from "./fly-to"
 import styles from "./hero.module.css"
 
 export const heroHold = (data: LandingData): HoldScene => ({
@@ -37,17 +37,14 @@ export const heroHold = (data: LandingData): HoldScene => ({
 })
 
 /** Hold end in scene-local vh — marker visibility flips here (fade length
- * lives in photo-markers.module.css). Local scroll keeps counting past the
- * hold: armed once we're committed into the transition, the crossing back
- * down to our own edge flies home. */
+ * lives in photo-markers.module.css). The same edge re-fires the FlyTo
+ * home: leaving the window re-arms it. */
 const SCENE_REAL_VH = 100
-const RETURN_ARM_VH = 115
-const RETURN_FIRE_VH = 100
 
 /** Camera fit insets off the stage rect (px): left clears the centered lede,
  * x pads the column side, top/bottom keep the pin band level with the lede
  * (horizontal separation keeps them apart). */
-const FIT_PAD = { left: 100, right: 200, top: 50, bottom: 240 }
+const FIT_PAD = { left: 100, right: 150, top: 100, bottom: 350 }
 
 const BOTTOM_BAR_HEIGHT = "5rem"
 
@@ -91,17 +88,6 @@ function HeroScene({ data }: { data: LandingData }) {
   const [markersOn, setMarkersOn] = useState(() => localScrollDist.get() < SCENE_REAL_VH)
   useMotionValueEvent(localScrollDist, "change", (v) => setMarkersOn(v < SCENE_REAL_VH))
 
-  // fly home when scroll hands the screen back
-  const armed = useRef(false)
-  useMotionValueEvent(localScrollDist, "change", (v) => {
-    if (!map || !camRef.current) return
-    if (v > RETURN_ARM_VH) armed.current = true
-    else if (armed.current && v <= RETURN_FIRE_VH) {
-      armed.current = false
-      flyToSceneCinematic(map, camRef.current)
-    }
-  })
-
   const scale = useScaleText(map, sy)
 
   return (
@@ -113,6 +99,7 @@ function HeroScene({ data }: { data: LandingData }) {
         tagTr={CLUSTER_CITY}
       />
       <PhotoMarkers archs={archs} on={markersOn} className={HERO_MARKER_CLASS} />
+      <FlyTo untilVh={SCENE_REAL_VH} target={() => camRef.current} />
       <Screen className={styles.screen}>
         <HSplit>
           <Pane size="var(--size-header-height)" />
