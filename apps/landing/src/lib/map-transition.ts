@@ -1,8 +1,3 @@
-// Scene transitions for the spine map. Two modes by distance: near
-// cameras fly cinematically; far cameras jump under a blur veil — a long
-// ease across the globe exposes half-loaded tiles and mis-lands, so
-// distance gets a snapshot crossfade instead (freeze the old view, blur
-// up, jump + wait for tiles unseen, dissolve to the settled map).
 import { animate } from "framer-motion"
 import type MapLibreGL from "maplibre-gl"
 import { flyToSceneCinematic, type SceneCamera } from "@nolli/map"

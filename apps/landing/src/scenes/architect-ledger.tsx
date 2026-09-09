@@ -5,7 +5,7 @@
 // architect's works; the map can place them.
 import { useEffect, useRef, useState } from "react"
 import { useMotionValueEvent } from "framer-motion"
-import { Body1, H3 } from "@nolli/ui"
+import { H3 } from "@nolli/ui"
 import type { SceneCamera } from "@nolli/map"
 import { useSceneScroll, useSpineMap } from "@/spine/spine"
 import { useLinger } from "@/lib/use-linger"
