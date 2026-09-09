@@ -19,7 +19,7 @@ import type { ArchSummary } from "@nolli/data"
 import type { SceneCamera } from "@nolli/map"
 import { useSceneScroll, useSpineMap } from "@/spine/spine"
 import { TRANSITION_LEAD_VH, type HoldScene } from "@/spine/timeline"
-import { APP_URL, CLUSTER_CITY } from "@/lib/constants"
+import { APP_URL, HERO_FIT_PAD } from "@/lib/constants"
 import { fitCamera } from "@/lib/camera"
 import type { LandingData } from "@/lib/landing-data"
 import { PhotoMarkers } from "@/components/photo-markers"
@@ -37,11 +37,6 @@ export const heroHold = (data: LandingData): HoldScene => ({
 })
 
 const SCENE_VH = 100
-
-/** Camera fit insets off the stage rect (px): left clears the centered lede,
- * x pads the column side, top/bottom keep the pin band level with the lede
- * (horizontal separation keeps them apart). */
-const FIT_PAD = { left: 100, right: 150, top: 100, bottom: 350 }
 
 const BOTTOM_BAR_HEIGHT = "5rem"
 
@@ -65,12 +60,7 @@ function HeroScene({ data }: { data: LandingData }) {
     const cam = fitCamera(
       archs.map((p) => p.coordinates),
       { width: vw, height: vh },
-      {
-        left: FIT_PAD.left,
-        right: FIT_PAD.right, 
-        top: FIT_PAD.top,
-        bottom: FIT_PAD.bottom,
-      },
+      HERO_FIT_PAD,
     )
     camRef.current = cam
     map.jumpTo({ center: cam.center, zoom: cam.zoom })
@@ -93,7 +83,7 @@ function HeroScene({ data }: { data: LandingData }) {
         boundsRef={boundsRef}
         sx={sx}
         sy={sy}
-        tagTr={CLUSTER_CITY}
+        tagTr={data.heroCity.name}
       />
       <PhotoMarkers archs={archs} on={markersOn} className={HERO_MARKER_CLASS} />
       <MapTransition untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={() => camRef.current} />
@@ -134,7 +124,10 @@ function HeroScene({ data }: { data: LandingData }) {
               </Pane>
               <Pane size={`${PLATE.w / 2}px`} className={styles.blockPane}>
                 <span className={styles.monoLabel}>Sheet</span>
-                <span className={styles.blockValue}>France · Paris</span>
+                <span className={styles.blockValue}>
+                  {data.heroCity.country ? `${data.heroCity.country} · ` : ""}
+                  {data.heroCity.name}
+                </span>
               </Pane>
             </VSplit>
           </Pane>

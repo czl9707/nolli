@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import Lenis from "lenis"
 import { Body2 } from "@nolli/ui"
 import { useLandingData, type LandingData } from "@/lib/landing-data"
-import { HERO_CAMERA } from "@/lib/constants"
+import { HERO_FIT_PAD } from "@/lib/constants"
+import { fitCamera } from "@/lib/camera"
 import { Spine } from "@/spine/spine"
 import type { SpineScene } from "@/spine/timeline"
 import { heroHold } from "@/scenes/hero"
@@ -42,6 +43,20 @@ export function App() {
   const [revealed, setRevealed] = useState(false)
   const onMapIdle = useCallback(() => setRevealed(true), [])
 
+  // boot camera = the hero's fit, so the map starts where the hero lands
+  // (the hero re-fits on mount; this keeps the first paint planted)
+  const bootCamera = useMemo(
+    () =>
+      data
+        ? fitCamera(
+            data.heroArchs.map((p) => p.coordinates),
+            { width: window.innerWidth, height: window.innerHeight },
+            HERO_FIT_PAD,
+          )
+        : null,
+    [data],
+  )
+
   // wheel inertia — Lenis eases the native scroll to a stop; skipped for
   // reduced motion (the native step scroll is the accessible default)
   useEffect(() => {
@@ -80,8 +95,8 @@ export function App() {
         <SiteHeader />
       </div>
       <ScrollThumb />
-      {data && scenes && (
-        <Spine scenes={scenes} camera={HERO_CAMERA} onMapIdle={onMapIdle} />
+      {data && scenes && bootCamera && (
+        <Spine scenes={scenes} camera={bootCamera} onMapIdle={onMapIdle} />
       )}
     </main>
   )
