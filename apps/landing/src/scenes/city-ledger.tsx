@@ -65,7 +65,7 @@ export const heroCityTransition = (): TransitionScene => ({
   id: "hero-city",
   fromShape: "[data-spine-shape='hero']",
   toShape: "[data-spine-shape='city']",
-  heightVh: 120,
+  heightVh: 80,
   Component: () => <div className={styles.veil} aria-hidden />,
 })
 

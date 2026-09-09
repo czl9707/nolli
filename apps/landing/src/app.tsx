@@ -9,6 +9,7 @@ import { heroHold } from "@/scenes/hero"
 import { cityHold, heroCityTransition } from "@/scenes/city-ledger"
 import { architectHold, cityArchitectTransition } from "@/scenes/architect-ledger"
 import { statsHold, architectStatsTransition } from "@/scenes/stats"
+import { statsFullTransition, footerHold } from "@/scenes/footer"
 import { ScrollThumb } from "@/components/scroll-thumb"
 import { SiteHeader } from "@/components/site-header"
 
@@ -27,6 +28,8 @@ function useSpineScenes(data: LandingData | null | undefined): SpineScene[] | nu
             architectHold(data),
             architectStatsTransition(),
             statsHold(data),
+            statsFullTransition(),
+            footerHold(data),
           ]
         : null,
     [data],

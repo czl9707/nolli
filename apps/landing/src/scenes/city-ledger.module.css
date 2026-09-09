@@ -28,8 +28,8 @@
 }
 
 .leadTrack {
-  height: calc(75vh + var(--spacing-group));
-  margin-top: -75vh;
+  height: calc(55vh + var(--spacing-group));
+  margin-top: -55vh;
   margin-bottom: var(--spacing-component);
 }
 

@@ -32,7 +32,7 @@ export const heroHold = (data: LandingData): HoldScene => ({
   kind: "hold",
   id: "hero",
   shape: "[data-spine-shape='hero']",
-  heightVh: 100,
+  heightVh: SCENE_REAL_VH,
   Component: () => <HeroScene data={data} />,
 })
 
@@ -66,17 +66,16 @@ function HeroScene({ data }: { data: LandingData }) {
   useEffect(() => {
     const pane = boundsRef.current
     if (!map || !pane) return
-    const b = pane.getBoundingClientRect()
     const vw = window.innerWidth
     const vh = window.innerHeight
     const cam = fitCamera(
       archs.map((p) => p.coordinates),
       { width: vw, height: vh },
       {
-        left: b.left + FIT_PAD.left,
-        right: vw - b.right + FIT_PAD.right, 
-        top: b.top + FIT_PAD.top,
-        bottom: vh - b.bottom + FIT_PAD.bottom,
+        left: FIT_PAD.left,
+        right: FIT_PAD.right, 
+        top: FIT_PAD.top,
+        bottom: FIT_PAD.bottom,
       },
     )
     camRef.current = cam
