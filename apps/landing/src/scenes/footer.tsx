@@ -2,7 +2,7 @@ import { siInstagram, siThreads, type SimpleIcon } from "simple-icons"
 import { Body1, Body3, Button, H3, H5, H6, Note, PaperPhoto } from "@nolli/ui"
 import type { ArchSummary } from "@nolli/data"
 import { APP_URL, ABOUT_URL, POSTER_URL, WORLD_CAMERA } from "@/lib/constants"
-import type { HoldScene, SpineScene, TransitionScene } from "@/spine/timeline"
+import { TRANSITION_LEAD_VH, type HoldScene, type SpineScene, type TransitionScene } from "@/spine/timeline"
 import type { LandingData } from "@/lib/landing-data"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
 import { FlyTo } from "./fly-to"
@@ -34,7 +34,7 @@ export function footerScenes(data: LandingData): SpineScene[] {
   return [statsFullTransition(), footerHold(data)]
 }
 
-const HEIGHT_VH = 100;
+const SCENE_VH = 100;
 
 export function statsFullTransition(): TransitionScene {
   return {
@@ -42,8 +42,7 @@ export function statsFullTransition(): TransitionScene {
     id: "stats-full",
     fromShape: "[data-spine-shape='stats']",
     toShape: "[data-spine-shape='footer']",
-    heightVh: 10,
-    Component: () => <div className={styles.veil} />,
+    heightVh: 0
   }
 }
 
@@ -52,7 +51,7 @@ export function footerHold(data: LandingData): HoldScene {
     kind: "hold",
     id: "footer",
     shape: "[data-spine-shape='footer']",
-    heightVh: HEIGHT_VH,
+    heightVh: SCENE_VH,
     Component: () => <FooterScene data={data} />,
   }
 }
@@ -61,7 +60,7 @@ export function footerHold(data: LandingData): HoldScene {
 function FooterScene({ data }: { data: LandingData }) {
   return (
     <>
-      <FlyTo target={WORLD_CAMERA} untilVh={HEIGHT_VH} />
+      <FlyTo target={WORLD_CAMERA} untilVh={SCENE_VH - TRANSITION_LEAD_VH} />
       <Screen className={`${styles.veil} ${styles.screen}`}>
         <div className={styles.shape} data-spine-shape="footer" aria-hidden />
         <HSplit>

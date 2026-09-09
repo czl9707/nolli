@@ -18,7 +18,7 @@ import type { MapRef } from "@nolli/map"
 import type { ArchSummary } from "@nolli/data"
 import type { SceneCamera } from "@nolli/map"
 import { useSceneScroll, useSpineMap } from "@/spine/spine"
-import type { HoldScene } from "@/spine/timeline"
+import { TRANSITION_LEAD_VH, type HoldScene } from "@/spine/timeline"
 import { APP_URL, CLUSTER_CITY } from "@/lib/constants"
 import { fitCamera } from "@/lib/camera"
 import type { LandingData } from "@/lib/landing-data"
@@ -32,14 +32,11 @@ export const heroHold = (data: LandingData): HoldScene => ({
   kind: "hold",
   id: "hero",
   shape: "[data-spine-shape='hero']",
-  heightVh: SCENE_REAL_VH,
+  heightVh: SCENE_VH,
   Component: () => <HeroScene data={data} />,
 })
 
-/** Hold end in scene-local vh — marker visibility flips here (fade length
- * lives in photo-markers.module.css). The same edge re-fires the FlyTo
- * home: leaving the window re-arms it. */
-const SCENE_REAL_VH = 100
+const SCENE_VH = 100
 
 /** Camera fit insets off the stage rect (px): left clears the centered lede,
  * x pads the column side, top/bottom keep the pin band level with the lede
@@ -85,8 +82,8 @@ function HeroScene({ data }: { data: LandingData }) {
   const snap = useIsMobile() || !!reduced
 
   const localScrollDist = useSceneScroll()
-  const [markersOn, setMarkersOn] = useState(() => localScrollDist.get() < SCENE_REAL_VH)
-  useMotionValueEvent(localScrollDist, "change", (v) => setMarkersOn(v < SCENE_REAL_VH))
+  const [markersOn, setMarkersOn] = useState(() => localScrollDist.get() < SCENE_VH)
+  useMotionValueEvent(localScrollDist, "change", (v) => setMarkersOn(v < SCENE_VH))
 
   const scale = useScaleText(map, sy)
 
@@ -99,7 +96,7 @@ function HeroScene({ data }: { data: LandingData }) {
         tagTr={CLUSTER_CITY}
       />
       <PhotoMarkers archs={archs} on={markersOn} className={HERO_MARKER_CLASS} />
-      <FlyTo untilVh={SCENE_REAL_VH} target={() => camRef.current} />
+      <FlyTo untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={() => camRef.current} />
       <Screen className={styles.screen}>
         <HSplit>
           <Pane size="var(--size-header-height)" />

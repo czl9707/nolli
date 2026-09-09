@@ -9,7 +9,7 @@ import { Body1, H3 } from "@nolli/ui"
 import type { SceneCamera } from "@nolli/map"
 import { useSceneScroll, useSpineMap } from "@/spine/spine"
 import { useLinger } from "@/lib/use-linger"
-import type { HoldScene, TransitionScene } from "@/spine/timeline"
+import { TRANSITION_LEAD_VH, type HoldScene, type TransitionScene } from "@/spine/timeline"
 import type { ArchEntry, LandingData } from "@/lib/landing-data"
 import { ArchImageMarkers } from "@/components/arch-markers"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
@@ -41,9 +41,9 @@ export const cityArchitectTransition = (): TransitionScene => ({
   id: "city-architect",
   fromShape: "[data-spine-shape='city']",
   toShape: "[data-spine-shape='architect']",
-  heightVh: 60,
+  heightVh: 20,
   Component: () => {
-    return <Screen style={{ height: "60svh" }}>
+    return <Screen style={{ height: "20svh" }}>
       <VSplit>
         <Pane size="var(--grid-padding)" filled/>
         <Pane />
@@ -82,7 +82,7 @@ function ArchitectLedger({ entries }: { entries: ArchEntry[] }) {
                   <HSplit>
                     <Pane>
                       <div className={styles.shape} aria-hidden data-spine-shape="architect" />
-                      <FlyTo sceneId={SCENE_ID} untilVh={VEIL_VISIBLE_VH} target={WORLD} />
+                      <FlyTo sceneId={SCENE_ID} untilVh={VEIL_VISIBLE_VH - TRANSITION_LEAD_VH} target={WORLD} />
                       <MapVeil on={markersOn} />
                       <ArchImageMarkers entries={entries} selectedId={selectedEntry?.id ?? -1} on={markersOn} />
                       {selectedEntry && (
