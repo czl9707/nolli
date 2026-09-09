@@ -1,0 +1,170 @@
+.shape {
+  position: absolute;
+  inset: 0;
+}
+
+.veil {
+  position: absolute;
+  inset: 0;
+  background: rgb(var(--color-primary-background) / 0.75);
+  pointer-events: none;
+}
+
+/* sticky so the screen holds through the spine buffer riding this scene */
+.screen {
+  position: sticky;
+  top: 0;
+}
+
+.footer {
+  background: rgb(var(--color-primary-background));
+  pointer-events: auto;
+}
+
+
+/* ── shared pieces ─────────────────────────────────────────────────── */
+
+.navLabel {
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+
+.navList {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-left: -0.5rem;
+}
+
+/* ── the dive ──────────────────────────────────────────────────────── */
+
+.commonPane {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-component);
+  gap: var(--spacing-paragraph);
+}
+
+/* mark + wordmark, the site-header brand echoed at the scene's head */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-paragraph);
+  text-decoration: none;
+  color: inherit;
+}
+
+.mark {
+  display: block;
+}
+
+.statement {
+  opacity: .6;
+}
+
+.accent {
+  color: rgb(var(--color-hero-foreground));
+}
+
+.social {
+  display: flex;
+  gap: .25rem;
+}
+
+.spacer {
+  flex: 1 1;
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+
+.legalMark {
+  opacity: .4;
+}
+
+
+/* ── photo dock ────────────────────────────────────────────────────── */
+
+/* pinned to the screen's bottom edge. The Screen's overflow clips the
+   pile past the fold - only the foot of each card shows. Each card jumps
+   on its own: resting depth is uneven, the hovered card springs up */
+.dock {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 22rem;
+  margin: 0 -3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.dockPhoto {
+  position: relative;
+  pointer-events: auto;
+  flex: 0 0 24rem;
+  margin-bottom: -12rem;
+  transition: margin-bottom var(--transition-short) cubic-bezier(0.3, 1.75, 0.35, 1);
+}
+
+.dockPhoto + .dockPhoto {
+  margin-left: -17.5rem;
+}
+
+.dockPhoto img {
+  display: block;
+  width: 100%;
+  height: 22rem;
+  object-fit: cover;
+}
+
+/* messy resting depths */
+.dockPhoto:nth-child(1) { transform: translateY(1.75rem); }
+.dockPhoto:nth-child(2) { transform: translateY(-0.5rem); }
+.dockPhoto:nth-child(3) { transform: translateY(2.5rem); }
+.dockPhoto:nth-child(4) { transform: translateY(0.75rem); }
+.dockPhoto:nth-child(5) { transform: translateY(-1.25rem); }
+.dockPhoto:nth-child(6) { transform: translateY(2rem); }
+.dockPhoto:nth-child(7) { transform: translateY(0.25rem); }
+.dockPhoto:nth-child(8) { transform: translateY(3rem); }
+.dockPhoto:nth-child(9) { transform: translateY(-0.75rem); }
+
+.dockPhoto:hover {
+  margin-bottom: -3rem;
+}
+
+/* ── responsive (to be tackled in bulk later) ───────────────────────── */
+
+@media (--smaller-than-sm) {
+  .dockPhoto {
+    flex-basis: 15rem;
+    margin-bottom: -9rem;
+  }
+
+  .dockPhoto + .dockPhoto {
+    margin-left: -12rem;
+  }
+
+  .dockPhoto img {
+    height: 14rem;
+  }
+
+  .dockPhoto:hover {
+    margin-bottom: -2rem;
+  }
+}
+
+/* ── reduced motion ────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .dockPhoto {
+    transition: none;
+  }
+}

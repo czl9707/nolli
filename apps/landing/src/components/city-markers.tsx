@@ -66,7 +66,7 @@ export function CityMarkers({
             building={b}
             className={styles.photoMarker}
             data-show={slug === onSlug || undefined}
-            crossOrigin={"anonymous"}
+            crossOrigin={null}
             onMouseEnter={() => onSelect(slug)}
           />
         )

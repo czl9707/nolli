@@ -6,12 +6,10 @@ import { HERO_CAMERA } from "@/lib/constants"
 import { Spine } from "@/spine/spine"
 import type { SpineScene } from "@/spine/timeline"
 import { heroHold } from "@/scenes/hero"
-import { heroCityTransition } from "@/scenes/hero-city-transition"
-import { cityHold } from "@/scenes/city-ledger"
-import { cityArchitectTransition } from "@/scenes/city-architect-transition"
-import { architectHold } from "@/scenes/architect-ledger"
-import { architectStatsTransition } from "@/scenes/architect-stats-transition"
-import { statsHold } from "@/scenes/stats"
+import { cityHold, heroCityTransition } from "@/scenes/city-ledger"
+import { architectHold, cityArchitectTransition } from "@/scenes/architect-ledger"
+import { statsHold, architectStatsTransition } from "@/scenes/stats"
+import { statsFullTransition, footerHold } from "@/scenes/footer"
 import { ScrollThumb } from "@/components/scroll-thumb"
 import { SiteHeader } from "@/components/site-header"
 
@@ -30,6 +28,8 @@ function useSpineScenes(data: LandingData | null | undefined): SpineScene[] | nu
             architectHold(data),
             architectStatsTransition(),
             statsHold(data),
+            statsFullTransition(),
+            footerHold(data),
           ]
         : null,
     [data],

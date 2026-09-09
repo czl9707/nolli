@@ -164,9 +164,20 @@ export function Spine({
           </motion.div>
         </div>
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 2, pointerEvents: "none" }}>
-          {timeline.segments.map(({ scene }) => (
+          {timeline.segments.map(({ scene }, i) => (
             <SceneIdCtx.Provider key={scene.id} value={scene.id}>
-              <div data-scene={scene.id} style={{ height: `${scene.heightVh}vh`, position: "relative", pointerEvents: "none" }}>
+              {/* the wrapper's +100vh buffer rides the LAST scene's wrapper,
+                  else the final 100vh of scroll is bare wrapper — the last
+                  screen scrolls off into blank. The last scene's sticky
+                  content holds through the tail instead. */}
+              <div
+                data-scene={scene.id}
+                style={{
+                  height: `${scene.heightVh + (i === timeline.segments.length - 1 ? 100 : 0)}vh`,
+                  position: "relative",
+                  pointerEvents: "none",
+                }}
+              >
                 {scene.kind === "hold" ? <scene.Component /> : scene.Component ? <scene.Component /> : null}
               </div>
             </SceneIdCtx.Provider>
