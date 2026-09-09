@@ -5,16 +5,16 @@
 // stand in a row beneath — badge marquees under the first two, the map
 // CTA closing the last.
 import { useEffect, useRef, useState } from "react"
-import { motion, useInView, useMotionValue, useMotionValueEvent, useReducedMotion, useSpring, useTransform, type Transition } from "framer-motion"
+import { motion, useInView, useMotionValue, useReducedMotion, useSpring, useTransform, type Transition } from "framer-motion"
 import { Badge, H2, H4, H6, PaperPhoto, TRANSITION_SHORT } from "@nolli/ui"
 import type { ArchSummary } from "@nolli/data"
-import { flyToSceneCinematic, type SceneCamera } from "@nolli/map"
-import { useSceneScroll, useSpineMap } from "@/spine/spine"
+import { type SceneCamera } from "@nolli/map"
 import { APP_URL, ROLL_EASE } from "@/lib/constants"
 import { countryName, useWhereami } from "@/lib/whereami"
-import type { HoldScene } from "@/spine/timeline"
+import type { HoldScene, TransitionScene } from "@/spine/timeline"
 import type { CollectionStats, LandingData } from "@/lib/landing-data"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
+import { FlyTo } from "./fly-to"
 import styles from "./stats.module.css"
 
 const SCENE_ID = "stats"
@@ -48,6 +48,17 @@ export const statsHold = (data: LandingData): HoldScene => ({
   ),
 })
 
+// Architect → stats morph: the spine interpolates the map shape; no
+// overlay of its own.
+export const architectStatsTransition = (): TransitionScene => ({
+  kind: "transition",
+  id: "architect-stats",
+  fromShape: "[data-spine-shape='architect']",
+  toShape: "[data-spine-shape='stats']",
+  heightVh: 60,
+  Component: () => <div className={styles.veil} aria-hidden />,
+})
+
 function StatsScene({ stats, photoPool, architectNames }: {
   stats: CollectionStats
   photoPool: ArchSummary[]
@@ -64,7 +75,7 @@ function StatsScene({ stats, photoPool, architectNames }: {
             <Pane>
               <HSplit>
                 <Pane>
-                  <CameraHold />
+                  <FlyTo sceneId={SCENE_ID} untilVh={SCENE_VH} target={WORLD} />
                   <HSplit>
                     <Pane className={`${styles.statementPane} ${styles.cell}`}>
                       <H2>
@@ -237,33 +248,6 @@ function BadgeRows({ items }: { items: string[] }) {
       ))}
     </div>
   )
-}
-
-/** Camera parks on the world view for the hold — entry flight once when
- * scroll hands the scene the screen (architect-ledger pattern), then a
- * moveend verify-and-snap: the map layer may still be settling out of
- * the shape morph, which mis-lands the flight. */
-function CameraHold() {
-  const map = useSpineMap()
-  const local = useSceneScroll(SCENE_ID)
-  const flied = useRef(false)
-  useMotionValueEvent(local, "change", (v) => {
-    if (!map) return
-    if (v >= 0 && v < SCENE_VH) {
-      if (flied.current) return
-      flied.current = true
-      flyToSceneCinematic(map, WORLD)
-      map.once("moveend", () => {
-        const c = map.getCenter()
-        if (Math.abs(c.lng - WORLD.center[0]) > 1 || Math.abs(map.getZoom() - WORLD.zoom) > 0.05) {
-          map.jumpTo({ center: WORLD.center, zoom: WORLD.zoom })
-        }
-      })
-    } else {
-      flied.current = false
-    }
-  })
-  return null
 }
 
 /** The where-you-are cell is the CTA — the whole pane, hero-CTA pattern.

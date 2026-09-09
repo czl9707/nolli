@@ -7,13 +7,13 @@ import { useEffect, useRef, useState } from "react"
 import { useMotionValueEvent } from "framer-motion"
 import { Body1, H3 } from "@nolli/ui"
 import type { SceneCamera } from "@nolli/map"
-import { flyToSceneCinematic } from "@nolli/map"
 import { useSceneScroll, useSpineMap } from "@/spine/spine"
 import { useLinger } from "@/lib/use-linger"
-import type { HoldScene } from "@/spine/timeline"
+import type { HoldScene, TransitionScene } from "@/spine/timeline"
 import type { ArchEntry, LandingData } from "@/lib/landing-data"
 import { ArchImageMarkers } from "@/components/arch-markers"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
+import { FlyTo } from "./fly-to"
 import { RollButton } from "@/components/roll-button"
 import { RollText } from "@/components/roll-text"
 import styles from "./architect-ledger.module.css"
@@ -34,10 +34,27 @@ export const architectHold = (data: LandingData): HoldScene => ({
   Component: () => <ArchitectLedger entries={data.architectLedger} />,
 })
 
+// City → architect morph: the spine interpolates the map shape; no
+// overlay of its own.
+export const cityArchitectTransition = (): TransitionScene => ({
+  kind: "transition",
+  id: "city-architect",
+  fromShape: "[data-spine-shape='city']",
+  toShape: "[data-spine-shape='architect']",
+  heightVh: 60,
+  Component: () => {
+    return <Screen style={{ height: "60svh" }}>
+      <VSplit>
+        <Pane size="var(--grid-padding)" filled/>
+        <Pane />
+        <Pane size="var(--grid-padding)" filled/>
+      </VSplit>
+    </Screen>
+  }
+})
+
 function ArchitectLedger({ entries }: { entries: ArchEntry[] }) {
   const local = useSceneScroll(SCENE_ID)
-  const map = useSpineMap()
-  const flied = useRef(false)
   const [selected, setSelected] = useState(entries[0]?.name ?? "")
   const selectedEntry = entries.find((e) => e.name === selected) ?? entries[0]
 
@@ -47,25 +64,6 @@ function ArchitectLedger({ entries }: { entries: ArchEntry[] }) {
     return v >= 0 && v < VEIL_VISIBLE_VH
   })
   useMotionValueEvent(local, "change", (v) => setMarkersOn(v >= 0 && v < VEIL_VISIBLE_VH))
-
-  // the entry flight parks the camera at the world view when scroll hands
-  // the scene the screen; the map layer may still be resizing out of the
-  // shape morph, which mis-lands the ease — verify and snap if off
-  useMotionValueEvent(local, "change", (v) => {
-    if (v >= 0 && v < VEIL_VISIBLE_VH && map) {
-      if (flied.current) return
-      flied.current = true
-      flyToSceneCinematic(map, WORLD)
-      map.once("moveend", () => {
-        const c = map.getCenter()
-        if (Math.abs(c.lng - WORLD.center[0]) > 1 || Math.abs(map.getZoom() - WORLD.zoom) > 0.05) {
-          map.jumpTo({ center: WORLD.center, zoom: WORLD.zoom })
-        }
-      })
-    } else {
-      flied.current = false
-    }
-  })
 
   const rows: ArchEntry[][] = []
   const perRow = Math.ceil(entries.length / 2)
@@ -84,6 +82,7 @@ function ArchitectLedger({ entries }: { entries: ArchEntry[] }) {
                   <HSplit>
                     <Pane>
                       <div className={styles.shape} aria-hidden data-spine-shape="architect" />
+                      <FlyTo sceneId={SCENE_ID} untilVh={VEIL_VISIBLE_VH} target={WORLD} />
                       <MapVeil on={markersOn} />
                       <ArchImageMarkers entries={entries} selectedId={selectedEntry?.id ?? -1} on={markersOn} />
                       {selectedEntry && (

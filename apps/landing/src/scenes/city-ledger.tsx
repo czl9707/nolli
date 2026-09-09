@@ -11,22 +11,22 @@ import type { ArchSummary } from "@nolli/data"
 import { type LandingData } from "@/lib/landing-data"
 import { CITY_LEDGER } from "@/lib/constants"
 import { useSceneScroll, useSpineMap } from "@/spine/spine"
-import type { HoldScene } from "@/spine/timeline"
+import type { HoldScene, TransitionScene } from "@/spine/timeline"
 import { fitCamera } from "@/lib/camera"
 import { CityMarkers } from "@/components/city-markers"
 import { RollButton } from "@/components/roll-button"
 import { RollText } from "@/components/roll-text"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
+import { FlyTo } from "./fly-to"
 import styles from "./city-ledger.module.css"
 
 /** City grid row height. */
 const CITY_ROW_H = "3.5rem"
 
-/** Visibility windows in scene-local vh, all within TOTLE_VH ± ENTRY_VH:
- * the entry flight fires and the markers flag on at −ENTRY_VH; the
- * content fades and the markers flag off across TOTLE_VH − ENTRY_VH →
- * TOTLE_VH (fade lengths live in their own css). ENTRY_REARM_VH is
- * hysteresis only. */
+/** Visibility windows in scene-local vh: the markers flag on at
+ * −ENTRY_VH; the content fades and the markers flag off across
+ * TOTLE_VH − ENTRY_VH → TOTLE_VH (fade lengths live in their own css).
+ * ENTRY_REARM_VH is hysteresis for the pre-entry roll. */
 const ENTRY_VH = 20
 const ENTRY_REARM_VH = 20
 const TOTLE_VH = 200
@@ -60,6 +60,15 @@ export const cityHold = (data: LandingData): HoldScene => ({
   Component: () => <CityLedger data={data} />,
 })
 
+export const heroCityTransition = (): TransitionScene => ({
+  kind: "transition",
+  id: "hero-city",
+  fromShape: "[data-spine-shape='hero']",
+  toShape: "[data-spine-shape='city']",
+  heightVh: 120,
+  Component: () => <div className={styles.veil} aria-hidden />,
+})
+
 function CityLedger({ data }: { data: LandingData }) {
   const map = useSpineMap()
   const local = useSceneScroll()
@@ -91,30 +100,10 @@ function CityLedger({ data }: { data: LandingData }) {
     )
   }, [])
 
-  // fly in as the transition hands us the screen; hysteresis via ENTRY_REARM_VH
-  // keeps a jittering scroll from refiring
+  // fly in as the transition hands us the screen; camera measured at fire
+  // time from the pane's live px box
   const archsRef = useRef(archs)
   archsRef.current = archs
-  const entered = useRef(local.get() >= ENTRY_VH)
-  const flied = useRef(false)
-  useMotionValueEvent(local, "change", (v) => {
-    if (v >= -ENTRY_VH && v < TOTLE_VH + ENTRY_REARM_VH) {
-      // if (entered.current || !map) return
-      entered.current = true
-    } else if (v < -ENTRY_VH - ENTRY_REARM_VH || v >= TOTLE_VH + ENTRY_REARM_VH) {
-      entered.current = false
-    }
-
-    if (v >= 0 && v < TOTLE_VH) {
-      if (flied.current || !map) return
-      const cam = cameraFor(archsRef.current)
-      if (!cam) return
-      flied.current = true
-      flyToSceneCinematic(map, cam)
-    } else {
-      flied.current = false
-    }
-  })
 
   const onSelect = useCallback(
     (name: string) => {
@@ -140,6 +129,7 @@ function CityLedger({ data }: { data: LandingData }) {
   return (
     <>
       <Screen className={styles.city}>
+        <FlyTo untilVh={TOTLE_VH} target={() => cameraFor(archsRef.current)} />
         <CityMarkers archs={archs} on={markersOn} selected={cardSlug} onSelect={setCardSlug} />
         <motion.div className={styles.splits} style={{ opacity: fade }}>
           <HSplit>

@@ -79,3 +79,10 @@
 .cityButton {
   font-size: 1.2rem;
 }
+
+/* hero → city transition veil */
+.veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgb(var(--color-primary-background) / 0.92), transparent);
+}

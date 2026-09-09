@@ -18,6 +18,13 @@
   inset: 0;
 }
 
+/* architect → stats transition veil */
+.veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgb(var(--color-primary-background) / 0.75), transparent);
+}
+
 /* variant overlay — carries the pane grid above the map ground */
 .overlay {
   position: absolute;
