@@ -14,7 +14,7 @@ import { countryName, useWhereami } from "@/lib/whereami"
 import { TRANSITION_LEAD_VH, type HoldScene, type TransitionScene } from "@/spine/timeline"
 import type { CollectionStats, LandingData } from "@/lib/landing-data"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
-import { FlyTo } from "./fly-to"
+import { MapTransition } from "./map-transition"
 import styles from "./stats.module.css"
 
 const SCENE_ID = "stats"
@@ -75,7 +75,7 @@ function StatsScene({ stats, photoPool, architectNames }: {
             <Pane>
               <HSplit>
                 <Pane>
-                  <FlyTo sceneId={SCENE_ID} untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={WORLD} />
+                  <MapTransition sceneId={SCENE_ID} untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={WORLD} />
                   <HSplit>
                     <Pane className={`${styles.statementPane} ${styles.cell}`}>
                       <H2>

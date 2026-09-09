@@ -5,7 +5,7 @@
 // architect's works; the map can place them.
 import { useEffect, useRef, useState } from "react"
 import { useMotionValueEvent } from "framer-motion"
-import { Body1, H3 } from "@nolli/ui"
+import { H3 } from "@nolli/ui"
 import type { SceneCamera } from "@nolli/map"
 import { useSceneScroll, useSpineMap } from "@/spine/spine"
 import { useLinger } from "@/lib/use-linger"
@@ -13,7 +13,7 @@ import { TRANSITION_LEAD_VH, type HoldScene, type TransitionScene } from "@/spin
 import type { ArchEntry, LandingData } from "@/lib/landing-data"
 import { ArchImageMarkers } from "@/components/arch-markers"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
-import { FlyTo } from "./fly-to"
+import { MapTransition } from "./map-transition"
 import { RollButton } from "@/components/roll-button"
 import { RollText } from "@/components/roll-text"
 import styles from "./architect-ledger.module.css"
@@ -82,7 +82,7 @@ function ArchitectLedger({ entries }: { entries: ArchEntry[] }) {
                   <HSplit>
                     <Pane>
                       <div className={styles.shape} aria-hidden data-spine-shape="architect" />
-                      <FlyTo sceneId={SCENE_ID} untilVh={VEIL_VISIBLE_VH - TRANSITION_LEAD_VH} target={WORLD} />
+                      <MapTransition sceneId={SCENE_ID} untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={WORLD} />
                       <MapVeil on={markersOn} />
                       <ArchImageMarkers entries={entries} selectedId={selectedEntry?.id ?? -1} on={markersOn} />
                       {selectedEntry && (

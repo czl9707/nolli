@@ -6,7 +6,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useTransform, type MotionValue, type Variants } from "framer-motion"
 import { Body1, Body2, H3 } from "@nolli/ui"
-import { flyToSceneCinematic } from "@nolli/map"
+import { applyMapTransition } from "@/lib/map-transition"
 import type { ArchSummary } from "@nolli/data"
 import { type LandingData } from "@/lib/landing-data"
 import { CITY_LEDGER } from "@/lib/constants"
@@ -17,7 +17,7 @@ import { CityMarkers } from "@/components/city-markers"
 import { RollButton } from "@/components/roll-button"
 import { RollText } from "@/components/roll-text"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
-import { FlyTo } from "./fly-to"
+import { MapTransition } from "./map-transition"
 import styles from "./city-ledger.module.css"
 
 /** City grid row height. */
@@ -112,7 +112,7 @@ function CityLedger({ data }: { data: LandingData }) {
       if (!map || !cityArchs?.length) return
       const cam = cameraFor(cityArchs)
       if (!cam) return
-      flyToSceneCinematic(map, cam)
+      applyMapTransition(map, cam)
     },
     [archsByCity, map, cameraFor],
   )
@@ -129,7 +129,7 @@ function CityLedger({ data }: { data: LandingData }) {
   return (
     <>
       <Screen className={styles.city}>
-        <FlyTo untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={() => cameraFor(archsRef.current)} />
+        <MapTransition untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={() => cameraFor(archsRef.current)} />
         <CityMarkers archs={archs} on={markersOn} selected={cardSlug} onSelect={setCardSlug} />
         <motion.div className={styles.splits} style={{ opacity: fade }}>
           <HSplit>

@@ -5,7 +5,7 @@ import { APP_URL, ABOUT_URL, POSTER_URL, WORLD_CAMERA } from "@/lib/constants"
 import { TRANSITION_LEAD_VH, type HoldScene, type SpineScene, type TransitionScene } from "@/spine/timeline"
 import type { LandingData } from "@/lib/landing-data"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
-import { FlyTo } from "./fly-to"
+import { MapTransition } from "./map-transition"
 import styles from "./footer.module.css"
 
 const LINK_GROUPS: Array<{
@@ -60,7 +60,7 @@ export function footerHold(data: LandingData): HoldScene {
 function FooterScene({ data }: { data: LandingData }) {
   return (
     <>
-      <FlyTo target={WORLD_CAMERA} untilVh={SCENE_VH - TRANSITION_LEAD_VH} />
+      <MapTransition target={WORLD_CAMERA} untilVh={SCENE_VH - TRANSITION_LEAD_VH} />
       <Screen className={`${styles.veil} ${styles.screen}`}>
         <div className={styles.shape} data-spine-shape="footer" aria-hidden />
         <HSplit>
