@@ -25,7 +25,7 @@ import type { LandingData } from "@/lib/landing-data"
 import { PhotoMarkers } from "@/components/photo-markers"
 import { CursorReveal, HERO_MARKER_CLASS, PLATE, useCursorSprings, usePlateArchs } from "./hero-reveal"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
-import { FlyTo } from "./fly-to"
+import { MapTransition } from "./map-transition"
 import styles from "./hero.module.css"
 
 export const heroHold = (data: LandingData): HoldScene => ({
@@ -96,7 +96,7 @@ function HeroScene({ data }: { data: LandingData }) {
         tagTr={CLUSTER_CITY}
       />
       <PhotoMarkers archs={archs} on={markersOn} className={HERO_MARKER_CLASS} />
-      <FlyTo untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={() => camRef.current} />
+      <MapTransition untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={() => camRef.current} />
       <Screen className={styles.screen}>
         <HSplit>
           <Pane size="var(--size-header-height)" />

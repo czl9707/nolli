@@ -33,10 +33,12 @@ export const LandingMap = forwardRef<
   )
   return (
     <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
-      <Map 
+      <Map
         ref={handleRef}
-        styles={mapStyles} 
-        loading={!patternReady}>
+        styles={mapStyles}
+        loading={!patternReady}
+        // snapshot scene transitions read the canvas (lib/map-transition.ts)
+        canvasContextAttributes={{ preserveDrawingBuffer: true }}>
         {children}
       </Map>
     </div>

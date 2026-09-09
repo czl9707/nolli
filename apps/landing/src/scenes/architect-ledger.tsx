@@ -13,7 +13,7 @@ import { TRANSITION_LEAD_VH, type HoldScene, type TransitionScene } from "@/spin
 import type { ArchEntry, LandingData } from "@/lib/landing-data"
 import { ArchImageMarkers } from "@/components/arch-markers"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
-import { FlyTo } from "./fly-to"
+import { MapTransition } from "./map-transition"
 import { RollButton } from "@/components/roll-button"
 import { RollText } from "@/components/roll-text"
 import styles from "./architect-ledger.module.css"
@@ -82,7 +82,7 @@ function ArchitectLedger({ entries }: { entries: ArchEntry[] }) {
                   <HSplit>
                     <Pane>
                       <div className={styles.shape} aria-hidden data-spine-shape="architect" />
-                      <FlyTo sceneId={SCENE_ID} untilVh={VEIL_VISIBLE_VH - TRANSITION_LEAD_VH} target={WORLD} />
+                      <MapTransition sceneId={SCENE_ID} untilVh={VEIL_VISIBLE_VH - TRANSITION_LEAD_VH} target={WORLD} />
                       <MapVeil on={markersOn} />
                       <ArchImageMarkers entries={entries} selectedId={selectedEntry?.id ?? -1} on={markersOn} />
                       {selectedEntry && (
