@@ -9,7 +9,7 @@
 // mirrored title-block strip closes the scene (Info left, plate-wide, then
 // fill, then Scale + Sheet right, under the column). The reveal bounds span
 // everything above the strip.
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, type MotionValue } from "framer-motion"
 import { ArrowUpRight } from "lucide-react"
 import { Body2, H1, H3, TRANSITION_SHORT, useIsMobile } from "@nolli/ui"
@@ -19,7 +19,7 @@ import type { ArchSummary } from "@nolli/data"
 import type { SceneCamera } from "@nolli/map"
 import { useSceneScroll, useSpineMap } from "@/spine/spine"
 import { TRANSITION_LEAD_VH, type HoldScene } from "@/spine/timeline"
-import { APP_URL, CLUSTER_CITY } from "@/lib/constants"
+import { APP_URL, HERO_FIT_PAD } from "@/lib/constants"
 import { fitCamera } from "@/lib/camera"
 import type { LandingData } from "@/lib/landing-data"
 import { PhotoMarkers } from "@/components/photo-markers"
@@ -36,12 +36,16 @@ export const heroHold = (data: LandingData): HoldScene => ({
   Component: () => <HeroScene data={data} />,
 })
 
-const SCENE_VH = 100
+/** The hero's camera, fit over its deck pins — single source for the
+ * spine's boot placement and the hero's exit transition target. */
+export const heroCamera = (data: LandingData): SceneCamera =>
+  fitCamera(
+    data.heroArchs.map((p) => p.coordinates),
+    { width: window.innerWidth, height: window.innerHeight },
+    HERO_FIT_PAD,
+  )
 
-/** Camera fit insets off the stage rect (px): left clears the centered lede,
- * x pads the column side, top/bottom keep the pin band level with the lede
- * (horizontal separation keeps them apart). */
-const FIT_PAD = { left: 100, right: 150, top: 100, bottom: 350 }
+const SCENE_VH = 100
 
 const BOTTOM_BAR_HEIGHT = "5rem"
 
@@ -55,26 +59,7 @@ function HeroScene({ data }: { data: LandingData }) {
   // reveal bounds = the whole top area above the strip; the camera fits to
   // the stage alone so pins stay clear of the column
   const boundsRef = useRef<HTMLDivElement | null>(null)
-  const camRef = useRef<SceneCamera | null>(null)
-
-  useEffect(() => {
-    const pane = boundsRef.current
-    if (!map || !pane) return
-    const vw = window.innerWidth
-    const vh = window.innerHeight
-    const cam = fitCamera(
-      archs.map((p) => p.coordinates),
-      { width: vw, height: vh },
-      {
-        left: FIT_PAD.left,
-        right: FIT_PAD.right, 
-        top: FIT_PAD.top,
-        bottom: FIT_PAD.bottom,
-      },
-    )
-    camRef.current = cam
-    map.jumpTo({ center: cam.center, zoom: cam.zoom })
-  }, [map, archs])
+  const cam = useMemo(() => heroCamera(data), [data])
 
   // the plate IS the cursor while the pointer is inside the scene — plain
   // css on the section (snap mode never hides the system cursor)
@@ -93,10 +78,10 @@ function HeroScene({ data }: { data: LandingData }) {
         boundsRef={boundsRef}
         sx={sx}
         sy={sy}
-        tagTr={CLUSTER_CITY}
+        tagTr={data.heroCity.name}
       />
       <PhotoMarkers archs={archs} on={markersOn} className={HERO_MARKER_CLASS} />
-      <MapTransition untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={() => camRef.current} />
+      <MapTransition untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={cam} />
       <Screen className={styles.screen}>
         <HSplit>
           <Pane size="var(--size-header-height)" />
@@ -134,7 +119,10 @@ function HeroScene({ data }: { data: LandingData }) {
               </Pane>
               <Pane size={`${PLATE.w / 2}px`} className={styles.blockPane}>
                 <span className={styles.monoLabel}>Sheet</span>
-                <span className={styles.blockValue}>France · Paris</span>
+                <span className={styles.blockValue}>
+                  {data.heroCity.country ? `${data.heroCity.country} · ` : ""}
+                  {data.heroCity.name}
+                </span>
               </Pane>
             </VSplit>
           </Pane>

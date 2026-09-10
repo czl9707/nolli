@@ -75,7 +75,8 @@ function CityLedger({ data }: { data: LandingData }) {
   const paneRef = useRef<HTMLDivElement | null>(null)
   const archsByCity = data.cityLedger
 
-  const [selected, setSelected] = useState<string>(CITY_LEDGER[0])
+  // the hero's random pick is the default city here
+  const [selected, setSelected] = useState<string>(data.heroCity.name)
   // the carded arch — always one once the city loads; hovering a row or
   // marker moves the card
   const [cardSlug, setCardSlug] = useState<string | null>(null)
