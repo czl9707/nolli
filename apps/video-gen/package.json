@@ -13,6 +13,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@fontsource-variable/open-sans": "^5.3.0",
+    "@fontsource/instrument-serif": "^5.3.0",
     "@nolli/data": "workspace:*",
     "@nolli/map": "workspace:*",
     "@nolli/remotion": "workspace:*",
@@ -29,6 +31,7 @@
   "devDependencies": {
     "@types/node": "^25.5.0",
     "@types/react": "^19.2.14",
+    "@types/react-dom": "19.2.3",
     "sharp": "^0.33.5",
     "tsx": "^4.23.0",
     "typescript": "^5.9.3",

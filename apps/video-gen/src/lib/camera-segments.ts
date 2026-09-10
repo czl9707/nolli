@@ -1,4 +1,4 @@
-import { secToFrames, SLOT_FRAMES, CTA_S, HOOK_FRAMES } from "./timeline";
+import { SLOT_FRAMES, INTRO_FRAMES, END_FRAMES } from "./timeline";
 import type { MapViewport } from "./viewport";
 import type { ReelBuilding } from "./config";
 
@@ -26,11 +26,10 @@ export type Segment = HoldSegment | FlightSegment;
 export const FLY_FRAC = 0.6;
 const FLY_FRAMES = Math.round(FLY_FRAC * SLOT_FRAMES);
 const HOLD_FRAMES = SLOT_FRAMES - FLY_FRAMES;
-const CTA_FRAMES = secToFrames(CTA_S);
 
 /** Build Hold(world) → Flight→Hold per building. Contiguity is by REFERENCE:
  *  each Flight's `from` is the preceding Hold's `at` object, and vice versa.
- *  The last Hold extends across the CTA beat. */
+ *  The last Hold extends across the end lockup. */
 export function buildCameraSegments(
   buildings: ReelBuilding[],
   worldVP: MapViewport,
@@ -38,7 +37,7 @@ export function buildCameraSegments(
 ): Segment[] {
   const segs: Segment[] = [];
 
-  segs.push({ kind: "hold", at: worldVP, durationInFrames: HOOK_FRAMES });
+  segs.push({ kind: "hold", at: worldVP, durationInFrames: INTRO_FRAMES });
 
   for (let i = 0; i < buildings.length; i++) {
     const b = buildings[i];
@@ -57,9 +56,29 @@ export function buildCameraSegments(
       kind: "hold",
       at: vp,
       selectedSlug: b.slug,
-      durationInFrames: isLast ? HOLD_FRAMES + CTA_FRAMES : HOLD_FRAMES,
+      durationInFrames: isLast ? HOLD_FRAMES + END_FRAMES : HOLD_FRAMES,
     });
   }
 
+  return segs;
+}
+
+/** Static-WALK chain: one viewport for the whole reel, zero camera motion.
+ *  Per-building Holds keep `selectedSlug` advancing in lockstep with the
+ *  content slots. The last Hold extends across the end lockup. */
+export function buildStaticSegments(
+  buildings: ReelBuilding[],
+  vp: MapViewport,
+): Segment[] {
+  const segs: Segment[] = [{ kind: "hold", at: vp, durationInFrames: INTRO_FRAMES }];
+  buildings.forEach((b, i) => {
+    const isLast = i === buildings.length - 1;
+    segs.push({
+      kind: "hold",
+      at: vp,
+      selectedSlug: b.slug,
+      durationInFrames: isLast ? SLOT_FRAMES + END_FRAMES : SLOT_FRAMES,
+    });
+  });
   return segs;
 }

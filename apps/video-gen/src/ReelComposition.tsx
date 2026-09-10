@@ -1,99 +1,25 @@
-import { AbsoluteFill, interpolate, Sequence, Series, useCurrentFrame } from "remotion";
+// apps/video-gen/src/ReelComposition.tsx
+import { AbsoluteFill, Sequence } from "remotion";
 import { useStaticJson } from "./lib/use-static-json";
 import { useFontsReady } from "@nolli/remotion";
-import {
-  SLOT_FRAMES, CTA_S, HOOK_FRAMES,
-  ctaStart, secToFrames, BRAND_FADE_OUT_LEAD_S, CLAMP,
-} from "./lib/timeline";
-import { WORLD_VP } from "./lib/viewport";
-import { reelTitleLines, type ReelBuilding, type ReelConfig } from "./lib/config";
-import { CardCarousel } from "./components/CardCarousel";
-import { BuildingCaption } from "./components/BuildingCaption";
-import { CornerBrand } from "./components/CornerBrand";
-import { CtaLockup } from "./components/CtaLockup";
-import { HookMarquee } from "./components/HookMarquee";
-import { WalkTitle } from "./components/WalkTitle";
-import { MapProvider } from "./components/MapProvider";
-import { CameraSeries } from "./components/CameraSeries";
+import { END_FRAMES, endStart } from "./lib/timeline";
+import type { ReelConfig } from "./lib/config";
+import type { WalkVariant } from "./lib/variant";
+import { GridPoster } from "./components/grid/GridPoster";
+import { EndLockup } from "./components/EndLockup";
 
-const BRAND_INSET = 48;
-const BRAND_VERT = 36;
-const TITLE_LEFT = 64;
-const TITLE_TOP = 48;
-const walkFrames = (count: number) => count * SLOT_FRAMES;
-
-// Carousel at left=50% — map spans the left 75%, bg zone the right 25%.
-const STACK_LEFT = 0.5;
-
-export const ReelComposition: React.FC<{ slug: string }> = ({ slug }) => {
+export const ReelComposition: React.FC<{ slug: string; variant?: WalkVariant }> = ({ slug, variant = "grid" }) => {
   useFontsReady();
   const cfg = useStaticJson<ReelConfig>(`data/${slug}/reel.json`, "load reel.json");
-  const buildings = cfg?.buildings ?? [];
-  const count = buildings.length;
-
   if (!cfg) return null;
-
-  return (
-    <AbsoluteFill data-theme="dark" style={{ backgroundColor: "rgb(var(--color-primary-background))" }}>
-      <MapProvider count={count}>
-        <CameraSeries buildings={buildings} worldVP={WORLD_VP} />
-
-        <Sequence from={0} durationInFrames={HOOK_FRAMES} layout="none">
-          <HookMarquee slug={cfg.slug} architect={cfg.architect} buildings={buildings} />
-        </Sequence>
-
-        <Sequence from={HOOK_FRAMES} durationInFrames={walkFrames(count)} layout="none">
-          <WalkChrome buildings={buildings} slug={cfg.slug} title={reelTitleLines(cfg)} architect={cfg.architect} />
-        </Sequence>
-
-        <Sequence from={ctaStart(count)} durationInFrames={secToFrames(CTA_S)} layout="none">
-          <CtaLockup />
-        </Sequence>
-      </MapProvider>
-    </AbsoluteFill>
-  );
-};
-
-/** WALK-local chrome: carousel, captions, brand. Fades in over slot-0's fly
- *  and out into CTA. */
-const WalkChrome: React.FC<{
-  buildings: ReelBuilding[];
-  slug: string;
-  title: [string, string];
-  architect: string;
-}> = ({ buildings, slug, title, architect }) => {
-  const frame = useCurrentFrame();
+  const buildings = cfg.buildings;
   const count = buildings.length;
-  const walkLen = walkFrames(count);
-  const lead = secToFrames(BRAND_FADE_OUT_LEAD_S);
-  const CHROME_IN_S = 0.5;
-  const fadeIn = interpolate(frame, [0, secToFrames(CHROME_IN_S)], [0, 1], CLAMP);
-  const fadeOut = interpolate(frame, [walkLen - lead, walkLen], [0, 1], CLAMP);
-  const chromeOpacity = fadeIn * (1 - fadeOut);
-
   return (
-    <>
-      <div style={{ position: "absolute", left: `${STACK_LEFT * 100}%`, right: 0, top: 0, bottom: 0, zIndex: 4, opacity: chromeOpacity }}>
-        <CardCarousel slug={slug} buildings={buildings} />
-      </div>
-      <div style={{ position: "absolute", inset: 0, zIndex: 5, pointerEvents: "none" }}>
-        <Series>
-          {buildings.map((b) => (
-            <Series.Sequence key={b.slug} durationInFrames={SLOT_FRAMES} layout="none">
-              <BuildingCaption building={b} opacity={chromeOpacity} />
-            </Series.Sequence>
-          ))}
-        </Series>
-      </div>
-      <div style={{ position: "absolute", top: TITLE_TOP, left: TITLE_LEFT, zIndex: 6 }}>
-        <WalkTitle lines={title} opacity={chromeOpacity} />
-      </div>
-      <div style={{ position: "absolute", top: BRAND_VERT, right: BRAND_INSET, zIndex: 6 }}>
-        <CornerBrand corner="top" title={architect} opacity={chromeOpacity} />
-      </div>
-      <div style={{ position: "absolute", bottom: BRAND_VERT, right: BRAND_INSET, zIndex: 6 }}>
-        <CornerBrand corner="bottom" opacity={chromeOpacity} />
-      </div>
-    </>
+    <AbsoluteFill data-theme="light" style={{ backgroundColor: "rgb(var(--color-primary-background))" }}>
+      <GridPoster cfg={cfg} buildings={buildings} />
+      <Sequence from={endStart(count)} durationInFrames={END_FRAMES} layout="none">
+        <EndLockup />
+      </Sequence>
+    </AbsoluteFill>
   );
 };

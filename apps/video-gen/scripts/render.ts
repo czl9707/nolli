@@ -1,34 +1,55 @@
-import { bundle } from "@remotion/bundler";
+import { bundle as remotionBundle } from "@remotion/bundler";
 import { renderMedia, selectComposition } from "@remotion/renderer";
 import { existsSync, mkdirSync, copyFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { runCli, browserExecutable } from "@nolli/remotion/cli";
-import { outDir, dataDir, dataAllArchPath, allArchPath, reelConfigPath } from "./paths";
+import { outDir, dataDir, reelConfigPath } from "./paths";
+import { parseVariantArg } from "@/lib/variant";
 
-function stageAssets(slug: string): void {
+/** bundle() with the app tsconfig's `@/*` → `src/*` alias and the ui paper
+ *  texture's `/patterns/...` CSS urls aliased to this app's public dir —
+ *  vite serves those urls from public/, webpack can't see public/ and fails
+ *  the resolve. Run from apps/video-gen. */
+export function bundleApp(entryPoint: string): Promise<string> {
+  return remotionBundle({
+    entryPoint,
+    webpackOverride: (config) => ({
+      ...config,
+      resolve: {
+        ...config.resolve,
+        alias: {
+          ...(config.resolve?.alias as Record<string, string> | undefined),
+          "@": resolve("src"),
+          "/patterns": resolve("public", "patterns"),
+        },
+      },
+    }),
+  });
+}
+
+export function stageAssets(slug: string): void {
   const data = dataDir(slug);
   mkdirSync(data, { recursive: true });
   copyFileSync(reelConfigPath(slug), resolve(data, "reel.json"));
-  if (existsSync(allArchPath())) {
-    copyFileSync(allArchPath(), dataAllArchPath());
-  } else {
-    console.warn("Warning: out/all-arch.json missing — map will show no background markers. Run seed.");
-  }
   if (!existsSync(resolve(data, "images"))) {
     console.warn(`Warning: public/data/${slug}/images missing — run 'assets ${slug}' or hero images will 404.`);
   }
 }
 
-runCli("render", async (slug) => {
+// Direct-entry guard: verify.ts imports bundleApp from this module.
+if (process.argv[1] !== undefined && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
+runCli("render", async (slug, flags) => {
   const BROWSER = browserExecutable();
 
   stageAssets(slug);
 
   const entry = resolve("src", "index.ts");
   console.log("bundling…");
-  const serveUrl = await bundle({ entryPoint: entry });
+  const serveUrl = await bundleApp(entry);
 
-  const inputProps = { slug };
+  const variant = parseVariantArg(flags.variant);
+  const inputProps = { slug, variant };
   const comp = await selectComposition({ serveUrl, id: "reel", inputProps, browserExecutable: BROWSER });
 
   const maxFrames = process.env.REEL_MAX_FRAMES ? Number(process.env.REEL_MAX_FRAMES) : comp.durationInFrames;
@@ -41,7 +62,7 @@ runCli("render", async (slug) => {
   const outPathDir = outDir(slug);
   mkdirSync(outPathDir, { recursive: true });
   const suffix = maxFrames < comp.durationInFrames ? `-${maxFrames}f` : "";
-  const outPath = resolve(outPathDir, `${slug}${suffix}.mp4`);
+  const outPath = resolve(outPathDir, `${slug}-${variant}${suffix}.mp4`);
   console.log(`rendering ${composition.durationInFrames} frames -> ${outPath}`);
   await renderMedia({
     composition,
@@ -58,3 +79,4 @@ runCli("render", async (slug) => {
   });
   console.log(`\ndone -> ${outPath}`);
 });
+}

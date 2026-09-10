@@ -2,11 +2,13 @@ import { Easing } from "remotion";
 
 export type MapViewport = { center: [number, number]; zoom: number };
 
-/** Cruise zoom held on each building; the composition's `maxZoom` clamps to this. */
-export const BUILDING_ZOOM = 15;
+/** The reel holds one world view the whole way — widened center so
+ *  renderWorldCopies:false doesn't crop the ledger's buildings. */
+export const WORLD_VP: MapViewport = { center: [12, 25], zoom: 1.15 };
 
-/** The reel opens on the whole-globe world view, not the architect's centroid. */
-export const WORLD_VP: MapViewport = { center: [0, 0], zoom: 1 };
+/** One-pin walk: static world frame for the whole reel — fits any single pin
+ *  with renderWorldCopies:true (far east/west included). */
+export const ONE_PIN_VP: MapViewport = { center: [25, 25], zoom: 0.9 };
 
 export function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t;
@@ -54,6 +56,23 @@ function projectPixel(lng: number, lat: number, worldSize: number): [number, num
   const x = (lng / 360 + 0.5) * worldSize;
   const y = ((1 - Math.log(Math.tan(phi) + 1 / Math.cos(phi)) / Math.PI) / 2) * worldSize;
   return [x, y];
+}
+
+/** Project lng/lat to plate-local CSS px for a STATIC viewport — MapLibre's
+ *  no-motion projection (same Web Mercator transform), with the nearest
+ *  world copy chosen when it lands closer (renderWorldCopies:true). Pure. */
+export function projectToWindow(
+  lng: number,
+  lat: number,
+  vp: MapViewport,
+  w: number,
+  h: number,
+): [number, number] {
+  const worldSize = TILE_SIZE * Math.pow(2, vp.zoom);
+  const [x, y] = projectPixel(lng, lat, worldSize);
+  const [cx, cy] = projectPixel(vp.center[0], vp.center[1], worldSize);
+  const dx = (((x - cx) % worldSize) + worldSize * 1.5) % worldSize - worldSize * 0.5;
+  return [dx + w / 2, y - cy + h / 2];
 }
 
 const sinh = Math.sinh;

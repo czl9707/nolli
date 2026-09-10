@@ -1,12 +1,14 @@
 # video-gen
 
 Remotion v4 app that generates Nolli's marketing videos. The home for **all**
-video output — current and future. The first (and currently only) product is the
-**Architect Spotlight reel**: a ~30 s per-architect social reel that reveals a
-body of work through geography and chronology, with the architect's name as the
-payoff.
+video output — current and future. The current product is the **square ledger
+reel**: a 1080×1080 per-architect social reel. A static light world map holds
+one paper photo card at a time (geo-spread walk order), while the poster grid
+fills in: serif headline, a rolling index of works (8 rows, then it rolls),
+the current work's name + city in the bottom band, and a progress segment on
+the bottom hairline.
 
-Rendered live inside Remotion — the real Nolli `ArchMap` is mounted in the
+Rendered live inside Remotion — a real MapLibre map is mounted in the
 composition and driven per-frame (no Playwright capture). Swapping the architect
 slug produces a new video from the same template.
 
@@ -40,11 +42,28 @@ pnpm --filter video-gen render <slug>    # 3. bundle + render to mp4
 ### `seed <slug>`
 
 Resolves the architect + their buildings (joining `architecture_photos` for the
-cover image) from the cached sqlite snapshot, computes stats, and writes
-`out/<slug>/reel.json`. **Non-destructive** by default — an existing
-`reel.json` is not overwritten. `seed <slug> --fresh` re-downloads the DB
-snapshot (`db.nolli-map.com/latest.db`) and regenerates `reel.json` in one go.
-Also writes `out/all-arch.json` (the background markers for the world map).
+cover image) from the cached sqlite snapshot, computes the geo-spread walk
+order, and writes `out/<slug>/reel.json` — **always rewrites** an existing
+config. The DB snapshot is cached at `~/.nolli/latest.db` (fetched from
+`db.nolli-map.com` when missing); delete the cache file to force a re-fetch.
+
+#### Adding the quote
+
+The quote (one dry line from or about the architect, shown bottom-right of the
+title block) is **not** seeded from the DB — set it by hand in
+`out/<slug>/reel.json`:
+
+```jsonc
+{
+  "slug": "rem-koolhaas",
+  "architect": "Rem Koolhaas",
+  "quote": "Architecture is a hazardous mixture of omnipotence and impotence.",
+  "buildings": [ ... ]
+}
+```
+
+Absent `quote` = no quote block. `seed` rewrites `reel.json` and drops the
+hand-edited quote — re-add it after re-seeding.
 
 ### `assets <slug>`
 
@@ -53,10 +72,13 @@ via sharp into `public/data/<slug>/images/`:
 `<slug>-hero.jpg` (1600×1000) and `<slug>-thumb.jpg` (240×240). Pure download —
 no browser. Skips buildings with no cover image; warns on download failure.
 
-### `render <slug>`
+### `render <slug> [--variant grid]`
 
 Stages `reel.json` into `public/data/<slug>/`, bundles the Remotion entry,
-and renders the `reel` composition (1920×1080, h264) to `out/<slug>/<slug>.mp4`.
+and renders the `reel` composition (1080×1080, h264) to
+`out/<slug>/<slug>-<variant>.mp4`. `--variant` selects the walk layout
+(currently `grid`, the only one; the flag is the extension point for future
+walk variants).
 
 The composition reads its config **browser-side** via `staticFile` + `fetch`
 (gated on `delayRender`), not `readFileSync` — Remotion runs in a browser, where
@@ -85,9 +107,8 @@ sets this via `chromiumOptions: { gl: "angle" }`.
 | File | Description |
 | --- | --- |
 | `out/<slug>/reel.json` | Seed-generated config (the render's source of truth). |
-| `out/all-arch.json` | Background world-map markers. |
 | `public/data/<slug>/images/` | Hero + thumb cover derivatives. |
-| `out/<slug>/<slug>.mp4` | The rendered 16:9 master. |
+| `out/<slug>/<slug>-<variant>.mp4` | The rendered 1:1 master. |
 
 `out/`, `public/data/`, and `public/patterns/` are all gitignored — nothing
 generated is committed.

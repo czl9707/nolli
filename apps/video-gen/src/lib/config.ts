@@ -13,6 +13,9 @@ export type ReelBuilding = {
 export type ReelConfig = {
   slug: string;
   architect: string;
+  /** One dry line from or about the architect — the poster's caption.
+   *  Set by hand in reel.json; absent = no quote block. */
+  quote?: string;
   buildings: ReelBuilding[];
 };
 
@@ -22,15 +25,6 @@ export const yearRange = (cfg: ReelConfig): string => {
   return `${Math.min(...years)}–${Math.max(...years)}`;
 };
 
-export const titleLead = "Architectures by";
-export const hookLead = "Architecture by";
-export const mapTail = "On a Map";
-
 /** Staged hero image URL for a building (written by scripts/assets.ts). */
 export const heroImagePath = (slug: string, buildingSlug: string): string =>
   `data/${slug}/images/${buildingSlug}-hero.jpg`;
-
-export const reelTitleLines = (cfg: ReelConfig): [string, string] => [
-  `${titleLead} ${cfg.architect},`,
-  mapTail,
-];

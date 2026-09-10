@@ -55,28 +55,18 @@ function withDb<T>(dbPath: string, fn: (db: Database.Database) => T): T {
 // Resolve the architect's DB display name from a lowercase CLI slug.
 // The architects table has no slug column, so we match lower(name) against
 // the slug with hyphens turned back into spaces ("sanaa" -> "SANAA",
-// "tadao-ando" -> "Tadao Ando").
+// "tadao-ando" -> "Tadao Ando"). Non-alphanumerics in names ("Herzog & de
+// Meuron") can't round-trip through a hyphen slug, so both sides normalize
+// to alphanumerics before comparing.
+const slugKey = (s: string): string => s.toLowerCase().replace(/[^a-z0-9]/g, "");
 export function resolveArchitectName(dbPath: string, slug: string): string {
-  const key = slug.replace(/-/g, " ").toLowerCase();
-  const row = withDb(dbPath, (db) =>
-    db.prepare("SELECT name FROM architects WHERE lower(name) = ?").get(key) as
-      | { name: string }
-      | undefined,
+  const key = slugKey(slug);
+  const rows = withDb(dbPath, (db) =>
+    db.prepare("SELECT name FROM architects").all() as { name: string }[],
   );
+  const row = rows.find((r) => slugKey(r.name) === key);
   if (!row) throw new Error(`No architect matches slug "${slug}".`);
   return row.name;
-}
-
-export type ArchPinRow = { id: number; slug: string; name: string; lng: number; lat: number };
-
-export function queryAllArchPins(dbPath: string): ArchPinRow[] {
-  return withDb(dbPath, (db) =>
-    db.prepare(`
-      SELECT a.id, a.slug, a.name, a.latitude AS lat, a.longitude AS lng
-      FROM architectures a
-      ORDER BY a.id ASC
-    `).all() as ArchPinRow[],
-  );
 }
 
 /** One architect's buildings as raw shared columns — apps map to their own

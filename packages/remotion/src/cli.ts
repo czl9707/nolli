@@ -3,10 +3,18 @@
 // Remotion's bundler (which starts at src/index.ts) never sees Node APIs.
 import { existsSync, readFileSync } from "node:fs";
 
-export type CliFlags = { fresh?: boolean };
+export type CliFlags = { fresh?: boolean; variant?: string };
 
-/** Run a script's main: usage-error on a missing slug, parse --fresh, and
- *  exit(1) with the error on failure. Call at module top level (the script's
+export function parseFlags(argv: readonly string[]): CliFlags {
+  const variantIdx = argv.indexOf("--variant");
+  return {
+    fresh: argv.includes("--fresh"),
+    variant: variantIdx !== -1 ? argv[variantIdx + 1] : undefined,
+  };
+}
+
+/** Run a script's main: usage-error on a missing slug, parse --fresh/--variant,
+ *  and exit(1) with the error on failure. Call at module top level (the script's
  *  own entry) — modules that are imported by other scripts must keep an
  *  import.meta.filename guard around the call. */
 export function runCli(
@@ -14,9 +22,8 @@ export function runCli(
   fn: (slug: string, flags: CliFlags) => Promise<void>,
 ): void {
   const slug = process.argv[2];
-  if (!slug || slug.startsWith("--")) throw new Error(`Usage: ${name} <architect-slug> [--fresh]`);
-  const fresh = process.argv.includes("--fresh");
-  fn(slug, { fresh }).catch((e) => {
+  if (!slug || slug.startsWith("--")) throw new Error(`Usage: ${name} <architect-slug> [--fresh] [--variant grid|ghost]`);
+  fn(slug, parseFlags(process.argv)).catch((e) => {
     console.error(e);
     process.exit(1);
   });

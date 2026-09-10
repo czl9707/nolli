@@ -1,16 +1,17 @@
 import { describe, it, expect } from "vitest";
-import { REEL_TYPE, PLAYFUL, MIN_WEIGHT, MAX_WEIGHT } from "./type";
+import { REEL_TYPE, PLAYFUL } from "./type";
 
 describe("REEL_TYPE — the two-family rule, written down", () => {
-  it("the handwriting family is exactly the display roles", () => {
+  it("the handwriting family is exactly the brand moments (wordmark + CTA)", () => {
     const playful = Object.entries(REEL_TYPE).filter(([, r]) => r.fontFamily === PLAYFUL);
-    expect(playful.map(([name]) => name)).toEqual(["hookName", "hookYears", "walkTitle", "ctaWordmark"]);
+    expect(playful.map(([name]) => name)).toEqual(["ctaWordmark", "posterBrand"]);
   });
 
   it("every weight is a real variable-font weight (no synthetic bold)", () => {
+    // 300–700 = Quicksand Variable's real wght range.
     for (const [name, role] of Object.entries(REEL_TYPE)) {
-      expect(role.fontWeight, name).toBeGreaterThanOrEqual(MIN_WEIGHT);
-      expect(role.fontWeight, name).toBeLessThanOrEqual(MAX_WEIGHT);
+      expect(role.fontWeight, name).toBeGreaterThanOrEqual(300);
+      expect(role.fontWeight, name).toBeLessThanOrEqual(700);
     }
   });
 
