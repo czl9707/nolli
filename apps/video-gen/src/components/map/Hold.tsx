@@ -1,10 +1,9 @@
+// apps/video-gen/src/components/map/Hold.tsx
 import { useEffect } from "react";
-import { continueRender, delayRender, interpolate, useCurrentFrame } from "remotion";
+import { continueRender, delayRender } from "remotion";
 import { useMapContext, useSelectedSlug } from "./MapProvider";
-import { FLIGHT_EASE, flightPath } from "../lib/viewport";
-import { CLAMP } from "../lib/timeline";
 import type { MapRef } from "@nolli/map";
-import type { MapViewport } from "../lib/viewport";
+import type { MapViewport } from "@/lib/viewport";
 
 /** Capture primitive: drives the shared map to `viewport` and gates the frame's
  *  screenshot release on tile-readiness. Moving frames release after one render
@@ -32,7 +31,7 @@ function retryErroredTiles(m: MapRef): number {
   return retried;
 }
 
-function useMapFrame(map: MapRef | null, viewport: MapViewport, moving: boolean, absFrame: number): void {
+export function useMapFrame(map: MapRef | null, viewport: MapViewport, moving: boolean, absFrame: number): void {
   const cx = viewport.center[0];
   const cy = viewport.center[1];
   const zoom = viewport.zoom;
@@ -95,7 +94,7 @@ function useMapFrame(map: MapRef | null, viewport: MapViewport, moving: boolean,
         for (const t of tm?._inViewTiles?.getAllTiles?.() ?? []) {
           if (t.state === "loading" || t.state === "reloading") {
             t.abortController?.abort?.();
-            tm._source?.abortTile?.(t);
+            tm?._source?.abortTile?.(t);
             t.state = "errored";
             stuck++;
           }
@@ -117,35 +116,6 @@ function useMapFrame(map: MapRef | null, viewport: MapViewport, moving: boolean,
     // mid-settle keep that stale canvas for all its interleaved frames.
   }, [map, cx, cy, zoom, moving, absFrame]);
 }
-
-/** Moving segment: flies `from`→`to`. Publishes the destination `selectedSlug`
- *  at flight start so the highlight moves when the flight begins. */
-export const Flight: React.FC<{
-  from: MapViewport;
-  to: MapViewport;
-  selectedSlug?: string;
-  durationInFrames: number;
-  absFrame: number;
-}> = ({ from, to, selectedSlug, durationInFrames, absFrame }) => {
-  const frame = useCurrentFrame();
-  const { map } = useMapContext();
-  useSelectedSlug(selectedSlug);
-
-  const t = interpolate(frame, [0, durationInFrames], [0, 1], {
-    ...CLAMP,
-    easing: FLIGHT_EASE,
-  });
-  const fp = flightPath({
-    from: { lng: from.center[0], lat: from.center[1] },
-    to: { lng: to.center[0], lat: to.center[1] },
-    startZoom: from.zoom,
-    endZoom: to.zoom,
-    t,
-  });
-  const vp: MapViewport = { center: [fp.center.lng, fp.center.lat], zoom: fp.zoom };
-  useMapFrame(map, vp, true, absFrame);
-  return null;
-};
 
 /** Static segment: holds `at`, gated on tile settle. */
 export const Hold: React.FC<{

@@ -6,6 +6,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./assets/pin.png": "./src/assets/pin.png",
+    "./paper": "./src/paper.ts",
+    "./theme": "./src/theme.ts",
     "./vite": "./src/vite/shared-public.mjs",
     "./global.css": "./src/styles/global.css",
     "./input.module.css": "./src/input.module.css",
