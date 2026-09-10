@@ -9,7 +9,7 @@
 // mirrored title-block strip closes the scene (Info left, plate-wide, then
 // fill, then Scale + Sheet right, under the column). The reveal bounds span
 // everything above the strip.
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, type MotionValue } from "framer-motion"
 import { ArrowUpRight } from "lucide-react"
 import { Body2, H1, H3, TRANSITION_SHORT, useIsMobile } from "@nolli/ui"
@@ -36,6 +36,15 @@ export const heroHold = (data: LandingData): HoldScene => ({
   Component: () => <HeroScene data={data} />,
 })
 
+/** The hero's camera, fit over its deck pins — single source for the
+ * spine's boot placement and the hero's exit transition target. */
+export const heroCamera = (data: LandingData): SceneCamera =>
+  fitCamera(
+    data.heroArchs.map((p) => p.coordinates),
+    { width: window.innerWidth, height: window.innerHeight },
+    HERO_FIT_PAD,
+  )
+
 const SCENE_VH = 100
 
 const BOTTOM_BAR_HEIGHT = "5rem"
@@ -50,21 +59,7 @@ function HeroScene({ data }: { data: LandingData }) {
   // reveal bounds = the whole top area above the strip; the camera fits to
   // the stage alone so pins stay clear of the column
   const boundsRef = useRef<HTMLDivElement | null>(null)
-  const camRef = useRef<SceneCamera | null>(null)
-
-  useEffect(() => {
-    const pane = boundsRef.current
-    if (!map || !pane) return
-    const vw = window.innerWidth
-    const vh = window.innerHeight
-    const cam = fitCamera(
-      archs.map((p) => p.coordinates),
-      { width: vw, height: vh },
-      HERO_FIT_PAD,
-    )
-    camRef.current = cam
-    map.jumpTo({ center: cam.center, zoom: cam.zoom })
-  }, [map, archs])
+  const cam = useMemo(() => heroCamera(data), [data])
 
   // the plate IS the cursor while the pointer is inside the scene — plain
   // css on the section (snap mode never hides the system cursor)
@@ -86,7 +81,7 @@ function HeroScene({ data }: { data: LandingData }) {
         tagTr={data.heroCity.name}
       />
       <PhotoMarkers archs={archs} on={markersOn} className={HERO_MARKER_CLASS} />
-      <MapTransition untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={() => camRef.current} />
+      <MapTransition untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={cam} />
       <Screen className={styles.screen}>
         <HSplit>
           <Pane size="var(--size-header-height)" />

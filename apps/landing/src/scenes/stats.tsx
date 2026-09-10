@@ -10,7 +10,7 @@ import { Badge, H2, H4, H6, PaperPhoto, TRANSITION_SHORT } from "@nolli/ui"
 import type { ArchSummary } from "@nolli/data"
 import { type SceneCamera } from "@nolli/map"
 import { APP_URL, ROLL_EASE } from "@/lib/constants"
-import { countryName, useWhereami } from "@/lib/whereami"
+import { useWhereami } from "@/lib/whereami"
 import { TRANSITION_LEAD_VH, type HoldScene, type TransitionScene } from "@/spine/timeline"
 import type { CollectionStats, LandingData } from "@/lib/landing-data"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
@@ -141,7 +141,7 @@ function WhereBlock({ stats }: { stats: CollectionStats }) {
       label="There are"
       delay={0.45}
       size="m"
-      sub={count ? `in ${countryName(code!)} !` : "Worldwide !"}
+      sub={count ? `in ${code} !` : "Worldwide !"}
     />
   )
 }

@@ -16,30 +16,30 @@ export const ARCHITECT_LEDGER = [
  * resolve drop out at load. */
 export const CITY_DECK: Record<string, readonly string[]> = {
   "New York": [
-    "100-11th-avenue",
-    "215-chrystie-street",
-    "270-park-avenue",
-    "40-bond-street",
-    "425-park-avenue",
-    "50-hudson-yards",
+    // "100-11th-avenue",
+    // "215-chrystie-street",
+    // "270-park-avenue",
+    // "40-bond-street",
+    // "425-park-avenue",
+    // "50-hudson-yards",
     "520-west-28th-street",
     "56-leonard-street",
-    "eight-spruce-street",
+    // "eight-spruce-street",
     "fdr-four-freedoms-park",
     "hearst-tower",
     "iac-building",
     "metlife-building",
     "new-museum-new-york",
     "new-york-times-building",
-    "perry-street-condominiums",
+    // "perry-street-condominiums",
     "seagram-building",
-    "guggenheim-museum",
+    // "guggenheim-museum",
     "whitney-museum-of-american-art",
   ],
   London: [
     "the-gherkin-30-st-mary-axe",
     "bloomberg-european-headquarters",
-    "london-aquatics-centre",
+    // "london-aquatics-centre",
     "london-city-hall",
     "one-new-change",
     "tate-modern",
@@ -65,7 +65,6 @@ export const CITY_DECK: Record<string, readonly string[]> = {
     "national-museum-western-art",
     "prada-aoyama",
     "sumida-hokusai-museum",
-    "tama-art-university-library",
   ],
   Chicago: [
     "860-880-lake-shore-drive",
@@ -104,6 +103,5 @@ export const WORLD_CAMERA: SceneCamera = { center: [10, 25], zoom: 1.5 }
 
 /** Hero camera fit insets off the stage rect (px): left clears the centered
  * lede, x pads the column side, top/bottom keep the pin band level with the
- * lede (horizontal separation keeps them apart). Shared by the hero's own
- * fit and the spine's boot camera so the map starts where the hero lands. */
+ * lede (horizontal separation keeps them apart). */
 export const HERO_FIT_PAD = { left: 100, right: 150, top: 100, bottom: 350 }

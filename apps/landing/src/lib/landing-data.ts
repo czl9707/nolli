@@ -10,6 +10,7 @@ export type ArchEntry = {
 
 export type HeroCity = {
   name: string
+  /** ISO-2 code ("FR"), printed compact in the hero sheet */
   country: string
 }
 
@@ -69,10 +70,11 @@ async function loadArchitectLedger(dataSource: DataSource, options: FilterOption
 }
 
 function pickHeroCity(options: FilterOptions): HeroCity {
-  const name = CITY_LEDGER[Math.floor(Math.random() * CITY_LEDGER.length)]
-  const countryByCode = new Map(options.countries.map((c) => [c.code, c.name]))
-  const code = options.cities.find((c) => c.name === name)?.countryCode
-  return { name, country: (code && countryByCode.get(code)) || "" }
+  const cities = CITY_LEDGER.filter((c) => c !== "Berlin");
+
+  const name = cities[Math.floor(Math.random() * cities.length)]
+  const country = options.cities.find((c) => c.name === name)?.countryCode ?? ""
+  return { name, country }
 }
 
 export function useLandingData() {
