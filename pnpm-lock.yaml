@@ -472,8 +472,8 @@ importers:
   packages/data:
     dependencies:
       '@sqlite.org/sqlite-wasm':
-        specifier: '*'
-        version: 3.53.4-build1
+        specifier: ^3.53.0-build1
+        version: 3.53.0-build1
       react:
         specifier: '*'
         version: 19.2.7
@@ -2771,10 +2771,6 @@ packages:
 
   '@sqlite.org/sqlite-wasm@3.53.0-build1':
     resolution: {integrity: sha512-PfWPWN2n+/37doa8oh2/oUXk4OOsRYZsxc1W1sDXIGb/Pu5Yrb+f2eyYpgQMGITVX7HVgxhs9P18Rc6I97ym/g==}
-    engines: {node: '>=22'}
-
-  '@sqlite.org/sqlite-wasm@3.53.4-build1':
-    resolution: {integrity: sha512-U8pvL0patYHMgieD8JxxYJTlh9m1LUX8+BDYb7MiKQzBI89f2qbdmdcG/PvnPaLm9wsBbv4VlVG453ixnxBOnA==}
     engines: {node: '>=22'}
 
   '@standard-schema/spec@1.1.0':
@@ -7064,8 +7060,6 @@ snapshots:
   '@speed-highlight/core@1.2.17': {}
 
   '@sqlite.org/sqlite-wasm@3.53.0-build1': {}
-
-  '@sqlite.org/sqlite-wasm@3.53.4-build1': {}
 
   '@standard-schema/spec@1.1.0': {}
 
