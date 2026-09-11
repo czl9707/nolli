@@ -2,6 +2,7 @@
   "name": "nolli-monorepo",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@10.33.0",
   "scripts": {
     "dev": "pnpm --filter nolli dev",
     "dev:poster": "pnpm --filter poster dev",
@@ -11,5 +12,12 @@
     "lint": "pnpm -r lint",
     "format": "pnpm -r format",
     "deploy": "pnpm --filter nolli deploy"
+  },
+  "pnpm": {
+    "packageExtensions": {
+      "@remotion/bundler@*": {
+        "dependencies": { "typescript": "^5.9.3" }
+      }
+    }
   }
 }

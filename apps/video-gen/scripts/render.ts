@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { runCli, browserExecutable } from "@nolli/remotion/cli";
 import { outDir, dataDir, reelConfigPath } from "./paths";
 import { parseVariantArg } from "@/lib/variant";
+import { parseThemeArg } from "@/lib/theme";
 
 /** bundle() with the app tsconfig's `@/*` → `src/*` alias and the ui paper
  *  texture's `/patterns/...` CSS urls aliased to this app's public dir —
@@ -39,7 +40,13 @@ export function stageAssets(slug: string): void {
 
 // Direct-entry guard: verify.ts imports bundleApp from this module.
 if (process.argv[1] !== undefined && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
-runCli("render", async (slug, flags) => {
+// --variant/--theme are video-gen-only, so they're read here rather than in
+// the shared @nolli/remotion CLI flags.
+const flagValue = (name: string): string | undefined => {
+  const idx = process.argv.indexOf(name);
+  return idx !== -1 ? process.argv[idx + 1] : undefined;
+};
+runCli("render", async (slug) => {
   const BROWSER = browserExecutable();
 
   stageAssets(slug);
@@ -48,8 +55,9 @@ runCli("render", async (slug, flags) => {
   console.log("bundling…");
   const serveUrl = await bundleApp(entry);
 
-  const variant = parseVariantArg(flags.variant);
-  const inputProps = { slug, variant };
+  const variant = parseVariantArg(flagValue("--variant"));
+  const theme = parseThemeArg(flagValue("--theme"));
+  const inputProps = { slug, variant, theme };
   const comp = await selectComposition({ serveUrl, id: "reel", inputProps, browserExecutable: BROWSER });
 
   const maxFrames = process.env.REEL_MAX_FRAMES ? Number(process.env.REEL_MAX_FRAMES) : comp.durationInFrames;
@@ -61,8 +69,9 @@ runCli("render", async (slug, flags) => {
 
   const outPathDir = outDir(slug);
   mkdirSync(outPathDir, { recursive: true });
-  const suffix = maxFrames < comp.durationInFrames ? `-${maxFrames}f` : "";
-  const outPath = resolve(outPathDir, `${slug}-${variant}${suffix}.mp4`);
+  const frameSuffix = maxFrames < comp.durationInFrames ? `-${maxFrames}f` : "";
+  const themeSuffix = theme === "dark" ? "-dark" : "";
+  const outPath = resolve(outPathDir, `${slug}-${variant}${themeSuffix}${frameSuffix}.mp4`);
   console.log(`rendering ${composition.durationInFrames} frames -> ${outPath}`);
   await renderMedia({
     composition,

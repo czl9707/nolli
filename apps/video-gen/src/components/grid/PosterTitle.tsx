@@ -1,11 +1,10 @@
 // apps/video-gen/src/components/grid/PosterTitle.tsx
-import { NO_ANIM, SoftBlurIn } from "@nolli/remotion";
 import { REEL_TYPE, ACCENT } from "@/lib/type";
 
 /** Poster title block: a two-line serif headline ("<count> Architectures /
  *  by <name>") — every headline word the same size, the architect's name the
  *  only italic and the only accent — with the seed-time quote tucked into
- *  the block's bottom-right corner. Static for the whole reel. */
+ *  the block's bottom-right corner. Static for the whole reel, frame 0 on. */
 export const PosterTitle: React.FC<{
   architect: string;
   count: number;
@@ -25,12 +24,9 @@ export const PosterTitle: React.FC<{
     </div>
     {quote ? (
       <div style={{ marginTop: "auto", alignSelf: "flex-end", textAlign: "right", maxWidth: "85%" }}>
-        <SoftBlurIn
-          text={`"${quote}"`}
-          start={{ when: 12, last: 40, enabled: true }}
-          end={NO_ANIM}
-          style={{ ...REEL_TYPE.posterQuote, color: "rgb(var(--color-secondary-foreground))", lineHeight: 1.4 }}
-        />
+        <span style={{ ...REEL_TYPE.posterQuote, color: "rgb(var(--color-secondary-foreground))", lineHeight: 1.4 }}>
+          "{quote}"
+        </span>
       </div>
     ) : null}
   </>

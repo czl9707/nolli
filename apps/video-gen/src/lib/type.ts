@@ -12,9 +12,13 @@ const SERIF = '"Instrument Serif", serif';
 
 export const PLAYFUL = "var(--font-playful)";
 
-/** Poster accent: the landing hero gold, deepened for the light paper ground
- *  (4.8:1 on rgb(242 240 235), AA for the 15px list rows). */
-export const ACCENT = "rgb(139 98 14)";
+/** Poster accent: the landing hero gold. Light reels deepen it for the light
+ *  paper ground (4.8:1 on rgb(242 240 235)); dark reels use the landing hero's
+ *  own gold on ink (9.4:1 on rgb(21 21 21)). Both set --reel-accent on the
+ *  composition root per theme; ACCENT references the var. */
+export const ACCENT_LIGHT = "rgb(139 98 14)";
+export const ACCENT_DARK = "rgb(227 182 77)";
+export const ACCENT = "var(--reel-accent)";
 
 export const REEL_TYPE = {
   ctaLead: { fontFamily: SERIF, fontSize: 60, fontWeight: 400, fontStyle: "italic" },

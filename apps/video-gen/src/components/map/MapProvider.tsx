@@ -2,15 +2,6 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { AbsoluteFill } from "remotion";
 import { Map, getMapStyle, fetchAndCache, type MapRef, type CachedImage } from "@nolli/map";
-import { useThemeStore } from "@nolli/ui/theme";
-
-// colorScheme pins the browser media feature so embedded SVGs render light
-// regardless of the headless Chrome default.
-useThemeStore.setState({ theme: "light", resolvedTheme: "light" });
-if (typeof document !== "undefined") {
-  document.body.dataset.theme = "light";
-  document.documentElement.style.colorScheme = "light";
-}
 
 export type MapSegmentState = {
   selectedSlug?: string;

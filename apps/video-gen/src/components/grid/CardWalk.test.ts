@@ -1,7 +1,7 @@
 // apps/video-gen/src/components/grid/CardWalk.test.ts
 import { describe, expect, it } from "vitest";
-import { FPS, INTRO_FRAMES, SLOT_FRAMES, landFrame } from "@/lib/timeline";
-import { LIFT_F, pinAnim, pinWindow } from "./CardWalk";
+import { FPS, INTRO_FRAMES, SLOT_FRAMES, OPEN_FRAMES, OPEN_EXIT_FRAMES, openExitEnd, landFrame } from "@/lib/timeline";
+import { LIFT_F, OPEN_SCALE, openingAnim, pinAnim, pinWindow } from "./CardWalk";
 
 describe("pinWindow", () => {
   it("spans one slot, extended by the lift-out overlap", () => {
@@ -9,6 +9,21 @@ describe("pinWindow", () => {
   });
   it("last pin never exits", () => {
     expect(pinWindow(9, 10)[1]).toBe(Number.MAX_SAFE_INTEGER);
+  });
+});
+
+describe("openingAnim", () => {
+  it("all-cards collage: steady through the hold, gone after the exit", () => {
+    expect(openingAnim(0)).toEqual({ scale: OPEN_SCALE, opacity: 1 });
+    expect(openingAnim(OPEN_FRAMES - 1)).toEqual({ scale: OPEN_SCALE, opacity: 1 });
+    expect(openingAnim(openExitEnd()).opacity).toBe(0);
+  });
+  it("exit recedes slightly while fading", () => {
+    const mid = OPEN_FRAMES + Math.round(OPEN_EXIT_FRAMES / 2);
+    const a = openingAnim(mid);
+    expect(a.opacity).toBeGreaterThan(0);
+    expect(a.opacity).toBeLessThan(1);
+    expect(a.scale).toBeLessThan(OPEN_SCALE);
   });
 });
 
