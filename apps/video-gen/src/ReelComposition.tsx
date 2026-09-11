@@ -9,11 +9,12 @@ import type { ReelTheme } from "./lib/theme";
 import { GridPoster } from "./components/grid/GridPoster";
 import { EndLockup } from "./components/EndLockup";
 import { useThemePin } from "./lib/use-theme-pin";
+import { ACCENT_LIGHT, ACCENT_DARK } from "./lib/type";
 
 export const ReelComposition: React.FC<{ slug: string; variant?: WalkVariant; theme?: ReelTheme }> = ({
   slug,
   variant = "grid",
-  theme = "light",
+  theme = "dark",
 }) => {
   useFontsReady();
   // Pin the ui theme store + browser color-scheme before any child mounts, so
@@ -26,7 +27,15 @@ export const ReelComposition: React.FC<{ slug: string; variant?: WalkVariant; th
   const buildings = cfg.buildings;
   const count = buildings.length;
   return (
-    <AbsoluteFill data-theme={theme} style={{ backgroundColor: "rgb(var(--color-primary-background))" }}>
+    <AbsoluteFill
+      data-theme={theme}
+      style={
+        {
+          backgroundColor: "rgb(var(--color-primary-background))",
+          "--reel-accent": theme === "dark" ? ACCENT_DARK : ACCENT_LIGHT,
+        } as React.CSSProperties
+      }
+    >
       <GridPoster cfg={cfg} buildings={buildings} />
       <Sequence from={endStart(count)} durationInFrames={END_FRAMES} layout="none">
         <EndLockup />

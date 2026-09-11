@@ -87,7 +87,7 @@ export const GridPoster: React.FC<{ cfg: ReelConfig; buildings: ReelBuilding[] }
           </Pane>
           <Pane size={`${SCREEN_PADDING.right}px`}>
             <HSplit>
-              <Pane size={`${MAP_HEIGHT}px`} filled/>
+              <Pane size={`${MAP_HEIGHT}px`}/>
               <Pane/>
             </HSplit>
           </Pane>

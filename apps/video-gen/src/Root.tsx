@@ -23,7 +23,7 @@ export const RemotionRoot: React.FC = () => {
       width={REEL_W}
       height={REEL_H}
       durationInFrames={totalFrames(FALLBACK_COUNT)}
-      defaultProps={{ slug: "sanaa", variant: "grid", theme: "light" }}
+      defaultProps={{ slug: "sanaa", variant: "grid", theme: "dark" }}
       calculateMetadata={async ({ props }) => ({
         durationInFrames: await reelDurationInFrames(props.slug),
       })}
