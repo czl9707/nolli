@@ -40,13 +40,13 @@ export function stageAssets(slug: string): void {
 
 // Direct-entry guard: verify.ts imports bundleApp from this module.
 if (process.argv[1] !== undefined && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
-// --theme is video-gen-only, so it's read here rather than in the shared
-// @nolli/remotion CLI flags.
+// --variant/--theme are video-gen-only, so they're read here rather than in
+// the shared @nolli/remotion CLI flags.
 const flagValue = (name: string): string | undefined => {
   const idx = process.argv.indexOf(name);
   return idx !== -1 ? process.argv[idx + 1] : undefined;
 };
-runCli("render", async (slug, flags) => {
+runCli("render", async (slug) => {
   const BROWSER = browserExecutable();
 
   stageAssets(slug);
@@ -55,7 +55,7 @@ runCli("render", async (slug, flags) => {
   console.log("bundling…");
   const serveUrl = await bundleApp(entry);
 
-  const variant = parseVariantArg(flags.variant);
+  const variant = parseVariantArg(flagValue("--variant"));
   const theme = parseThemeArg(flagValue("--theme"));
   const inputProps = { slug, variant, theme };
   const comp = await selectComposition({ serveUrl, id: "reel", inputProps, browserExecutable: BROWSER });
