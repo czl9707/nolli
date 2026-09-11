@@ -78,7 +78,8 @@ export function writeVideoJson(dir: string, slug: string, scenes: Scene[]): void
   console.log(`Wrote ${path} (${scenes.length} scenes).`);
 }
 
-async function main(slug: string, { fresh }: { fresh?: boolean }) {
+async function main(slug: string) {
+  const fresh = process.argv.includes("--fresh");
   const dir = resolve("out", slug);
   mkdirSync(dir, { recursive: true });
 
