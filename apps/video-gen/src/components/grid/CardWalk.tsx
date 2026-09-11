@@ -1,7 +1,7 @@
 // apps/video-gen/src/components/grid/CardWalk.tsx
 import { useMemo } from "react";
 import { interpolate, spring, staticFile, useCurrentFrame } from "remotion";
-import { CLAMP, FPS, landFrame } from "@/lib/timeline";
+import { CLAMP, FPS, OPEN_FRAMES, OPEN_EXIT_FRAMES, openExitEnd, landFrame } from "@/lib/timeline";
 import { heroImagePath, type ReelBuilding } from "@/lib/config";
 import { projectToWindow, type MapViewport } from "@/lib/viewport";
 import { PaperCard } from "@/components/PaperCard";
@@ -10,6 +10,17 @@ import { PaperCard } from "@/components/PaperCard";
 export const DROP_F = 16;
 /** Lift-out length (frames); the outgoing pin overlaps the next drop-in. */
 export const LIFT_F = 11;
+
+/** Opening collage card scale — all cards on the map at once, small. */
+export const OPEN_SCALE = 0.4;
+
+/** Opening-thumbnail state: every card steady at OPEN_SCALE through the
+ *  hold, then a slight recede + fade over the exit (into the walk). Pure. */
+export function openingAnim(frame: number): { scale: number; opacity: number } {
+  if (frame >= openExitEnd()) return { scale: OPEN_SCALE, opacity: 0 };
+  const lift = interpolate(frame, [OPEN_FRAMES, openExitEnd()], [0, 1], CLAMP);
+  return { scale: OPEN_SCALE * (1 - 0.1 * lift), opacity: 1 - lift };
+}
 
 /** Absolute frame window a pin is on the map: [landing, next landing + LIFT_F).
  *  The last pin never exits. */
@@ -59,7 +70,8 @@ export const CardWalk: React.FC<{
   return (
     <div style={{ position: "absolute", inset: 0, zIndex: 5, pointerEvents: "none" }}>
       {spots.map(({ b, px, py }, i) => {
-        const { scale, opacity } = pinAnim(frame, i, buildings.length);
+        const opening = frame < openExitEnd();
+        const { scale, opacity } = opening ? openingAnim(frame) : pinAnim(frame, i, buildings.length);
         if (opacity <= 0) return null;
         return (
           <div key={b.slug} style={{ position: "absolute", left: px - CARD.w / 2, top: py - CARD.h / 2, width: CARD.w, height: CARD.h, display: "flex", alignItems: "center", justifyContent: "center" }}>

@@ -1,8 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { landFrame } from "@/lib/timeline";
-import { ROW_STRIDE, listShift } from "./PosterList";
+import { OPEN_FRAMES, openExitEnd, landFrame } from "@/lib/timeline";
+import { ROW_STRIDE, listShift, openingRows } from "./PosterList";
 
 const SLIDE_F = Math.round(0.3 * 45);
+
+describe("openingRows", () => {
+  it("first-capacity rows are landed through the opening hold", () => {
+    expect(openingRows(0, 10, 8)).toBe(8);
+    expect(openingRows(OPEN_FRAMES - 1, 10, 8)).toBe(8);
+    expect(openingRows(0, 5, 8)).toBe(5); // fewer buildings than capacity
+  });
+  it("resets before the walk", () => {
+    expect(openingRows(openExitEnd(), 10, 8)).toBe(0);
+  });
+});
 
 describe("listShift", () => {
   it("no shift while everything fits", () => {

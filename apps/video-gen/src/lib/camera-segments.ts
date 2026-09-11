@@ -1,4 +1,4 @@
-import { SLOT_FRAMES, INTRO_FRAMES, END_FRAMES } from "./timeline";
+import { SLOT_FRAMES, END_FRAMES, walkStart } from "./timeline";
 import type { MapViewport } from "./viewport";
 import type { ReelBuilding } from "./config";
 
@@ -37,7 +37,8 @@ export function buildCameraSegments(
 ): Segment[] {
   const segs: Segment[] = [];
 
-  segs.push({ kind: "hold", at: worldVP, durationInFrames: INTRO_FRAMES });
+  // Lead segment spans the opening thumbnail + its exit + the intro scaffold.
+  segs.push({ kind: "hold", at: worldVP, durationInFrames: walkStart() });
 
   for (let i = 0; i < buildings.length; i++) {
     const b = buildings[i];
@@ -70,7 +71,7 @@ export function buildStaticSegments(
   buildings: ReelBuilding[],
   vp: MapViewport,
 ): Segment[] {
-  const segs: Segment[] = [{ kind: "hold", at: vp, durationInFrames: INTRO_FRAMES }];
+  const segs: Segment[] = [{ kind: "hold", at: vp, durationInFrames: walkStart() }];
   buildings.forEach((b, i) => {
     const isLast = i === buildings.length - 1;
     segs.push({

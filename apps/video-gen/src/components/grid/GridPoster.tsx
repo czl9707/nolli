@@ -9,7 +9,7 @@ import { PosterTitle } from "./PosterTitle";
 import { PosterList } from "./PosterList";
 import { ONE_PIN_VP } from "@/lib/viewport";
 import { type ReelBuilding, type ReelConfig } from "@/lib/config";
-import { CLAMP, INTRO_FRAMES, REEL_W, endStart } from "@/lib/timeline";
+import { CLAMP, REEL_W, endStart, landFrame } from "@/lib/timeline";
 
 const SCREEN_PADDING = {
   top: 96,
@@ -29,7 +29,7 @@ export const GridPoster: React.FC<{ cfg: ReelConfig; buildings: ReelBuilding[] }
   const frame = useCurrentFrame();
   // The bottom hairline doubles as the progress track: a full-strength
   // foreground segment grows along it from the first landing to the last.
-  const progress = interpolate(frame, [INTRO_FRAMES, endStart(buildings.length)], [0, 1], CLAMP);
+  const progress = interpolate(frame, [landFrame(0), endStart(buildings.length)], [0, 1], CLAMP);
   return (
   <Screen>
     <HSplit>
