@@ -3,13 +3,17 @@
 // Remotion's bundler (which starts at src/index.ts) never sees Node APIs.
 import { existsSync, readFileSync } from "node:fs";
 
-export type CliFlags = { fresh?: boolean; variant?: string };
+export type CliFlags = { fresh?: boolean; variant?: string; theme?: string };
 
 export function parseFlags(argv: readonly string[]): CliFlags {
-  const variantIdx = argv.indexOf("--variant");
+  const flag = (name: string) => {
+    const idx = argv.indexOf(name);
+    return idx !== -1 ? argv[idx + 1] : undefined;
+  };
   return {
     fresh: argv.includes("--fresh"),
-    variant: variantIdx !== -1 ? argv[variantIdx + 1] : undefined,
+    variant: flag("--variant"),
+    theme: flag("--theme"),
   };
 }
 
@@ -22,7 +26,7 @@ export function runCli(
   fn: (slug: string, flags: CliFlags) => Promise<void>,
 ): void {
   const slug = process.argv[2];
-  if (!slug || slug.startsWith("--")) throw new Error(`Usage: ${name} <architect-slug> [--fresh] [--variant grid|ghost]`);
+  if (!slug || slug.startsWith("--")) throw new Error(`Usage: ${name} <architect-slug> [--fresh] [--variant grid] [--theme light|dark]`);
   fn(slug, parseFlags(process.argv)).catch((e) => {
     console.error(e);
     process.exit(1);

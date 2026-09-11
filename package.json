@@ -11,5 +11,12 @@
     "lint": "pnpm -r lint",
     "format": "pnpm -r format",
     "deploy": "pnpm --filter nolli deploy"
+  },
+  "pnpm": {
+    "packageExtensions": {
+      "@remotion/bundler@*": {
+        "dependencies": { "typescript": "^5.9.3" }
+      }
+    }
   }
 }

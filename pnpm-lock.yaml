@@ -4,6 +4,8 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+packageExtensionsChecksum: sha256-k4wJlRLtLJYoSlo0ggUc6jHbpZwvFlQYSc+DlSrHhHg=
+
 importers:
 
   .: {}
@@ -18,10 +20,10 @@ importers:
         version: link:../../packages/ui
       '@remotion/bundler':
         specifier: '4'
-        version: 4.0.507(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+        version: 4.0.507(postcss@8.5.16)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       '@remotion/cli':
         specifier: '4'
-        version: 4.0.507(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(typescript@5.9.3)
+        version: 4.0.507(postcss@8.5.16)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(typescript@5.9.3)
       '@remotion/renderer':
         specifier: '4'
         version: 4.0.507(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -388,10 +390,10 @@ importers:
         version: link:../../packages/ui
       '@remotion/bundler':
         specifier: '4'
-        version: 4.0.507(postcss@8.5.16)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+        version: 4.0.507(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       '@remotion/cli':
         specifier: '4'
-        version: 4.0.507(postcss@8.5.16)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(typescript@5.9.3)
+        version: 4.0.507(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(typescript@5.9.3)
       '@remotion/google-fonts':
         specifier: '4'
         version: 4.0.507(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -6486,6 +6488,7 @@ snapshots:
       react-refresh: 0.18.0
       remotion: 4.0.507(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       style-loader: 4.0.0(webpack@5.105.0(esbuild@0.28.1)(postcss@8.5.16))
+      typescript: 5.9.3
       webpack: 5.105.0(esbuild@0.28.1)(postcss@8.5.16)
     transitivePeerDependencies:
       - '@minify-html/node'
@@ -6520,6 +6523,7 @@ snapshots:
       react-refresh: 0.18.0
       remotion: 4.0.507(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       style-loader: 4.0.0(webpack@5.105.0(esbuild@0.28.1))
+      typescript: 5.9.3
       webpack: 5.105.0(esbuild@0.28.1)
     transitivePeerDependencies:
       - '@minify-html/node'
