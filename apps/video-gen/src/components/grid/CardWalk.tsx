@@ -76,7 +76,7 @@ export const CardWalk: React.FC<{
         return (
           <div key={b.slug} style={{ position: "absolute", left: px - CARD.w / 2, top: py - CARD.h / 2, width: CARD.w, height: CARD.h, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <div style={{ transform: `scale(${scale})`, opacity, transformOrigin: "center" }}>
-              <PaperCard src={staticFile(heroImagePath(slug, b.slug))} alt={b.name} width={344} height={230} seed={b.slug} angleSeed={i} tilt={28} />
+              <PaperCard src={staticFile(heroImagePath(slug, b.slug))} alt={b.name} width={344} height={230} seed={String(i * 17)} tilt={28} />
             </div>
           </div>
         );
