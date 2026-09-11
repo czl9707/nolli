@@ -12,7 +12,7 @@ export const DROP_F = 16;
 export const LIFT_F = 11;
 
 /** Opening collage card scale — all cards on the map at once, small. */
-export const OPEN_SCALE = 0.4;
+export const OPEN_SCALE = 0.6;
 
 /** Opening-thumbnail state: every card steady at OPEN_SCALE through the
  *  hold, then a slight recede + fade over the exit (into the walk). Pure. */

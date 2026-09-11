@@ -13,13 +13,13 @@ describe("square reel timeline", () => {
     expect(FPS).toBe(45);
   });
 
-  it("phases: 1.6s open, 1.2s intro, 1.2s slots, 2.5s end", () => {
-    expect(OPEN_S).toBe(1.6);
+  it("phases: 0.8s open, 1.2s intro, 1.2s slots, 2.5s end", () => {
+    expect(OPEN_S).toBe(0.8);
     expect(INTRO_S).toBe(1.2);
     expect(WALK_SLOT_S).toBe(1.2);
     expect(END_S).toBe(2.5);
     expect(SLOT_FRAMES).toBe(54); // 1.2 × 45
-    expect(OPEN_FRAMES).toBe(72); // 1.6 × 45
+    expect(OPEN_FRAMES).toBe(36); // 0.8 × 45
     expect(INTRO_FRAMES).toBe(54);
     expect(END_FRAMES).toBe(113); // round(2.5 × 45) = 112.5 → 113
   });

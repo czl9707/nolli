@@ -7,7 +7,7 @@ export const REEL_H = 1080;
 // Square ledger reel: opening (thumbnail — every card on the map, list
 // pre-filled, resets) → intro (title in over the scaffold) → walk (one card +
 // one ledger line per slot) → end (icon+text lockup). No hook, no CTA stage.
-export const OPEN_S = 1.6;
+export const OPEN_S = 0.8;
 export const INTRO_S = 1.2;
 export const WALK_SLOT_S = 1.2;
 export const END_S = 2.5;
