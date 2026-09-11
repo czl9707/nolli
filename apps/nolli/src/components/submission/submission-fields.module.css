@@ -31,7 +31,6 @@
 
 .sectionTitle {
   color: rgb(var(--color-secondary-foreground));
-  text-transform: uppercase;
 }
 
 .field {
