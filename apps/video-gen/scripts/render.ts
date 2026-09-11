@@ -50,7 +50,10 @@ runCli("render", async (slug, flags) => {
   const serveUrl = await bundleApp(entry);
 
   const variant = parseVariantArg(flags.variant);
-  const theme = parseThemeArg(flags.theme);
+  // The reel theme flag lives here, not in @nolli/remotion's shared parser —
+  // it's a video-gen concept (demo-gen shares that CLI).
+  const themeIdx = process.argv.indexOf("--theme");
+  const theme = parseThemeArg(themeIdx !== -1 ? process.argv[themeIdx + 1] : undefined);
   const inputProps = { slug, variant, theme };
   const comp = await selectComposition({ serveUrl, id: "reel", inputProps, browserExecutable: BROWSER });
 
