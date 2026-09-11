@@ -8,16 +8,18 @@ const GRASS = `url(${staticFile("patterns/dark/grass.png")})`;
 
 /** The paper photo card — inline-styled port of landing's PaperPhoto minus
  *  caption/pin/motion. Deterministic: seeded tilt + torn clip; the consumer
- *  owns motion and positioning. */
+ *  owns motion and positioning. `angleSeed` (e.g. the building's index)
+ *  overrides the slug-hash tilt seed — same slot ⇒ same tilt across reels. */
 export const PaperCard: React.FC<{
   src: string;
   alt: string;
   width: number;
   height: number;
   seed: string;
+  angleSeed?: number;
   tilt?: number;
-}> = ({ src, alt, width, height, seed, tilt = 2 }) => {
-  const rotate = jitter(hashId(seed) + 50, tilt) - tilt / 2;
+}> = ({ src, alt, width, height, seed, angleSeed, tilt = 2 }) => {
+  const rotate = jitter((angleSeed ?? hashId(seed)) + 50, tilt) - tilt / 2;
   return (
     <div style={{ display: "inline-block", filter: "drop-shadow(4px 4px 4px rgb(var(--color-paper-foreground) / 0.4))" }}>
       <div
