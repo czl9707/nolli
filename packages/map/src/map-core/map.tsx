@@ -17,6 +17,7 @@ import { createPortal } from "react-dom"
 import { animate, type AnimationPlaybackControls, type Easing } from "framer-motion"
 import { toast } from "sonner"
 import { useThemeStore } from "@nolli/ui"
+import { MAP_FONT } from "../map-style"
 import {
   X,
   Minus,
@@ -159,7 +160,7 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
       resolvedTheme === "dark" ? mapStyles.dark : mapStyles.light
     currentStyleRef.current = initialStyle
 
-    document.fonts.load("24px 'Architects Daughter'").then(() => {
+    document.fonts.load(`24px '${MAP_FONT}'`).then(() => {
       if (!containerRef.current) return
       const map = new MapLibreGL.Map({
         container: containerRef.current,

@@ -4,6 +4,8 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+packageExtensionsChecksum: sha256-k4wJlRLtLJYoSlo0ggUc6jHbpZwvFlQYSc+DlSrHhHg=
+
 importers:
 
   .: {}
@@ -18,10 +20,10 @@ importers:
         version: link:../../packages/ui
       '@remotion/bundler':
         specifier: '4'
-        version: 4.0.507(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+        version: 4.0.507(postcss@8.5.16)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       '@remotion/cli':
         specifier: '4'
-        version: 4.0.507(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(typescript@5.9.3)
+        version: 4.0.507(postcss@8.5.16)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(typescript@5.9.3)
       '@remotion/renderer':
         specifier: '4'
         version: 4.0.507(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -388,10 +390,10 @@ importers:
         version: link:../../packages/ui
       '@remotion/bundler':
         specifier: '4'
-        version: 4.0.507(postcss@8.5.16)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+        version: 4.0.507(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       '@remotion/cli':
         specifier: '4'
-        version: 4.0.507(postcss@8.5.16)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(typescript@5.9.3)
+        version: 4.0.507(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(typescript@5.9.3)
       '@remotion/google-fonts':
         specifier: '4'
         version: 4.0.507(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -583,12 +585,18 @@ importers:
 
   packages/ui:
     dependencies:
-      '@fontsource-variable/quicksand':
+      '@fontsource-variable/figtree':
         specifier: ^5.3.0
         version: 5.3.0
-      '@fontsource/architects-daughter':
-        specifier: ^5.2.7
-        version: 5.2.7
+      '@fontsource/instrument-serif':
+        specifier: ^5.3.0
+        version: 5.3.0
+      '@fontsource/kalam':
+        specifier: ^5.3.0
+        version: 5.3.0
+      '@fontsource/lato':
+        specifier: ^5.3.0
+        version: 5.3.0
       '@nolli/data':
         specifier: workspace:*
         version: link:../data
@@ -1084,20 +1092,23 @@ packages:
   '@floating-ui/utils@0.2.11':
     resolution: {integrity: sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg==}
 
+  '@fontsource-variable/figtree@5.3.0':
+    resolution: {integrity: sha512-VRVodD7OiG7apQwE8/2fMjaqpY/a0qRJqL5HtYj8CKIVps+9amaFcdfKmDIf7iqYQx6iPLlArVXAfKeIZmVcNQ==}
+
   '@fontsource-variable/open-sans@5.3.0':
     resolution: {integrity: sha512-VOfhZfLIOBVa6K/dTEu7scqQXYdGa4jBX8quFpQ0S6574B+W2EOBJf9PkqyVtMEI7WWIWNEbpvPc3vY1mN2mmQ==}
-
-  '@fontsource-variable/quicksand@5.3.0':
-    resolution: {integrity: sha512-EMyoXnGC0uIbjyHDB01MTJoQuODsMo7Q/4XLEwN97YJEeV1WIVFI0QBiW2exGnxvhnMHb+IwQ9E5QZDgGMWCHw==}
 
   '@fontsource-variable/red-hat-mono@5.3.0':
     resolution: {integrity: sha512-/mEvTCcruJY64xRgx1gsmsYuGR7MtOduOsuyeHVJ07p+2gGvCqROauIwaTCcVHL4eBGi+Lns4EUIjrPZLCn5gQ==}
 
-  '@fontsource/architects-daughter@5.2.7':
-    resolution: {integrity: sha512-W7tHXduV9kRQZDTqcU4Rnc/GtSq9cYUHOnhvcRPjy87u5x/oRqKXPU2PghqbktTECOIh1N0qVZLt9rwqa+aWhg==}
-
   '@fontsource/instrument-serif@5.3.0':
     resolution: {integrity: sha512-mDiaIg0u67sYV59fie92Wz4sM8UiVlbL7fLxnFPCKkX15DMASEnQTREbaP5S5/3DCcsoAOcQ0sV9E4AeY4QqYQ==}
+
+  '@fontsource/kalam@5.3.0':
+    resolution: {integrity: sha512-FDkVoDfPDCSN/eO81FOYtUI67eMgpVBJmjBtAqSL0PmEhJyeFY2biC+CR+yEttksgXR9+swpFdYmQTyjwBq80Q==}
+
+  '@fontsource/lato@5.3.0':
+    resolution: {integrity: sha512-0WhF/4rhrw+ErIyneKvhHn2YAl+xf8GDtllgOgOzDmeaSlLQtjpChXaQOpWhG2BchQW0WJy2zLV12Hdg0ndOMw==}
 
   '@hookform/resolvers@5.4.0':
     resolution: {integrity: sha512-EIsqr/t/qbinPIhGjMdtvutIN1Kk4uwbROE9/UQ93CAVGR7GkA7Y92+fX80OzXi/OB67jVFYwKGO1WzkxmkFZw==}
@@ -5195,15 +5206,17 @@ snapshots:
 
   '@floating-ui/utils@0.2.11': {}
 
-  '@fontsource-variable/open-sans@5.3.0': {}
+  '@fontsource-variable/figtree@5.3.0': {}
 
-  '@fontsource-variable/quicksand@5.3.0': {}
+  '@fontsource-variable/open-sans@5.3.0': {}
 
   '@fontsource-variable/red-hat-mono@5.3.0': {}
 
-  '@fontsource/architects-daughter@5.2.7': {}
-
   '@fontsource/instrument-serif@5.3.0': {}
+
+  '@fontsource/kalam@5.3.0': {}
+
+  '@fontsource/lato@5.3.0': {}
 
   '@hookform/resolvers@5.4.0(react-hook-form@7.81.0(react@19.2.7))':
     dependencies:
@@ -6486,6 +6499,7 @@ snapshots:
       react-refresh: 0.18.0
       remotion: 4.0.507(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       style-loader: 4.0.0(webpack@5.105.0(esbuild@0.28.1)(postcss@8.5.16))
+      typescript: 5.9.3
       webpack: 5.105.0(esbuild@0.28.1)(postcss@8.5.16)
     transitivePeerDependencies:
       - '@minify-html/node'
@@ -6520,6 +6534,7 @@ snapshots:
       react-refresh: 0.18.0
       remotion: 4.0.507(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       style-loader: 4.0.0(webpack@5.105.0(esbuild@0.28.1))
+      typescript: 5.9.3
       webpack: 5.105.0(esbuild@0.28.1)
     transitivePeerDependencies:
       - '@minify-html/node'

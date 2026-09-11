@@ -22,8 +22,8 @@ export function useFontsReady(): void {
     };
     Promise.race([
       Promise.all([
-        document.fonts.load('400 96px "Architects Daughter"'),
-        document.fonts.load('400 96px "Quicksand Variable"'),
+        document.fonts.load('400 96px "Kalam"'),
+        document.fonts.load('400 96px "Lato"'),
         document.fonts.load('500 88px "Instrument Serif"'),
         document.fonts.load('italic 500 64px "Instrument Serif"'),
         document.fonts.load('500 16px "Open Sans Variable"'),
