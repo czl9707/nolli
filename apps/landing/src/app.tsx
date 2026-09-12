@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import Lenis from "lenis"
-import { Body2 } from "@nolli/ui"
-import { useLandingData, type LandingData } from "@/lib/landing-data"
+import { landingData } from "@/lib/landing-data"
 import { Spine } from "@/spine/spine"
 import type { SpineScene } from "@/spine/timeline"
 import { heroCamera, heroHold } from "@/scenes/hero"
@@ -12,38 +11,27 @@ import { statsFullTransition, footerHold } from "@/scenes/footer"
 import { ScrollThumb } from "@/components/scroll-thumb"
 import { SiteHeader } from "@/components/site-header"
 
-/** Scene list for the spine. All data lands centrally in useLandingData and
- * scenes measure their own geometry at render time, so the list only
- * rebuilds when the data lands. */
-function useSpineScenes(data: LandingData | null | undefined): SpineScene[] | null {
-  return useMemo(
-    () =>
-      data
-        ? [
-            heroHold(data),
-            heroCityTransition(),
-            cityHold(data),
-            cityArchitectTransition(),
-            architectHold(data),
-            architectStatsTransition(),
-            statsHold(data),
-            statsFullTransition(),
-            footerHold(data),
-          ]
-        : null,
-    [data],
-  )
-}
-
 export function App() {
-  const { status, data, error } = useLandingData()
-  const scenes = useSpineScenes(data)
+  const scenes = useMemo<SpineScene[]>(
+    () => [
+      heroHold(landingData),
+      heroCityTransition(),
+      cityHold(landingData),
+      cityArchitectTransition(),
+      architectHold(landingData),
+      architectStatsTransition(),
+      statsHold(landingData),
+      statsFullTransition(),
+      footerHold(landingData),
+    ],
+    [],
+  )
   const [revealed, setRevealed] = useState(false)
   const onMapIdle = useCallback(() => setRevealed(true), [])
 
   // boot camera = the hero's own fit, so the spine's initial placement
   // plants the map where the hero lands
-  const bootCamera = useMemo(() => (data ? heroCamera(data) : null), [data])
+  const bootCamera = useMemo(() => heroCamera(landingData), [])
 
   // wheel inertia — Lenis eases the native scroll to a stop; skipped for
   // reduced motion (the native step scroll is the accessible default)
@@ -65,16 +53,6 @@ export function App() {
 
   // the scroll spine stays still until the map can be seen: <main data-boot>
   // below + the body:has(main[data-boot]) lock in global.css
-  if (status === "error") {
-    return (
-      <main data-boot={revealed ? undefined : ""}>
-        <Body2>
-          {error?.message ?? "failed to load map data"}
-        </Body2>
-      </main>
-    )
-  }
-
   return (
     <main data-boot={revealed ? undefined : ""}>
       {/* app chrome — fixed at this level it stacks above the spine's scene
@@ -83,9 +61,7 @@ export function App() {
         <SiteHeader />
       </div>
       <ScrollThumb />
-      {data && scenes && bootCamera && (
-        <Spine scenes={scenes} camera={bootCamera} onMapIdle={onMapIdle} />
-      )}
+      <Spine scenes={scenes} camera={bootCamera} onMapIdle={onMapIdle} />
     </main>
   )
 }

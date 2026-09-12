@@ -8,10 +8,9 @@ import { motion } from "framer-motion"
 import { MapContext, MapMarker, MarkerContent } from "@nolli/map"
 import { PaperPhoto, TRANSITION_SHORT, hashId, jitter } from "@nolli/ui"
 import { ROLL_EASE } from "@/lib/constants"
-import type { ArchSummary } from "@nolli/data"
 import { useMapPortal, useSpineMap } from "@/spine/spine"
 import { useLinger } from "@/lib/use-linger"
-import type { ArchEntry } from "@/lib/landing-data"
+import type { ArchEntry, ArchSummary } from "@/lib/landing-data"
 
 const LIT_MAX = { w: 168, h: 112 }
 const DIM_MAX = { w: 132, h: 88 }

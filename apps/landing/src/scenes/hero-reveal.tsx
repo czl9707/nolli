@@ -13,7 +13,7 @@ import {
   type MotionValue,
 } from "framer-motion"
 import type { MapRef } from "@nolli/map"
-import type { ArchSummary } from "@nolli/data"
+import type { ArchSummary } from "@/lib/landing-data"
 import { useIsMobile } from "@nolli/ui"
 import { useSpineMap } from "@/spine/spine"
 import styles from "./hero-reveal.module.css"

@@ -4,7 +4,7 @@
 // place while the incoming fades in; its pin crossfades back underneath.
 import { createPortal } from "react-dom"
 import { useEffect, useState } from "react"
-import type { ArchSummary } from "@nolli/data"
+import type { ArchSummary } from "@/lib/landing-data"
 import { ArchPinMarker, MapContext, ArchPhotoPinMarker } from "@nolli/map"
 import { useMapPortal, useSpineMap } from "@/spine/spine"
 import { useLinger } from "@/lib/use-linger"

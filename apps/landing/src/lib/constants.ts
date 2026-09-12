@@ -4,11 +4,66 @@ export const APP_URL = "https://nolli-map.com"
 export const POSTER_URL = "https://poster.nolli-map.com"
 export const ABOUT_URL = "https://nolli-map.com/about"
 
-/** Architect-ledger names — matched against the DB's architect options;
- * unmatched names drop out so the list follows the seed data. */
-export const ARCHITECT_LEDGER = [
-  "Louis Kahn", "Le Corbusier",  "Frank Gehry", "Oscar Niemeyer", "SANAA", "Zaha Hadid", "Norman Foster", "Peter Zumthor",
-]
+/** Architect-ledger decks — curated works per architect, in show order.
+ * Only these slugs are baked into landing.json. */
+export const ARCHITECT_DECK: Record<string, readonly string[]> = {
+  "Louis Kahn": [
+    "salk-institute",
+    "phillips-exeter-library",
+    "kimbell-art-museum",
+    "yale-center-british-art",
+    "fdr-four-freedoms-park",
+  ],
+  "Le Corbusier": [
+    "villa-savoye",
+    "notre-dame-du-haut",
+    "capitol-complex-chandigarh",
+    "couvent-sainte-marie-la-tourette",
+    "national-museum-western-art",
+  ],
+  "Frank Gehry": [
+    "guggenheim-museum-bilbao",
+    "walt-disney-concert-hall",
+    "dancing-house",
+    "iac-building",
+  ],
+  "Oscar Niemeyer": [
+    "palacio-da-alvorada",
+    "national-congress-of-brazil",
+    "cathedral-of-brasilia",
+    "itamaraty-palace",
+    "niteroi-museum-of-contemporary-art",
+  ],
+  "SANAA": [
+    "kanazawa-21st-century-museum",
+    "new-museum-new-york",
+    "rolex-learning-center",
+    "grace-farms",
+    "sumida-hokusai-museum",
+  ],
+  "Zaha Hadid": [
+    "vitra-fire-station",
+    "maxxi",
+    "guangzhou-opera-house",
+    "heydar-aliyev-center",
+    "520-west-28th-street",
+  ],
+  "Norman Foster": [
+    "hsbc-main-building-hong-kong",
+    "the-gherkin-30-st-mary-axe",
+    "london-city-hall",
+    "hearst-tower",
+  ],
+  "Peter Zumthor": [
+    "saint-benedict-chapel-sumvitg",
+    "vals-thermal-baths",
+    "bruder-klaus-field-chapel",
+    "kolumba-museum",
+  ],
+}
+
+/** Architect-ledger names, in grid order. */
+export const ARCHITECT_LEDGER = Object.keys(ARCHITECT_DECK)
 
 /** Curated city decks — slug lists per city, shared by the hero (random
  * pick) and the city scene; the hero's pick is the city scene's default.

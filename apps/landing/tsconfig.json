@@ -1,6 +1,15 @@
 {
-  "files": [],
-  "references": [
-    { "path": "./tsconfig.vite.json" }
-  ]
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@nolli/board": ["../../packages/board/src/index.ts"],
+      "@nolli/board/layout": ["../../packages/board/src/pin-board-layout.ts"],
+      "@nolli/map": ["../../packages/map/src/index.ts"],
+      "@nolli/ui": ["../../packages/ui/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": ["node_modules"]
 }

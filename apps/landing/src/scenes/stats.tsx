@@ -7,7 +7,7 @@
 import { useEffect, useRef, useState } from "react"
 import { motion, useInView, useMotionValue, useReducedMotion, useSpring, useTransform, type Transition } from "framer-motion"
 import { Badge, H2, H4, H6, PaperPhoto, TRANSITION_SHORT } from "@nolli/ui"
-import type { ArchSummary } from "@nolli/data"
+import type { ArchSummary } from "@/lib/landing-data"
 import { type SceneCamera } from "@nolli/map"
 import { APP_URL, ROLL_EASE } from "@/lib/constants"
 import { useWhereami } from "@/lib/whereami"
