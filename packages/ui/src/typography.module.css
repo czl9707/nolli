@@ -73,4 +73,10 @@
     font-weight: var(--typography-note-fontWeight);
     font-size: var(--typography-note-fontSize);
     line-height: var(--typography-note-lineHeight);
+
+    /* Kalam's ink sits high in its em box (content area 1.594em; at
+       line-height 1 the ink center sits 0.137em above box center), so
+       glyphs float above neighboring sans. Measured optical nudge. */
+    position: relative;
+    top: 0.12rem;
 }

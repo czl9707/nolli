@@ -1,5 +1,10 @@
-@import "@fontsource/architects-daughter/400.css";
-@import "@fontsource-variable/quicksand/wght.css";
+@import "@fontsource/lato/300.css";
+@import "@fontsource/lato/400.css";
+@import "@fontsource/lato/700.css";
+@import "@fontsource/kalam/300.css";
+@import "@fontsource/kalam/400.css";
+@import "@fontsource/kalam/700.css";
+@import "@fontsource/instrument-serif";
 
 a {
     color: inherit;
@@ -61,55 +66,56 @@ body {
     --breakpoint-md: 1080px;
     --breakpoint-lg: 1440px;
 
-    --font-playful: "Architects Daughter";
-    --font-sans: 'Quicksand Variable', sans-serif;
+    --font-playful: "Kalam", cursive;
+    --font-sans: "Lato", sans-serif;
+    --font-serif: "Instrument Serif", Georgia, serif;
 
     --typography-body1-fontFamily: var(--font-sans);
-    --typography-body1-fontWeight: 500;
+    --typography-body1-fontWeight: 400;
     --typography-body1-fontSize: 1rem;
     --typography-body1-lineHeight: 1.25;
 
     --typography-body2-fontFamily: var(--font-sans);
-    --typography-body2-fontWeight: 300;
+    --typography-body2-fontWeight: 400;
     --typography-body2-fontSize: 0.875rem;
     --typography-body2-lineHeight: 1.25;
 
     --typography-body3-fontFamily: var(--font-sans);
-    --typography-body3-fontWeight: 300;
+    --typography-body3-fontWeight: 400;
     --typography-body3-fontSize: 0.75rem;
     --typography-body3-lineHeight: 1.25;
 
     --typography-caption-fontFamily: var(--font-sans);
-    --typography-caption-fontWeight: 500;
+    --typography-caption-fontWeight: 700;
     --typography-caption-fontSize: 0.75rem;
     --typography-caption-lineHeight: 1.5;
 
-    --typography-h1-fontFamily: var(--font-playful);
+    --typography-h1-fontFamily: var(--font-sans);
     --typography-h1-fontWeight: 600;
     --typography-h1-fontSize: 2.75rem;
     --typography-h1-lineHeight: 1.25;
 
-    --typography-h2-fontFamily: var(--font-playful);
+    --typography-h2-fontFamily: var(--font-sans);
     --typography-h2-fontWeight: 600;
     --typography-h2-fontSize: 2.25rem;
     --typography-h2-lineHeight: 1.25;
 
-    --typography-h3-fontFamily: var(--font-playful);
+    --typography-h3-fontFamily: var(--font-sans);
     --typography-h3-fontWeight: 500;
     --typography-h3-fontSize: 1.875rem;
     --typography-h3-lineHeight: 1.25;
 
-    --typography-h4-fontFamily: var(--font-playful);
+    --typography-h4-fontFamily: var(--font-sans);
     --typography-h4-fontWeight: 500;
     --typography-h4-fontSize: 1.5rem;
     --typography-h4-lineHeight: 1.25;
 
-    --typography-h5-fontFamily: var(--font-playful);
+    --typography-h5-fontFamily: var(--font-sans);
     --typography-h5-fontWeight: 500;
     --typography-h5-fontSize: 1.25rem;
     --typography-h5-lineHeight: 1.4;
 
-    --typography-h6-fontFamily: var(--font-playful);
+    --typography-h6-fontFamily: var(--font-sans);
     --typography-h6-fontWeight: 400;
     --typography-h6-fontSize: 1.25rem;
     --typography-h6-lineHeight: 1.6;
