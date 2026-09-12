@@ -29,6 +29,11 @@
     justify-content: stretch;
 }
 
+.wordmark {
+    font-size: 1.25rem;
+    line-height: 1;
+}
+
 .icon {
     height: 1.25rem;
     width: 1.25rem;

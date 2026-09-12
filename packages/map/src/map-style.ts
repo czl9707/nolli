@@ -13,7 +13,13 @@ const PATTERN = {
   LANDUSE: "landuse-pattern",
 } as const
 
-const fontFamily = "Architects Daughter"
+/* Map label font. No glyphs URL in the style, so MapLibre rasterizes each
+   glyph client-side (TinySDF) from the webfont loaded in the document —
+   map.tsx preloads this family via document.fonts before init. The family
+   must be imported in @nolli/ui global.css. */
+export const MAP_FONT = "Kalam"
+
+const fontFamily = MAP_FONT
 
 type Stop = [number, number]
 type Themed<T> = T | { dark: T; light: T }
