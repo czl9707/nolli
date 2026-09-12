@@ -4,7 +4,7 @@
 // mount across the exit fade. `className` carries any scene discriminator
 // (the hero's clip driver matches its set by it).
 import { createPortal } from "react-dom"
-import type { ArchSummary } from "@nolli/data"
+import type { ArchSummary } from "@/lib/landing-data"
 import { MapContext, ArchPhotoPinMarker } from "@nolli/map"
 import { useMapPortal, useSpineMap } from "@/spine/spine"
 import { useLinger } from "@/lib/use-linger"
