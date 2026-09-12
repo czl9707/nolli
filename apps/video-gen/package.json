@@ -13,8 +13,6 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@fontsource-variable/open-sans": "^5.3.0",
-    "@fontsource/instrument-serif": "^5.3.0",
     "@nolli/data": "workspace:*",
     "@nolli/map": "workspace:*",
     "@nolli/remotion": "workspace:*",

@@ -24,9 +24,8 @@ export function useFontsReady(): void {
       Promise.all([
         document.fonts.load('400 96px "Kalam"'),
         document.fonts.load('400 96px "Lato"'),
-        document.fonts.load('500 88px "Instrument Serif"'),
-        document.fonts.load('italic 500 64px "Instrument Serif"'),
-        document.fonts.load('500 16px "Open Sans Variable"'),
+        document.fonts.load('400 88px "Instrument Serif"'),
+        document.fonts.load('italic 400 64px "Instrument Serif"'),
       ]),
       // Ceiling so no page quirk can hold the handle open.
       new Promise((r) => setTimeout(r, 30_000)),

@@ -376,12 +376,6 @@ importers:
 
   apps/video-gen:
     dependencies:
-      '@fontsource-variable/open-sans':
-        specifier: ^5.3.0
-        version: 5.3.0
-      '@fontsource/instrument-serif':
-        specifier: ^5.3.0
-        version: 5.3.0
       '@nolli/data':
         specifier: workspace:*
         version: link:../../packages/data
@@ -591,9 +585,6 @@ importers:
 
   packages/ui:
     dependencies:
-      '@fontsource-variable/figtree':
-        specifier: ^5.3.0
-        version: 5.3.0
       '@fontsource/instrument-serif':
         specifier: ^5.3.0
         version: 5.3.0
@@ -1097,12 +1088,6 @@ packages:
 
   '@floating-ui/utils@0.2.11':
     resolution: {integrity: sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg==}
-
-  '@fontsource-variable/figtree@5.3.0':
-    resolution: {integrity: sha512-VRVodD7OiG7apQwE8/2fMjaqpY/a0qRJqL5HtYj8CKIVps+9amaFcdfKmDIf7iqYQx6iPLlArVXAfKeIZmVcNQ==}
-
-  '@fontsource-variable/open-sans@5.3.0':
-    resolution: {integrity: sha512-VOfhZfLIOBVa6K/dTEu7scqQXYdGa4jBX8quFpQ0S6574B+W2EOBJf9PkqyVtMEI7WWIWNEbpvPc3vY1mN2mmQ==}
 
   '@fontsource-variable/red-hat-mono@5.3.0':
     resolution: {integrity: sha512-/mEvTCcruJY64xRgx1gsmsYuGR7MtOduOsuyeHVJ07p+2gGvCqROauIwaTCcVHL4eBGi+Lns4EUIjrPZLCn5gQ==}
@@ -5207,10 +5192,6 @@ snapshots:
       react-dom: 19.2.7(react@19.2.7)
 
   '@floating-ui/utils@0.2.11': {}
-
-  '@fontsource-variable/figtree@5.3.0': {}
-
-  '@fontsource-variable/open-sans@5.3.0': {}
 
   '@fontsource-variable/red-hat-mono@5.3.0': {}
 
