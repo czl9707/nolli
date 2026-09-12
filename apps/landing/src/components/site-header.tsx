@@ -1,4 +1,4 @@
-import { Body2, Button, H6 } from "@nolli/ui"
+import { Body2, Button, Note } from "@nolli/ui"
 import { ABOUT_URL, APP_URL, POSTER_URL } from "@/lib/constants"
 import styles from "./site-header.module.css"
 
@@ -12,7 +12,7 @@ export function SiteHeader() {
       <div className={styles.row}>
         <a className={styles.brand} href="#" aria-label="Nolli home">
           <img className={styles.mark} src="/favicon.svg" alt="" width={24} height={24} />
-          <H6 className={`${styles.wordmark}`}>Nolli</H6>
+          <Note className={`${styles.wordmark}`}>Nolli</Note>
         </a>
         <div className={styles.right}>
           <nav className={styles.links} aria-label="site">

@@ -14,7 +14,6 @@ import {
 } from "framer-motion"
 import type { MapRef } from "@nolli/map"
 import type { ArchSummary } from "@/lib/landing-data"
-import { useIsMobile } from "@nolli/ui"
 import { useSpineMap } from "@/spine/spine"
 import styles from "./hero-reveal.module.css"
 
@@ -100,8 +99,7 @@ function clipToPlate(el: HTMLElement, p: { left: number; top: number; right: num
  * Renders in the hero scene's tree (first child of the sticky hero
  * section): pinned during the hold, riding up with the page once the
  * section releases. The plate roams `boundsRef` if given (a pane), else
- * the root. Snap mode (touch / reduced motion) renders nothing — markers
- * show unclipped. */
+ * the root. Reduced motion renders nothing — markers show unclipped. */
 export function CursorReveal({
   boundsRef,
   sx,
@@ -116,7 +114,7 @@ export function CursorReveal({
   tagTr?: string
 }) {
   const reduced = useReducedMotion()
-  const snap = useIsMobile() || !!reduced
+  const snap = !!reduced
   const map = useSpineMap()
   const rootRef = useRef<HTMLDivElement | null>(null)
   const coordsRef = useRef<HTMLSpanElement>(null)

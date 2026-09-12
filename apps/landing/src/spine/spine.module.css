@@ -1,0 +1,14 @@
+/* Spine boot: only the map layer sits hidden until the map has settled,
+   then fades in — the scenes render from frame one so their entrance
+   animations play visibly while the map loads. spine.tsx drives opacity
+   from mapVeilOff; only the easing lives here. */
+.boot {
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .boot {
+    transition: none;
+  }
+}

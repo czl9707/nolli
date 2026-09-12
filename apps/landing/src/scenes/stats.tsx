@@ -6,7 +6,7 @@
 // CTA closing the last.
 import { useEffect, useRef, useState } from "react"
 import { motion, useInView, useMotionValue, useReducedMotion, useSpring, useTransform, type Transition } from "framer-motion"
-import { Badge, H2, H4, H6, PaperPhoto, TRANSITION_SHORT } from "@nolli/ui"
+import { Badge, H2, H3, H4, H6, PaperPhoto, TRANSITION_SHORT } from "@nolli/ui"
 import type { ArchSummary } from "@/lib/landing-data"
 import { type SceneCamera } from "@nolli/map"
 import { APP_URL, ROLL_EASE } from "@/lib/constants"
@@ -78,7 +78,7 @@ function StatsScene({ stats, photoPool, architectNames }: {
                   <MapTransition sceneId={SCENE_ID} untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={WORLD} />
                   <HSplit>
                     <Pane className={`${styles.statementPane} ${styles.cell}`}>
-                      <H2>
+                      <H2 className={styles.statementText}>
                         A Map. A Collection.
                         <br />
                         A <span className={styles.accent}>Growing Community</span>.
@@ -198,7 +198,7 @@ function NumberBlock({ value, label, sub, delay, size }: {
 }) {
   return (
     <div className={styles.block}>
-      <H4 className={styles.label}>{label}</H4>
+      <H3 className={styles.label}>{label}</H3>
       <div className={styles.statsLine}>
         <CountUp to={value} delay={delay} className={`${styles.num} ${styles[size]}`} /> 
         <H6 className={styles.sub}>{sub}</H6>

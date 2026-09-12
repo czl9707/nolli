@@ -5,7 +5,7 @@
 // architect's works; the map can place them.
 import { useEffect, useRef, useState } from "react"
 import { useMotionValueEvent } from "framer-motion"
-import { H3 } from "@nolli/ui"
+import { H2 } from "@nolli/ui"
 import type { SceneCamera } from "@nolli/map"
 import { useSceneScroll, useSpineMap } from "@/spine/spine"
 import { useLinger } from "@/lib/use-linger"
@@ -87,11 +87,11 @@ function ArchitectLedger({ entries }: { entries: ArchEntry[] }) {
                       <ArchImageMarkers entries={entries} selectedId={selectedEntry?.id ?? -1} on={markersOn} />
                       {selectedEntry && (
                         <div className={styles.bandText}>
-                          <H3>
+                          <H2 className={styles.statementText}>
                             You can name the works of <RollText text={selectedEntry.name} />.
                             <br />
                             <span className={styles.accent}>Nolli</span> help you pin them on the map.
-                          </H3>
+                          </H2>
                         </div>
                       )}
                     </Pane>

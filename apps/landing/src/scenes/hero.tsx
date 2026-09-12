@@ -12,7 +12,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, type MotionValue } from "framer-motion"
 import { ArrowUpRight } from "lucide-react"
-import { Body2, H1, H3, TRANSITION_SHORT, useIsMobile } from "@nolli/ui"
+import { Body2, H1, H3, Note, TRANSITION_SHORT } from "@nolli/ui"
 import { ROLL_EASE } from "@/lib/constants"
 import type { MapRef } from "@nolli/map"
 import type { ArchSummary } from "@/lib/landing-data"
@@ -62,9 +62,9 @@ function HeroScene({ data }: { data: LandingData }) {
   const cam = useMemo(() => heroCamera(data), [data])
 
   // the plate IS the cursor while the pointer is inside the scene — plain
-  // css on the section (snap mode never hides the system cursor)
+  // css on the section (reduced motion never hides the system cursor)
   const reduced = useReducedMotion()
-  const snap = useIsMobile() || !!reduced
+  const snap = !!reduced
 
   const localScrollDist = useSceneScroll()
   const [markersOn, setMarkersOn] = useState(() => localScrollDist.get() < SCENE_VH)
@@ -148,19 +148,18 @@ function Lede() {
       animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
       transition={{ duration: 0.5, delay: 0.15, ease: "easeOut" }}
     >
-      <H1>
+      <h1>
         {HEADLINE_LINES.map((line, i) => (
           <motion.div
-            className={styles.headlineLine}
-            key={i}
-            initial={reduced ? false : { opacity: 0, y: 10, filter: "blur(4px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={{ duration: 0.5, delay: 0.15 + i * 0.35, ease: "easeOut" }}
+          key={i}
+          initial={reduced ? false : { opacity: 0, y: 10, filter: "blur(4px)" }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          transition={{ duration: 0.5, delay: 0.15 + i * 0.35, ease: "easeOut" }}
           >
-            {line}
+            <span className={styles.headlineLine}>{line}</span>
           </motion.div>
         ))}
-      </H1>
+      </h1>
       <Body2 asChild>
         <p className={styles.secondary}>{SECONDARY}</p>
       </Body2>
@@ -244,10 +243,10 @@ function CtaPane({ sx, sy }: { sx: MotionValue<number>; sy: MotionValue<number> 
               : { duration: TRANSITION_SHORT, delay: 0.85, ease: "easeOut" }
           }
         >
-          <H3 className={styles.ctaText}>
+          <Note className={styles.ctaText}>
             Explore Nolli
             <ArrowUpRight className={styles.ctaIcon} size={24} aria-hidden />
-          </H3>
+          </Note>
         </motion.span>
       </AnimatePresence>
     </motion.a>

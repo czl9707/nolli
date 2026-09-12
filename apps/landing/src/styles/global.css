@@ -47,21 +47,3 @@ body {
 body:has(main[data-boot]) {
   overflow: hidden;
 }
-
-/* Spine boot: only the map layer sits at opacity 0 until the map has
-   settled, then fades in — the scenes render from frame one so their
-   entrance animations play visibly while the map loads. */
-.spine-boot {
-  opacity: 0;
-  transition: opacity 0.5s ease-out;
-}
-
-.spine-boot--on {
-  opacity: 1;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .spine-boot {
-    transition: none;
-  }
-}

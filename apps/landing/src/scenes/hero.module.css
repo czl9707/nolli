@@ -67,14 +67,20 @@
 .headlineLine {
   font-weight: 400;
   font-size: clamp(2.75rem, 4.6vw, 4rem);
+  font-style: italic;
+  font-family: var(--font-serif);
+  filter: drop-shadow(2px 2px 2px rgb(var(--color-paper-foreground)));
 
   .accent {
     color: rgb(var(--color-hero-foreground));
+    font-family: var(--font-playful);
+    font-style: normal;
   }
 }
 
 .secondary {
   margin: 0;
+  opacity: 0.75;
   line-height: 1.6;
   font-size: 1.12rem;
   max-width: 38ch;
@@ -117,6 +123,7 @@
 }
 
 .ctaText {
+  font-size: 2rem;
   display: flex;
   align-items: center;
   transition: transform var(--transition-instant) ease;
