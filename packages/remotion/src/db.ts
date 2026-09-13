@@ -113,7 +113,6 @@ export type BuildingRow = {
   cc: string | null;
   lat: number;
   lng: number;
-  cover: string | null;
   architect: string;
   photoCount: number;
 };
@@ -126,7 +125,6 @@ export function queryBuildingBySlug(dbPath: string, slug: string): BuildingRow {
       SELECT a.slug, a.name, a.year,
              ci.name AS city, co.code AS cc,
              a.latitude AS lat, a.longitude AS lng,
-             (SELECT p.image FROM architecture_photos p WHERE p.architecture_id = a.id AND p.is_cover = 1) AS cover,
              ar.name AS architect,
              (SELECT COUNT(*) FROM architecture_photos p WHERE p.architecture_id = a.id) AS photoCount
       FROM architectures a

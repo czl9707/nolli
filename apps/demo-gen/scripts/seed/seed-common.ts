@@ -11,7 +11,6 @@ const SINGLE_DEMO_RATE = 1.5;
 export const toBuildingRow = (r: {
   slug: string;
   name: string;
-  year: number;
   city: string | null;
   cc: string | null;
   lat: number;
@@ -19,7 +18,6 @@ export const toBuildingRow = (r: {
 }): BuildingRow => ({
   slug: r.slug,
   name: r.name,
-  year: r.year,
   city: r.city ?? "",
   cc: r.cc ?? "",
   latitude: r.lat,
@@ -101,16 +99,16 @@ export function writeVideoJson(dir: string, slug: string, scenes: Scene[]): void
 export function architectScenes(manifest: Manifest, shots: Shot[]): Scene[] {
   const scenes: Scene[] = [
     { type: "video", src: "demo-1.mp4", playbackRate: DEMO_RATE },
-    { type: "text", text: manifest.architect, size: 132, color: "fg" },
+    { type: "text", text: manifest.architect, size: 132 },
   ];
   for (const s of shots) {
     if (s.type === "board") scenes.push({ type: "image", src: shotSrc(s) });
   }
-  scenes.push({ type: "text", text: countText(manifest.buildings.length), size: 104, color: "fg" });
+  scenes.push({ type: "text", text: countText(manifest.buildings.length), size: 104 });
   for (const s of shots) {
     if (s.type === "detail") scenes.push({ type: "image", src: shotSrc(s) });
   }
-  scenes.push({ type: "text", text: NOW_TEXT, size: 104, color: "fg" });
+  scenes.push({ type: "text", text: NOW_TEXT, size: 104 });
   scenes.push({ type: "logo" });
   return scenes;
 }
@@ -119,13 +117,13 @@ export function architectureScenes(manifest: Manifest, shots: Shot[]): Scene[] {
   const [b] = manifest.buildings;
   const scenes: Scene[] = [
     { type: "video", src: "demo-1.mp4", playbackRate: SINGLE_DEMO_RATE },
-    { type: "text", text: b.name, size: 132, color: "fg" },
-    { type: "text", text: manifest.architect, size: 104, color: "fg" },
+    { type: "text", text: b.name, size: 132 },
+    { type: "text", text: manifest.architect, size: 104 },
   ];
   const place = [b.city, b.cc].filter(Boolean).join(", ");
-  if (place) scenes.push({ type: "text", text: place, size: 104, color: "fg" });
+  if (place) scenes.push({ type: "text", text: place, size: 104 });
   for (const s of shots) scenes.push({ type: "image", src: shotSrc(s) });
-  scenes.push({ type: "text", text: NOW_TEXT, size: 104, color: "fg" });
+  scenes.push({ type: "text", text: NOW_TEXT, size: 104 });
   scenes.push({ type: "logo" });
   return scenes;
 }

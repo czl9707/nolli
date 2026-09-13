@@ -20,8 +20,8 @@ const manifest: Manifest = {
   architect: "Mies",
   slug: "mies",
   buildings: [
-    { slug: "a", name: "A", year: 1, city: "X", cc: "US", latitude: 0, longitude: 0 },
-    { slug: "b", name: "B", year: 2, city: "Y", cc: "US", latitude: 0, longitude: 90 },
+    { slug: "a", name: "A", city: "X", cc: "US", latitude: 0, longitude: 0 },
+    { slug: "b", name: "B", city: "Y", cc: "US", latitude: 0, longitude: 90 },
   ],
 };
 
@@ -82,21 +82,21 @@ describe("architectScenes", () => {
     expect(scenes[0]).toEqual({ type: "video", src: "demo-1.mp4", playbackRate: 2 });
   });
   it("name scene text + size", () => {
-    expect(scenes[1]).toEqual({ type: "text", text: "Mies", size: 132, color: "fg" });
+    expect(scenes[1]).toEqual({ type: "text", text: "Mies", size: 132 });
   });
   it("board image srcs, deterministic from building slugs, in order", () => {
     expect(scenes[2]).toEqual({ type: "image", src: "images/a-board-0.png" });
     expect(scenes[3]).toEqual({ type: "image", src: "images/b-board-0.png" });
   });
   it("count scene uses countText", () => {
-    expect(scenes[4]).toEqual({ type: "text", text: "2 Architectures", size: 104, color: "fg" });
+    expect(scenes[4]).toEqual({ type: "text", text: "2 Architectures", size: 104 });
   });
   it("detail image srcs", () => {
     expect(scenes[5]).toEqual({ type: "image", src: "images/a-detail.png" });
     expect(scenes[6]).toEqual({ type: "image", src: "images/b-detail.png" });
   });
   it("now card then logo", () => {
-    expect(scenes[7]).toEqual({ type: "text", text: "Now available in", size: 104, color: "fg" });
+    expect(scenes[7]).toEqual({ type: "text", text: "Now available in", size: 104 });
     expect(scenes[8]).toEqual({ type: "logo" });
   });
 });
@@ -105,7 +105,6 @@ describe("architectureScenes", () => {
   const b = {
     slug: "pavilion",
     name: "Barcelona Pavilion",
-    year: 1929,
     city: "Barcelona",
     cc: "ES",
     latitude: 0,
@@ -123,18 +122,18 @@ describe("architectureScenes", () => {
     expect(scenes[0]).toEqual({ type: "video", src: "demo-1.mp4", playbackRate: 1.5 });
   });
   it("building name 132, architect 104", () => {
-    expect(scenes[1]).toEqual({ type: "text", text: "Barcelona Pavilion", size: 132, color: "fg" });
-    expect(scenes[2]).toEqual({ type: "text", text: "Mies", size: 104, color: "fg" });
+    expect(scenes[1]).toEqual({ type: "text", text: "Barcelona Pavilion", size: 132 });
+    expect(scenes[2]).toEqual({ type: "text", text: "Mies", size: 104 });
   });
   it("place card joins city + cc", () => {
-    expect(scenes[3]).toEqual({ type: "text", text: "Barcelona, ES", size: 104, color: "fg" });
+    expect(scenes[3]).toEqual({ type: "text", text: "Barcelona, ES", size: 104 });
   });
   it("cc-only place card drops the city half", () => {
     const s = architectureScenes(
       { ...single, buildings: [{ ...b, city: "" }] },
       architectureShots("pavilion", 2),
     );
-    expect(s[3]).toEqual({ type: "text", text: "ES", size: 104, color: "fg" });
+    expect(s[3]).toEqual({ type: "text", text: "ES", size: 104 });
   });
   it("no place card when city and cc are both empty", () => {
     const s = architectureScenes(
@@ -150,7 +149,7 @@ describe("architectureScenes", () => {
     expect(scenes[5]).toEqual({ type: "image", src: "images/pavilion-board-1.png" });
   });
   it("now card then logo", () => {
-    expect(scenes[6]).toEqual({ type: "text", text: "Now available in", size: 104, color: "fg" });
+    expect(scenes[6]).toEqual({ type: "text", text: "Now available in", size: 104 });
     expect(scenes[7]).toEqual({ type: "logo" });
   });
 });

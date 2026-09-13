@@ -191,28 +191,6 @@ export function createCursor(page: Page, opts: CursorOptions) {
     };
   }
 
-  // A small, human-like reposition just before a drag — the hand settling on
-  // the map. A random point in the central region, NOT an offset from the
-  // current cursor (after a pan it can sit near an edge, and a ±offset would
-  // wander it off the map). Guarantees a minimum travel so it reads as a move
-  // rather than a twitch, and scales duration by distance so short reaches
-  // aren't slow crawls.
-  async function reposition(): Promise<void> {
-    let tx = viewport.width * (0.3 + Math.random() * 0.4);
-    let ty = viewport.height * (0.3 + Math.random() * 0.4);
-    const dx = tx - cur.x;
-    const dy = ty - cur.y;
-    let dist = Math.hypot(dx, dy);
-    const minDist = 130;
-    if (dist < minDist) {
-      const k = dist > 0.1 ? minDist / dist : 1;
-      tx = clamp(cur.x + dx * k, viewport.width * 0.25, viewport.width * 0.75);
-      ty = clamp(cur.y + dy * k, viewport.height * 0.25, viewport.height * 0.75);
-      dist = Math.hypot(tx - cur.x, ty - cur.y);
-    }
-    await move({ x: tx, y: ty }, clamp(dist / 1.8, 70, 120));
-  }
-
   // The overlay is hidden until the first pointermove — a single move reveals
   // it. No path, no glide-in (that read as a bad initial move).
   async function appear(): Promise<void> {
@@ -223,7 +201,6 @@ export function createCursor(page: Page, opts: CursorOptions) {
 
   return {
     appear,
-    reposition,
     move,
     click,
     dragMap,

@@ -30,7 +30,7 @@ export type CaptureBrowser = {
   close: () => Promise<void>;
 };
 
-export const winChromeEnabled = () => process.env.CAPTURE_WIN_CHROME === "1";
+const winChromeEnabled = () => process.env.CAPTURE_WIN_CHROME === "1";
 
 export async function launchCaptureBrowser(): Promise<CaptureBrowser> {
   if (!winChromeEnabled()) {
