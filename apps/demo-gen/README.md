@@ -100,6 +100,22 @@ step.
 2. **ffmpeg + ffprobe** on PATH (`assemble` ffprobes each video scene to size it).
 3. **App DB** — downloaded automatically to `~/.nolli/latest.db` on the first
    seed run (no manual step).
+4. **(Optional, recommended) Windows Chrome for capture** — WSL Chromium
+   rasterizes in software (no hardware Vulkan ICD), which starves the demo
+   screencast to a few fps and judders the clip. `CAPTURE_WIN_CHROME=1` makes
+   the capture scripts launch Windows Chrome instead (real GPU) and connect
+   over CDP. One-time setup in an elevated PowerShell on Windows:
+
+   ```powershell
+   netsh interface portproxy add v4tov4 listenaddress=<wsl-gateway-ip> listenport=9333 connectaddress=127.0.0.1 connectport=9333
+   New-NetFirewallRule -DisplayName "WSL CDP 9333 (nolli capture)" -Direction Inbound -LocalPort 9333 -Protocol TCP -RemoteAddress <wsl-subnet-cidr> -Action Allow
+   ```
+
+   `<wsl-gateway-ip>` is the `default via` IP from `ip route show default`
+   (e.g. `172.28.96.1`), and `<wsl-subnet-cidr>` that IP's subnet (e.g.
+   `172.28.96.0/20`). Without the env var, capture falls back to local WSL
+   Chromium. Stills and demo are captured at 2× device scale (3840×2160) and
+   downscaled in the composition — map linework stays crisp.
 
 ## Pipeline
 

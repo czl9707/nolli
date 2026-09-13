@@ -110,7 +110,7 @@ export function architectScenes(manifest: Manifest, shots: Shot[]): Scene[] {
   for (const s of shots) {
     if (s.type === "detail") scenes.push({ type: "image", src: shotSrc(s) });
   }
-  scenes.push({ type: "text", text: NOW_TEXT, size: 104, color: "fg", font: "serif" });
+  scenes.push({ type: "text", text: NOW_TEXT, size: 104, color: "fg" });
   scenes.push({ type: "logo" });
   return scenes;
 }
@@ -125,7 +125,7 @@ export function architectureScenes(manifest: Manifest, shots: Shot[]): Scene[] {
   const place = [b.city, b.cc].filter(Boolean).join(", ");
   if (place) scenes.push({ type: "text", text: place, size: 104, color: "fg" });
   for (const s of shots) scenes.push({ type: "image", src: shotSrc(s) });
-  scenes.push({ type: "text", text: NOW_TEXT, size: 104, color: "fg", font: "serif" });
+  scenes.push({ type: "text", text: NOW_TEXT, size: 104, color: "fg" });
   scenes.push({ type: "logo" });
   return scenes;
 }

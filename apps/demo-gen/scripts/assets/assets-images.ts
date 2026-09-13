@@ -1,4 +1,3 @@
-import { chromium } from "playwright";
 import { mkdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { runCli, readJsonOr } from "@nolli/remotion/cli";
@@ -6,13 +5,13 @@ import {
   BASE_URL,
   BOARD_PHOTO,
   LIGHTBOX_FRAME,
-  LAUNCH_ARGS,
   applyBrowserCaptureContext,
   waitForToastDisappear,
 } from "./capture-helpers";
+import { launchCaptureBrowser } from "./win-chrome";
 import type { Manifest } from "../seed/manifest";
 import { shotSrc, type ImagesConfigFile, type Shot } from "../seed/seed-common";
-import { VIEWPORT } from "./tuning";
+import { VIEWPORT, CAPTURE_SCALE } from "./tuning";
 
 const SEED_HINT = "Run `pnpm seed:architect <slug>` (or `seed:architecture`) first.";
 
@@ -40,13 +39,13 @@ export async function generateImages(slug: string) {
   const imagesDir = join(outDir, "images");
   mkdirSync(imagesDir, { recursive: true });
 
-  const browser = await chromium.launch({ args: LAUNCH_ARGS });
+  const capture = await launchCaptureBrowser();
   let captured = 0;
   const failures: string[] = [];
   try {
-    const context = await applyBrowserCaptureContext(browser, {
+    const context = await applyBrowserCaptureContext(capture.browser, {
       viewport: VIEWPORT,
-      deviceScaleFactor: 1,
+      deviceScaleFactor: CAPTURE_SCALE,
     });
     const page = await context.newPage();
 
@@ -76,7 +75,7 @@ export async function generateImages(slug: string) {
       }
     }
   } finally {
-    await browser.close();
+    await capture.close();
   }
 
   if (failures.length) {

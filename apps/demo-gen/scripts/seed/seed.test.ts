@@ -96,7 +96,7 @@ describe("architectScenes", () => {
     expect(scenes[6]).toEqual({ type: "image", src: "images/b-detail.png" });
   });
   it("now card then logo", () => {
-    expect(scenes[7]).toEqual({ type: "text", text: "Now available in", size: 104, color: "fg", font: "serif" });
+    expect(scenes[7]).toEqual({ type: "text", text: "Now available in", size: 104, color: "fg" });
     expect(scenes[8]).toEqual({ type: "logo" });
   });
 });
@@ -150,7 +150,7 @@ describe("architectureScenes", () => {
     expect(scenes[5]).toEqual({ type: "image", src: "images/pavilion-board-1.png" });
   });
   it("now card then logo", () => {
-    expect(scenes[6]).toEqual({ type: "text", text: "Now available in", size: 104, color: "fg", font: "serif" });
+    expect(scenes[6]).toEqual({ type: "text", text: "Now available in", size: 104, color: "fg" });
     expect(scenes[7]).toEqual({ type: "logo" });
   });
 });

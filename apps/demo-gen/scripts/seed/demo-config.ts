@@ -41,7 +41,7 @@ export const DEFAULT_TUNING = {
   panDurMax: 400,
   panHold: 500,
 
-  screencastQuality: 92,
+  screencastQuality: 96,
   maxFrames: 24 * FPS,
 
   // Visible-cursor feel (see ../assets/cursor.ts). app-ms, like the rest. The

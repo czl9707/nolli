@@ -3,7 +3,7 @@ import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { join } from "node:path";
 import { FPS } from "../../src/lib/constants";
-import { JOURNEY, VIEWPORT } from "./tuning";
+import { JOURNEY, VIEWPORT, CAPTURE_SCALE } from "./tuning";
 
 type ScreencastFrame = { ts: number; data: Buffer };
 type Recorder = { client: CDPSession; frames: ScreencastFrame[]; ts0: number };
@@ -26,8 +26,8 @@ export async function startRecording(context: BrowserContext, page: Page): Promi
   await client.send("Page.startScreencast", {
     format: "jpeg",
     quality: JOURNEY.screencastQuality,
-    maxWidth: VIEWPORT.width,
-    maxHeight: VIEWPORT.height,
+    maxWidth: VIEWPORT.width * CAPTURE_SCALE,
+    maxHeight: VIEWPORT.height * CAPTURE_SCALE,
   });
   return { client, frames, ts0 };
 }
@@ -67,13 +67,26 @@ export function resampleTimeline(master: MasterFrame[]): Buffer[] {
   const span = Math.max(1, winEnd - winStart);
   const outCount = Math.min(Math.round((span / 1000) * FPS), JOURNEY.maxFrames);
   const out: Buffer[] = [];
+  const used: number[] = [];
   let j = 0;
   for (let k = 0; k < outCount; k++) {
     const target = winStart + (span * k) / (outCount - 1);
     while (j + 1 < master.length && Math.abs(master[j + 1].appMs - target) <= Math.abs(master[j].appMs - target)) j++;
     out.push(master[j].data);
+    used.push(j);
   }
-  console.log(`  journey: ${master.length} captured -> ${outCount} real-time frames (${(span / 1000).toFixed(1)}s @${FPS}fps)`);
+  // Density report: how far the captured timeline thins out. At a healthy
+  // density every output slot gets a distinct source frame (repeats=0) and the
+  // worst captured gap stays under ~2 output slots (67ms @30fps); worse numbers
+  // mean judder, and the fix is capture density (slowmo), not resampling.
+  const gaps = master.slice(1).map((f, i) => f.appMs - master[i].appMs).sort((a, b) => a - b);
+  const pct = (p: number) => gaps[Math.min(gaps.length - 1, Math.floor((gaps.length * p) / 100))];
+  const repeats = used.length - new Set(used).size;
+  console.log(
+    `  journey: ${master.length} captured -> ${outCount} real-time frames (${(span / 1000).toFixed(1)}s @${FPS}fps)` +
+      ` | captured gap ms p50=${pct(50).toFixed(0)} p90=${pct(90).toFixed(0)} max=${gaps[gaps.length - 1].toFixed(0)}` +
+      ` | repeated source frames ${repeats}/${outCount}`,
+  );
   return out;
 }
 

@@ -4,20 +4,44 @@ import { SceneImage } from "./SceneImage";
 import { SceneVideo } from "./SceneVideo";
 const FG = "rgb(var(--color-primary-foreground))";
 const FG_SECONDARY = "rgb(var(--color-secondary-foreground))";
-import { OUTRO, LOGO_WORD, BG } from "../lib/constants";
+import { OUTRO, LOGO_WORD, BG, VIDEO } from "../lib/constants";
 import {
   DEFAULT_TEXT_SIZE,
   type Scene,
   type TextScene,
 } from "../lib/scenes";
 
-/** Type roles: Kalam carries the text cards and the logo wordmark; the
- *  pre-logo lead-in alone rides Instrument Serif. Kalam's ink sits high in
- *  its em box, so every playful spot carries the measured optical nudge
- *  (same as video-gen's ctaWordmark / ui's .note). */
+/** Type roles: Instrument Serif carries every text card; the logo wordmark
+ *  alone rides Kalam. Kalam's ink sits high in its em box, so the playful
+ *  spots carry the measured optical nudge (same as video-gen's ctaWordmark /
+ *  ui's .note). */
 const family = (font: TextScene["font"]) =>
-  font === "serif" ? "var(--font-serif)" : "var(--font-playful)";
+  font === "playful" ? "var(--font-playful)" : "var(--font-serif)";
 const KALAM_NUDGE = { position: "relative", top: "0.08em" } as const;
+
+// Shrink a text card so long names fit the frame: measured against the real
+// face (the composition renders after fonts-ready, so metrics are final) and
+// clamped to one line within the frame's side margins. Short cards measure
+// under the cap and keep their declared size.
+const TEXT_MARGINS = 240;
+const MIN_TEXT_SIZE = 56;
+let measureCtx: CanvasRenderingContext2D | null = null;
+// The font vars are declared on body (packages/ui global.css), not :root.
+const cssVar = (varRef: string) =>
+  typeof document === "undefined" || !document.body
+    ? ""
+    : getComputedStyle(document.body).getPropertyValue(varRef.slice(4, -1)).trim();
+const fitSize = (text: string, size: number, fontFamily: string): number => {
+  if (typeof document === "undefined") return size;
+  measureCtx ??= document.createElement("canvas").getContext("2d");
+  if (!measureCtx) return size;
+  measureCtx.font = `400 ${size}px ${fontFamily}`;
+  const width = measureCtx.measureText(text).width;
+  const max = VIDEO.width - TEXT_MARGINS * 2;
+  return width > max
+    ? Math.max(MIN_TEXT_SIZE, Math.floor((size * max) / width))
+    : size;
+};
 
 // Nolli brand mark — the geometric favicon icon, inlined (assemble points
 // Remotion's publicDir at out/<slug>, so a public/ dir would never bundle).
@@ -43,7 +67,8 @@ const NolliMark: React.FC<{ size: number }> = ({ size }) => (
 );
 
 export const SegmentText: React.FC<{ scene: TextScene }> = ({ scene }) => {
-  const size = scene.size ?? DEFAULT_TEXT_SIZE;
+  const font = family(scene.font);
+  const size = fitSize(scene.text, scene.size ?? DEFAULT_TEXT_SIZE, cssVar(font));
   const color = scene.color === "fgSecondary" ? FG_SECONDARY : FG;
   // Exit wipe starts after the reveal window + hold (text cards enter on frame 0).
   const exitStart = OUTRO.typeFrames + OUTRO.hold;
@@ -54,10 +79,10 @@ export const SegmentText: React.FC<{ scene: TextScene }> = ({ scene }) => {
         start={{ when: 0, last: OUTRO.typeFrames, enabled: true }}
         end={{ when: exitStart, last: exitStart + OUTRO.exitFrames, enabled: true }}
         style={{
-          fontFamily: family(scene.font),
+          fontFamily: font,
           fontSize: size,
           color,
-          ...(scene.font === "serif" ? {} : KALAM_NUDGE),
+          ...(scene.font === "playful" ? KALAM_NUDGE : {}),
         }}
       />
     </AbsoluteFill>

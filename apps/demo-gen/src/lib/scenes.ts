@@ -15,7 +15,7 @@ export type TextScene = {
   text: string;
   size?: number;
   color?: ColorToken;
-  /** Kalam by default; the pre-logo lead-in card rides Instrument Serif. */
+  /** Instrument Serif by default; "playful" is the logo wordmark's Kalam. */
   font?: "playful" | "serif";
 };
 export type ImageScene = { type: "image"; src: string };
