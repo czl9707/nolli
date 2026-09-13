@@ -39,15 +39,6 @@
   mask-composite: add;
 }
 
-.plate {
-  position: absolute;
-  left: 0;
-  top: 0;
-  border-radius: var(--size-border-radius);
-  backdrop-filter: brightness(1.14) saturate(1.06);
-  z-index: 100000;
-}
-
 /* frame annotations — everything pinned around the plate/furniture box
    shares the .frame base (mono, ink, no wrap, tabular digits so the
    coords readout doesn't jitter); the per-element classes only place it */
@@ -99,6 +90,49 @@
   background: rgb(var(--color-primary-foreground) / 0.25);
 }
 
+/* boot: the accessories wait for the reveal phase (the root's data-on
+   comes from the boot sequence); the veil needs no gate — it is
+   bg-colored, so before the map fades in it is indistinguishable from the
+   blank screen. The hole is cut from frame one, but the PLATE covers it:
+   it starts filled with the veil color (a mask hole cannot fade on its
+   own) and clears at the reveal, so the map shows through as a plain
+   fade — its backdrop-filter lets the plate region brighten as it clears */
+#hero-plate {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: var(--size-border-radius);
+  backdrop-filter: brightness(1.14) saturate(1.06);
+  z-index: 100000;
+  background-color: rgb(var(--color-primary-background) / 0.92);
+  transition: background-color var(--transition-short) ease-out;
+
+  .root[data-on] & {
+    background-color: transparent;
+    border: none;
+  }
+}
+
+#hero-plate .frame,
+#hero-reveal-furniture,
+.cx {
+  opacity: 0;
+  transition: opacity var(--transition-short) ease-out;
+
+  .root[data-on] & {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #hero-plate,
+  #hero-plate .frame,
+  #hero-reveal-furniture,
+  .cx {
+    transition: none;
+  }
+}
+
 .cxV {
   top: 0;
   bottom: 0;
@@ -111,7 +145,7 @@
   height: 1px;
 }
 
-.furniture {
+#hero-reveal-furniture {
   position: absolute;
   left: 0;
   top: 0;
