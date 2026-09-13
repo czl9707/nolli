@@ -30,10 +30,16 @@ describe("loadDemoConfig", () => {
     expect(cfg.tuning.slowmo).toBe(DEFAULT_TUNING.slowmo);
   });
 
-  it("throws when journey is missing or shorter than 2", () => {
+  it("throws when journey is missing or empty", () => {
     writeFileSync(join(dir, "demo.json"), JSON.stringify({}));
     expect(() => loadDemoConfig(dir)).toThrow(/journey/);
-    writeFileSync(join(dir, "demo.json"), JSON.stringify({ journey: ["a"] }));
+    writeFileSync(join(dir, "demo.json"), JSON.stringify({ journey: [] }));
     expect(() => loadDemoConfig(dir)).toThrow(/journey/);
+  });
+
+  it("accepts a single-building journey", () => {
+    writeFileSync(join(dir, "demo.json"), JSON.stringify({ journey: ["a"] }));
+    const cfg = loadDemoConfig(dir);
+    expect(cfg.journey).toEqual(["a"]);
   });
 });

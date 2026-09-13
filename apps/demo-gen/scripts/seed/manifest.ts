@@ -1,7 +1,6 @@
 export type BuildingRow = {
   slug: string;
   name: string;
-  year: number;
   city: string;
   cc: string;
   latitude: number;

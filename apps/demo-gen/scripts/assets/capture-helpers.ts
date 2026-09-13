@@ -6,19 +6,6 @@ import { CURSOR_INIT } from "./cursor";
 // BASE_URL when it runs on another port.
 export const BASE_URL = process.env.BASE_URL ?? "http://localhost:5173";
 
-// Software WebGL for headless readback + sRGB color profile so screenshots
-// aren't color-shifted by Chromium's color management.
-export const LAUNCH_ARGS = [
-  "--use-gl=angle",
-  "--use-angle=swiftshader-webgl",
-  "--force-color-profile=srgb",
-  // The app's DB host (db.nolli-map.com) CORS-allowlists localhost:5173 only;
-  // when the app runs on another port (5173 taken by another dev server), the
-  // DB fetch would be blocked and the app would boot to /error with no map.
-  // This browser is a throwaway capture instance, so relaxing CORS is safe.
-  "--disable-web-security",
-];
-
 const DARK_INIT = `
   try { localStorage.setItem('theme', 'dark'); } catch (e) {}
 `;
@@ -70,13 +57,13 @@ const CLOCK_INIT = `
 `;
 
 // ── Board-package selectors ─────────────────────────────────────────────────
-// Hash-proof selectors encoding packages/board internals: polaroid wrappers
-// carry inline `transform: rotate(...)` (NOT rotateX/rotateZ like map pins),
-// every BoardItem renders a pushpin <img> whose CSS-module class contains
-// 'pin' which must be excluded, and the modal's framer-motion backdrop is the
-// only element whose CSS-module class contains 'backdrop'. If packages/board
-// changes shape, these are the single place to update.
-export const BOARD_PHOTO = 'div[style*="rotate("] img:not([class*="pin"])';
+// Hash-proof selectors encoding packages/board internals: photo surfaces carry
+// an inline `clip-path: polygon(...)` (pin icons don't), every BoardItem
+// renders a pushpin <img> whose CSS-module class contains 'pin' which must be
+// excluded, and the modal's framer-motion backdrop is the only element whose
+// CSS-module class contains 'backdrop'. If packages/board changes shape, these
+// are the single place to update.
+export const BOARD_PHOTO = 'div[style*="clip-path"] img:not([class*="pin"])';
 export const LIGHTBOX_BACKDROP = "div[class*='backdrop']";
 export const LIGHTBOX_FRAME = 'div[style*="aspect-ratio"]';
 

@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "studio": "remotion studio src/index.ts",
-    "seed": "tsx scripts/seed/seed.ts",
+    "seed:architect": "tsx scripts/seed/seed-architect.ts",
+    "seed:architecture": "tsx scripts/seed/seed-architecture.ts",
     "assets": "tsx scripts/assets/assets.ts",
     "assets:images": "tsx scripts/assets/assets-images.ts",
     "assets:demo": "tsx scripts/assets/assets-demo.ts",

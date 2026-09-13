@@ -11,9 +11,10 @@ import { existsSync, readFileSync } from "node:fs";
 export function runCli(
   name: string,
   fn: (slug: string) => Promise<void>,
+  usage = "<architect-slug>",
 ): void {
   const slug = process.argv[2];
-  if (!slug || slug.startsWith("--")) throw new Error(`Usage: ${name} <architect-slug>`);
+  if (!slug || slug.startsWith("--")) throw new Error(`Usage: ${name} ${usage}`);
   fn(slug).catch((e) => {
     console.error(e);
     process.exit(1);

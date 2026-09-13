@@ -8,14 +8,11 @@ export function segmentDuration(textLen: number, typeStart: number, exit = false
   return typeStart + typed + OUTRO.hold + (exit ? OUTRO.exitFrames : 0);
 }
 
-export type ColorToken = "fg" | "fgSecondary";
-
 export type TextScene = {
   type: "text";
   text: string;
   size?: number;
-  color?: ColorToken;
-  /** Kalam by default; the pre-logo lead-in card rides Instrument Serif. */
+  /** Instrument Serif by default; "playful" is the logo wordmark's Kalam. */
   font?: "playful" | "serif";
 };
 export type ImageScene = { type: "image"; src: string };

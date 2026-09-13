@@ -17,8 +17,13 @@ export const setTuning = (t: Tuning): void => {
   JOURNEY = t;
 };
 
-// The capture viewport IS the output video frame.
+// The capture viewport IS the output video frame (CSS px). CAPTURE_SCALE
+// supersamples the backing store: the page renders (and the screencast
+// encodes) at 2× CSS px, and the composition scales back down — the map
+// rasterizes at 2× its display size, so linework and labels come out crisp
+// instead of soft. Cursor math stays in CSS px.
 export const VIEWPORT = VIDEO;
+export const CAPTURE_SCALE = 2;
 
 // app-ms wait under the journey's slow-mo factor.
 export const appWait = (page: Page, appMs: number) =>

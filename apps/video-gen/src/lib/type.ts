@@ -1,26 +1,18 @@
 import type { CSSProperties } from "react";
+import { KALAM_NUDGE, NOLLI_WORDMARK_NUDGE, PLAYFUL, SANS, SERIF } from "@nolli/remotion";
 
 /** The reel's type scale — single font authority, no component-local constants.
  *  Poster set: Instrument Serif display (architect name, corner lockup, quote)
  *  over Lato reading text (the app's --font-sans); Kalam for the brand
  *  moments (wordmark + CTA). Every weight is a real shipped weight: Lato and
  *  Kalam load 300/400/700, Instrument Serif only 400 — no role asks for one
- *  a family doesn't have. */
+ *  a family doesn't have. Font tokens + optical nudges live in @nolli/remotion. */
 export type TypeRole = Pick<
   CSSProperties,
   "fontFamily" | "fontSize" | "fontWeight" | "letterSpacing" | "fontStyle" | "position" | "top"
 >;
 
-export const SANS = "var(--font-sans)";
-export const SERIF = "var(--font-serif)";
-
-export const PLAYFUL = "var(--font-playful)";
-
-/** Kalam's ink sits high in its em box (ink center ~0.137em above box
- *  center), so hand-set glyphs float above center-aligned neighbors. Every
- *  PLAYFUL role carries the measured optical nudge down — same trick as
- *  @nolli/ui's .note. */
-const KALAM_NUDGE = { position: "relative", top: "0.137em" } as const;
+export { SANS, SERIF, PLAYFUL };
 
 /** Poster accent: the landing hero gold. Light reels deepen it for the light
  *  paper ground (4.8:1 on rgb(242 240 235)); dark reels use the landing hero's
@@ -34,7 +26,7 @@ export const REEL_TYPE = {
   ctaLead: { fontFamily: SERIF, fontSize: 60, fontWeight: 400, fontStyle: "italic" },
   // "Nolli" has no descenders, so its ink rides less high than Kalam's
   // em-box average — ink-centroid vs the favicon mark measured 0.08em.
-  ctaWordmark: { fontFamily: PLAYFUL, fontSize: 96, fontWeight: 400, position: "relative", top: "0.08em" },
+  ctaWordmark: { fontFamily: PLAYFUL, fontSize: 96, fontWeight: 400, ...NOLLI_WORDMARK_NUDGE },
   posterName: { fontFamily: SERIF, fontSize: 56, fontWeight: 400 },
   posterQuote: { fontFamily: SERIF, fontSize: 20, fontWeight: 400, fontStyle: "italic" },
   posterRowNum: { fontFamily: SANS, fontSize: 17, fontWeight: 400 },

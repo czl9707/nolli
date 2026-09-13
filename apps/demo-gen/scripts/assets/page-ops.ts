@@ -8,7 +8,7 @@ import {
 } from "./capture-helpers";
 import type { Cursor } from "./cursor";
 import type { BuildingRow } from "../seed/manifest";
-import { JOURNEY, appWait, VIEWPORT } from "./tuning";
+import { JOURNEY, appWait, VIEWPORT, CAPTURE_SCALE } from "./tuning";
 
 // ── Page operations ─────────────────────────────────────────────────────────
 // Everything here drives the real app — through the capture bridges
@@ -100,7 +100,7 @@ const pinScreen = (page: Page, lng: number, lat: number) =>
 export async function setupPageForCapture(browser: Browser, start: BuildingRow) {
   const context = await applyBrowserCaptureContext(browser, {
     viewport: VIEWPORT,
-    deviceScaleFactor: 1,
+    deviceScaleFactor: CAPTURE_SCALE,
   });
   const page = await context.newPage();
   await page.goto(`${BASE_URL}/arch/${start.slug}?capture=1`);
@@ -242,12 +242,19 @@ export async function panMapAround(
       `    map pan ${i + 1}/${JOURNEY.mapPanCount} dx=${signed(p.dx)} dy=${signed(p.dy)}` +
         ` (center=${before.lng.toFixed(3)},${before.lat.toFixed(3)})`,
     );
-    // A small random hand-settling move — looks like a person reaching for the
-    // map — then the pan as a map-mode drag: panBy + cursor riding the map's
-    // real per-frame offset, resolving on moveend (which also waits out the pan).
-    await cursor.reposition();
-    const at = cursor.pos();
-    await cursor.dragMap({ x: at.x + p.dx, y: at.y + p.dy }, p.dur);
+    // Ride the pan through the middle: start the cursor at center + pan/2 so
+    // the content-follow (which shifts the cursor by −pan over the pan) sweeps
+    // it through the viewport center, landing at center − pan/2. It never
+    // strays more than half a pan from the middle; a drag started wherever the
+    // cursor happened to sit parks it a full pan-length off to one side.
+    const half = { x: p.dx / 2, y: p.dy / 2 };
+    const start = {
+      x: Math.max(VIEWPORT.width * 0.2, Math.min(VIEWPORT.width * 0.8, VIEWPORT.width / 2 + half.x)),
+      y: Math.max(VIEWPORT.height * 0.2, Math.min(VIEWPORT.height * 0.8, VIEWPORT.height / 2 + half.y)),
+    };
+    const dist = Math.hypot(start.x - cursor.pos().x, start.y - cursor.pos().y);
+    await cursor.move(start, Math.max(70, Math.min(120, dist / 1.8)));
+    await cursor.dragMap({ x: start.x + p.dx, y: start.y + p.dy }, p.dur);
     const after = await mapCenter(page);
     if (
       !Number.isNaN(before.lng) &&

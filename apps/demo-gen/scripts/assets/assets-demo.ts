@@ -1,10 +1,10 @@
-import { chromium } from "playwright";
 import type { Locator } from "playwright";
 import { join, resolve } from "node:path";
 import { runCli, readJsonOr } from "@nolli/remotion/cli";
 import { loadDemoConfig, type DemoConfig } from "../seed/demo-config";
 import type { BuildingRow, Manifest } from "../seed/manifest";
-import { LAUNCH_ARGS, waitForMapMoveEnd, BOARD_PHOTO, LIGHTBOX_BACKDROP } from "./capture-helpers";
+import { launchCaptureBrowser } from "./win-chrome";
+import { waitForMapMoveEnd, BOARD_PHOTO, LIGHTBOX_BACKDROP } from "./capture-helpers";
 import { createCursor, pointOf } from "./cursor";
 import { startRecording, endRecording, resampleTimeline, muxClip, padHold, type MasterFrame } from "./recorder";
 import { JOURNEY, setTuning, appWait, VIEWPORT } from "./tuning";
@@ -35,9 +35,9 @@ async function captureDemo(
     console.log(`  demo+${((Date.now() - wallStart) / 1000).toFixed(2)}s ${label}`);
 
   let master: MasterFrame[] = [];
-  const browser = await chromium.launch({ args: LAUNCH_ARGS });
+  const capture = await launchCaptureBrowser();
   try {
-    const { context, page } = await setupPageForCapture(browser, start);
+    const { context, page } = await setupPageForCapture(capture.browser, start);
     await warmTiles(page, start, last);
     await flipSlowmo(page);
 
@@ -132,7 +132,7 @@ async function captureDemo(
     padHold(master, JOURNEY.detailHold);
     beat("photo open — end of demo");
   } finally {
-    await browser.close();
+    await capture.close();
   }
 
   if (master.length < 30) {

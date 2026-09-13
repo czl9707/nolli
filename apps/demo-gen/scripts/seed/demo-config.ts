@@ -41,7 +41,7 @@ export const DEFAULT_TUNING = {
   panDurMax: 400,
   panHold: 500,
 
-  screencastQuality: 92,
+  screencastQuality: 96,
   maxFrames: 24 * FPS,
 
   // Visible-cursor feel (see ../assets/cursor.ts). app-ms, like the rest. The
@@ -67,11 +67,12 @@ export type DemoConfig = {
 
 export function loadDemoConfig(dir: string): DemoConfig {
   const file = join(dir, "demo.json");
-  const parsed = readJsonOr<Partial<DemoConfigFile>>(file, "Run `pnpm seed <slug>` first.");
-  if (!parsed.journey || parsed.journey.length < 2) {
-    throw new Error(
-      `${file} needs a journey of >=2 building slugs (open on the first, navigate to the rest).`,
-    );
+  const parsed = readJsonOr<Partial<DemoConfigFile>>(
+    file,
+    "Run `pnpm seed:architect <slug>` (or `seed:architecture`) first.",
+  );
+  if (!parsed.journey || parsed.journey.length < 1) {
+    throw new Error(`${file} needs a journey of >=1 building slug.`);
   }
   return { journey: parsed.journey, tuning: DEFAULT_TUNING };
 }
