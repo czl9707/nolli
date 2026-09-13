@@ -247,6 +247,82 @@
   }
 }
 
+/* ── mobile stack ──────────────────────────────────────────────────────── */
+
+/* Single column: big card (statement + buildings count + photo fan), then
+   architects / countries cells with their badge marquees, then the
+   where-you-are count with the shared tap-armed CTA as a full-width strip. */
+@media (max-width: 767px) {
+  .mobileStack {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .mobileStack .cell {
+    flex: 0 0 auto;
+    gap: calc(var(--spacing-component) * 0.375);
+    padding: calc(var(--spacing-component) * 0.5) var(--spacing-component);
+  }
+
+  .mobileStack .mobileCard {
+    position: relative;
+    flex: 1 1 auto;
+    overflow: hidden;
+  }
+
+  .statementText {
+    font-size: clamp(1.5rem, 8vw, 2.25rem);
+  }
+
+  .num.m {
+    font-size: clamp(2.25rem, 11vw, 3rem);
+  }
+
+  .num.l {
+    font-size: clamp(3rem, 15vw, 4.25rem);
+  }
+
+  /* photo fan scaled down, sunk deeper into the card's foot so it stays
+     below the statement when the card is squeezed */
+  .stack {
+    right: -3.5rem;
+    bottom: -2.5rem;
+    width: 12rem;
+    height: 6.5rem;
+  }
+
+  .stackPhoto {
+    flex-basis: 6.5rem;
+  }
+
+  .stackPhoto + .stackPhoto {
+    margin-left: -5.85rem;
+  }
+
+  .stackPhoto img {
+    height: 6.5rem;
+  }
+
+  /* card copy wins the corner over the fan at any card height */
+  .mobileCard .statementText,
+  .mobileCard .block {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* shared CTA bleeds to the cell's side/bottom edges; >=44px tap strip */
+  .mobileWhereCta {
+    position: relative;
+    min-height: 3.5rem;
+    margin: calc(var(--spacing-component) * 0.25) calc(var(--spacing-component) * -1)
+      calc(var(--spacing-component) * -0.5);
+  }
+}
+
 /* ── reduced motion ────────────────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {

@@ -145,6 +145,80 @@
   margin-bottom: -3rem;
 }
 
+/* ── mobile stack ──────────────────────────────────────────────────── */
+
+/* Cards stack vertically over an opaque ground; the photo dock drops
+   (decorative, hover-driven). Type and spacing tighten; every interactive
+   element keeps a >=44px tap target. Panes size to their content — the
+   shared height:100% would blow each pane to a full screen inside the
+   overflow-hidden Screen. */
+@media (max-width: 767px) {
+  .mobileFooter {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: rgb(var(--color-primary-background));
+    pointer-events: auto;
+    overflow-y: auto;
+  }
+
+  .mobileFooter .commonPane {
+    flex: 0 0 auto;
+    height: auto;
+    padding: var(--spacing-component) calc(var(--spacing-component) * 1.25);
+    gap: var(--spacing-paragraph);
+  }
+
+  .navRow {
+    flex-direction: row;
+    gap: calc(var(--spacing-component) * 1.25);
+  }
+
+  .navCol {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-paragraph);
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .mobileFooter .commonPane + .commonPane {
+    border-top: var(--border);
+  }
+
+  .brand {
+    min-height: 44px;
+  }
+
+  .statement {
+    font-size: 1.45rem;
+  }
+
+  .social a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .navList {
+    margin-left: calc(var(--spacing-component) * -0.5);
+  }
+
+  .navList a {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  .meta {
+    gap: 0.25rem;
+  }
+}
+
 /* ── reduced motion ────────────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {

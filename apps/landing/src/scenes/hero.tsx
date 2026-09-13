@@ -2,27 +2,27 @@
 // markers render through the map portal so they ride the layer, while the
 // reveal (veil/plate/crosshairs) renders in this tree — first child of the
 // sticky section, so it pins during the hold and rides up with the page
-// through the transition, unveiling the map. Layout: the big map cell
+// through the transition, unveiling the map. Desktop layout: the big map cell
 // carries the lede, vertically centered; the plate column sits on the RIGHT
-// — arch list in its growing top cell, the CTA pane below (the whole
-// pane is the CTA, sized like the plate; arming rolls the whole cell); the
-// mirrored title-block strip closes the scene (Info left, plate-wide, then
-// fill, then Scale + Sheet right, under the column). The reveal bounds span
-// everything above the strip.
+// — arch list in its growing top cell, the CTA pane below; the mirrored
+// title-block strip closes the scene. The reveal bounds span everything above
+// the strip. Mobile layout (useMobile): statement at the top over the map,
+// CTA as a smaller full-width bottom bar; plate column, arch list and the
+// strip drop, and the crosshair reveal idles (no pointer to track).
 import { useEffect, useMemo, useRef, useState } from "react"
-import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, type MotionValue } from "framer-motion"
-import { ArrowUpRight } from "lucide-react"
-import { Body2, H1, H3, Note, TRANSITION_SHORT } from "@nolli/ui"
+import { AnimatePresence, motion, useMotionValue, useMotionValueEvent, useReducedMotion, useTransform, type MotionValue } from "framer-motion"
+import { Body2, H1, H3 } from "@nolli/ui"
 import { BootFade, phaseAtLeast, useBootPhase } from "@/lib/boot"
-import { ROLL_EASE } from "@/lib/constants"
 import type { MapRef } from "@nolli/map"
 import type { ArchSummary } from "@/lib/landing-data"
 import type { SceneCamera } from "@nolli/map"
 import { useSceneScroll, useSpineMap } from "@/spine/spine"
 import { TRANSITION_LEAD_VH, type HoldScene } from "@/spine/timeline"
-import { APP_URL, HERO_FIT_PAD } from "@/lib/constants"
+import { HERO_FIT_PAD } from "@/lib/constants"
 import { fitCamera } from "@/lib/camera"
 import type { LandingData } from "@/lib/landing-data"
+import { useMobile } from "@/lib/use-mobile"
+import { CtaPane } from "@/components/cta-pane"
 import { PhotoMarkers } from "@/components/photo-markers"
 import { CursorReveal, HERO_MARKER_CLASS, PLATE, useCursorSprings, usePlateArchs } from "./hero-reveal"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
@@ -50,9 +50,27 @@ const SCENE_VH = 100
 
 const BOTTOM_BAR_HEIGHT = "5rem"
 
-const CTA_BUFFER = 90
+const MOBILE_CTA_HEIGHT = "4rem"
+
+/** The hold has no stick range (wrapper = scene height), so the statement
+ * scrolls under the frosted header from the first pixel — dissolve it over
+ * the opening vh instead of letting it smear beneath the bar. */
+const MOBILE_LEDE_FADE_VH = 7
 
 function HeroScene({ data }: { data: LandingData }) {
+  const mobile = useMobile()
+  return mobile ? <HeroMobile data={data} /> : <HeroDesktop data={data} />
+}
+
+/** Photo markers show while the hero holds, then linger through the exit. */
+function useMarkersOn() {
+  const localScrollDist = useSceneScroll()
+  const [markersOn, setMarkersOn] = useState(() => localScrollDist.get() < SCENE_VH)
+  useMotionValueEvent(localScrollDist, "change", (v) => setMarkersOn(v < SCENE_VH))
+  return markersOn
+}
+
+function HeroDesktop({ data }: { data: LandingData }) {
   const map = useSpineMap()
   const bootPhase = useBootPhase()
   const archs = data.heroArchs
@@ -68,9 +86,7 @@ function HeroScene({ data }: { data: LandingData }) {
   const reduced = useReducedMotion()
   const snap = !!reduced
 
-  const localScrollDist = useSceneScroll()
-  const [markersOn, setMarkersOn] = useState(() => localScrollDist.get() < SCENE_VH)
-  useMotionValueEvent(localScrollDist, "change", (v) => setMarkersOn(v < SCENE_VH))
+  const markersOn = useMarkersOn()
 
   const scale = useScaleText(map, sy)
 
@@ -147,6 +163,53 @@ function HeroScene({ data }: { data: LandingData }) {
   )
 }
 
+/** Mobile tree: statement top, open map middle, CTA bottom bar. The veil and
+ * reveal bounds render as on desktop, but the plate coordinates are static —
+ * nothing tracks a pointer, so the crosshair reveal idles and the cursor
+ * springs, plate picking and scale readout never mount. */
+function HeroMobile({ data }: { data: LandingData }) {
+  const bootPhase = useBootPhase()
+  const sx = useMotionValue(window.innerWidth * 0.62)
+  const sy = useMotionValue(window.innerHeight * 0.42)
+  const boundsRef = useRef<HTMLDivElement | null>(null)
+  const cam = useMemo(() => heroCamera(data), [data])
+  const markersOn = useMarkersOn()
+  const local = useSceneScroll()
+  const ledeFade = useTransform(local, [0, MOBILE_LEDE_FADE_VH], [1, 0])
+
+  return (
+    <section data-spine-shape="hero" data-boot-phase={bootPhase} className={styles.hero}>
+      <CursorReveal
+        boundsRef={boundsRef}
+        sx={sx}
+        sy={sy}
+        tagTr={data.heroCity.name}
+        on={phaseAtLeast(bootPhase, "reveal")}
+      />
+      <PhotoMarkers
+        archs={data.heroArchs}
+        on={markersOn && phaseAtLeast(bootPhase, "reveal")}
+        className={HERO_MARKER_CLASS}
+      />
+      <MapTransition untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={cam} />
+      <Screen className={`${styles.screen} ${styles.mobileScreen}`}>
+        <HSplit ref={boundsRef} className={styles.mobileWork}>
+          <Pane size="calc(var(--size-header-height) + 1px)" />
+          <Pane className={styles.mobileLedePane}>
+            <motion.div style={{ opacity: ledeFade }}>
+              <Lede />
+            </motion.div>
+          </Pane>
+          <Pane filled />
+        </HSplit>
+        <Pane size={MOBILE_CTA_HEIGHT} filled className={styles.mobileCtaBar}>
+          <CtaPane />
+        </Pane>
+      </Screen>
+    </section>
+  )
+}
+
 const HEADLINE_LINES = [
   <>The <span className={styles.accent}>Map</span> Where</>,
   <><span className={styles.accent}>Architectures</span> Lives.</>,
@@ -187,92 +250,6 @@ function Lede() {
         </Body2>
       </BootFade>
     </motion.div>
-  )
-}
-
-/** The CTA — the pane itself.
- * On the cursor-less screen the plate is the pointer: when it sweeps deep enough
- * into the pane, the whole cell rolls — the resting face (label + hint
- * over the sheet tile) slides out, the armed face (accent ground, arrow)
- * slides in. The cursor arrives from the big cell to the LEFT, so the
- * arming buffer guards the pane's left and top edges. */
-function CtaPane({ sx, sy }: { sx: MotionValue<number>; sy: MotionValue<number> }) {
-  const ref = useRef<HTMLAnchorElement | null>(null)
-  const [deep, setDeep] = useState(false)
-  const [focused, setFocused] = useState(false)
-  const reduced = useReducedMotion()
-  useEffect(() => {
-    let raf = 0
-    const check = () => {
-      raf = 0
-      const el = ref.current
-      if (!el) return
-      const r = el.getBoundingClientRect()
-      const x = sx.get()
-      const y = sy.get()
-      const inDistance =
-        x >= r.left + CTA_BUFFER &&
-        x <= r.right &&
-        y >= r.top + CTA_BUFFER &&
-        y <= r.bottom
-      setDeep(inDistance)
-    }
-    const schedule = () => {
-      if (!raf) raf = requestAnimationFrame(check)
-    }
-    const u1 = sx.on("change", schedule)
-    const u2 = sy.on("change", schedule)
-    window.addEventListener("scroll", schedule, { passive: true })
-    schedule()
-    return () => {
-      u1()
-      u2()
-      window.removeEventListener("scroll", schedule)
-      if (raf) cancelAnimationFrame(raf)
-    }
-  }, [sx, sy])
-  const armed = deep || focused
-  // entry delay is for the boot roll only; later face swaps run immediately
-  const booted = useRef(false)
-  useEffect(() => {
-    booted.current = true
-  }, [])
-  return (
-    <motion.a
-      ref={ref}
-      data-armed={armed}
-      className={styles.ctaPane}
-      href={APP_URL}
-      onFocus={() => setFocused(true)}
-      onBlur={() => setFocused(false)}
-    >
-      <AnimatePresence mode="popLayout">
-        <motion.span
-          key={armed ? "armed" : "rest"}
-          className={styles.ctaFace}
-          data-armed={armed}
-          initial={
-            reduced
-              ? false
-              : booted.current
-                ? { y: "100%" }
-                : { opacity: 0, y: 10, filter: "blur(4px)" }
-          }
-          animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
-          exit={reduced ? undefined : { y: "-100%" }}
-          transition={
-            booted.current
-              ? { duration: TRANSITION_SHORT, ease: ROLL_EASE }
-              : { duration: TRANSITION_SHORT, delay: 0.85, ease: "easeOut" }
-          }
-        >
-          <Note className={styles.ctaText}>
-            Explore Nolli
-            <ArrowUpRight className={styles.ctaIcon} size={24} aria-hidden />
-          </Note>
-        </motion.span>
-      </AnimatePresence>
-    </motion.a>
   )
 }
 

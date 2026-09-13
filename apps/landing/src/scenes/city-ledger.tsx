@@ -12,6 +12,7 @@ import { CITY_LEDGER } from "@/lib/constants"
 import { useSceneScroll, useSpineMap } from "@/spine/spine"
 import { TRANSITION_LEAD_VH, type HoldScene, type TransitionScene } from "@/spine/timeline"
 import { fitCamera } from "@/lib/camera"
+import { useMobile } from "@/lib/use-mobile"
 import { CityMarkers } from "@/components/city-markers"
 import { RollButton } from "@/components/roll-button"
 import { RollText } from "@/components/roll-text"
@@ -21,6 +22,10 @@ import styles from "./city-ledger.module.css"
 
 /** City grid row height. */
 const CITY_ROW_H = "3.5rem"
+
+/** Arch rows the mobile dossier shows — the list caps so the city grid
+ * clears the fold; the map still pins every arch. */
+const MOBILE_ARCH_ROWS = 5
 
 /** Visibility windows in scene-local vh: the markers flag on at
  * −ENTRY_VH; the content fades and the markers flag off across
@@ -33,6 +38,9 @@ const SCENE_VH = 200
 /** Fit padding in pane px: photo cards hang below the pin, so the
  * south-most arch needs far more room below it than the north-most above. */
 const FIT_PADDING = { left: 100, right: 100, top: 100, bottom: 240 }
+
+/** Same fit for the mobile map band — smaller pane, smaller px room. */
+const FIT_PADDING_MOBILE = { left: 24, right: 24, top: 32, bottom: 120 }
 
 /** City-name pool for the pre-entry roll — names only, no data behind
  * them; walking the list in order is travel texture, not destinations
@@ -70,6 +78,7 @@ export const heroCityTransition = (): TransitionScene => ({
 
 function CityLedger({ data }: { data: LandingData }) {
   const map = useSpineMap()
+  const mobile = useMobile()
   const local = useSceneScroll()
   const paneRef = useRef<HTMLDivElement | null>(null)
   const archsByCity = data.cityLedger
@@ -80,6 +89,7 @@ function CityLedger({ data }: { data: LandingData }) {
   // marker moves the card
   const [cardSlug, setCardSlug] = useState<string | null>(null)
   const archs = archsByCity[selected] ?? []
+  const shownArchs = mobile ? archs.slice(0, MOBILE_ARCH_ROWS) : archs
   // new city → card back to its first arch
   useEffect(() => {
     setCardSlug(archs[0]?.slug ?? null)
@@ -96,9 +106,9 @@ function CityLedger({ data }: { data: LandingData }) {
     return fitCamera(
       cityArchs.map((p) => p.coordinates),
       { width, height },
-      FIT_PADDING,
+      mobile ? FIT_PADDING_MOBILE : FIT_PADDING,
     )
-  }, [])
+  }, [mobile])
 
   // fly in as the transition hands us the screen; camera measured at fire
   // time from the pane's live px box
@@ -132,6 +142,31 @@ function CityLedger({ data }: { data: LandingData }) {
         <MapTransition untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={() => cameraFor(archsRef.current)} />
         <CityMarkers archs={archs} on={markersOn} selected={cardSlug} onSelect={setCardSlug} />
         <motion.div className={styles.splits} style={{ opacity: fade }}>
+          {mobile ? (
+            <div className={styles.mobileStack}>
+              <div ref={paneRef} data-spine-shape="city" className={styles.mobileMapPane} />
+              <div className={styles.mobileBody}>
+                <Statement
+                  leadCity={displayCity}
+                  listCity={selected}
+                  archs={shownArchs}
+                  cardSlug={cardSlug}
+                  onCard={setCardSlug}
+                />
+                <div className={styles.cityGrid}>
+                  {CITY_LEDGER.slice(0, 6).map((name) => (
+                    <CityCell
+                      key={name}
+                      name={name}
+                      selected={name === selected}
+                      ready={Object.keys(archsByCity).includes(name)}
+                      onSelect={onSelect}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : (
           <HSplit>
             <Pane size="12svh" />
             <Pane>
@@ -147,7 +182,7 @@ function CityLedger({ data }: { data: LandingData }) {
                               <Statement
                                 leadCity={displayCity}
                                 listCity={selected}
-                                archs={archs}
+                                archs={shownArchs}
                                 cardSlug={cardSlug}
                                 onCard={setCardSlug}
                               />
@@ -184,6 +219,7 @@ function CityLedger({ data }: { data: LandingData }) {
               </VSplit>
             </Pane>
           </HSplit>
+          )}
         </motion.div>
       </Screen>
     </>
@@ -271,6 +307,7 @@ function Statement({
               custom={rowDelay(p.slug)}
               data-hovered={cardSlug === p.slug}
               onMouseEnter={() => onCard(p.slug)}
+              onClick={() => onCard(p.slug)}
             >
               <span className={styles.archNum}>{String(i + 1).padStart(2, "0")}</span>
               <Body2 className={styles.archName}>{p.name}</Body2>

@@ -47,3 +47,14 @@ body {
 body:has(main[data-boot]) {
   overflow: hidden;
 }
+
+/* Phones: shrink the grid's margin/col vars so shared grid sizing
+   (calc(var(--grid-col) * n) panes) still resolves at 375px. The desktop
+   values live on .screen in scenes/grid.module.css; these selectors match
+   the same elements with higher specificity to override them. */
+@media (max-width: 767px) {
+  [data-scene] section {
+    --grid-padding: var(--spacing-component);
+    --grid-col: calc((100vw - 2 * var(--grid-padding)) / 12);
+  }
+}

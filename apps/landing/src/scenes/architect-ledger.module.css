@@ -49,3 +49,35 @@
   font-weight: 600;
   color: rgb(var(--color-hero-foreground));
 }
+
+/* ── phones: map band on top (statement over the veil, type scaled), the
+   ledger below as a two-wide wrap-grid of tap-picks. World camera, veil
+   and markers unchanged. */
+@media (max-width: 767px) {
+  .bandText {
+    left: var(--grid-padding);
+    bottom: var(--grid-padding);
+    max-width: calc(100% - 2 * var(--grid-padding));
+  }
+
+  .statementText {
+    font-size: 1.5rem;
+  }
+
+  .ledgerPane {
+    box-sizing: border-box;
+    padding: calc(var(--grid-padding) / 2) var(--grid-padding);
+  }
+
+  .ledger {
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 1fr;
+    gap: calc(var(--grid-padding) / 2);
+  }
+
+  .ledgerCell {
+    font-size: 0.875rem;
+  }
+}

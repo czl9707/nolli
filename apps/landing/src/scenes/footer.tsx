@@ -1,6 +1,7 @@
 import { siInstagram, siThreads, type SimpleIcon } from "simple-icons"
 import { Body1, Body3, Button, H3, H4, H6, Note, PaperPhoto } from "@nolli/ui"
 import { APP_URL, ABOUT_URL, POSTER_URL, WORLD_CAMERA } from "@/lib/constants"
+import { useMobile } from "@/lib/use-mobile"
 import { TRANSITION_LEAD_VH, type HoldScene, type SpineScene, type TransitionScene } from "@/spine/timeline"
 import type { ArchSummary, LandingData } from "@/lib/landing-data"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
@@ -57,11 +58,42 @@ export function footerHold(data: LandingData): HoldScene {
 
 
 function FooterScene({ data }: { data: LandingData }) {
+  const mobile = useMobile()
   return (
     <>
       <MapTransition target={WORLD_CAMERA} untilVh={SCENE_VH - TRANSITION_LEAD_VH} />
       <Screen className={`${styles.veil} ${styles.screen}`}>
         <div className={styles.shape} data-spine-shape="footer" aria-hidden />
+        {mobile ? (
+          <div className={styles.mobileFooter}>
+            <Pane size="var(--size-header-height)" />
+            <div className={styles.commonPane}>
+              <a className={styles.brand} href="#" aria-label="Nolli home">
+                <img className={styles.mark} src="/favicon.svg" alt="" width={24} height={24} />
+                <Note className={styles.wordMark}>Nolli</Note>
+              </a>
+              <H4 className={styles.statement}>
+                The Map Where Architectures Lives.
+              </H4>
+              <div className={styles.social}>
+                <SocialLink icon={siInstagram} label="Instagram" href="https://www.instagram.com/nolli.map/" />
+                <SocialLink icon={siThreads} label="Threads" href="https://www.threads.net/@nolli.map" />
+              </div>
+              <div className={styles.meta}>
+                <Body3 className={styles.legalMark}>© 2026-present Zane Chen</Body3>
+                <Body3 className={styles.legalMark}>New York, United States</Body3>
+              </div>
+            </div>
+            <div className={`${styles.commonPane} ${styles.navRow}`}>
+              <div className={styles.navCol}>
+                <NavColumn group={LINK_GROUPS[0]} />
+              </div>
+              <div className={styles.navCol}>
+                <NavColumn group={LINK_GROUPS[1]} />
+              </div>
+            </div>
+          </div>
+        ) : (
         <HSplit>
           <Pane size="45svh" />
           <Pane className={styles.footer}>
@@ -105,6 +137,7 @@ function FooterScene({ data }: { data: LandingData }) {
             </HSplit>
           </Pane>
         </HSplit>
+        )}
       </Screen>
     </>
   )

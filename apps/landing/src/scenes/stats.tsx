@@ -11,6 +11,8 @@ import type { ArchSummary } from "@/lib/landing-data"
 import { type SceneCamera } from "@nolli/map"
 import { APP_URL, ROLL_EASE } from "@/lib/constants"
 import { useWhereami } from "@/lib/whereami"
+import { useMobile } from "@/lib/use-mobile"
+import { CtaPane } from "@/components/cta-pane"
 import { TRANSITION_LEAD_VH, type HoldScene, type TransitionScene } from "@/spine/timeline"
 import type { CollectionStats, LandingData } from "@/lib/landing-data"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
@@ -64,6 +66,49 @@ function StatsScene({ stats, photoPool, architectNames }: {
   photoPool: ArchSummary[]
   architectNames: string[]
 }) {
+  const mobile = useMobile()
+  if (mobile) {
+    return (
+      <Screen className={styles.screen}>
+        <div className={styles.shape} aria-hidden data-spine-shape="stats" />
+        <MapTransition sceneId={SCENE_ID} untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={WORLD} />
+        <div className={styles.mobileStack}>
+          <div className={`${styles.cell} ${styles.mobileCard}`}>
+            <H2 className={styles.statementText}>
+              A Map. A Collection.
+              <br />
+              A <span className={styles.accent}>Growing Community</span>.
+            </H2>
+            <NumberBlock
+              value={stats.buildings} label="Has Collected" delay={0} size="l"
+              sub="Architectures"
+            />
+            <PhotoStack archs={photoPool} />
+          </div>
+          <div className={styles.cell}>
+            <NumberBlock
+              value={stats.architects} label="Designed by" delay={0.15} size="m"
+              sub="Architects"
+            />
+            <BadgeRows items={architectNames} />
+          </div>
+          <div className={styles.cell}>
+            <NumberBlock
+              value={stats.countries} label="Located across" delay={0.3} size="m"
+              sub="Countries"
+            />
+            <BadgeRows items={COUNTRY_BADGES} />
+          </div>
+          <div className={styles.cell}>
+            <WhereBlock stats={stats} />
+            <div className={styles.mobileWhereCta}>
+              <CtaPane label="Open the map" />
+            </div>
+          </div>
+        </div>
+      </Screen>
+    )
+  }
   return (
     <Screen className={styles.screen}>
       <HSplit>

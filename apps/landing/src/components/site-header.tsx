@@ -27,7 +27,7 @@ export function SiteHeader() {
               </a>
             </Body2>
           </nav>
-          <Button variant="outline" size="default" asChild>
+          <Button variant="outline" size="default" className={styles.cta} asChild>
             <a href={APP_URL}>Explore Nolli</a>
           </Button>
         </div>

@@ -8,6 +8,7 @@ import { useMotionValueEvent } from "framer-motion"
 import { H2 } from "@nolli/ui"
 import type { SceneCamera } from "@nolli/map"
 import { useSceneScroll, useSpineMap } from "@/spine/spine"
+import { useMobile } from "@/lib/use-mobile"
 import { useLinger } from "@/lib/use-linger"
 import { TRANSITION_LEAD_VH, type HoldScene, type TransitionScene } from "@/spine/timeline"
 import type { ArchEntry, LandingData } from "@/lib/landing-data"
@@ -54,6 +55,7 @@ export const cityArchitectTransition = (): TransitionScene => ({
 })
 
 function ArchitectLedger({ entries }: { entries: ArchEntry[] }) {
+  const mobile = useMobile()
   const local = useSceneScroll(SCENE_ID)
   const [selected, setSelected] = useState(entries[0]?.name ?? "")
   const selectedEntry = entries.find((e) => e.name === selected) ?? entries[0]
@@ -69,6 +71,52 @@ function ArchitectLedger({ entries }: { entries: ArchEntry[] }) {
   const perRow = Math.ceil(entries.length / 2)
   for (let i = 0; i < entries.length; i += perRow) rows.push(entries.slice(i, i + perRow))
 
+  // map band shared by both trees: the shape anchors the spine's map layer;
+  // veil + photo markers + statement ride it. Selection is the same state.
+  const mapBand = (
+    <>
+      <div className={styles.shape} aria-hidden data-spine-shape="architect" />
+      <MapTransition sceneId={SCENE_ID} untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={WORLD} />
+      <MapVeil on={markersOn} />
+      <ArchImageMarkers entries={entries} selectedId={selectedEntry?.id ?? -1} on={markersOn} />
+      {selectedEntry && (
+        <div className={styles.bandText}>
+          <H2 className={styles.statementText}>
+            You can name the works of <RollText text={selectedEntry.name} />.
+            <br />
+            <span className={styles.accent}>Nolli</span> help you pin them on the map.
+          </H2>
+        </div>
+      )}
+    </>
+  )
+
+  if (mobile) {
+    return (
+      <Screen className={styles.screen}>
+        <HSplit>
+          <Pane size="55svh">{mapBand}</Pane>
+          <Pane className={styles.ledgerPane}>
+            <div className={styles.ledger}>
+              {entries.map((e) => (
+                <RollButton
+                  key={e.id}
+                  className={styles.ledgerCell}
+                  state={e.name === selected ? "focused" : "default"}
+                  onClick={() => setSelected(e.name)}
+                  onFocus={() => setSelected(e.name)}
+                  aria-pressed={e.name === selected}
+                >
+                  {e.name}
+                </RollButton>
+              ))}
+            </div>
+          </Pane>
+        </HSplit>
+      </Screen>
+    )
+  }
+
   return (
     <Screen className={styles.screen}>
       <HSplit>
@@ -80,21 +128,7 @@ function ArchitectLedger({ entries }: { entries: ArchEntry[] }) {
                 <Pane size="12svh" />
                 <Pane>
                   <HSplit>
-                    <Pane>
-                      <div className={styles.shape} aria-hidden data-spine-shape="architect" />
-                      <MapTransition sceneId={SCENE_ID} untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={WORLD} />
-                      <MapVeil on={markersOn} />
-                      <ArchImageMarkers entries={entries} selectedId={selectedEntry?.id ?? -1} on={markersOn} />
-                      {selectedEntry && (
-                        <div className={styles.bandText}>
-                          <H2 className={styles.statementText}>
-                            You can name the works of <RollText text={selectedEntry.name} />.
-                            <br />
-                            <span className={styles.accent}>Nolli</span> help you pin them on the map.
-                          </H2>
-                        </div>
-                      )}
-                    </Pane>
+                    <Pane>{mapBand}</Pane>
                     {rows.map((row, r) => (
                       <Pane key={r} size="3.5rem">
                         <VSplit>

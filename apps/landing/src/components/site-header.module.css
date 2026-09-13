@@ -59,3 +59,21 @@
 .links a:hover {
   color: rgb(var(--color-primary-foreground));
 }
+
+/* Phones: grow the chrome's tap targets to 44px; desktop strip unchanged. */
+@media (max-width: 767px) {
+  .brand {
+    padding-block: 8px;
+  }
+
+  .links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 3px;
+  }
+
+  .bar .right .cta {
+    height: 2.75rem;
+  }
+}

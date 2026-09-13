@@ -172,7 +172,7 @@ export function Spine({
 
   return (
     <Ctx.Provider value={ctx}>
-      <div ref={wrapperRef} style={{ position: "relative", height: `${timeline.totalVh + 100}vh` }}>
+      <div ref={wrapperRef} style={{ position: "relative", height: `${timeline.totalVh + 100}svh` }}>
         <div style={{ position: "sticky", top: 0, height: "100svh", overflow: "hidden" }}>
           {/* focus pull: the layer develops from blurred/dim to sharp
               alongside its fade-in at the map beat */}
@@ -202,7 +202,7 @@ export function Spine({
               <div
                 data-scene={scene.id}
                 style={{
-                  height: `${scene.heightVh + (i === timeline.segments.length - 1 ? 100 : 0)}vh`,
+                  height: `${scene.heightVh + (i === timeline.segments.length - 1 ? 100 : 0)}svh`,
                   position: "relative",
                   pointerEvents: "none",
                 }}
