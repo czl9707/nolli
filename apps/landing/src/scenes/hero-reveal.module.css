@@ -164,3 +164,41 @@
   top: 0;
   z-index: 100001;
 }
+
+/* ── boot reveal: crosshairs draw to the plate ───────────────────────────
+   At the reveal beat the guides grow into place — verticals from the
+   horizontal centre, horizontals from the vertical centre — then the corner
+   tags wipe open after the hole */
+.cxV {
+  transform: scaleY(0);
+}
+
+.cxH {
+  transform: scaleX(0);
+}
+
+.root[data-on] .cxV,
+.root[data-on] .cxH {
+  transform: none;
+  transition: transform 0.45s ease-out 0.1s;
+}
+
+.tagTl,
+.tagTr {
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 0.45s ease-out 0.25s;
+}
+
+.root[data-on] .tagTl,
+.root[data-on] .tagTr {
+  clip-path: inset(0 0 0 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cxV,
+  .cxH,
+  .tagTl,
+  .tagTr {
+    transition: none;
+  }
+}

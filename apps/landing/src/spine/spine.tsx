@@ -3,14 +3,20 @@ import {
   createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState,
 } from "react"
 import {
-  motion, useMotionValue, useMotionValueEvent, useScroll, useTransform,
+  motion, useMotionValue, useMotionValueEvent, useReducedMotion, useScroll, useTransform,
   type MotionValue,
 } from "framer-motion"
 import type { MapRef, SceneCamera } from "@nolli/map"
 import { LandingMap } from "@/components/landing-map"
 import { phaseAtLeast, useBoot, useBootPhase } from "@/lib/boot"
-import styles from "./spine.module.css"
 import { buildTimeline, shapeAt, type PxRect, type SpineScene } from "./timeline"
+
+// boot map arrival: the layer starts placed at a wide zoom and glides into
+// the hero fit as the map beat opens, developing from blurred/dim to sharp
+// alongside its fade-in (reduced motion places at the fit directly)
+const BOOT_GLIDE = { startZoom: 7.5, glideMs: 2400 }
+const BOOT_FOCUS = { blur: 16, dim: 0.65, developMs: 1600 }
+const FOCUS_PULL = `blur(${BOOT_FOCUS.blur}px) brightness(${BOOT_FOCUS.dim})`
 
 type SpineCtx = {
   scrollVh: MotionValue<number>
@@ -122,20 +128,36 @@ export function Spine({
   // initial placement: scenes own the camera afterwards. Layout effect so
   // the placement lands before ANY scene's passive fit effect — passive
   // effects run child-first, which would let a scene's jumpTo be clobbered
-  // by this one.
+  // by this one. The boot glide starts wide; reduced motion places at the fit.
+  const { setMapReady } = useBoot()
+  const bootPhase = useBootPhase()
+  const reduced = useReducedMotion()
+  const glides = !reduced
   const setRef = useCallback((m: MapRef | null) => {
     mapRef.current = m
     setMapMounted(!!m)
   }, [])
   useLayoutEffect(() => {
     if (!mapMounted) return
-    mapRef.current?.jumpTo({ center: camera.center, zoom: camera.zoom })
-  }, [mapMounted, camera])
+    mapRef.current?.jumpTo(
+      glides
+        ? { center: camera.center, zoom: BOOT_GLIDE.startZoom }
+        : { center: camera.center, zoom: camera.zoom },
+    )
+  }, [mapMounted, camera, glides])
+
+  // the camera glide itself: fires as the map beat opens. easeTo only
+  // (flyTo on this map mis-lands flights — see the easeTo/moveend notes)
+  useEffect(() => {
+    if (bootPhase !== "map" || !glides) return
+    mapRef.current?.easeTo(
+      { center: camera.center, zoom: camera.zoom },
+      { duration: BOOT_GLIDE.glideMs, easing: (t: number) => 1 - (1 - t) ** 3, essential: true },
+    )
+  }, [bootPhase, camera, glides])
 
   // boot reveal signal: the map's first idle render pings the boot sequence
   // (which owns all timing); the map layer's own fade is driven by the phase
-  const { setMapReady } = useBoot()
-  const bootPhase = useBootPhase()
   useEffect(() => {
     if (!mapMounted) return
     const map = mapRef.current
@@ -152,11 +174,19 @@ export function Spine({
     <Ctx.Provider value={ctx}>
       <div ref={wrapperRef} style={{ position: "relative", height: `${timeline.totalVh + 100}vh` }}>
         <div style={{ position: "sticky", top: 0, height: "100svh", overflow: "hidden" }}>
-          <motion.div className={styles.boot} style={{
+          {/* focus pull: the layer develops from blurred/dim to sharp
+              alongside its fade-in at the map beat */}
+          <motion.div style={{
             position: "absolute", left: layerX, top: layerY, width: layerW, height: layerH,
             overflow: "hidden",
-            opacity: phaseAtLeast(bootPhase, "map") ? 1 : 0,
-          }}>
+          }}
+            initial={reduced ? false : { opacity: 0, filter: FOCUS_PULL }}
+            animate={{
+              opacity: phaseAtLeast(bootPhase, "map") ? 1 : 0,
+              filter: phaseAtLeast(bootPhase, "map") ? "none" : FOCUS_PULL,
+            }}
+            transition={{ duration: BOOT_FOCUS.developMs / 1000, ease: "easeOut" }}
+          >
             <LandingMap ref={setRef}>
               <div ref={setMapPortal} style={{ position: "absolute", inset: 0, pointerEvents: "none" }} />
             </LandingMap>

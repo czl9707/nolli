@@ -30,14 +30,14 @@ export const BOOT_PHASES = [
 
 export type BootPhase = (typeof BOOT_PHASES)[number]
 
-const BLANK_MS = 600
+const BLANK_MS = 300
 // the headline owns the stage until this absolute mark — the map phase
 // never fires earlier, even on a warm cache
-const HEADLINE_HOLD_MS = 2400
+const HEADLINE_HOLD_MS = 1500
 const MAP_CAP_MS = 3000
-const AFTER_MAP_MS = 1200
-const AFTER_FURNITURE_MS = 700
-const AFTER_REVEAL_MS = 900
+const AFTER_MAP_MS = 600
+const AFTER_FURNITURE_MS = 600
+const AFTER_REVEAL_MS = 600
 
 export function phaseAtLeast(current: BootPhase, floor: BootPhase): boolean {
   return BOOT_PHASES.indexOf(current) >= BOOT_PHASES.indexOf(floor)
@@ -115,7 +115,15 @@ function useBootSequence(mapReady: boolean): BootPhase {
   return phase
 }
 
-const HIDDEN = { opacity: 0, y: 10 }
+const HIDDEN = { opacity: 0 }
+
+// directional entrance offsets — furniture slides in from its own screen edge
+const FROM = {
+  up: { y: 16 },
+  down: { y: -16 },
+  left: { x: -24 },
+  right: { x: 24 },
+} as const
 
 /** Boot-sequence entrance wrapper: renders from frame one at opacity 0 (so
  * layout is stable through the boot phases) and fades/rises in at the given
@@ -126,22 +134,29 @@ export function BootFade({
   children,
   className,
   style,
+  from,
+  delay,
 }: {
   /** phase floor — the fade runs once the sequence reaches it */
   at: BootPhase
   children: ReactNode
   className?: string
   style?: React.CSSProperties
+  /** entrance direction — the block rises from its own screen edge */
+  from?: keyof typeof FROM
+  /** stagger delay, for sequencing several BootFades inside one phase */
+  delay?: number
 }) {
   const reduced = useReducedMotion()
   const show = phaseAtLeast(useBootPhase(), at)
+  const hidden = from ? {...HIDDEN, ...FROM[from] } : HIDDEN
   return (
     <motion.div
       className={className}
       style={style}
-      initial={reduced ? false : HIDDEN}
-      animate={show ? { opacity: 1, y: 0 } : HIDDEN}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      initial={reduced ? false : hidden}
+      animate={show ? { opacity: 1, x: 0, y: 0 } : hidden}
+      transition={{ duration: 0.5, delay, ease: "easeOut" }}
     >
       {children}
     </motion.div>

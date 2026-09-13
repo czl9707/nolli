@@ -101,7 +101,7 @@ function HeroScene({ data }: { data: LandingData }) {
               <Lede />
             </Pane>
             <Pane size={`${PLATE.w}px`}>
-              <BootFade at="furniture" className={styles.furnitureBox}>
+              <BootFade at="furniture" className={styles.furnitureBox} delay={0.12}>
                 <HSplit>
                   <Pane>
                     <ul className={styles.archList}>
@@ -123,7 +123,7 @@ function HeroScene({ data }: { data: LandingData }) {
             </Pane>
           </VSplit>
           <Pane size={BOTTOM_BAR_HEIGHT}>
-            <BootFade at="furniture" className={styles.furnitureBox}>
+            <BootFade at="furniture" className={styles.furnitureBox} delay={0.22}>
               <VSplit>
                 <InfoBlock nearest={nearest} />
                 <Pane filled />
@@ -161,6 +161,7 @@ function Lede() {
   const on = phaseAtLeast(bootPhase, "headline")
   const hidden = { opacity: 0, y: 10, filter: "blur(4px)" }
   const shown = { opacity: 1, y: 0, filter: "blur(0px)" }
+
   return (
     <motion.div
       className={styles.lede}
