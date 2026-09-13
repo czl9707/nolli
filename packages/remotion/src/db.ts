@@ -102,3 +102,42 @@ export function queryArchitectBuildings(dbPath: string, architectName: string): 
       .all(architectName) as ArchRow[],
   );
 }
+
+/** One building by slug, plus its architect's display name and photo count —
+ *  the single-building counterpart to queryArchitectBuildings. */
+export type BuildingRow = {
+  slug: string;
+  name: string;
+  year: number;
+  city: string | null;
+  cc: string | null;
+  lat: number;
+  lng: number;
+  cover: string | null;
+  architect: string;
+  photoCount: number;
+};
+
+export function queryBuildingBySlug(dbPath: string, slug: string): BuildingRow {
+  const row = withDb(dbPath, (db) =>
+    db
+      .prepare(
+        `
+      SELECT a.slug, a.name, a.year,
+             ci.name AS city, co.code AS cc,
+             a.latitude AS lat, a.longitude AS lng,
+             (SELECT p.image FROM architecture_photos p WHERE p.architecture_id = a.id AND p.is_cover = 1) AS cover,
+             ar.name AS architect,
+             (SELECT COUNT(*) FROM architecture_photos p WHERE p.architecture_id = a.id) AS photoCount
+      FROM architectures a
+      JOIN architects ar ON a.architect_id = ar.id
+      LEFT JOIN cities ci ON a.city_id = ci.id
+      LEFT JOIN countries co ON ci.country_id = co.id
+      WHERE a.slug = ?
+    `,
+      )
+      .get(slug) as BuildingRow | undefined,
+  );
+  if (!row) throw new Error(`No architecture matches slug "${slug}".`);
+  return row;
+}
