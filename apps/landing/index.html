@@ -7,8 +7,13 @@
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta name="description" content="A map architects wish for. A map where architecture lives" />
     <title>Nolli — The Map Where Architecture Lives</title>
+    <style>
+      /* First paint is dark before any CSS/JS arrives — mirrors the dark
+         token rgb(23 23 23); body[data-theme] picks it up once JS boots */
+      html { background: #171717; }
+    </style>
   </head>
-  <body>
+  <body data-theme="dark">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

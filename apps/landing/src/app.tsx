@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo } from "react"
 import Lenis from "lenis"
 import { landingData } from "@/lib/landing-data"
+import { BootFade, useBootPhase } from "@/lib/boot"
 import { Spine } from "@/spine/spine"
 import type { SpineScene } from "@/spine/timeline"
 import { heroCamera, heroHold } from "@/scenes/hero"
@@ -26,8 +27,8 @@ export function App() {
     ],
     [],
   )
-  const [revealed, setRevealed] = useState(false)
-  const onMapIdle = useCallback(() => setRevealed(true), [])
+  const bootPhase = useBootPhase()
+  const revealed = bootPhase === "done"
 
   // boot camera = the hero's own fit, so the spine's initial placement
   // plants the map where the hero lands
@@ -51,17 +52,20 @@ export function App() {
     }
   }, [revealed])
 
-  // the scroll spine stays still until the map can be seen: <main data-boot>
-  // below + the body:has(main[data-boot]) lock in global.css
+  // the scroll spine stays still until the boot sequence completes:
+  // <main data-boot> below + the body:has(main[data-boot]) lock in global.css
   return (
     <main data-boot={revealed ? undefined : ""}>
       {/* app chrome — fixed at this level it stacks above the spine's scene
-          flow (z2) without a portal; main is no stacking context */}
+          flow (z2) without a portal; main is no stacking context. The header
+          enters with the furniture phase */}
       <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 20 }}>
-        <SiteHeader />
+        <BootFade at="furniture" style={{ position: "absolute", inset: 0 }}>
+          <SiteHeader />
+        </BootFade>
       </div>
       <ScrollThumb />
-      <Spine scenes={scenes} camera={bootCamera} onMapIdle={onMapIdle} />
+      <Spine scenes={scenes} camera={bootCamera} />
     </main>
   )
 }

@@ -2,6 +2,7 @@ import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 import { useThemeStore } from "@nolli/ui"
 import { App } from "./app"
+import { BootProvider } from "./lib/boot"
 import "./styles/global.css"
 
 // Map always dark; page chrome stays on the light default vars.
@@ -13,6 +14,8 @@ document.body.dataset.theme = "dark"
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App />
+    <BootProvider>
+      <App />
+    </BootProvider>
   </StrictMode>,
 )

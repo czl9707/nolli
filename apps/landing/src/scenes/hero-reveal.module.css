@@ -16,36 +16,42 @@
   z-index: 0;
 }
 
+/* The hole's open factor, as mask alpha. Registered so it TRANSITIONS —
+   the hole band fades from opaque mask (hole closed, the boot state) to
+   transparent (hole open), which is the reveal's fade-in mask cut */
+@property --hole-a {
+  syntax: "<number>";
+  initial-value: 1;
+  inherits: true;
+}
+
 .veil {
   position: absolute;
   inset: 0;
   /* flat deepest ink — no gradient; the map shows only through the plate */
   background: rgb(var(--color-primary-background) / 0.92);
+  --hole-a: 1;
+  transition: --hole-a var(--transition-short) ease-out;
   -webkit-mask-image: linear-gradient(
       to right,
       #000 0 var(--pl),
-      transparent var(--pl) var(--pr),
+      rgb(0 0 0 / var(--hole-a)) var(--pl) var(--pr),
       #000 var(--pr)
     ),
-    linear-gradient(to bottom, #000 0 var(--pt), transparent var(--pt) var(--pb), #000 var(--pb));
+    linear-gradient(to bottom, #000 0 var(--pt), rgb(0 0 0 / var(--hole-a)) var(--pt) var(--pb), #000 var(--pb));
   -webkit-mask-composite: source-over;
   mask-image: linear-gradient(
       to right,
       #000 0 var(--pl),
-      transparent var(--pl) var(--pr),
+      rgb(0 0 0 / var(--hole-a)) var(--pl) var(--pr),
       #000 var(--pr)
     ),
-    linear-gradient(to bottom, #000 0 var(--pt), transparent var(--pt) var(--pb), #000 var(--pb));
+    linear-gradient(to bottom, #000 0 var(--pt), rgb(0 0 0 / var(--hole-a)) var(--pt) var(--pb), #000 var(--pb));
   mask-composite: add;
 }
 
-.plate {
-  position: absolute;
-  left: 0;
-  top: 0;
-  border-radius: var(--size-border-radius);
-  backdrop-filter: brightness(1.14) saturate(1.06);
-  z-index: 100000;
+.root[data-on] .veil {
+  --hole-a: 0;
 }
 
 /* frame annotations — everything pinned around the plate/furniture box
@@ -99,6 +105,47 @@
   background: rgb(var(--color-primary-foreground) / 0.25);
 }
 
+/* boot: the accessories wait for the reveal phase (the root's data-on
+   comes from the boot sequence). The hole itself fades open via the
+   veil's --hole-a transition above — the plate needs no cover fill. Its
+   backdrop-filter stays NEUTRAL until the reveal (a live filter would
+   tint the closed hole against the surrounding veil), then eases in with
+   the same fade */
+#hero-plate {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: var(--size-border-radius);
+  backdrop-filter: brightness(1) saturate(1);
+  transition: backdrop-filter var(--transition-short) ease-out;
+  z-index: 100000;
+
+  .root[data-on] & {
+    backdrop-filter: brightness(1.14) saturate(1.06);
+  }
+}
+
+#hero-plate .frame,
+#hero-reveal-furniture,
+.cx {
+  opacity: 0;
+  transition: opacity var(--transition-short) ease-out;
+
+  .root[data-on] & {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .veil,
+  #hero-plate,
+  #hero-plate .frame,
+  #hero-reveal-furniture,
+  .cx {
+    transition: none;
+  }
+}
+
 .cxV {
   top: 0;
   bottom: 0;
@@ -111,9 +158,47 @@
   height: 1px;
 }
 
-.furniture {
+#hero-reveal-furniture {
   position: absolute;
   left: 0;
   top: 0;
   z-index: 100001;
+}
+
+/* ── boot reveal: crosshairs draw to the plate ───────────────────────────
+   At the reveal beat the guides grow into place — verticals from the
+   horizontal centre, horizontals from the vertical centre — then the corner
+   tags wipe open after the hole */
+.cxV {
+  transform: scaleY(0);
+}
+
+.cxH {
+  transform: scaleX(0);
+}
+
+.root[data-on] .cxV,
+.root[data-on] .cxH {
+  transform: none;
+  transition: transform 0.45s ease-out 0.1s;
+}
+
+.tagTl,
+.tagTr {
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 0.45s ease-out 0.25s;
+}
+
+.root[data-on] .tagTl,
+.root[data-on] .tagTr {
+  clip-path: inset(0 0 0 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cxV,
+  .cxH,
+  .tagTl,
+  .tagTr {
+    transition: none;
+  }
 }

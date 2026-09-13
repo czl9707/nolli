@@ -106,12 +106,18 @@ export function CursorReveal({
   sy,
   tagTl = "Architecture",
   tagTr,
+  on = true,
 }: {
   boundsRef?: RefObject<HTMLDivElement | null>
   sx: MotionValue<number>
   sy: MotionValue<number>
   tagTl?: string
   tagTr?: string
+  /** Boot gate for the reveal: the plate's veil-colored fill fades out (it
+   * IS the hole cover), showing the map through the plate, while the tags
+   * and accessories fade in. The veil itself is bg-colored from frame one —
+   * the map fades in under it, the hole stays covered until this flips. */
+  on?: boolean
 }) {
   const reduced = useReducedMotion()
   const snap = !!reduced
@@ -142,18 +148,18 @@ export function CursorReveal({
         const el = root.querySelector<HTMLElement>(sel)
         if (el) el.style.transform = `translate(${x}px, ${y}px)`
       }
-      setTf("[data-plate]", ox, oy)
-      setTf("[data-furniture]", ox, oy)
+      setTf("#" + styles["hero-plate"], ox, oy)
+      setTf("#" + styles["hero-reveal-furniture"], ox, oy)
       // crosshair guides — full-height verticals at the plate's left/right,
       // full-width horizontals at its top/bottom
       const setPx = (sel: string, prop: "left" | "top", v: number) => {
         const el = root.querySelector<HTMLElement>(sel)
         if (el) el.style[prop] = `${v}px`
       }
-      setPx("[data-cxvl]", "left", ox)
-      setPx("[data-cxvr]", "left", p.right - p.rect.left)
-      setPx("[data-cxht]", "top", oy)
-      setPx("[data-cxhb]", "top", p.bottom - p.rect.top)
+      setPx("#hero-cxvl", "left", ox)
+      setPx("#hero-cxvr", "left", p.right - p.rect.left)
+      setPx("#hero-cxht", "top", oy)
+      setPx("#hero-cxhb", "top", p.bottom - p.rect.top)
 
       // coords readout — plate-centre lat/lng straight to the DOM
       if (map && coordsRef.current) {
@@ -182,34 +188,44 @@ export function CursorReveal({
     }
     const u1 = sx.on("change", schedule)
     const u2 = sy.on("change", schedule)
-    if (map) map.on("move", schedule)
+    // markers mount when their scene flips them on (PhotoMarkers lingers
+    // in on the reveal) — a fresh marker carries no clip until a frame
+    // runs, which otherwise waits for the first pointer move. Watch for
+    // insertions so every marker is clipped the frame it arrives
+    let mo: MutationObserver | null = null
+    if (map) {
+      mo = new MutationObserver(schedule)
+      mo.observe(map.getContainer(), { childList: true, subtree: true })
+      map.on("move", schedule)
+    }
     window.addEventListener("scroll", schedule, { passive: true })
     window.addEventListener("resize", schedule)
     schedule()
     return () => {
       u1()
       u2()
+      mo?.disconnect()
       if (map) map.off("move", schedule)
       window.removeEventListener("scroll", schedule)
       window.removeEventListener("resize", schedule)
       if (raf) cancelAnimationFrame(raf)
     }
-  }, [snap, map, boundsRef, sx, sy])
+  }, [snap, map, boundsRef, sx, sy, on])
 
   if (snap) return null
   return (
-    <div ref={rootRef} className={styles.root}>
+    <div ref={rootRef} className={styles.root} data-on={on ? "" : undefined}>
       <div className={styles.veil} aria-hidden />
-      <span data-cxvl className={`${styles.cx} ${styles.cxV}`} aria-hidden />
-      <span data-cxvr className={`${styles.cx} ${styles.cxV}`} aria-hidden />
-      <span data-cxht className={`${styles.cx} ${styles.cxH}`} aria-hidden />
-      <span data-cxhb className={`${styles.cx} ${styles.cxH}`} aria-hidden />
-      <div data-plate className={styles.plate} style={{ width: PLATE.w, height: PLATE.h }}>
+      <span id={"hero-cxvl"} className={`${styles.cx} ${styles.cxV}`} aria-hidden />
+      <span id={"hero-cxvr"} className={`${styles.cx} ${styles.cxV}`} aria-hidden />
+      <span id={"hero-cxht"} className={`${styles.cx} ${styles.cxH}`} aria-hidden />
+      <span id={"hero-cxhb"} className={`${styles.cx} ${styles.cxH}`} aria-hidden />
+      <div id={styles["hero-plate"]} style={{ width: PLATE.w, height: PLATE.h }}>
         <span className={`${styles.frame} ${styles.tagTl}`}>{tagTl}</span>
         {tagTr && <span className={`${styles.frame} ${styles.tagTr}`}>{tagTr}</span>}
         <span className={`${styles.frame} ${styles.dot}`} />
       </div>
-      <div data-furniture className={styles.furniture} style={{ width: PLATE.w, height: PLATE.h }}>
+      <div id={styles["hero-reveal-furniture"]} style={{ width: PLATE.w, height: PLATE.h }}>
         <span className={`${styles.frame} ${styles.north}`}>N ↑</span>
         <span ref={coordsRef} className={`${styles.frame} ${styles.coords}`} />
       </div>
@@ -217,9 +233,6 @@ export function CursorReveal({
   )
 }
 
-/** Arch nearest the plate centre (caption) + the set inside the reveal
- * radius (arch-list highlight). Samples per frame, re-renders only on
- * membership change. */
 export function usePlateArchs(
   sx: MotionValue<number>,
   sy: MotionValue<number>,

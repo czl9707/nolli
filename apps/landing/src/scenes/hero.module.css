@@ -28,6 +28,15 @@
   border-bottom: var(--border);
   z-index: 2;
   pointer-events: none;
+  transition: border-color var(--transition-short) ease-out;
+}
+
+/* boot: the closing rule follows the furniture phase (the hero section
+   carries the live phase, data-boot-phase) */
+.hero[data-boot-phase="blank"]::after,
+.hero[data-boot-phase="headline"]::after,
+.hero[data-boot-phase="map"]::after {
+  border-color: transparent;
 }
 
 /* the plate IS the cursor while the pointer is inside the hero — the
@@ -51,6 +60,13 @@
   align-items: center;
 }
 
+/* boot-fade wrapper fill — sits inside a sized pane, so the wrapper can be
+   the whole pane box while the fade owns its opacity */
+.furnitureBox {
+  position: absolute;
+  inset: 0;
+}
+
 
 .lede {
   width: 100%;
@@ -66,7 +82,7 @@
 
 .headlineLine {
   font-weight: 400;
-  font-size: clamp(2.75rem, 4.6vw, 4rem);
+  font-size: clamp(2.75rem, 4.6vw, 5.5rem);
   font-style: italic;
   font-family: var(--font-serif);
   filter: drop-shadow(2px 2px 2px rgb(var(--color-paper-foreground)));
@@ -84,7 +100,7 @@
   opacity: 0.75;
   line-height: 1.6;
   font-size: 1.12rem;
-  max-width: 38ch;
+  max-width: 30rem;
 }
 
 /* ── CTA pane — the pane IS the CTA, plate-sized ─────────────────────── */

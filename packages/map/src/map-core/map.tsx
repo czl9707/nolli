@@ -33,7 +33,7 @@ import {
   useMap,
   useMarkerContext,
 } from "./map-context"
-import { Button } from "@nolli/ui"
+import { Button, Skeleton } from "@nolli/ui"
 import controlStyles from "./map-controls.module.css"
 import mapCss from "./map.module.css"
 import markerStyles from "./map-markers.module.css"
@@ -88,11 +88,7 @@ type MapProps = {
 function DefaultLoader() {
   return (
     <div className={mapCss.loader}>
-      <div className={mapCss.loaderDots}>
-        <span className={mapCss.dot1} />
-        <span className={mapCss.dot2} />
-        <span className={mapCss.dot3} />
-      </div>
+      <Skeleton width="100%" height="100%" />
     </div>
   )
 }
