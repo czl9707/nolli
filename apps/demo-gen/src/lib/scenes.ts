@@ -8,10 +8,16 @@ export function segmentDuration(textLen: number, typeStart: number, exit = false
   return typeStart + typed + OUTRO.hold + (exit ? OUTRO.exitFrames : 0);
 }
 
-export type FontVariant = "sans" | "playful";
 export type ColorToken = "fg" | "fgSecondary";
 
-export type TextScene = { type: "text"; text: string; size?: number; color?: ColorToken };
+export type TextScene = {
+  type: "text";
+  text: string;
+  size?: number;
+  color?: ColorToken;
+  /** Kalam by default; the pre-logo lead-in card rides Instrument Serif. */
+  font?: "playful" | "serif";
+};
 export type ImageScene = { type: "image"; src: string };
 export type VideoScene = {
   type: "video";
@@ -26,13 +32,11 @@ export type Scene = TextScene | ImageScene | VideoScene | LogoScene;
 
 export type VideoConfig = {
   slug: string;
-  fontVariant?: FontVariant;
   scenes: Scene[];
 };
 
 export const DEFAULT_TEXT_SIZE = 104;
 export const DEFAULT_PLAYBACK_RATE = 1;
-export const DEFAULT_FONT_VARIANT: FontVariant = "playful";
 
 export function durationOf(scene: Scene): number {
   switch (scene.type) {

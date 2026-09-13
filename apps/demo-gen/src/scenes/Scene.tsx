@@ -8,11 +8,16 @@ import { OUTRO, LOGO_WORD, BG } from "../lib/constants";
 import {
   DEFAULT_TEXT_SIZE,
   type Scene,
-  type FontVariant,
   type TextScene,
 } from "../lib/scenes";
 
-const family = (v: FontVariant) => (v === "sans" ? "var(--font-sans)" : "var(--font-playful)");
+/** Type roles: Kalam carries the text cards and the logo wordmark; the
+ *  pre-logo lead-in alone rides Instrument Serif. Kalam's ink sits high in
+ *  its em box, so every playful spot carries the measured optical nudge
+ *  (same as video-gen's ctaWordmark / ui's .note). */
+const family = (font: TextScene["font"]) =>
+  font === "serif" ? "var(--font-serif)" : "var(--font-playful)";
+const KALAM_NUDGE = { position: "relative", top: "0.08em" } as const;
 
 // Nolli brand mark — the geometric favicon icon, inlined (assemble points
 // Remotion's publicDir at out/<slug>, so a public/ dir would never bundle).
@@ -37,10 +42,7 @@ const NolliMark: React.FC<{ size: number }> = ({ size }) => (
   </svg>
 );
 
-export const SegmentText: React.FC<{ scene: TextScene; fontVariant: FontVariant }> = ({
-  scene,
-  fontVariant,
-}) => {
+export const SegmentText: React.FC<{ scene: TextScene }> = ({ scene }) => {
   const size = scene.size ?? DEFAULT_TEXT_SIZE;
   const color = scene.color === "fgSecondary" ? FG_SECONDARY : FG;
   // Exit wipe starts after the reveal window + hold (text cards enter on frame 0).
@@ -51,14 +53,19 @@ export const SegmentText: React.FC<{ scene: TextScene; fontVariant: FontVariant 
         text={scene.text}
         start={{ when: 0, last: OUTRO.typeFrames, enabled: true }}
         end={{ when: exitStart, last: exitStart + OUTRO.exitFrames, enabled: true }}
-        style={{ fontFamily: family(fontVariant), fontSize: size, color }}
+        style={{
+          fontFamily: family(scene.font),
+          fontSize: size,
+          color,
+          ...(scene.font === "serif" ? {} : KALAM_NUDGE),
+        }}
       />
     </AbsoluteFill>
   );
 };
 
 // No exit wipe: the logo is the final frame — the lockup seats and holds.
-export const SegmentLogo: React.FC<{ fontVariant: FontVariant }> = ({ fontVariant }) => {
+export const SegmentLogo: React.FC = () => {
   const frame = useCurrentFrame();
   const markScale = interpolate(frame, [OUTRO.logo.markIn, OUTRO.logo.markSettle], [0.6, 1], {
     extrapolateLeft: "clamp",
@@ -78,7 +85,7 @@ export const SegmentLogo: React.FC<{ fontVariant: FontVariant }> = ({ fontVarian
           text={LOGO_WORD}
           start={{ when: OUTRO.logo.typeStart, last: OUTRO.logo.typeStart + OUTRO.typeFrames, enabled: true }}
           end={NO_ANIM}
-          style={{ fontFamily: family(fontVariant), fontSize: 120, color: FG }}
+          style={{ fontFamily: "var(--font-playful)", fontSize: 120, color: FG, ...KALAM_NUDGE }}
         />
       </div>
     </AbsoluteFill>
@@ -86,18 +93,15 @@ export const SegmentLogo: React.FC<{ fontVariant: FontVariant }> = ({ fontVarian
 };
 
 // Named SceneRenderer to avoid clashing with the Scene type.
-export const SceneRenderer: React.FC<{ scene: Scene; fontVariant: FontVariant }> = ({
-  scene,
-  fontVariant,
-}) => {
+export const SceneRenderer: React.FC<{ scene: Scene }> = ({ scene }) => {
   switch (scene.type) {
     case "text":
-      return <SegmentText scene={scene} fontVariant={fontVariant} />;
+      return <SegmentText scene={scene} />;
     case "image":
       return <SceneImage scene={scene} />;
     case "video":
       return <SceneVideo scene={scene} />;
     case "logo":
-      return <SegmentLogo fontVariant={fontVariant} />;
+      return <SegmentLogo />;
   }
 };

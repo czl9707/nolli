@@ -1,6 +1,6 @@
 import { ThemeToggle } from "@/components/layout/theme-toggle"
 import { useSidebarStore } from "@/stores/sidebar"
-import { Button, H5, useIsMobile } from "@nolli/ui"
+import { Button, Note, useIsMobile } from "@nolli/ui"
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react"
 import { Link } from "react-router"
 import { useLayout } from "@/hooks/use-layout"
@@ -49,12 +49,10 @@ export function Header() {
       }
       {
         isMobile &&
-        <H5 asChild>
-          <Link to="/" className={styles.title}>
-            <img src="/favicon.svg" alt="Nolli Icon" className={styles.icon} />
-            Nolli
-          </Link>
-        </H5>
+        <Link to="/" className={styles.title}>
+          <img src="/favicon.svg" alt="Nolli Icon" className={styles.icon} />
+          <Note className={styles.wordmark}>Nolli</Note>
+        </Link>
       }
       <div className={styles.right}>
         <ThemeToggle />

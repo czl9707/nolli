@@ -8,6 +8,7 @@ import {
 } from "framer-motion"
 import type { MapRef, SceneCamera } from "@nolli/map"
 import { LandingMap } from "@/components/landing-map"
+import styles from "./spine.module.css"
 import { buildTimeline, shapeAt, type PxRect, type SpineScene } from "./timeline"
 
 type SpineCtx = {
@@ -108,8 +109,8 @@ export function Spine({
 
   const layerX = useMotionValue(0)
   const layerY = useMotionValue(0)
-  const layerW = useMotionValue(0)
-  const layerH = useMotionValue(0)
+  const layerW = useMotionValue(window.innerWidth)
+  const layerH = useMotionValue(window.innerHeight)
   const apply = useCallback((vh: number) => {
     if (!Object.keys(rects).length) return
     const r = shapeAt(timeline, vh, rects)
@@ -154,9 +155,10 @@ export function Spine({
     <Ctx.Provider value={ctx}>
       <div ref={wrapperRef} style={{ position: "relative", height: `${timeline.totalVh + 100}vh` }}>
         <div style={{ position: "sticky", top: 0, height: "100svh", overflow: "hidden" }}>
-          <motion.div className={mapVeilOff ? "spine-boot spine-boot--on" : "spine-boot"} style={{
+          <motion.div className={styles.boot} style={{
             position: "absolute", left: layerX, top: layerY, width: layerW, height: layerH,
             overflow: "hidden",
+            opacity: mapVeilOff ? 1 : 0,
           }}>
             <LandingMap ref={setRef}>
               <div ref={setMapPortal} style={{ position: "absolute", inset: 0, pointerEvents: "none" }} />

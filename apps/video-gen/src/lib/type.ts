@@ -2,15 +2,25 @@ import type { CSSProperties } from "react";
 
 /** The reel's type scale — single font authority, no component-local constants.
  *  Poster set: Instrument Serif display (architect name, corner lockup, quote)
- *  over Open Sans reading text; Architects Daughter for the brand moments
- *  (wordmark + CTA). Serif role weights stay at 500 — Instrument Serif ships
- *  only 400 and clamps to it (below 600, so no synthetic bold). */
-export type TypeRole = Pick<CSSProperties, "fontFamily" | "fontSize" | "fontWeight" | "letterSpacing" | "fontStyle">;
+ *  over Lato reading text (the app's --font-sans); Kalam for the brand
+ *  moments (wordmark + CTA). Every weight is a real shipped weight: Lato and
+ *  Kalam load 300/400/700, Instrument Serif only 400 — no role asks for one
+ *  a family doesn't have. */
+export type TypeRole = Pick<
+  CSSProperties,
+  "fontFamily" | "fontSize" | "fontWeight" | "letterSpacing" | "fontStyle" | "position" | "top"
+>;
 
-const SANS = '"Open Sans Variable", sans-serif';
-const SERIF = '"Instrument Serif", serif';
+export const SANS = "var(--font-sans)";
+export const SERIF = "var(--font-serif)";
 
 export const PLAYFUL = "var(--font-playful)";
+
+/** Kalam's ink sits high in its em box (ink center ~0.137em above box
+ *  center), so hand-set glyphs float above center-aligned neighbors. Every
+ *  PLAYFUL role carries the measured optical nudge down — same trick as
+ *  @nolli/ui's .note. */
+const KALAM_NUDGE = { position: "relative", top: "0.137em" } as const;
 
 /** Poster accent: the landing hero gold. Light reels deepen it for the light
  *  paper ground (4.8:1 on rgb(242 240 235)); dark reels use the landing hero's
@@ -22,13 +32,15 @@ export const ACCENT = "var(--reel-accent)";
 
 export const REEL_TYPE = {
   ctaLead: { fontFamily: SERIF, fontSize: 60, fontWeight: 400, fontStyle: "italic" },
-  ctaWordmark: { fontFamily: PLAYFUL, fontSize: 96, fontWeight: 400 },
+  // "Nolli" has no descenders, so its ink rides less high than Kalam's
+  // em-box average — ink-centroid vs the favicon mark measured 0.08em.
+  ctaWordmark: { fontFamily: PLAYFUL, fontSize: 96, fontWeight: 400, position: "relative", top: "0.08em" },
   posterName: { fontFamily: SERIF, fontSize: 56, fontWeight: 400 },
-  posterQuote: { fontFamily: SERIF, fontSize: 20, fontWeight: 500, fontStyle: "italic" },
-  posterRowNum: { fontFamily: SANS, fontSize: 17, fontWeight: 500 },
-  posterRowName: { fontFamily: SANS, fontSize: 20, fontWeight: 500, letterSpacing: "0.01em" },
-  posterBrand: { fontFamily: PLAYFUL, fontSize: 34, fontWeight: 400 },
-  cornerWorkName: { fontFamily: SERIF, fontSize: 26, fontWeight: 500, fontStyle: "italic" },
-  cornerWorkMeta: { fontFamily: SANS, fontSize: 13, fontWeight: 500, letterSpacing: "0.22em" },
-  cornerHandle: { fontFamily: SERIF, fontSize: 20, fontWeight: 500, letterSpacing: "0.05em", fontStyle: "italic" },
+  posterQuote: { fontFamily: SERIF, fontSize: 20, fontWeight: 400, fontStyle: "italic" },
+  posterRowNum: { fontFamily: SANS, fontSize: 17, fontWeight: 400 },
+  posterRowName: { fontFamily: SANS, fontSize: 20, fontWeight: 400, letterSpacing: "0.01em" },
+  posterBrand: { fontFamily: PLAYFUL, fontSize: 34, fontWeight: 400, ...KALAM_NUDGE },
+  cornerWorkName: { fontFamily: SERIF, fontSize: 26, fontWeight: 400, fontStyle: "italic" },
+  cornerWorkMeta: { fontFamily: SANS, fontSize: 13, fontWeight: 400, letterSpacing: "0.22em" },
+  cornerHandle: { fontFamily: SERIF, fontSize: 20, fontWeight: 400, letterSpacing: "0.05em", fontStyle: "italic" },
 } as const satisfies Record<string, TypeRole>;

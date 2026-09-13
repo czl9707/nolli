@@ -61,7 +61,7 @@ describe("buildScenes", () => {
     expect(scenes[6]).toEqual({ type: "image", src: "images/b-detail.png" });
   });
   it("now card then logo", () => {
-    expect(scenes[7]).toEqual({ type: "text", text: "Now available in", size: 104, color: "fg" });
+    expect(scenes[7]).toEqual({ type: "text", text: "Now available in", size: 104, color: "fg", font: "serif" });
     expect(scenes[8]).toEqual({ type: "logo" });
   });
 });
@@ -97,7 +97,6 @@ describe("writeVideoJson", () => {
     writeVideoJson(dir, "mies", buildScenes(manifest));
     const cfg = JSON.parse(readFileSync(join(dir, "video.json"), "utf8"));
     expect(cfg.slug).toBe("mies");
-    expect(cfg.fontVariant).toBe("playful");
     expect(cfg.scenes).toHaveLength(9);
   });
 

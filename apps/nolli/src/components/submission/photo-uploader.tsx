@@ -3,7 +3,7 @@ import type { UseFormReturn } from "react-hook-form"
 import { useFieldArray } from "react-hook-form"
 import { Loader2, X } from "lucide-react"
 import { toast } from "sonner"
-import { Body2, Body3, Button, Caption, ScrollArea } from "@nolli/ui"
+import { Body2, Body3, Button, Note, ScrollArea } from "@nolli/ui"
 import { hashId, jitter } from "@nolli/ui"
 import type { FormValues } from "./shape-payload"
 import styles from "./photo-uploader.module.css"
@@ -80,7 +80,7 @@ export function PhotoUploader({ form }: { form: UseFormReturn<FormValues> }) {
         ))}
 
         {fields.length === 0 && (
-          <Caption className={styles.hint}>At least one photo is required.</Caption>
+          <Note className={styles.hint}>At least one photo is required.</Note>
         )}
       </div>
     </ScrollArea>
@@ -226,7 +226,7 @@ function PhotoThumb({
       }}
       onDragEnd={onDragEnd}
     >
-      <img src={src} alt="" className={styles.img} loading="lazy" />
+      <img src={src} alt="" className={styles.img} loading="lazy" crossOrigin="anonymous" />
       {cover && <Body3 className={styles.cover}>cover</Body3>}
       <Button variant="secondary" size="icon-xs" className={styles.remove} onClick={onRemove}>
         <X size={14} />

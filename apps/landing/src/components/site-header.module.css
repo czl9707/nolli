@@ -35,6 +35,10 @@
   display: block;
 }
 
+.wordmark {
+  font-size: 1.25rem;
+}
+
 .right {
   display: flex;
   align-items: center;

@@ -26,13 +26,13 @@ function createTypography<E extends React.ElementType>(
   }
 }
 
-// Two families: handwriting (--font-playful) where the app speaks, sans
-// (--font-sans) where the user reads. Rule of thumb: if people must parse it,
-// it's Body/Caption; if the app is saying it, it's H*/Note. The map and pin
-// board are the exception — everything on those surfaces is playful, since
-// they're poster views (the sidebar holds the readable copy).
+// Two families: sans (--font-sans) carries everything readable, including
+// headings. Handwriting (--font-playful) is reserved for the surfaces where
+// the app speaks with a hand — map labels, the product name, ambient notes.
+// Rule of thumb: if people must parse it, it's sans; the hand voice is an
+// accent, never a reading surface.
 
-// Playful headings — structure and page/panel titles.
+// Sans headings — display roles use light weights, UI-scale use bold.
 const H1 = createTypography("h1", "h1") // standalone page title (static pages)
 const H2 = createTypography("h2", "h2") // page-level section (submission form)
 const H3 = createTypography("h3", "h3") // card title (pin-board building name)

@@ -1,5 +1,5 @@
 import { siInstagram, siThreads, type SimpleIcon } from "simple-icons"
-import { Body1, Body3, Button, H3, H5, H6, Note, PaperPhoto } from "@nolli/ui"
+import { Body1, Body3, Button, H3, H4, H6, Note, PaperPhoto } from "@nolli/ui"
 import { APP_URL, ABOUT_URL, POSTER_URL, WORLD_CAMERA } from "@/lib/constants"
 import { TRANSITION_LEAD_VH, type HoldScene, type SpineScene, type TransitionScene } from "@/spine/timeline"
 import type { ArchSummary, LandingData } from "@/lib/landing-data"
@@ -74,11 +74,11 @@ function FooterScene({ data }: { data: LandingData }) {
                       <Pane size="calc(var(--grid-col) * 7)" className={styles.commonPane}>
                         <a className={styles.brand} href="#" aria-label="Nolli home">
                           <img className={styles.mark} src="/favicon.svg" alt="" width={24} height={24} />
-                          <H3>Nolli</H3>
+                          <Note className={styles.wordMark}>Nolli</Note>
                         </a>
-                        <H5 className={styles.statement}>
+                        <H4 className={styles.statement}>
                           The Map Where Architectures Lives.
-                        </H5>
+                        </H4>
                         <div className={styles.social}>
                           <SocialLink icon={siInstagram} label="Instagram" href="https://www.instagram.com/nolli.map/" />
                           <SocialLink icon={siThreads} label="Threads" href="https://www.threads.net/@nolli.map" />
@@ -171,7 +171,7 @@ function SocialLink({ icon, label, href }: { icon: SimpleIcon; label: string; hr
 function NavColumn({ group }: { group: (typeof LINK_GROUPS)[number] }) {
   return (
     <>
-      <Note className={styles.navLabel}>{group.label}</Note>
+      <Body1 className={styles.navLabel}>{group.label}</Body1>
       <div className={styles.navList}>
         {group.links.map((l) => (
           <Button key={l.label}  variant="link" size="default" asChild>

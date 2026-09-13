@@ -55,7 +55,7 @@
 
 .num {
   font-family: var(--font-playful);
-  font-weight: 500;
+  font-weight: 400;
   line-height: 0.95;
   letter-spacing: -0.01em;
 }
@@ -68,28 +68,22 @@
   font-size: clamp(3.5rem, 7vw, 6.5rem);
 }
 
-/* completion rule — draws in on the count-up clock */
-/* .rule {
-  width: 12rem;
-  max-width: 100%;
-  height: 1px;
-  background: currentColor;
-  opacity: 0.5;
-  transform-origin: left center;
-  transform: scaleX(0);
-} */
-
 .label {
+  font-family: var(--font-serif);
+  font-style: italic;
   opacity: 0.85;
 }
 
 .statsLine {
+  margin-top: .5rem;
   display: flex;
   align-items: baseline;
   gap: var(--spacing-component);
 }
 
 .sub {
+  font-family: var(--font-serif);
+  font-style: italic;
   opacity: 0.7;
 }
 
@@ -152,8 +146,15 @@
   margin-bottom: auto;
 }
 
+.statementText {
+  font-weight: 400;
+  font-style: italic;
+  font-family: var(--font-serif);
+}
+
 .accent {
   font-weight: 600;
+  font-family: var(--font-playful);
   color: rgb(var(--color-hero-foreground));
 }
 

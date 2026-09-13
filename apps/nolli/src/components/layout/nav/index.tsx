@@ -16,7 +16,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { TRANSITION_INSTANT } from "@nolli/ui"
 import { Button } from "@nolli/ui"
 import styles from "./nav-sidebar.module.css"
-import { H5 } from "@nolli/ui"
+import { Note } from "@nolli/ui"
 
 type NavItem = {
   icon: typeof Home
@@ -148,7 +148,7 @@ function Drawer() {
                 >
                   <Link to="/" className={styles.header} onClick={() => setOpen(false)}>
                     <img src="/favicon.svg" alt="Nolli" className={styles.icon} />
-                    <H5 className={styles.title}><b>Nolli</b></H5>
+                    <Note className={styles.title}>Nolli</Note>
                   </Link>
                   <div className={styles.divider} />
                   <nav className={styles.navList}>

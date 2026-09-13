@@ -25,7 +25,6 @@
 /* ── shared pieces ─────────────────────────────────────────────────── */
 
 .navLabel {
-  text-transform: uppercase;
   opacity: 0.55;
 }
 
@@ -59,7 +58,13 @@
   display: block;
 }
 
+.wordMark {
+  font-size: 1.25rem;
+}
+
 .statement {
+  font-family: var(--font-serif);
+  font-style: italic;
   opacity: .6;
 }
 
@@ -138,27 +143,6 @@
 
 .dockPhoto:hover {
   margin-bottom: -3rem;
-}
-
-/* ── responsive (to be tackled in bulk later) ───────────────────────── */
-
-@media (--smaller-than-sm) {
-  .dockPhoto {
-    flex-basis: 15rem;
-    margin-bottom: -9rem;
-  }
-
-  .dockPhoto + .dockPhoto {
-    margin-left: -12rem;
-  }
-
-  .dockPhoto img {
-    height: 14rem;
-  }
-
-  .dockPhoto:hover {
-    margin-bottom: -2rem;
-  }
 }
 
 /* ── reduced motion ────────────────────────────────────────────────── */

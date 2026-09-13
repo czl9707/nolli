@@ -123,6 +123,7 @@
 
 .title {
   color: rgb(var(--color-primary-foreground));
+  font-size: 1.25rem;
 }
 
 .icon {

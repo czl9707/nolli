@@ -5,7 +5,7 @@
 // tail.
 import { useCallback, useEffect, useRef, useState } from "react"
 import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useTransform, type MotionValue, type Variants } from "framer-motion"
-import { Body1, Body2, H3 } from "@nolli/ui"
+import { Body1, Body2, H2, Note } from "@nolli/ui"
 import { applyMapTransition } from "@/lib/map-transition"
 import { type ArchSummary, type LandingData } from "@/lib/landing-data"
 import { CITY_LEDGER } from "@/lib/constants"
@@ -134,16 +134,16 @@ function CityLedger({ data }: { data: LandingData }) {
         <motion.div className={styles.splits} style={{ opacity: fade }}>
           <HSplit>
             <Pane size="12svh" />
-            <Pane className={styles.visibleOverflow}>
+            <Pane>
               <VSplit>
                 <Pane size="var(--grid-padding)" filled/>
-                <Pane className={styles.visibleOverflow}>
+                <Pane>
                   <HSplit>
-                    <Pane className={styles.visibleOverflow}>
+                    <Pane>
                       <VSplit>
-                        <Pane size="calc(var(--grid-col) * 4)" className={styles.visibleOverflow}>
+                        <Pane size="calc(var(--grid-col) * 4)">
                           <HSplit>
-                            <Pane className={`${styles.statementPane} ${styles.visibleOverflow}`}>
+                            <Pane className={styles.statementPane}>
                               <Statement
                                 leadCity={displayCity}
                                 listCity={selected}
@@ -257,12 +257,11 @@ function Statement({
   const reduced = useReducedMotion()
   return (
     <>
-      <H3 className={styles.lead}>
-        Travelling to <RollText text={leadCity} />.
-      </H3>
-      <Body1 asChild>
-        <p className={styles.statementText}>Nolli has Architectures Worth Seeing.</p>
-      </Body1>
+      <H2 className={styles.statementText}>
+        Travelling to <RollText text={leadCity} />...
+        <br />
+        Nolli has Architectures Worth Seeing.
+      </H2>
       <AnimatePresence mode="wait" initial={false}>
         <motion.ul key={listCity} className={styles.archList} initial="hidden" animate="visible" exit="exit">
           {archs.map((p, i) => (

@@ -4,7 +4,6 @@ import {
   totalDuration,
   segmentDuration,
   DEFAULT_TEXT_SIZE,
-  DEFAULT_FONT_VARIANT,
 } from "./scenes";
 import { OUTRO, LOGO_WORD, STILL_FRAMES } from "./constants";
 
@@ -58,5 +57,4 @@ describe("totalDuration", () => {
 
 describe("defaults", () => {
   it("DEFAULT_TEXT_SIZE is 104", () => expect(DEFAULT_TEXT_SIZE).toBe(104));
-  it("DEFAULT_FONT_VARIANT is playful", () => expect(DEFAULT_FONT_VARIANT).toBe("playful"));
 });

@@ -6,7 +6,7 @@ import { rowsToManifest } from "./manifest";
 import { ensureDb, queryArchitectBuildings, resolveArchitectName, type ArchRow } from "@nolli/remotion/db";
 import { countText, NOW_TEXT } from "../../src/lib/constants";
 import { type Journey, type DemoConfigFile } from "./demo-config";
-import { DEFAULT_FONT_VARIANT, type Scene, type VideoConfig } from "../../src/lib/scenes";
+import { type Scene, type VideoConfig } from "../../src/lib/scenes";
 
 const DEMO_RATE = 2;
 
@@ -49,7 +49,7 @@ export function buildScenes(manifest: Manifest): Scene[] {
   for (const b of manifest.buildings) scenes.push({ type: "image", src: boardSrc(b) });
   scenes.push({ type: "text", text: countText(manifest.buildings.length), size: 104, color: "fg" });
   for (const b of manifest.buildings) scenes.push({ type: "image", src: detailSrc(b) });
-  scenes.push({ type: "text", text: NOW_TEXT, size: 104, color: "fg" });
+  scenes.push({ type: "text", text: NOW_TEXT, size: 104, color: "fg", font: "serif" });
   scenes.push({ type: "logo" });
   return scenes;
 }
@@ -73,7 +73,7 @@ export function writeVideoJson(dir: string, slug: string, scenes: Scene[]): void
       return;
     }
   }
-  const cfg: VideoConfig = { slug, fontVariant: DEFAULT_FONT_VARIANT, scenes };
+  const cfg: VideoConfig = { slug, scenes };
   writeFileSync(path, JSON.stringify(cfg, null, 2));
   console.log(`Wrote ${path} (${scenes.length} scenes).`);
 }
