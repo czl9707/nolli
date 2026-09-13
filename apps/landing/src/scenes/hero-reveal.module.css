@@ -16,27 +16,42 @@
   z-index: 0;
 }
 
+/* The hole's open factor, as mask alpha. Registered so it TRANSITIONS —
+   the hole band fades from opaque mask (hole closed, the boot state) to
+   transparent (hole open), which is the reveal's fade-in mask cut */
+@property --hole-a {
+  syntax: "<number>";
+  initial-value: 1;
+  inherits: true;
+}
+
 .veil {
   position: absolute;
   inset: 0;
   /* flat deepest ink — no gradient; the map shows only through the plate */
   background: rgb(var(--color-primary-background) / 0.92);
+  --hole-a: 1;
+  transition: --hole-a var(--transition-short) ease-out;
   -webkit-mask-image: linear-gradient(
       to right,
       #000 0 var(--pl),
-      transparent var(--pl) var(--pr),
+      rgb(0 0 0 / var(--hole-a)) var(--pl) var(--pr),
       #000 var(--pr)
     ),
-    linear-gradient(to bottom, #000 0 var(--pt), transparent var(--pt) var(--pb), #000 var(--pb));
+    linear-gradient(to bottom, #000 0 var(--pt), rgb(0 0 0 / var(--hole-a)) var(--pt) var(--pb), #000 var(--pb));
   -webkit-mask-composite: source-over;
   mask-image: linear-gradient(
       to right,
       #000 0 var(--pl),
-      transparent var(--pl) var(--pr),
+      rgb(0 0 0 / var(--hole-a)) var(--pl) var(--pr),
       #000 var(--pr)
     ),
-    linear-gradient(to bottom, #000 0 var(--pt), transparent var(--pt) var(--pb), #000 var(--pb));
+    linear-gradient(to bottom, #000 0 var(--pt), rgb(0 0 0 / var(--hole-a)) var(--pt) var(--pb), #000 var(--pb));
   mask-composite: add;
+}
+
+.root[data-on] .veil {
+  --hole-a: 0;
 }
 
 /* frame annotations — everything pinned around the plate/furniture box
@@ -91,25 +106,22 @@
 }
 
 /* boot: the accessories wait for the reveal phase (the root's data-on
-   comes from the boot sequence); the veil needs no gate — it is
-   bg-colored, so before the map fades in it is indistinguishable from the
-   blank screen. The hole is cut from frame one, but the PLATE covers it:
-   it starts filled with the veil color (a mask hole cannot fade on its
-   own) and clears at the reveal, so the map shows through as a plain
-   fade — its backdrop-filter lets the plate region brighten as it clears */
+   comes from the boot sequence). The hole itself fades open via the
+   veil's --hole-a transition above — the plate needs no cover fill. Its
+   backdrop-filter stays NEUTRAL until the reveal (a live filter would
+   tint the closed hole against the surrounding veil), then eases in with
+   the same fade */
 #hero-plate {
   position: absolute;
   left: 0;
   top: 0;
   border-radius: var(--size-border-radius);
-  backdrop-filter: brightness(1.14) saturate(1.06);
+  backdrop-filter: brightness(1) saturate(1);
+  transition: backdrop-filter var(--transition-short) ease-out;
   z-index: 100000;
-  background-color: rgb(var(--color-primary-background) / 0.92);
-  transition: background-color var(--transition-short) ease-out;
 
   .root[data-on] & {
-    background-color: transparent;
-    border: none;
+    backdrop-filter: brightness(1.14) saturate(1.06);
   }
 }
 
@@ -125,6 +137,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .veil,
   #hero-plate,
   #hero-plate .frame,
   #hero-reveal-furniture,

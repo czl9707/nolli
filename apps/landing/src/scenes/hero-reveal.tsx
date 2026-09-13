@@ -188,13 +188,23 @@ export function CursorReveal({
     }
     const u1 = sx.on("change", schedule)
     const u2 = sy.on("change", schedule)
-    if (map) map.on("move", schedule)
+    // markers mount when their scene flips them on (PhotoMarkers lingers
+    // in on the reveal) — a fresh marker carries no clip until a frame
+    // runs, which otherwise waits for the first pointer move. Watch for
+    // insertions so every marker is clipped the frame it arrives
+    let mo: MutationObserver | null = null
+    if (map) {
+      mo = new MutationObserver(schedule)
+      mo.observe(map.getContainer(), { childList: true, subtree: true })
+      map.on("move", schedule)
+    }
     window.addEventListener("scroll", schedule, { passive: true })
     window.addEventListener("resize", schedule)
     schedule()
     return () => {
       u1()
       u2()
+      mo?.disconnect()
       if (map) map.off("move", schedule)
       window.removeEventListener("scroll", schedule)
       window.removeEventListener("resize", schedule)
