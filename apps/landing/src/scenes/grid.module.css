@@ -50,6 +50,7 @@
   min-height: 0;
   box-sizing: border-box;
   flex-shrink: 0;
+  transition: border-color var(--transition-short) ease-out;
 }
 
 .paneFill {
@@ -62,6 +63,7 @@
   position: absolute;
   inset: 0;
   opacity: 0.2;
+  transition: opacity var(--transition-short) ease-out;
 }
 
 .rowSplit > .pane:not(:first-child) {
@@ -70,4 +72,19 @@
 
 .colSplit > .pane:not(:first-child) {
   border-top: var(--border);
+}
+
+/* boot: split lines and pattern fills wait for the furniture phase — the
+   hero section carries the live phase (data-boot-phase). AFTER the
+   split-border rules: same specificity, so file order decides */
+[data-boot-phase="blank"] .pane:not(:first-child),
+[data-boot-phase="headline"] .pane:not(:first-child),
+[data-boot-phase="map"] .pane:not(:first-child) {
+  border-color: transparent;
+}
+
+[data-boot-phase="blank"] .paneFilled,
+[data-boot-phase="headline"] .paneFilled,
+[data-boot-phase="map"] .paneFilled {
+  opacity: 0;
 }

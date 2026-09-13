@@ -13,6 +13,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, type MotionValue } from "framer-motion"
 import { ArrowUpRight } from "lucide-react"
 import { Body2, H1, H3, Note, TRANSITION_SHORT } from "@nolli/ui"
+import { BootFade, phaseAtLeast, useBootPhase } from "@/lib/boot"
 import { ROLL_EASE } from "@/lib/constants"
 import type { MapRef } from "@nolli/map"
 import type { ArchSummary } from "@/lib/landing-data"
@@ -53,6 +54,7 @@ const CTA_BUFFER = 90
 
 function HeroScene({ data }: { data: LandingData }) {
   const map = useSpineMap()
+  const bootPhase = useBootPhase()
   const archs = data.heroArchs
   const { sx, sy } = useCursorSprings()
   const { nearest, active } = usePlateArchs(sx, sy, archs, map)
@@ -73,14 +75,23 @@ function HeroScene({ data }: { data: LandingData }) {
   const scale = useScaleText(map, sy)
 
   return (
-    <section data-spine-shape="hero" className={snap ? styles.hero : `${styles.hero} ${styles.cursorHide}`}>
+    <section
+      data-spine-shape="hero"
+      data-boot-phase={bootPhase}
+      className={snap ? styles.hero : `${styles.hero} ${styles.cursorHide}`}
+    >
       <CursorReveal
         boundsRef={boundsRef}
         sx={sx}
         sy={sy}
         tagTr={data.heroCity.name}
+        on={phaseAtLeast(bootPhase, "reveal")}
       />
-      <PhotoMarkers archs={archs} on={markersOn} className={HERO_MARKER_CLASS} />
+      <PhotoMarkers
+        archs={archs}
+        on={markersOn && phaseAtLeast(bootPhase, "reveal")}
+        className={HERO_MARKER_CLASS}
+      />
       <MapTransition untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={cam} />
       <Screen className={styles.screen}>
         <HSplit>
@@ -90,41 +101,45 @@ function HeroScene({ data }: { data: LandingData }) {
               <Lede />
             </Pane>
             <Pane size={`${PLATE.w}px`}>
-              <HSplit>
-                <Pane>
-                  <ul className={styles.archList}>
-                    {archs.map((p, i) => (
-                      <li key={p.slug} className={styles.archRow} data-active={`${active.has(p.slug)}`}>
-                        <span className={styles.archNum}>{String(i + 1).padStart(2, "0")}</span>
-                        <Body2 asChild>
-                          <span>{p.name}</span>
-                        </Body2>
-                      </li>
-                    ))}
-                  </ul>
-                </Pane>
-                <Pane size={`${PLATE.h}px`} filled>
-                  <CtaPane sx={sx} sy={sy} />
-                </Pane>
-              </HSplit>
+              <BootFade at="furniture" className={styles.furnitureBox}>
+                <HSplit>
+                  <Pane>
+                    <ul className={styles.archList}>
+                      {archs.map((p, i) => (
+                        <li key={p.slug} className={styles.archRow} data-active={`${active.has(p.slug)}`}>
+                          <span className={styles.archNum}>{String(i + 1).padStart(2, "0")}</span>
+                          <Body2 asChild>
+                            <span>{p.name}</span>
+                          </Body2>
+                        </li>
+                      ))}
+                    </ul>
+                  </Pane>
+                  <Pane size={`${PLATE.h}px`} filled>
+                    <CtaPane sx={sx} sy={sy} />
+                  </Pane>
+                </HSplit>
+              </BootFade>
             </Pane>
           </VSplit>
           <Pane size={BOTTOM_BAR_HEIGHT}>
-            <VSplit>
-              <InfoBlock nearest={nearest} />
-              <Pane filled />
-              <Pane size={`${PLATE.w / 2}px`} className={styles.blockPane}>
-                <span className={styles.monoLabel}>Scale</span>
-                <LiveValue>{scale}</LiveValue>
-              </Pane>
-              <Pane size={`${PLATE.w / 2}px`} className={styles.blockPane}>
-                <span className={styles.monoLabel}>Sheet</span>
-                <span className={styles.blockValue}>
-                  {data.heroCity.country ? `${data.heroCity.country} · ` : ""}
-                  {data.heroCity.name}
-                </span>
-              </Pane>
-            </VSplit>
+            <BootFade at="furniture" className={styles.furnitureBox}>
+              <VSplit>
+                <InfoBlock nearest={nearest} />
+                <Pane filled />
+                <Pane size={`${PLATE.w / 2}px`} className={styles.blockPane}>
+                  <span className={styles.monoLabel}>Scale</span>
+                  <LiveValue>{scale}</LiveValue>
+                </Pane>
+                <Pane size={`${PLATE.w / 2}px`} className={styles.blockPane}>
+                  <span className={styles.monoLabel}>Sheet</span>
+                  <span className={styles.blockValue}>
+                    {data.heroCity.country ? `${data.heroCity.country} · ` : ""}
+                    {data.heroCity.name}
+                  </span>
+                </Pane>
+              </VSplit>
+            </BootFade>
           </Pane>
         </HSplit>
       </Screen>
@@ -141,28 +156,35 @@ const SECONDARY = "You likely can name hundreds of Architectures, but can you pi
 
 function Lede() {
   const reduced = useReducedMotion()
+  const bootPhase = useBootPhase()
+  // entrance waits for the boot sequence's headline beat, not React mount
+  const on = phaseAtLeast(bootPhase, "headline")
+  const hidden = { opacity: 0, y: 10, filter: "blur(4px)" }
+  const shown = { opacity: 1, y: 0, filter: "blur(0px)" }
   return (
     <motion.div
       className={styles.lede}
-      initial={reduced ? false : { opacity: 0, y: 10, filter: "blur(4px)" }}
-      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+      initial={reduced ? false : hidden}
+      animate={on ? shown : hidden}
       transition={{ duration: 0.5, delay: 0.15, ease: "easeOut" }}
     >
       <h1>
         {HEADLINE_LINES.map((line, i) => (
           <motion.div
           key={i}
-          initial={reduced ? false : { opacity: 0, y: 10, filter: "blur(4px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          initial={reduced ? false : hidden}
+          animate={on ? shown : hidden}
           transition={{ duration: 0.5, delay: 0.15 + i * 0.35, ease: "easeOut" }}
           >
             <span className={styles.headlineLine}>{line}</span>
           </motion.div>
         ))}
       </h1>
-      <Body2 asChild>
-        <p className={styles.secondary}>{SECONDARY}</p>
-      </Body2>
+      <BootFade at="furniture">
+        <Body2 asChild>
+          <p className={styles.secondary}>{SECONDARY}</p>
+        </Body2>
+      </BootFade>
     </motion.div>
   )
 }

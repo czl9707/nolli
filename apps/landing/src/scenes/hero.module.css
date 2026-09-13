@@ -28,6 +28,15 @@
   border-bottom: var(--border);
   z-index: 2;
   pointer-events: none;
+  transition: border-color var(--transition-short) ease-out;
+}
+
+/* boot: the closing rule follows the furniture phase (the hero section
+   carries the live phase, data-boot-phase) */
+.hero[data-boot-phase="blank"]::after,
+.hero[data-boot-phase="headline"]::after,
+.hero[data-boot-phase="map"]::after {
+  border-color: transparent;
 }
 
 /* the plate IS the cursor while the pointer is inside the hero — the
@@ -49,6 +58,13 @@
 .heroPane {
   display: flex;
   align-items: center;
+}
+
+/* boot-fade wrapper fill — sits inside a sized pane, so the wrapper can be
+   the whole pane box while the fade owns its opacity */
+.furnitureBox {
+  position: absolute;
+  inset: 0;
 }
 
 

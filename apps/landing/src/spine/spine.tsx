@@ -8,6 +8,7 @@ import {
 } from "framer-motion"
 import type { MapRef, SceneCamera } from "@nolli/map"
 import { LandingMap } from "@/components/landing-map"
+import { phaseAtLeast, useBoot, useBootPhase } from "@/lib/boot"
 import styles from "./spine.module.css"
 import { buildTimeline, shapeAt, type PxRect, type SpineScene } from "./timeline"
 
@@ -46,15 +47,14 @@ export function useSceneScroll(id?: string): MotionValue<number> {
  * panes and linearly morphed across transition scenes; hold scenes mount in
  * flow wrappers and own their camera + content. */
 export function Spine({
-  scenes, camera, onMapIdle,
+  scenes, camera,
 }: {
   scenes: SpineScene[]
   camera: SceneCamera
-  onMapIdle?: () => void
 }) {
   const wrapperRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapRef | null>(null)
-  const [mapReady, setMapReady] = useState(false)
+  const [mapMounted, setMapMounted] = useState(false)
   const [mapPortal, setMapPortal] = useState<HTMLElement | null>(null)
 
   const timeline = useMemo(() => buildTimeline(scenes), [scenes])
@@ -125,27 +125,24 @@ export function Spine({
   // by this one.
   const setRef = useCallback((m: MapRef | null) => {
     mapRef.current = m
-    setMapReady(!!m)
+    setMapMounted(!!m)
   }, [])
   useLayoutEffect(() => {
-    if (!mapReady) return
+    if (!mapMounted) return
     mapRef.current?.jumpTo({ center: camera.center, zoom: camera.zoom })
-  }, [mapReady, camera])
+  }, [mapMounted, camera])
 
-  // boot reveal signal: first idle render, or a fallback if tiles stall.
-  // Only the map layer waits — the scenes render from frame one, so their
-  // entrance animations play visibly while the map loads in behind them
-  const [mapVeilOff, setMapVeilOff] = useState(false)
+  // boot reveal signal: the map's first idle render pings the boot sequence
+  // (which owns all timing); the map layer's own fade is driven by the phase
+  const { setMapReady } = useBoot()
+  const bootPhase = useBootPhase()
   useEffect(() => {
-    if (!mapReady) return
+    if (!mapMounted) return
     const map = mapRef.current
     if (!map) return
-    let done = false
-    const fire = () => { if (!done) { done = true; setMapVeilOff(true); onMapIdle?.() } }
-    map.once("idle", fire)
-    const t = setTimeout(fire, 4000)
-    return () => { clearTimeout(t); map.off("idle", fire) }
-  }, [mapReady, onMapIdle])
+    map.once("idle", setMapReady)
+    return () => { map.off("idle", setMapReady) }
+  }, [mapMounted, setMapReady])
 
   const ctx = useMemo(() => ({
     scrollVh, ranges, mapRef: () => mapRef.current, mapPortal,
@@ -158,7 +155,7 @@ export function Spine({
           <motion.div className={styles.boot} style={{
             position: "absolute", left: layerX, top: layerY, width: layerW, height: layerH,
             overflow: "hidden",
-            opacity: mapVeilOff ? 1 : 0,
+            opacity: phaseAtLeast(bootPhase, "map") ? 1 : 0,
           }}>
             <LandingMap ref={setRef}>
               <div ref={setMapPortal} style={{ position: "absolute", inset: 0, pointerEvents: "none" }} />
