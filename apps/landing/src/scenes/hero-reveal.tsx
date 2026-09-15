@@ -17,7 +17,30 @@ import type { ArchSummary } from "@/lib/landing-data"
 import { useSpineMap } from "@/spine/spine"
 import styles from "./hero-reveal.module.css"
 
-export const PLATE = { w: 480, h: 280 }
+const PLATE = { w: 480, h: 280 }
+
+/** Plate size at a viewport width — full size on wide screens, shrinking
+ * with narrow ones so the plate always keeps roam room inside its bounds
+ * (at rest size it would pin centred and stop moving). The hero's CTA
+ * pane keeps this exact size. */
+export function plateSize(innerWidth: number) {
+  const w = Math.min(PLATE.w, Math.max(240, innerWidth - 96))
+  return { w, h: Math.round((w * PLATE.h) / PLATE.w) }
+}
+
+export function usePlateSize() {
+  const [plate, setPlate] = useState(() => plateSize(window.innerWidth))
+  useEffect(() => {
+    const onResize = () =>
+      setPlate((p) => {
+        const n = plateSize(window.innerWidth)
+        return n.w === p.w ? p : n
+      })
+    window.addEventListener("resize", onResize)
+    return () => window.removeEventListener("resize", onResize)
+  }, [])
+  return plate
+}
 
 /** Inert class applied to every photo marker the hero mounts — the clip
  * driver matches on it to crop only the hero's set to the plate. A plain
@@ -34,6 +57,9 @@ export function useCursorSprings() {
   const sx = useSpring(useMotionValue(window.innerWidth * 0.62), { stiffness: 130, damping: 22 })
   const sy = useSpring(useMotionValue(window.innerHeight * 0.42), { stiffness: 130, damping: 22 })
   useEffect(() => {
+    // coarse pointers (touch): no proxy cursor — the plate stays idle; a
+    // mouse keeps driving it at any window size, mobile tree included
+    if (window.matchMedia("(pointer: coarse)").matches) return
     const onMove = (e: PointerEvent) => {
       sx.set(e.clientX)
       sy.set(e.clientY)
@@ -52,6 +78,7 @@ function plateRect(
   root: HTMLElement,
   sx: MotionValue<number>,
   sy: MotionValue<number>,
+  size: { w: number; h: number },
 ) {
   const b = bounds.getBoundingClientRect()
   const r = root.getBoundingClientRect()
@@ -59,13 +86,13 @@ function plateRect(
     end - start >= size
       ? Math.min(Math.max(v, start + size / 2), end - size / 2)
       : (start + end) / 2
-  const cx = clampAxis(sx.get(), b.left, b.right, PLATE.w)
-  const cy = clampAxis(sy.get(), b.top, b.bottom, PLATE.h)
+  const cx = clampAxis(sx.get(), b.left, b.right, size.w)
+  const cy = clampAxis(sy.get(), b.top, b.bottom, size.h)
   return {
-    left: cx - PLATE.w / 2,
-    right: cx + PLATE.w / 2,
-    top: cy - PLATE.h / 2,
-    bottom: cy + PLATE.h / 2,
+    left: cx - size.w / 2,
+    right: cx + size.w / 2,
+    top: cy - size.h / 2,
+    bottom: cy + size.h / 2,
     rect: r,
   }
 }
@@ -122,6 +149,7 @@ export function CursorReveal({
   const reduced = useReducedMotion()
   const snap = !!reduced
   const map = useSpineMap()
+  const plate = usePlateSize()
   const rootRef = useRef<HTMLDivElement | null>(null)
   const coordsRef = useRef<HTMLSpanElement>(null)
 
@@ -135,7 +163,7 @@ export function CursorReveal({
       raf = 0
       const bounds = boundsRef?.current ?? root
       if (!bounds) return
-      const p = plateRect(bounds, root, sx, sy)
+      const p = plateRect(bounds, root, sx, sy, plate)
       const ox = p.left - p.rect.left
       const oy = p.top - p.rect.top
 
@@ -210,7 +238,7 @@ export function CursorReveal({
       window.removeEventListener("resize", schedule)
       if (raf) cancelAnimationFrame(raf)
     }
-  }, [snap, map, boundsRef, sx, sy, on])
+  }, [snap, map, boundsRef, sx, sy, plate, on])
 
   if (snap) return null
   return (
@@ -220,12 +248,12 @@ export function CursorReveal({
       <span id={"hero-cxvr"} className={`${styles.cx} ${styles.cxV}`} aria-hidden />
       <span id={"hero-cxht"} className={`${styles.cx} ${styles.cxH}`} aria-hidden />
       <span id={"hero-cxhb"} className={`${styles.cx} ${styles.cxH}`} aria-hidden />
-      <div id={styles["hero-plate"]} style={{ width: PLATE.w, height: PLATE.h }}>
+      <div id={styles["hero-plate"]} style={{ width: plate.w, height: plate.h }}>
         <span className={`${styles.frame} ${styles.tagTl}`}>{tagTl}</span>
         {tagTr && <span className={`${styles.frame} ${styles.tagTr}`}>{tagTr}</span>}
         <span className={`${styles.frame} ${styles.dot}`} />
       </div>
-      <div id={styles["hero-reveal-furniture"]} style={{ width: PLATE.w, height: PLATE.h }}>
+      <div id={styles["hero-reveal-furniture"]} style={{ width: plate.w, height: plate.h }}>
         <span className={`${styles.frame} ${styles.north}`}>N ↑</span>
         <span ref={coordsRef} className={`${styles.frame} ${styles.coords}`} />
       </div>

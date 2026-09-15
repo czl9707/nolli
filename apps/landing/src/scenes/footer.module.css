@@ -145,6 +145,39 @@
   margin-bottom: -3rem;
 }
 
+/* ── mobile (≤720px) — the dock re-scaled to the narrow screen ─────── */
+
+@media (--smaller-than-sm) {
+  .dock {
+    height: 10rem;
+    margin: 0 -1.5rem;
+  }
+
+  .dockPhoto {
+    flex-basis: 10rem;
+    margin-bottom: -5rem;
+  }
+
+  .dockPhoto + .dockPhoto {
+    margin-left: -8.75rem;
+  }
+
+  .dockPhoto img {
+    height: 10rem;
+  }
+
+  /* messy resting depths, scaled to the smaller cards */
+  .dockPhoto:nth-child(1) { transform: translateY(.5rem); }
+  .dockPhoto:nth-child(2) { transform: translateY(-0.25rem); }
+  .dockPhoto:nth-child(3) { transform: translateY(.75rem); }
+  .dockPhoto:nth-child(4) { transform: translateY(0.5rem); }
+  .dockPhoto:nth-child(5) { transform: translateY(-0.75rem); }
+  .dockPhoto:nth-child(6) { transform: translateY(.5rem); }
+  .dockPhoto:nth-child(7) { transform: translateY(-0.25rem); }
+  .dockPhoto:nth-child(8) { transform: translateY(1rem); }
+  .dockPhoto:nth-child(9) { transform: translateY(-0.5rem); }
+}
+
 /* ── reduced motion ────────────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {

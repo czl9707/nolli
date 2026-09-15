@@ -3,11 +3,12 @@
 // carded — and the ledger closes the scene as one block of equal cells
 // along the bottom. Selection proves the statement: you can name an
 // architect's works; the map can place them.
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, type ReactNode } from "react"
 import { useMotionValueEvent } from "framer-motion"
 import { H2 } from "@nolli/ui"
 import type { SceneCamera } from "@nolli/map"
 import { useSceneScroll, useSpineMap } from "@/spine/spine"
+import { useIsMobile } from "@nolli/ui"
 import { useLinger } from "@/lib/use-linger"
 import { TRANSITION_LEAD_VH, type HoldScene, type TransitionScene } from "@/spine/timeline"
 import type { ArchEntry, LandingData } from "@/lib/landing-data"
@@ -53,8 +54,12 @@ export const cityArchitectTransition = (): TransitionScene => ({
   }
 })
 
+/** Shared architect state + the router between the two trees. Selection,
+ * the marker window and the shared pieces (map band, statement, ledger
+ * rows) live here; the trees only compose panes. */
 function ArchitectLedger({ entries }: { entries: ArchEntry[] }) {
   const local = useSceneScroll(SCENE_ID)
+  const mobile = useIsMobile()
   const [selected, setSelected] = useState(entries[0]?.name ?? "")
   const selectedEntry = entries.find((e) => e.name === selected) ?? entries[0]
 
@@ -69,6 +74,102 @@ function ArchitectLedger({ entries }: { entries: ArchEntry[] }) {
   const perRow = Math.ceil(entries.length / 2)
   for (let i = 0; i < entries.length; i += perRow) rows.push(entries.slice(i, i + perRow))
 
+  const statement = selectedEntry && (
+    <H2 className={styles.statementText}>
+      You can name the works of <RollText text={selectedEntry.name} />.
+      <br />
+      <span className={styles.accent}>Nolli</span> help you pin them on the map.
+    </H2>
+  )
+
+  const mapBand = (
+    <div className={styles.shape} aria-hidden data-spine-shape="architect" />
+  )
+
+  const ledgerRows = rows.map((row, r) => (
+    <Pane key={r} size="3.5rem">
+      <VSplit>
+        {row.map((e) => (
+          <RollButton
+            key={e.id}
+            className={styles.cell}
+            size="calc(var(--grid-col) * 3)"
+            state={e.name === selected ? "focused" : "default"}
+            onClick={() => setSelected(e.name)}
+            onMouseEnter={() => setSelected(e.name)}
+            onFocus={() => setSelected(e.name)}
+            aria-pressed={e.name === selected}
+            >
+            {e.name}
+          </RollButton>
+        ))}
+      </VSplit>
+    </Pane>
+  ))
+  
+  return <>
+    <MapTransition sceneId={SCENE_ID} untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={WORLD} />
+    <MapVeil on={markersOn} />
+    <ArchImageMarkers entries={entries} selectedId={selectedEntry?.id ?? -1} on={markersOn} />
+    {
+      mobile ? (
+        <ArchitectMobile mapBand={mapBand} statement={statement} ledgerRows={ledgerRows} />
+      ) : (
+        <ArchitectDesktop mapBand={mapBand} statement={statement} ledgerRows={ledgerRows} />
+      )
+    }
+  </>
+}
+
+type ArchitectTreeProps = {
+  mapBand: ReactNode
+  statement: ReactNode
+  ledgerRows: ReactNode
+}
+
+/** Mobile re-composition: full-width map band top, statement under it,
+ * ledger rows closing the screen — same pieces, re-cut vertically. */
+function ArchitectMobile({ mapBand, statement, ledgerRows }: ArchitectTreeProps) {
+  return (
+    <Screen className={styles.screen}>
+      <HSplit>
+        <Pane size="calc(var(--size-header-height) + 10svh)">
+          <VSplit>
+            <Pane size="var(--grid-padding)" filled/>
+            <Pane />
+            <Pane size="var(--grid-padding)" filled/>
+          </VSplit>
+        </Pane>
+        <Pane size="55svh">
+          {mapBand}
+          <VSplit>
+            <Pane size="var(--grid-padding)" filled/>
+            <Pane>
+              <div className={styles.bandText}>{statement}</div>
+            </Pane>
+            <Pane size="var(--grid-padding)" filled/>
+          </VSplit>
+        </Pane>
+        <Pane>
+          <VSplit>
+            <Pane size="var(--grid-padding)" filled/>
+            <Pane>
+              <HSplit>
+                {ledgerRows}
+              </HSplit>
+            </Pane>
+            <Pane size="var(--grid-padding)" filled/>
+          </VSplit>
+        </Pane>
+        <Pane size="20svh"/>
+      </HSplit>
+    </Screen>
+  )
+}
+
+/** Desktop tree — map band with the statement riding it, ledger block
+ * along the right. */
+function ArchitectDesktop({ mapBand, statement, ledgerRows }: ArchitectTreeProps) {
   return (
     <Screen className={styles.screen}>
       <HSplit>
@@ -81,39 +182,10 @@ function ArchitectLedger({ entries }: { entries: ArchEntry[] }) {
                 <Pane>
                   <HSplit>
                     <Pane>
-                      <div className={styles.shape} aria-hidden data-spine-shape="architect" />
-                      <MapTransition sceneId={SCENE_ID} untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={WORLD} />
-                      <MapVeil on={markersOn} />
-                      <ArchImageMarkers entries={entries} selectedId={selectedEntry?.id ?? -1} on={markersOn} />
-                      {selectedEntry && (
-                        <div className={styles.bandText}>
-                          <H2 className={styles.statementText}>
-                            You can name the works of <RollText text={selectedEntry.name} />.
-                            <br />
-                            <span className={styles.accent}>Nolli</span> help you pin them on the map.
-                          </H2>
-                        </div>
-                      )}
+                      {mapBand}
+                      <div className={styles.bandText}>{statement}</div>
                     </Pane>
-                    {rows.map((row, r) => (
-                      <Pane key={r} size="3.5rem">
-                        <VSplit>
-                          {row.map((e) => (
-                            <RollButton
-                              key={e.id}
-                              size="calc(var(--grid-col) * 3)"
-                              state={e.name === selected ? "focused" : "default"}
-                              onClick={() => setSelected(e.name)}
-                              onMouseEnter={() => setSelected(e.name)}
-                              onFocus={() => setSelected(e.name)}
-                              aria-pressed={e.name === selected}
-                            >
-                              {e.name}
-                            </RollButton>
-                          ))}
-                        </VSplit>
-                      </Pane>
-                    ))}
+                    {ledgerRows}
                   </HSplit>
                 </Pane>
               </HSplit>

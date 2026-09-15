@@ -3,6 +3,7 @@ import { Body1, Body3, Button, H3, H4, H6, Note, PaperPhoto } from "@nolli/ui"
 import { APP_URL, ABOUT_URL, POSTER_URL, WORLD_CAMERA } from "@/lib/constants"
 import { TRANSITION_LEAD_VH, type HoldScene, type SpineScene, type TransitionScene } from "@/spine/timeline"
 import type { ArchSummary, LandingData } from "@/lib/landing-data"
+import { useIsMobile } from "@nolli/ui"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
 import { MapTransition } from "./map-transition"
 import styles from "./footer.module.css"
@@ -57,55 +58,110 @@ export function footerHold(data: LandingData): HoldScene {
 
 
 function FooterScene({ data }: { data: LandingData }) {
+  const mobile = useIsMobile()
   return (
     <>
       <MapTransition target={WORLD_CAMERA} untilVh={SCENE_VH - TRANSITION_LEAD_VH} />
       <Screen className={`${styles.veil} ${styles.screen}`}>
         <div className={styles.shape} data-spine-shape="footer" aria-hidden />
+        {mobile ? <FooterMobile data={data}/> : <FooterDesktop data={data} />}
+      </Screen>
+    </>
+  )
+}
+
+/** Mobile re-composition — the cards stack: brand block, Explore column,
+ * Resources column, inside the grid margins. */
+function FooterMobile({ data }: { data: LandingData }) {
+  return (
+    <HSplit>
+      <Pane size="calc(var(--size-header-height) + 10svh)" />
+      <Pane className={styles.footer}>
         <HSplit>
-          <Pane size="45svh" />
-          <Pane className={styles.footer}>
-            <HSplit>
+          <Pane>
+            <VSplit>
+              <Pane size="var(--grid-padding)" filled/>
               <Pane>
-                <VSplit>
-                  <Pane size="var(--grid-padding)" />
+                <HSplit>
+                  <Pane size="fit-content" className={styles.commonPane}>
+                    <BrandBlock />
+                  </Pane >
                   <Pane>
                     <VSplit>
-                      <Pane size="calc(var(--grid-col) * 7)" className={styles.commonPane}>
-                        <a className={styles.brand} href="#" aria-label="Nolli home">
-                          <img className={styles.mark} src="/favicon.svg" alt="" width={24} height={24} />
-                          <Note className={styles.wordMark}>Nolli</Note>
-                        </a>
-                        <H4 className={styles.statement}>
-                          The Map Where Architectures Lives.
-                        </H4>
-                        <div className={styles.social}>
-                          <SocialLink icon={siInstagram} label="Instagram" href="https://www.instagram.com/nolli.map/" />
-                          <SocialLink icon={siThreads} label="Threads" href="https://www.threads.net/@nolli.map" />
-                        </div>
-                        <span className={styles.spacer}/>
-                        <div className={styles.meta}>
-                          <Body3 className={styles.legalMark}>© 2026-present Zane Chen</Body3>
-                          <Body3 className={styles.legalMark}>New York, United States</Body3> 
-                        </div>
-                      </Pane>
-                      <Pane size="calc(var(--grid-col) * 2.5)" className={styles.commonPane}>
+                      <Pane size="50%" className={styles.commonPane}>
                         <NavColumn group={LINK_GROUPS[0]} />
                       </Pane>
-                      <Pane size="calc(var(--grid-col) * 2.5)" className={styles.commonPane}>
+                      <Pane size="50%" className={styles.commonPane}>
                         <NavColumn group={LINK_GROUPS[1]} />
                       </Pane>
                     </VSplit>
                   </Pane>
-                  <Pane size="var(--grid-padding)" />
+                </HSplit>
+              </Pane>
+              <Pane size="var(--grid-padding)" filled/>
+            </VSplit>
+          </Pane>
+          <PhotoDock pool={dockPool(data, 9)} />
+        </HSplit>
+      </Pane>
+    </HSplit>
+  )
+}
+
+/** Desktop tree — brand + nav columns over the photo dock. */
+function FooterDesktop({ data }: { data: LandingData }) {
+  return (
+    <HSplit>
+      <Pane size="45svh" />
+      <Pane className={styles.footer}>
+        <HSplit>
+          <Pane>
+            <VSplit>
+              <Pane size="var(--grid-padding)" />
+              <Pane>
+                <VSplit>
+                  <Pane size="calc(var(--grid-col) * 7)" className={styles.commonPane}>
+                    <BrandBlock withSpacer />
+                  </Pane>
+                  <Pane size="calc(var(--grid-col) * 2.5)" className={styles.commonPane}>
+                    <NavColumn group={LINK_GROUPS[0]} />
+                  </Pane>
+                  <Pane size="calc(var(--grid-col) * 2.5)" className={styles.commonPane}>
+                    <NavColumn group={LINK_GROUPS[1]} />
+                  </Pane>
                 </VSplit>
               </Pane>
-              {/* <Pane size="40svh" /> */}
-              <PhotoDock pool={dockPool(data, 9)} />
-            </HSplit>
+              <Pane size="var(--grid-padding)" />
+            </VSplit>
           </Pane>
+          <PhotoDock pool={dockPool(data, 9)} />
         </HSplit>
-      </Screen>
+      </Pane>
+    </HSplit>
+  )
+}
+
+/** Brand block shared by both trees — wordmark, statement, socials, legal
+ * meta. Desktop stretches it with the spacer before the meta. */
+function BrandBlock({ withSpacer = false }: { withSpacer?: boolean }) {
+  return (
+    <>
+      <a className={styles.brand} href="#" aria-label="Nolli home">
+        <img className={styles.mark} src="/favicon.svg" alt="" width={24} height={24} />
+        <Note className={styles.wordMark}>Nolli</Note>
+      </a>
+      <H4 className={styles.statement}>
+        The Map Where Architectures Lives.
+      </H4>
+      <div className={styles.social}>
+        <SocialLink icon={siInstagram} label="Instagram" href="https://www.instagram.com/nolli.map/" />
+        <SocialLink icon={siThreads} label="Threads" href="https://www.threads.net/@nolli.map" />
+      </div>
+      {withSpacer && <span className={styles.spacer}/>}
+      <div className={styles.meta}>
+        <Body3 className={styles.legalMark}>© 2026-present Zane Chen</Body3>
+        <Body3 className={styles.legalMark}>New York, United States</Body3>
+      </div>
     </>
   )
 }

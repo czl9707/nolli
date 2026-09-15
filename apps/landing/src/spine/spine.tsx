@@ -7,6 +7,7 @@ import {
   type MotionValue,
 } from "framer-motion"
 import type { MapRef, SceneCamera } from "@nolli/map"
+import { useIsMobile } from "@nolli/ui"
 import { LandingMap } from "@/components/landing-map"
 import { phaseAtLeast, useBoot, useBootPhase } from "@/lib/boot"
 import { buildTimeline, shapeAt, type PxRect, type SpineScene } from "./timeline"
@@ -70,9 +71,10 @@ export function Spine({
     return out
   }, [timeline])
 
-  // measured shape rects, re-measured on resize; re-applied without a
-  // scroll event
-  // TODO: what this hookd handling.
+  // measured shape rects, re-measured on resize and on breakpoint flips
+  // (isMobile remounts every scene tree after the resize event itself has
+  // already measured the outgoing tree); re-applied without a scroll event
+  const isMobile = useIsMobile()
   const [rects, setRects] = useState<Record<string, PxRect>>({})
   useEffect(() => {
     const measure = () => {
@@ -108,7 +110,7 @@ export function Spine({
     measure()
     window.addEventListener("resize", measure)
     return () => window.removeEventListener("resize", measure)
-  }, [scenes])
+  }, [scenes, isMobile])
 
   const { scrollYProgress } = useScroll({ target: wrapperRef, offset: ["start start", "end end"] })
   const scrollVh = useTransform(scrollYProgress, (p) => p * timeline.totalVh)
@@ -172,7 +174,7 @@ export function Spine({
 
   return (
     <Ctx.Provider value={ctx}>
-      <div ref={wrapperRef} style={{ position: "relative", height: `${timeline.totalVh + 100}vh` }}>
+      <div ref={wrapperRef} style={{ position: "relative", height: `${timeline.totalVh + 100}svh` }}>
         <div style={{ position: "sticky", top: 0, height: "100svh", overflow: "hidden" }}>
           {/* focus pull: the layer develops from blurred/dim to sharp
               alongside its fade-in at the map beat */}
@@ -202,7 +204,7 @@ export function Spine({
               <div
                 data-scene={scene.id}
                 style={{
-                  height: `${scene.heightVh + (i === timeline.segments.length - 1 ? 100 : 0)}vh`,
+                  height: `${scene.heightVh + (i === timeline.segments.length - 1 ? 100 : 0)}svh`,
                   position: "relative",
                   pointerEvents: "none",
                 }}

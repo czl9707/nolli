@@ -49,12 +49,14 @@ export function CityMarkers({
       {archs.map((p) => (
         <ArchPinMarker
           key={p.slug}
+          label={p.name}
           longitude={p.coordinates.lng}
           latitude={p.coordinates.lat}
           className={styles.cityPin}
           animate={{ opacity: visible && p.slug !== onSlug ? 1 : 0 }}
           transition={{ duration: 0.3 }}
           onMouseEnter={() => onSelect(p.slug)}
+          onClick={() => onSelect(p.slug)}
         />
       ))}
       {cards.map((slug) => {
@@ -68,6 +70,7 @@ export function CityMarkers({
             data-show={slug === onSlug || undefined}
             crossOrigin={null}
             onMouseEnter={() => onSelect(slug)}
+            onClick={() => onSelect(slug)}
           />
         )
       })}
