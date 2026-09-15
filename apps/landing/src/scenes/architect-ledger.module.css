@@ -31,13 +31,13 @@
   left: var(--spacing-component);
   bottom: var(--spacing-component);
   z-index: 2;
-  max-width: calc(var(--grid-col) * 6);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-component);
 }
 
 .statementText {
+  font-size: clamp(1.5rem, 2.5vw, 2.25rem);
   font-weight: 400;
   font-style: italic;
   font-family: var(--font-serif);
@@ -48,4 +48,10 @@
   font-style: normal;
   font-weight: 600;
   color: rgb(var(--color-hero-foreground));
+}
+
+.cell {
+  font-size: 1.2rem;
+  font-family: var(--font-serif);
+  font-style: italic;
 }

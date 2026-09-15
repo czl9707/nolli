@@ -13,6 +13,8 @@ import { APP_URL, ROLL_EASE } from "@/lib/constants"
 import { useWhereami } from "@/lib/whereami"
 import { TRANSITION_LEAD_VH, type HoldScene, type TransitionScene } from "@/spine/timeline"
 import type { CollectionStats, LandingData } from "@/lib/landing-data"
+import { useIsMobile } from "@nolli/ui"
+import { ArrowUpRight } from "lucide-react"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
 import { MapTransition } from "./map-transition"
 import styles from "./stats.module.css"
@@ -59,11 +61,70 @@ export const architectStatsTransition = (): TransitionScene => ({
   Component: () => <div className={styles.veil} aria-hidden />,
 })
 
-function StatsScene({ stats, photoPool, architectNames }: {
+type StatsProps = {
   stats: CollectionStats
   photoPool: ArchSummary[]
   architectNames: string[]
-}) {
+}
+
+function StatsScene(props: StatsProps) {
+  const mobile = useIsMobile()
+  return mobile ? <StatsMobile {...props} /> : <StatsDesktop {...props} />
+}
+
+// Mobile re-composition — the same cells in one column: big card, architects,
+// countries, where-CTA closing full-width. Side padding panes collapse; the
+// shape stays full-bleed between the cap panes.
+function StatsMobile({ stats, photoPool, architectNames }: StatsProps) {
+  return (
+    <Screen className={styles.screen}>
+      <HSplit>
+        <Pane size="calc(var(--size-header-height) + 3svh)"/>
+        <Pane>
+          <div className={styles.shape} aria-hidden data-spine-shape="stats" />
+          <MapTransition sceneId={SCENE_ID} untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={WORLD} />
+          <HSplit>
+            <Pane className={`${styles.statementPane} ${styles.cell}`} size="35svh">
+              <H2 className={styles.statementText}>
+                A Map. A Collection.
+                <br />
+                A <span className={styles.accent}>Growing Community</span>.
+              </H2>
+              <span className={styles.spacer} />
+              <NumberBlock
+                value={stats.buildings} label="Has Collected" delay={0} size="l"
+                sub="Architectures"
+              />
+              <PhotoStack archs={photoPool} />
+            </Pane>
+            <Pane size="17svh" className={styles.cell}>
+              <NumberBlock
+                value={stats.architects} label="Designed by" delay={0.15} size="m"
+                sub="Architects"
+              />
+              <BadgeRows items={architectNames} />
+            </Pane>
+            <Pane size="17svh" className={styles.cell}>
+              <NumberBlock
+                value={stats.countries} label="Located across" delay={0.3} size="m"
+                sub="Countries"
+              />
+              <BadgeRows items={COUNTRY_BADGES} />
+            </Pane>
+            <Pane size="17svh" className={styles.cell}>
+              <WhereCta>
+                <WhereBlock stats={stats} />
+              </WhereCta>
+            </Pane>
+          </HSplit>
+        </Pane>
+        <Pane size="3svh"/>
+      </HSplit>
+    </Screen>
+  )
+}
+
+function StatsDesktop({ stats, photoPool, architectNames }: StatsProps) {
   return (
     <Screen className={styles.screen}>
       <HSplit>
@@ -251,15 +312,18 @@ function BadgeRows({ items }: { items: string[] }) {
 }
 
 /** The where-you-are cell is the CTA — the whole pane, hero-CTA pattern.
- * Hover/focus anywhere in the cell rolls it: the resting face (count
- * block + underscored hint label) slides out the top, the armed face
- * (accent ground, arrow) rolls up from below. The hint is inert text —
- * the pane is the link. Faces stay mounted so the count-up never
- * re-runs. */
+ * Arming is hover/focus on desktop; on mobile the first tap arms, the
+ * second navigates. The resting face (count block + underscored hint
+ * label) slides out the top, the armed face (accent ground, arrow) rolls
+ * up from below. The hint is inert text — the pane is the link. Faces stay
+ * mounted so the count-up never re-runs. */
 function WhereCta({ children }: { children: React.ReactNode }) {
+  const mobile = useIsMobile()
   const [armed, setArmed] = useState(false)
+  const [tapped, setTapped] = useState(false)
   const reduced = useReducedMotion()
   const roll: Transition = reduced ? { duration: 0 } : { duration: TRANSITION_SHORT, ease: ROLL_EASE }
+  const on = mobile ? tapped || armed : armed
   return (
     <a
       className={styles.whereCta}
@@ -268,18 +332,23 @@ function WhereCta({ children }: { children: React.ReactNode }) {
       onMouseLeave={() => setArmed(false)}
       onFocus={() => setArmed(true)}
       onBlur={() => setArmed(false)}
+      onClick={(e) => {
+        if (!mobile || tapped) return
+        e.preventDefault()
+        setTapped(true)
+      }}
     >
-      <motion.div className={styles.whereFace} animate={{ y: armed ? "-100%" : 0 }} transition={roll}>
+      <motion.div className={styles.whereFace} animate={{ y: on ? "-100%" : 0 }} transition={roll}>
         {children}
-        <span className={styles.whereHint}>Open the map <span aria-hidden>→</span></span>
+        <span className={styles.whereHint}>Open the map <ArrowUpRight size={16}/></span>
       </motion.div>
       <motion.div
         className={`${styles.whereFace} ${styles.whereArmed}`}
         initial={false}
-        animate={{ y: armed ? 0 : "100%" }}
+        animate={{ y: on ? 0 : "100%" }}
         transition={roll}
       >
-        <H4>Open the map <span aria-hidden>→</span></H4>
+        <H4 className={styles.whereButton}>Open the map <ArrowUpRight size={24}/></H4>
       </motion.div>
     </a>
   )

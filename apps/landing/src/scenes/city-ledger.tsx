@@ -3,7 +3,7 @@
 // into it and gate through a container flag, while the flow tree carries
 // the city dossier + 2x3 city-button grid and fades out over the hold's
 // tail.
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState, type ReactNode, type RefObject } from "react"
 import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useTransform, type MotionValue, type Variants } from "framer-motion"
 import { Body1, Body2, H2, Note } from "@nolli/ui"
 import { applyMapTransition } from "@/lib/map-transition"
@@ -12,6 +12,7 @@ import { CITY_LEDGER } from "@/lib/constants"
 import { useSceneScroll, useSpineMap } from "@/spine/spine"
 import { TRANSITION_LEAD_VH, type HoldScene, type TransitionScene } from "@/spine/timeline"
 import { fitCamera } from "@/lib/camera"
+import { useIsMobile } from "@nolli/ui"
 import { CityMarkers } from "@/components/city-markers"
 import { RollButton } from "@/components/roll-button"
 import { RollText } from "@/components/roll-text"
@@ -33,6 +34,9 @@ const SCENE_VH = 200
 /** Fit padding in pane px: photo cards hang below the pin, so the
  * south-most arch needs far more room below it than the north-most above. */
 const FIT_PADDING = { left: 100, right: 100, top: 100, bottom: 240 }
+
+/** Same shape scaled to the mobile map pane — a fraction of the px box. */
+const FIT_PADDING_MOBILE = { left: 36, right: 36, top: 36, bottom: 96 }
 
 /** City-name pool for the pre-entry roll — names only, no data behind
  * them; walking the list in order is travel texture, not destinations
@@ -71,6 +75,7 @@ export const heroCityTransition = (): TransitionScene => ({
 function CityLedger({ data }: { data: LandingData }) {
   const map = useSpineMap()
   const local = useSceneScroll()
+  const mobile = useIsMobile()
   const paneRef = useRef<HTMLDivElement | null>(null)
   const archsByCity = data.cityLedger
 
@@ -96,9 +101,9 @@ function CityLedger({ data }: { data: LandingData }) {
     return fitCamera(
       cityArchs.map((p) => p.coordinates),
       { width, height },
-      FIT_PADDING,
+      mobile ? FIT_PADDING_MOBILE : FIT_PADDING,
     )
-  }, [])
+  }, [mobile])
 
   // fly in as the transition hands us the screen; camera measured at fire
   // time from the pane's live px box
@@ -126,67 +131,112 @@ function CityLedger({ data }: { data: LandingData }) {
   })
   useMotionValueEvent(local, "change", (v) => setMarkersOn(v >= -ENTRY_VH && v < SCENE_VH - ENTRY_VH))
 
+  const cityRows = (
+    <>
+      <CityRow cities={CITY_LEDGER.slice(0, 2)} selected={selected} loaded={Object.keys(archsByCity)} onSelect={onSelect} />
+      <CityRow cities={CITY_LEDGER.slice(2, 4)} selected={selected} loaded={Object.keys(archsByCity)} onSelect={onSelect} />
+      <CityRow cities={CITY_LEDGER.slice(4, 6)} selected={selected} loaded={Object.keys(archsByCity)} onSelect={onSelect} />
+    </>
+  )
+
+  const treeProps = {
+    paneRef,
+    statement: (
+      <Statement
+        leadCity={displayCity}
+        listCity={selected}
+        archs={archs}
+        cardSlug={cardSlug}
+        onCard={setCardSlug}
+      />
+    ),
+    cityRows,
+  }
+
   return (
     <>
       <Screen className={styles.city}>
         <MapTransition untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={() => cameraFor(archsRef.current)} />
         <CityMarkers archs={archs} on={markersOn} selected={cardSlug} onSelect={setCardSlug} />
         <motion.div className={styles.splits} style={{ opacity: fade }}>
-          <HSplit>
-            <Pane size="12svh" />
-            <Pane>
-              <VSplit>
-                <Pane size="var(--grid-padding)" filled/>
-                <Pane>
-                  <HSplit>
-                    <Pane>
-                      <VSplit>
-                        <Pane size="calc(var(--grid-col) * 4)">
-                          <HSplit>
-                            <Pane className={styles.statementPane}>
-                              <Statement
-                                leadCity={displayCity}
-                                listCity={selected}
-                                archs={archs}
-                                cardSlug={cardSlug}
-                                onCard={setCardSlug}
-                              />
-                            </Pane>
-                            <CityRow
-                              cities={CITY_LEDGER.slice(0, 2)}
-                              selected={selected}
-                              loaded={Object.keys(archsByCity)}
-                              onSelect={onSelect}
-                            />
-                            <CityRow
-                              cities={CITY_LEDGER.slice(2, 4)}
-                              selected={selected}
-                              loaded={Object.keys(archsByCity)}
-                              onSelect={onSelect}
-                            />
-                            <CityRow
-                              cities={CITY_LEDGER.slice(4, 6)}
-                              selected={selected}
-                              loaded={Object.keys(archsByCity)}
-                              onSelect={onSelect}
-                            />
-                          </HSplit>
-                        </Pane>
-                        <Pane size="calc(var(--grid-col) * 8)">
-                          <div ref={paneRef} data-spine-shape="city" className={styles.mapPane} />
-                        </Pane>
-                      </VSplit>
-                    </Pane>
-                    <Pane size="8svh"/>
-                  </HSplit>
-                </Pane>
-                <Pane size="var(--grid-padding)" filled/>
-              </VSplit>
-            </Pane>
-          </HSplit>
+          {mobile ? (
+            <CityMobile {...treeProps} />
+          ) : (
+            <CityDesktop {...treeProps} />
+          )}
         </motion.div>
       </Screen>
     </>
+  )
+}
+
+type CityTreeProps = {
+  paneRef: RefObject<HTMLDivElement | null>
+  statement: ReactNode,
+  cityRows: ReactNode
+}
+
+/** Mobile re-composition — map pane full-width on top, statement + rows
+ * stacked under it. Rows carry the tap-to-card. */
+function CityMobile({ paneRef, statement, cityRows }: CityTreeProps) {
+  return (
+    <HSplit>
+      <Pane size="calc(var(--size-header-height) + 5svh)"/>
+      <Pane size="40svh">
+        <div ref={paneRef} data-spine-shape="city" className={styles.mapPane} />
+      </Pane>
+      <Pane>
+        <VSplit>
+          <Pane size="var(--spacing-paragraph)" filled/>
+          <Pane>
+            <HSplit>
+              <Pane className={styles.statementPane}>
+                {statement}
+              </Pane>
+              {cityRows}
+              <Pane size="5svh"/>
+            </HSplit>
+          </Pane>
+          <Pane size="var(--spacing-paragraph)" filled/>
+        </VSplit>
+      </Pane>
+    </HSplit>
+  )
+}
+
+/** Desktop tree — dossier column (statement + city grid) left, the map
+ * pane carrying the shape right. */
+function CityDesktop({ paneRef, statement, cityRows }: CityTreeProps) {
+  return (
+    <HSplit>
+      <Pane size="12svh" />
+      <Pane>
+        <VSplit>
+          <Pane size="var(--grid-padding)" filled/>
+          <Pane>
+            <HSplit>
+              <Pane>
+                <VSplit>
+                  <Pane size="calc(var(--grid-col) * 4)">
+                    <HSplit>
+                      <Pane className={styles.statementPane}>
+                        {statement}
+                      </Pane>
+                      {cityRows}
+                    </HSplit>
+                  </Pane>
+                  <Pane size="calc(var(--grid-col) * 8)">
+                    <div ref={paneRef} data-spine-shape="city" className={styles.mapPane} />
+                  </Pane>
+                </VSplit>
+              </Pane>
+              <Pane size="8svh"/>
+            </HSplit>
+          </Pane>
+          <Pane size="var(--grid-padding)" filled/>
+        </VSplit>
+      </Pane>
+    </HSplit>
   )
 }
 
@@ -255,6 +305,7 @@ function Statement({
   onCard: (slug: string) => void
 }) {
   const reduced = useReducedMotion()
+  const mobile = useIsMobile()
   return (
     <>
       <H2 className={styles.statementText}>
@@ -262,22 +313,25 @@ function Statement({
         <br />
         Nolli has Architectures Worth Seeing.
       </H2>
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.ul key={listCity} className={styles.archList} initial="hidden" animate="visible" exit="exit">
-          {archs.map((p, i) => (
-            <motion.li
-              key={p.slug}
-              variants={reduced ? undefined : itemVariants}
-              custom={rowDelay(p.slug)}
-              data-hovered={cardSlug === p.slug}
-              onMouseEnter={() => onCard(p.slug)}
-            >
-              <span className={styles.archNum}>{String(i + 1).padStart(2, "0")}</span>
-              <Body2 className={styles.archName}>{p.name}</Body2>
-            </motion.li>
-          ))}
-        </motion.ul>
-      </AnimatePresence>
+      {
+        !mobile && 
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.ul key={listCity} className={styles.archList} initial="hidden" animate="visible" exit="exit">
+            {archs.map((p, i) => (
+              <motion.li
+                key={p.slug}
+                variants={reduced ? undefined : itemVariants}
+                custom={rowDelay(p.slug)}
+                data-hovered={cardSlug === p.slug}
+                onMouseEnter={() => onCard(p.slug)}
+              >
+                <span className={styles.archNum}>{String(i + 1).padStart(2, "0")}</span>
+                <Body2 className={styles.archName}>{p.name}</Body2>
+              </motion.li>
+            ))}
+          </motion.ul>
+        </AnimatePresence>
+      }
     </>
   )
 }

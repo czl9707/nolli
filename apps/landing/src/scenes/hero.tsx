@@ -8,23 +8,26 @@
 // pane is the CTA, sized like the plate; arming rolls the whole cell); the
 // mirrored title-block strip closes the scene (Info left, plate-wide, then
 // fill, then Scale + Sheet right, under the column). The reveal bounds span
-// everything above the strip.
-import { useEffect, useMemo, useRef, useState } from "react"
+// everything above the strip. Mobile re-composes the same panes: lede at
+// the top of the workarea, a shorter CTA pane at the bottom; the plate
+// column, arch list and strip drop, the CTA arms on tap.
+import { useEffect, useMemo, useRef, useState, type RefObject } from "react"
 import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, type MotionValue } from "framer-motion"
 import { ArrowUpRight } from "lucide-react"
-import { Body2, H1, H3, Note, TRANSITION_SHORT } from "@nolli/ui"
+import { Body2, Note, TRANSITION_SHORT } from "@nolli/ui"
 import { BootFade, phaseAtLeast, useBootPhase } from "@/lib/boot"
 import { ROLL_EASE } from "@/lib/constants"
 import type { MapRef } from "@nolli/map"
 import type { ArchSummary } from "@/lib/landing-data"
 import type { SceneCamera } from "@nolli/map"
 import { useSceneScroll, useSpineMap } from "@/spine/spine"
+import { useIsMobile } from "@nolli/ui"
 import { TRANSITION_LEAD_VH, type HoldScene } from "@/spine/timeline"
 import { APP_URL, HERO_FIT_PAD } from "@/lib/constants"
 import { fitCamera } from "@/lib/camera"
 import type { LandingData } from "@/lib/landing-data"
 import { PhotoMarkers } from "@/components/photo-markers"
-import { CursorReveal, HERO_MARKER_CLASS, PLATE, useCursorSprings, usePlateArchs } from "./hero-reveal"
+import { CursorReveal, HERO_MARKER_CLASS, useCursorSprings, usePlateArchs, usePlateSize } from "./hero-reveal"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
 import { MapTransition } from "./map-transition"
 import styles from "./hero.module.css"
@@ -50,14 +53,18 @@ const SCENE_VH = 100
 
 const BOTTOM_BAR_HEIGHT = "5rem"
 
-const CTA_BUFFER = 90
+const EMPTY_ARCHS: ArchSummary[] = []
 
+/** Shared hero state + the router between the two trees. Everything both
+ * trees need (springs, plate size, reveal bounds, camera, boot gating)
+ * lives here; the trees only compose panes. */
 function HeroScene({ data }: { data: LandingData }) {
   const map = useSpineMap()
   const bootPhase = useBootPhase()
+  const mobile = useIsMobile()
   const archs = data.heroArchs
   const { sx, sy } = useCursorSprings()
-  const { nearest, active } = usePlateArchs(sx, sy, archs, map)
+  const { nearest, active } = usePlateArchs(sx, sy, mobile ? EMPTY_ARCHS : archs, map)
   // reveal bounds = the whole top area above the strip; the camera fits to
   // the stage alone so pins stay clear of the column
   const boundsRef = useRef<HTMLDivElement | null>(null)
@@ -72,7 +79,9 @@ function HeroScene({ data }: { data: LandingData }) {
   const [markersOn, setMarkersOn] = useState(() => localScrollDist.get() < SCENE_VH)
   useMotionValueEvent(localScrollDist, "change", (v) => setMarkersOn(v < SCENE_VH))
 
-  const scale = useScaleText(map, sy)
+  const scale = useScaleText(mobile ? null : map, sy)
+
+  const treeProps = { boundsRef, sx, sy }
 
   return (
     <section
@@ -94,56 +103,115 @@ function HeroScene({ data }: { data: LandingData }) {
       />
       <MapTransition untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={cam} />
       <Screen className={styles.screen}>
-        <HSplit>
-          <Pane size="var(--size-header-height)" />
-          <VSplit ref={boundsRef}>
-            <Pane className={styles.heroPane}>
-              <Lede />
-            </Pane>
-            <Pane size={`${PLATE.w}px`}>
-              <BootFade at="furniture" className={styles.furnitureBox} delay={0.12}>
-                <HSplit>
-                  <Pane>
-                    <ul className={styles.archList}>
-                      {archs.map((p, i) => (
-                        <li key={p.slug} className={styles.archRow} data-active={`${active.has(p.slug)}`}>
-                          <span className={styles.archNum}>{String(i + 1).padStart(2, "0")}</span>
-                          <Body2 asChild>
-                            <span>{p.name}</span>
-                          </Body2>
-                        </li>
-                      ))}
-                    </ul>
-                  </Pane>
-                  <Pane size={`${PLATE.h}px`} filled>
-                    <CtaPane sx={sx} sy={sy} />
-                  </Pane>
-                </HSplit>
-              </BootFade>
-            </Pane>
-          </VSplit>
-          <Pane size={BOTTOM_BAR_HEIGHT}>
-            <BootFade at="furniture" className={styles.furnitureBox} delay={0.22}>
-              <VSplit>
-                <InfoBlock nearest={nearest} />
-                <Pane filled />
-                <Pane size={`${PLATE.w / 2}px`} className={styles.blockPane}>
-                  <span className={styles.monoLabel}>Scale</span>
-                  <LiveValue>{scale}</LiveValue>
-                </Pane>
-                <Pane size={`${PLATE.w / 2}px`} className={styles.blockPane}>
-                  <span className={styles.monoLabel}>Sheet</span>
-                  <span className={styles.blockValue}>
-                    {data.heroCity.country ? `${data.heroCity.country} · ` : ""}
-                    {data.heroCity.name}
-                  </span>
-                </Pane>
-              </VSplit>
+        {mobile ? (
+          <HeroMobile {...treeProps} />
+        ) : (
+          <HeroDesktop
+            {...treeProps}
+            archs={archs}
+            active={active}
+            nearest={nearest}
+            scale={scale}
+            city={data.heroCity}
+          />
+        )}
+      </Screen>
+    </section>
+  )
+}
+
+type HeroTreeProps = {
+  boundsRef: RefObject<HTMLDivElement | null>
+  sx: MotionValue<number>
+  sy: MotionValue<number>
+}
+
+/** Mobile re-composition — lede tops the workarea, plate-sized CTA pane
+ * bottoms it; the plate column, arch list and instrument strip drop. */
+function HeroMobile({ boundsRef, sx, sy }: HeroTreeProps) {
+  const plate = usePlateSize()
+  return (
+    <HSplit >
+      <Pane size="var(--size-header-height)" />
+      <Pane>
+        <HSplit ref={boundsRef}>
+          <Pane className={styles.heroPane}>
+            <Lede />
+          </Pane>
+          <Pane size={`${plate.h}px`} filled>
+            <BootFade at="furniture" className={styles.furnitureBox} delay={0.12}>
+              <div style={{ width: plate.w, height: "100%", marginInline: "auto", position: "relative" }}>
+                <CtaPane sx={sx} sy={sy} />
+              </div>
             </BootFade>
           </Pane>
         </HSplit>
-      </Screen>
-    </section>
+      </Pane>
+    </HSplit>
+  )
+}
+
+/** Desktop tree — lede fills the map cell, plate column (arch list over
+ * the plate-sized CTA) on the right, instrument strip closing the scene. */
+function HeroDesktop({
+  boundsRef, sx, sy, archs, active, nearest, scale, city,
+}: HeroTreeProps & {
+  archs: ArchSummary[]
+  active: ReadonlySet<string>
+  nearest: ArchSummary | null
+  scale: string
+  city: LandingData["heroCity"]
+}) {
+  const plate = usePlateSize()
+  return (
+    <HSplit>
+      <Pane size="var(--size-header-height)" />
+      <VSplit ref={boundsRef}>
+        <Pane className={styles.heroPane}>
+          <Lede />
+        </Pane>
+        <Pane size={`${plate.w}px`}>
+          <BootFade at="furniture" className={styles.furnitureBox} delay={0.12}>
+            <HSplit>
+              <Pane>
+                <ul className={styles.archList}>
+                  {archs.map((p, i) => (
+                    <li key={p.slug} className={styles.archRow} data-active={`${active.has(p.slug)}`}>
+                      <span className={styles.archNum}>{String(i + 1).padStart(2, "0")}</span>
+                      <Body2 asChild>
+                        <span>{p.name}</span>
+                      </Body2>
+                    </li>
+                  ))}
+                </ul>
+              </Pane>
+              <Pane size={`${plate.h}px`} filled>
+                <CtaPane sx={sx} sy={sy} />
+              </Pane>
+            </HSplit>
+          </BootFade>
+        </Pane>
+      </VSplit>
+      <Pane size={BOTTOM_BAR_HEIGHT}>
+        <BootFade at="furniture" className={styles.furnitureBox} delay={0.22}>
+          <VSplit>
+            <InfoBlock nearest={nearest} />
+            <Pane filled />
+            <Pane size={`${plate.w / 2}px`} className={styles.blockPane}>
+              <span className={styles.monoLabel}>Scale</span>
+              <LiveValue>{scale}</LiveValue>
+            </Pane>
+            <Pane size={`${plate.w / 2}px`} className={styles.blockPane}>
+              <span className={styles.monoLabel}>Sheet</span>
+              <span className={styles.blockValue}>
+                {city.country ? `${city.country} · ` : ""}
+                {city.name}
+              </span>
+            </Pane>
+          </VSplit>
+        </BootFade>
+      </Pane>
+    </HSplit>
   )
 }
 
@@ -190,16 +258,21 @@ function Lede() {
   )
 }
 
+/** Cursor-depth arming buffer — the cursor arrives from the big cell to
+ * the pane's LEFT, so the buffer guards the pane's left and top edges. */
+const CTA_BUFFER = 90
+
 /** The CTA — the pane itself.
  * On the cursor-less screen the plate is the pointer: when it sweeps deep enough
  * into the pane, the whole cell rolls — the resting face (label + hint
  * over the sheet tile) slides out, the armed face (accent ground, arrow)
- * slides in. The cursor arrives from the big cell to the LEFT, so the
- * arming buffer guards the pane's left and top edges. */
+ * slides in. Mobile has no proxy cursor: first tap arms, second navigates. */
 function CtaPane({ sx, sy }: { sx: MotionValue<number>; sy: MotionValue<number> }) {
+  const mobile = useIsMobile()
   const ref = useRef<HTMLAnchorElement | null>(null)
   const [deep, setDeep] = useState(false)
   const [focused, setFocused] = useState(false)
+  const [tapped, setTapped] = useState(false)
   const reduced = useReducedMotion()
   useEffect(() => {
     let raf = 0
@@ -210,12 +283,12 @@ function CtaPane({ sx, sy }: { sx: MotionValue<number>; sy: MotionValue<number> 
       const r = el.getBoundingClientRect()
       const x = sx.get()
       const y = sy.get()
-      const inDistance =
+      setDeep(
         x >= r.left + CTA_BUFFER &&
         x <= r.right &&
         y >= r.top + CTA_BUFFER &&
-        y <= r.bottom
-      setDeep(inDistance)
+        y <= r.bottom,
+      )
     }
     const schedule = () => {
       if (!raf) raf = requestAnimationFrame(check)
@@ -231,7 +304,7 @@ function CtaPane({ sx, sy }: { sx: MotionValue<number>; sy: MotionValue<number> 
       if (raf) cancelAnimationFrame(raf)
     }
   }, [sx, sy])
-  const armed = deep || focused
+  const armed = mobile ? tapped || focused : deep || focused
   // entry delay is for the boot roll only; later face swaps run immediately
   const booted = useRef(false)
   useEffect(() => {
@@ -245,6 +318,11 @@ function CtaPane({ sx, sy }: { sx: MotionValue<number>; sy: MotionValue<number> 
       href={APP_URL}
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
+      onClick={(e) => {
+        if (!mobile || tapped) return
+        e.preventDefault()
+        setTapped(true)
+      }}
     >
       <AnimatePresence mode="popLayout">
         <motion.span
@@ -279,9 +357,10 @@ function CtaPane({ sx, sy }: { sx: MotionValue<number>; sy: MotionValue<number> 
 /** Info block — the plate's nearest work rolls through the cell as the
  * plate moves to a new arch. Plate-wide, flush with the column's edge. */
 function InfoBlock({ nearest }: { nearest: ArchSummary | null }) {
+  const plate = usePlateSize()
   const reduced = useReducedMotion()
   return (
-    <Pane size={`${PLATE.w}px`} className={styles.blockPane}>
+    <Pane size={`${plate.w}px`} className={styles.blockPane}>
       <span className={styles.monoLabel}>Info</span>
       <div className={styles.rollClip}>
         <AnimatePresence initial={false} mode="popLayout">

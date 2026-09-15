@@ -11,6 +11,10 @@
   position: relative;
   height: 100svh;
   overflow: hidden;
+
+  @media (--smaller-than-sm) {
+    --grid-padding: var(--spacing-paragraph);
+  }
 }
 
 /* full-bleed layer (map background) — inset 0 covers the whole screen */
