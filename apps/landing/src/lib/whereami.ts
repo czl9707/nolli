@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { APP_URL } from "./constants"
+import { MAP_APP_URL } from "./constants"
 
 /** Visitor's country (ISO-2) from the worker's /api/whereami (Cloudflare
  *  request geo). Fires once on mount, aborts after 2s, fails silent —
@@ -16,7 +16,7 @@ export function useWhereami(): string | null {
     if (override) return
     const ctrl = new AbortController()
     const timer = setTimeout(() => ctrl.abort(), 2000)
-    fetch(`${APP_URL}/api/whereami`, { signal: ctrl.signal })
+    fetch(`${MAP_APP_URL}/api/whereami`, { signal: ctrl.signal })
       .then((res) => (res.ok ? res.json() : null))
       .then((body: { country?: string | null } | null) => {
         if (body?.country) setCountry(body.country)

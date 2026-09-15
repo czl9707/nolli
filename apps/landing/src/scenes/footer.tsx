@@ -1,6 +1,13 @@
 import { siInstagram, siThreads, type SimpleIcon } from "simple-icons"
 import { Body1, Body3, Button, H3, H4, H6, Note, PaperPhoto } from "@nolli/ui"
-import { APP_URL, ABOUT_URL, POSTER_URL, WORLD_CAMERA } from "@/lib/constants"
+import {
+  ABOUT_PATH,
+  MAP_APP_URL,
+  POSTER_URL,
+  PRIVACY_PATH,
+  TERMS_PATH,
+  WORLD_CAMERA,
+} from "@/lib/constants"
 import { TRANSITION_LEAD_VH, type HoldScene, type SpineScene, type TransitionScene } from "@/spine/timeline"
 import type { ArchSummary, LandingData } from "@/lib/landing-data"
 import { useIsMobile } from "@nolli/ui"
@@ -15,16 +22,16 @@ const LINK_GROUPS: Array<{
   {
     label: "Explore",
     links: [
-      { label: "Nolli", href: APP_URL },
+      { label: "Nolli", href: MAP_APP_URL },
       { label: "Poster", href: POSTER_URL },
     ],
   },
   {
     label: "Resources",
     links: [
-      { label: "About", href: ABOUT_URL },
-      { label: "Privacy", href: `${APP_URL}/privacy` },
-      { label: "Terms", href: `${APP_URL}/terms` },
+      { label: "About", href: ABOUT_PATH },
+      { label: "Privacy", href: PRIVACY_PATH },
+      { label: "Terms", href: TERMS_PATH },
       { label: "Contact", href: `mailto:nolli.map@gmail.com` }
     ],
   },

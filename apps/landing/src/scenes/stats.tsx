@@ -9,7 +9,7 @@ import { motion, useInView, useMotionValue, useReducedMotion, useSpring, useTran
 import { Badge, H2, H3, H4, H6, PaperPhoto, TRANSITION_SHORT } from "@nolli/ui"
 import type { ArchSummary } from "@/lib/landing-data"
 import { type SceneCamera } from "@nolli/map"
-import { APP_URL, ROLL_EASE } from "@/lib/constants"
+import { MAP_APP_URL, ROLL_EASE } from "@/lib/constants"
 import { useWhereami } from "@/lib/whereami"
 import { TRANSITION_LEAD_VH, type HoldScene, type TransitionScene } from "@/spine/timeline"
 import type { CollectionStats, LandingData } from "@/lib/landing-data"
@@ -327,7 +327,7 @@ function WhereCta({ children }: { children: React.ReactNode }) {
   return (
     <a
       className={styles.whereCta}
-      href={APP_URL}
+      href={MAP_APP_URL}
       onMouseEnter={() => setArmed(true)}
       onMouseLeave={() => setArmed(false)}
       onFocus={() => setArmed(true)}

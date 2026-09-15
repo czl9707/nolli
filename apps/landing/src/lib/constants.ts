@@ -1,8 +1,11 @@
 import type { SceneCamera } from "@nolli/map"
 
-export const APP_URL = "https://nolli-map.com"
+export const MAP_APP_URL = "https://nolli-map.com"
+export const LANDING_URL = "https://landing.nolli-map.com"
 export const POSTER_URL = "https://poster.nolli-map.com"
-export const ABOUT_URL = "https://nolli-map.com/about"
+export const ABOUT_PATH = "/about"
+export const PRIVACY_PATH = "/privacy"
+export const TERMS_PATH = "/terms"
 
 /** Architect-ledger decks — curated works per architect, in show order.
  * Only these slugs are baked into landing.json. */
