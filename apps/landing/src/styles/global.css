@@ -8,6 +8,18 @@ body {
   --color-hero-foreground: 227 182 77;
   --color-hero-background: 23 23 23;
 
+  /* display voice — serif at real weight 400 carries every ui heading
+     component across the spine scenes and the static pages; scene css
+     only adds size/style on top */
+  --typography-h1-fontFamily: var(--font-serif);
+  --typography-h1-fontWeight: 400;
+  --typography-h2-fontFamily: var(--font-serif);
+  --typography-h2-fontWeight: 400;
+  --typography-h3-fontFamily: var(--font-serif);
+  --typography-h3-fontWeight: 400;
+  --typography-h4-fontFamily: var(--font-serif);
+  --typography-h4-fontWeight: 400;
+
   /* cell roll easing — JS mirror ROLL_EASE in lib/constants */
   --ease-roll: cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -24,6 +36,7 @@ body,
 
 html {
   scrollbar-width: none;
+  scroll-behavior: smooth;
 }
 
 html::-webkit-scrollbar {
@@ -42,7 +55,7 @@ body {
 }
 
 /* Boot scroll lock: until the map reveals, the spine is a flat plate with
-   nothing to scroll to. app.tsx renders <main data-boot> while locked;
+   nothing to scroll to. SpineApp renders <main data-boot> while locked;
    :has() carries it to the body from the React-rendered element. */
 body:has(main[data-boot]) {
   overflow: hidden;
