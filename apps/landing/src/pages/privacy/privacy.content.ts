@@ -1,5 +1,3 @@
-// src/pages/privacy/privacy.content.ts
-
 type Block = { title?: string; content: string[] }
 
 export const privacyContent: {

@@ -1,0 +1,88 @@
+/* Static page shell — landing-hosted legal/about pages. Serif display
+   voice comes from typography token overrides on the content column (they
+   cascade into the @nolli/ui components); sticky TOC rail on the left
+   collapses away under 900px. The page scroller is html (see
+   html:has(main[data-static]) in global.css). */
+
+.main {
+  min-height: 100%;
+  background: rgb(var(--color-primary-background));
+  color: rgb(var(--color-primary-foreground));
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: 16rem minmax(0, 1fr);
+  gap: var(--spacing-component);
+  max-width: calc(var(--landing-plate-max) + 2 * var(--spacing-component));
+  margin: 0 auto;
+  padding: var(--spacing-group) var(--spacing-component) var(--spacing-block);
+}
+
+.content {
+  max-width: 44rem;
+}
+
+.toc {
+  position: sticky;
+  top: calc(var(--size-header-height) + var(--spacing-component));
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-paragraph);
+}
+
+.tocItem {
+  text-decoration: none;
+  opacity: .6;
+}
+
+.tocItem:hover {
+  opacity: 1;
+}
+
+.lead {
+  margin-top: var(--spacing-paragraph);
+  font-style: italic;
+  opacity: .8;
+}
+
+.lastUpdated {
+  display: block;
+  margin-top: var(--spacing-paragraph);
+  text-transform: uppercase;
+  opacity: .55;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-group);
+  margin-top: var(--spacing-group);
+}
+
+.paragraph {
+  margin-top: var(--spacing-paragraph);
+  opacity: .85;
+}
+
+.list {
+  margin-top: var(--spacing-paragraph);
+  padding-left: 1.25rem;
+  list-style: disc;
+  opacity: .85;
+}
+
+.list li + li {
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 900px) {
+  .columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .toc {
+    display: none;
+  }
+}

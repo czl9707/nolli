@@ -3,7 +3,7 @@ import {
   Body2, Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuTrigger, Note,
 } from "@nolli/ui"
-import { ABOUT_URL, APP_URL, POSTER_URL } from "@/lib/constants"
+import { ABOUT_PATH, MAP_APP_URL, POSTER_URL } from "@/lib/constants"
 import { useIsMobile } from "@nolli/ui"
 import styles from "./site-header.module.css"
 
@@ -17,7 +17,7 @@ export function SiteHeader() {
   return (
     <header className={styles.bar}>
       <div className={styles.row}>
-        <a className={styles.brand} href="#" aria-label="Nolli home">
+        <a className={styles.brand} href={"/"} aria-label="Nolli home">
           <img className={styles.mark} src="/favicon.svg" alt="" width={24} height={24} />
           <Note className={`${styles.wordmark}`}>Nolli</Note>
         </a>
@@ -31,14 +31,14 @@ export function SiteHeader() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem asChild>
-                  <a href={APP_URL}>Explore Nolli</a>
+                  <a href={MAP_APP_URL}>Explore Nolli</a>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <a href={POSTER_URL} target="_blank" rel="noopener noreferrer">Poster</a>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <a href={ABOUT_URL} target="_blank" rel="noopener noreferrer">About</a>
+                  <a href={ABOUT_PATH}>About</a>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -51,13 +51,13 @@ export function SiteHeader() {
                   </a>
                 </Body2>
                 <Body2 asChild>
-                  <a href={ABOUT_URL} target="_blank" rel="noopener noreferrer">
+                  <a href={ABOUT_PATH}>
                     About
                   </a>
                 </Body2>
               </nav>
               <Button variant="outline" size="default" asChild>
-                <a href={APP_URL}>Explore Nolli</a>
+                <a href={MAP_APP_URL}>Explore Nolli</a>
               </Button>
             </>
           )}

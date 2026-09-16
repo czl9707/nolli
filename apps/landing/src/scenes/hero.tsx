@@ -23,7 +23,7 @@ import type { SceneCamera } from "@nolli/map"
 import { useSceneScroll, useSpineMap } from "@/spine/spine"
 import { useIsMobile } from "@nolli/ui"
 import { TRANSITION_LEAD_VH, type HoldScene } from "@/spine/timeline"
-import { APP_URL, HERO_FIT_PAD } from "@/lib/constants"
+import { MAP_APP_URL, HERO_FIT_PAD } from "@/lib/constants"
 import { fitCamera } from "@/lib/camera"
 import type { LandingData } from "@/lib/landing-data"
 import { PhotoMarkers } from "@/components/photo-markers"
@@ -315,7 +315,7 @@ function CtaPane({ sx, sy }: { sx: MotionValue<number>; sy: MotionValue<number> 
       ref={ref}
       data-armed={armed}
       className={styles.ctaPane}
-      href={APP_URL}
+      href={MAP_APP_URL}
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
       onClick={(e) => {

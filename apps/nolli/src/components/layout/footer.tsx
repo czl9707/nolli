@@ -1,5 +1,5 @@
-import { Link } from "react-router"
 import { Body2 } from "@nolli/ui"
+import { ABOUT_PAGE, PRIVACY_PAGE, TERMS_PAGE } from "@/lib/constants"
 import styles from "./footer.module.css"
 
 export function Footer() {
@@ -10,11 +10,11 @@ export function Footer() {
       </Body2>
       <Body2 className={styles.dot} aria-hidden="true">·</Body2>
       <Body2 asChild>
-        <Link to="/privacy" className={styles.link}>Privacy</Link>
+        <a href={PRIVACY_PAGE} target="_blank" rel="noopener noreferrer" className={styles.link}>Privacy</a>
       </Body2>
       <Body2 className={styles.dot} aria-hidden="true">·</Body2>
       <Body2 asChild>
-        <Link to="/terms" className={styles.link}>Terms</Link>
+        <a href={TERMS_PAGE} target="_blank" rel="noopener noreferrer" className={styles.link}>Terms</a>
       </Body2>
     </footer>
   )

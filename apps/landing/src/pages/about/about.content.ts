@@ -1,5 +1,3 @@
-// src/pages/about/about.content.ts
-
 type Block = { title?: string; content: string[] }
 
 export const aboutContent: { title: string; lead: string; blocks: Block[] } = {

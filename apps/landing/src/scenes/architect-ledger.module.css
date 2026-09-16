@@ -38,9 +38,7 @@
 
 .statementText {
   font-size: clamp(1.5rem, 2.5vw, 2.25rem);
-  font-weight: 400;
   font-style: italic;
-  font-family: var(--font-serif);
 }
 
 .accent {

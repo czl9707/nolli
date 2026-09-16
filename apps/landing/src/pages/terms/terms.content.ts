@@ -1,5 +1,3 @@
-// src/pages/terms/terms.content.ts
-
 type Block = { title?: string; content: string[] }
 
 export const termsContent: {

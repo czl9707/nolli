@@ -12,6 +12,7 @@ import { useSidebarStore } from "@/stores/sidebar"
 import { useAuthStore } from "@/stores/auth"
 import { useIsMobile } from "@nolli/ui"
 import { useLayout } from "@/hooks/use-layout"
+import { ABOUT_PAGE } from "@/lib/constants"
 import { motion, AnimatePresence } from "framer-motion"
 import { TRANSITION_INSTANT } from "@nolli/ui"
 import { Button } from "@nolli/ui"
@@ -21,7 +22,7 @@ import { Note } from "@nolli/ui"
 type NavItem = {
   icon: typeof Home
   label: string
-  path: string
+  path?: string
   disabled: boolean
 }
 
@@ -41,7 +42,7 @@ function Rail() {
     ...((user?.role === "moderator" || user?.role === "admin")
       ? [{ icon: Shield, label: "Moderate", path: "/moderate", disabled: false }]
       : []),
-    { icon: Info, label: "About", path: "/about", disabled: false },
+    { icon: Info, label: "About", path: ABOUT_PAGE, disabled: false },
   ]
 
   return (
@@ -54,7 +55,7 @@ function Rail() {
         </div>
         <div className={styles.navItems}>
           {items.map((item) => {
-            const active = isActive(item.path)
+            const active = item.path ? isActive(item.path) : false
             return (
               <Tooltip key={item.label}>
                 <TooltipTrigger asChild>
@@ -78,9 +79,15 @@ function Rail() {
                       aria-label={item.label}
                       asChild
                     >
-                      <Link to={item.path}>
-                        <item.icon size={16} />
-                      </Link>
+                      {item.path!.startsWith("http") ? (
+                        <a href={item.path} target="_blank" rel="noopener noreferrer">
+                          <item.icon size={16} />
+                        </a>
+                      ) : (
+                        <Link to={item.path!}>
+                          <item.icon size={16} />
+                        </Link>
+                      )}
                     </Button>
                   )}
                 </TooltipTrigger>
@@ -114,7 +121,7 @@ function Drawer() {
     ...((user?.role === "moderator" || user?.role === "admin")
       ? [{ icon: Shield, label: "Moderate", path: "/moderate", disabled: false }]
       : []),
-    { icon: Info, label: "About", path: "/about", disabled: false },
+    { icon: Info, label: "About", path: ABOUT_PAGE, disabled: false },
   ]
   const open = useSidebarStore((s) => s.mobileDrawerOpen)
   const setOpen = useSidebarStore((s) => s.setMobileDrawerOpen)
@@ -153,7 +160,7 @@ function Drawer() {
                   <div className={styles.divider} />
                   <nav className={styles.navList}>
                     {items.map((item) => {
-                      const active = isActive(item.path)
+                      const active = item.path ? isActive(item.path) : false
                       if (item.disabled) {
                         return (
                           <Button
@@ -176,10 +183,22 @@ function Drawer() {
                           data-active={active}
                           asChild
                         >
-                          <Link to={item.path} onClick={() => setOpen(false)}>
-                            <item.icon size={18} />
-                            {item.label}
-                          </Link>
+                          {item.path!.startsWith("http") ? (
+                            <a
+                              href={item.path}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={() => setOpen(false)}
+                            >
+                              <item.icon size={18} />
+                              {item.label}
+                            </a>
+                          ) : (
+                            <Link to={item.path!} onClick={() => setOpen(false)}>
+                              <item.icon size={18} />
+                              {item.label}
+                            </Link>
+                          )}
                         </Button>
                       )
                     })}

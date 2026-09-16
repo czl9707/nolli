@@ -3,8 +3,9 @@
    so the same ink reads over every scene. CTA is the app's Button. */
 
 .bar {
-  position: absolute;
-  inset: 0 0 auto 0;
+  position: sticky;
+  top: 0;
+  z-index: 20;
   pointer-events: none;
   color: rgb(var(--color-primary-foreground));
   background: rgb(var(--color-primary-background) / 0.75);
