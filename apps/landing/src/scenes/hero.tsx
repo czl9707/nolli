@@ -5,7 +5,7 @@
 // through the transition, unveiling the map. Layout: the big map cell
 // carries the lede, vertically centered; the plate column sits on the RIGHT
 // — arch list in its growing top cell, the CTA pane below (the whole
-// pane is the CTA, sized like the plate; arming rolls the whole cell); the
+// pane is the CTA, fixed CTA_PANE size; arming rolls the whole cell); the
 // mirrored title-block strip closes the scene (Info left, plate-wide, then
 // fill, then Scale + Sheet right, under the column). The reveal bounds span
 // everything above the strip. Mobile re-composes the same panes: lede at
@@ -27,7 +27,7 @@ import { MAP_APP_URL, HERO_FIT_PAD } from "@/lib/constants"
 import { fitCamera } from "@/lib/camera"
 import type { LandingData } from "@/lib/landing-data"
 import { PhotoMarkers } from "@/components/photo-markers"
-import { CursorReveal, HERO_MARKER_CLASS, useCursorSprings, usePlateArchs, usePlateSize } from "./hero-reveal"
+import { CursorReveal, HERO_MARKER_CLASS, PLATE, useCursorSprings, usePlateArchs } from "./hero-reveal"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
 import { MapTransition } from "./map-transition"
 import styles from "./hero.module.css"
@@ -49,7 +49,7 @@ export const heroCamera = (data: LandingData): SceneCamera =>
     HERO_FIT_PAD,
   )
 
-const SCENE_VH = 100
+const SCENE_VH = 200
 
 const BOTTOM_BAR_HEIGHT = "5rem"
 
@@ -93,8 +93,9 @@ function HeroScene({ data }: { data: LandingData }) {
         boundsRef={boundsRef}
         sx={sx}
         sy={sy}
-        tagTr={data.heroCity.name}
         on={phaseAtLeast(bootPhase, "reveal")}
+        growVh={SCENE_VH - 100}
+        tagTr={data.heroCity.name}
       />
       <PhotoMarkers
         archs={archs}
@@ -126,10 +127,18 @@ type HeroTreeProps = {
   sy: MotionValue<number>
 }
 
-/** Mobile re-composition — lede tops the workarea, plate-sized CTA pane
+/** Fixed CTA pane size — decoupled from the reveal plate, which grows
+ * with scroll (a plate-tracking pane would swallow the screen). Desktop
+ * keeps the plate's rest dimensions; mobile gets its own. */
+const CTA_PANE = {
+  desktop: PLATE,
+  mobile: { w: 320, h: Math.round((320 * PLATE.h) / PLATE.w) },
+}
+
+/** Mobile re-composition — lede tops the workarea, fixed CTA pane
  * bottoms it; the plate column, arch list and instrument strip drop. */
 function HeroMobile({ boundsRef, sx, sy }: HeroTreeProps) {
-  const plate = usePlateSize()
+  const cta = CTA_PANE.mobile
   return (
     <HSplit >
       <Pane size="var(--size-header-height)" />
@@ -138,9 +147,9 @@ function HeroMobile({ boundsRef, sx, sy }: HeroTreeProps) {
           <Pane className={styles.heroPane}>
             <Lede />
           </Pane>
-          <Pane size={`${plate.h}px`} filled>
+          <Pane size={`${cta.h}px`} filled>
             <BootFade at="furniture" className={styles.furnitureBox} delay={0.12}>
-              <div style={{ width: plate.w, height: "100%", marginInline: "auto", position: "relative" }}>
+              <div style={{ width: cta.w, height: "100%", marginInline: "auto", position: "relative" }}>
                 <CtaPane sx={sx} sy={sy} />
               </div>
             </BootFade>
@@ -152,7 +161,7 @@ function HeroMobile({ boundsRef, sx, sy }: HeroTreeProps) {
 }
 
 /** Desktop tree — lede fills the map cell, plate column (arch list over
- * the plate-sized CTA) on the right, instrument strip closing the scene. */
+ * the fixed-size CTA) on the right, instrument strip closing the scene. */
 function HeroDesktop({
   boundsRef, sx, sy, archs, active, nearest, scale, city,
 }: HeroTreeProps & {
@@ -162,7 +171,7 @@ function HeroDesktop({
   scale: string
   city: LandingData["heroCity"]
 }) {
-  const plate = usePlateSize()
+  const cta = CTA_PANE.desktop
   return (
     <HSplit>
       <Pane size="var(--size-header-height)" />
@@ -170,7 +179,7 @@ function HeroDesktop({
         <Pane className={styles.heroPane}>
           <Lede />
         </Pane>
-        <Pane size={`${plate.w}px`}>
+        <Pane size={`${cta.w}px`}>
           <BootFade at="furniture" className={styles.furnitureBox} delay={0.12}>
             <HSplit>
               <Pane>
@@ -185,7 +194,7 @@ function HeroDesktop({
                   ))}
                 </ul>
               </Pane>
-              <Pane size={`${plate.h}px`} filled>
+              <Pane size={`${cta.h}px`} filled>
                 <CtaPane sx={sx} sy={sy} />
               </Pane>
             </HSplit>
@@ -197,11 +206,11 @@ function HeroDesktop({
           <VSplit>
             <InfoBlock nearest={nearest} />
             <Pane filled />
-            <Pane size={`${plate.w / 2}px`} className={styles.blockPane}>
+            <Pane size={`${cta.w / 2}px`} className={styles.blockPane}>
               <span className={styles.monoLabel}>Scale</span>
               <LiveValue>{scale}</LiveValue>
             </Pane>
-            <Pane size={`${plate.w / 2}px`} className={styles.blockPane}>
+            <Pane size={`${cta.w / 2}px`} className={styles.blockPane}>
               <span className={styles.monoLabel}>Sheet</span>
               <span className={styles.blockValue}>
                 {city.country ? `${city.country} · ` : ""}
@@ -355,12 +364,11 @@ function CtaPane({ sx, sy }: { sx: MotionValue<number>; sy: MotionValue<number> 
 }
 
 /** Info block — the plate's nearest work rolls through the cell as the
- * plate moves to a new arch. Plate-wide, flush with the column's edge. */
+ * plate moves to a new arch. CTA-pane-wide, flush with the column's edge. */
 function InfoBlock({ nearest }: { nearest: ArchSummary | null }) {
-  const plate = usePlateSize()
   const reduced = useReducedMotion()
   return (
-    <Pane size={`${plate.w}px`} className={styles.blockPane}>
+    <Pane size={`${CTA_PANE.desktop.w}px`} className={styles.blockPane}>
       <span className={styles.monoLabel}>Info</span>
       <div className={styles.rollClip}>
         <AnimatePresence initial={false} mode="popLayout">

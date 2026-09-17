@@ -14,32 +14,33 @@ import {
 } from "framer-motion"
 import type { MapRef } from "@nolli/map"
 import type { ArchSummary } from "@/lib/landing-data"
-import { useSpineMap } from "@/spine/spine"
+import { useSceneScroll, useSpineMap } from "@/spine/spine"
 import styles from "./hero-reveal.module.css"
 
-const PLATE = { w: 480, h: 280 }
+/** The plate's rest dimensions — also the hero CTA pane's fixed size. */
+export const PLATE = { w: 480, h: 280 }
 
 /** Plate size at a viewport width — full size on wide screens, shrinking
  * with narrow ones so the plate always keeps roam room inside its bounds
- * (at rest size it would pin centred and stop moving). The hero's CTA
- * pane keeps this exact size. */
+ * (at rest size it would pin centred and stop moving). */
 export function plateSize(innerWidth: number) {
   const w = Math.min(PLATE.w, Math.max(240, innerWidth - 96))
   return { w, h: Math.round((w * PLATE.h) / PLATE.w) }
 }
 
-export function usePlateSize() {
-  const [plate, setPlate] = useState(() => plateSize(window.innerWidth))
-  useEffect(() => {
-    const onResize = () =>
-      setPlate((p) => {
-        const n = plateSize(window.innerWidth)
-        return n.w === p.w ? p : n
-      })
-    window.addEventListener("resize", onResize)
-    return () => window.removeEventListener("resize", onResize)
-  }, [])
-  return plate
+const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2)
+
+/** True on coarse pointers (touch) — no proxy cursor exists there. */
+const coarsePointer = () => window.matchMedia("(pointer: coarse)").matches
+
+/** Plate size grown by scroll progress: rest plate → full viewport. */
+function grownSize(p: number) {
+  const rest = plateSize(window.innerWidth)
+  const e = easeInOut(p)
+  return {
+    w: rest.w + (window.innerWidth - rest.w) * e,
+    h: rest.h + (window.innerHeight - rest.h) * e,
+  }
 }
 
 /** Inert class applied to every photo marker the hero mounts — the clip
@@ -59,7 +60,7 @@ export function useCursorSprings() {
   useEffect(() => {
     // coarse pointers (touch): no proxy cursor — the plate stays idle; a
     // mouse keeps driving it at any window size, mobile tree included
-    if (window.matchMedia("(pointer: coarse)").matches) return
+    if (coarsePointer()) return
     const onMove = (e: PointerEvent) => {
       sx.set(e.clientX)
       sy.set(e.clientY)
@@ -70,36 +71,40 @@ export function useCursorSprings() {
   return { sx, sy }
 }
 
-/** Plate rect in viewport px, fully clamped inside the bounds element.
- * `rect` is the ROOT box — every offset the frame writes is root-local,
- * while the clamp keeps the plate inside the bounds pane. */
+/** Plate rect in viewport px, fully clamped inside the bounds rect. `root`
+ * is the ROOT box — every offset the frame writes is root-local, while
+ * the clamp keeps the plate inside the bounds pane. `cx`/`cy` are the
+ * wanted plate centre in viewport px (cursor springs, or the bounds'
+ * centre when there is no proxy cursor). */
 function plateRect(
-  bounds: HTMLElement,
+  b: DOMRect,
   root: HTMLElement,
-  sx: MotionValue<number>,
-  sy: MotionValue<number>,
+  cx: number,
+  cy: number,
   size: { w: number; h: number },
 ) {
-  const b = bounds.getBoundingClientRect()
   const r = root.getBoundingClientRect()
   const clampAxis = (v: number, start: number, end: number, size: number) =>
     end - start >= size
       ? Math.min(Math.max(v, start + size / 2), end - size / 2)
       : (start + end) / 2
-  const cx = clampAxis(sx.get(), b.left, b.right, size.w)
-  const cy = clampAxis(sy.get(), b.top, b.bottom, size.h)
+  const x = clampAxis(cx, b.left, b.right, size.w)
+  const y = clampAxis(cy, b.top, b.bottom, size.h)
   return {
-    left: cx - size.w / 2,
-    right: cx + size.w / 2,
-    top: cy - size.h / 2,
-    bottom: cy + size.h / 2,
+    left: x - size.w / 2,
+    right: x + size.w / 2,
+    top: y - size.h / 2,
+    bottom: y + size.h / 2,
     rect: r,
   }
 }
 
 /** Clip a photo-marker content div to the plate rect (px viewport coords).
- * Markers fully outside get collapsed; OVERHANG lets the card bleed a
- * little past the plate edge while sliding in/out. */
+ * The clip is a pure function of the hole: markers fully outside get
+ * collapsed, straddling ones crop to the hole (OVERHANG lets the card
+ * bleed a little past the edge while sliding in/out), and markers fully
+ * inside carry no clip at all — so a hole that covers the screen clears
+ * every clip on its last frame, no separate cleanup pass needed. */
 function clipToPlate(el: HTMLElement, p: { left: number; top: number; right: number; bottom: number }) {
   const root = el.parentElement!
   const box = root.getBoundingClientRect()
@@ -116,7 +121,10 @@ function clipToPlate(el: HTMLElement, p: { left: number; top: number; right: num
   const cl = Math.max(p.left - box.left, -OVERHANG.left)
   const cr = Math.max(box.right - p.right, -OVERHANG.right)
   const cb = Math.max(box.bottom - p.bottom, -OVERHANG.bottom)
-  el.style.clipPath = `inset(${ct}px ${cr}px ${cb}px ${cl}px)`
+  el.style.clipPath =
+    ct <= 0 && cl <= 0 && cr <= 0 && cb <= 0
+      ? ""
+      : `inset(${ct}px ${cr}px ${cb}px ${cl}px)`
 }
 
 /** Veil + plate + furniture over the spine map, plus the marker clip driver
@@ -126,7 +134,11 @@ function clipToPlate(el: HTMLElement, p: { left: number; top: number; right: num
  * Renders in the hero scene's tree (first child of the sticky hero
  * section): pinned during the hold, riding up with the page once the
  * section releases. The plate roams `boundsRef` if given (a pane), else
- * the root. Reduced motion renders nothing — markers show unclipped. */
+ * the root; on coarse pointers it sits at the bounds' centre instead.
+ * With a `growVh` runway, the plate size grows with scene scroll until
+ * the hole covers the whole map — then the reveal unmounts; the last
+ * frame's clips already resolved to "none" since every marker sits inside
+ * the hole. Reduced motion renders nothing — markers show unclipped. */
 export function CursorReveal({
   boundsRef,
   sx,
@@ -134,6 +146,7 @@ export function CursorReveal({
   tagTl = "Architecture",
   tagTr,
   on = true,
+  growVh,
 }: {
   boundsRef?: RefObject<HTMLDivElement | null>
   sx: MotionValue<number>
@@ -145,36 +158,54 @@ export function CursorReveal({
    * and accessories fade in. The veil itself is bg-colored from frame one —
    * the map fades in under it, the hole stays covered until this flips. */
   on?: boolean
+  /** Scene-local scroll runway (vh) over which the plate grows to cover
+   * the map. Omit for the static roving plate. */
+  growVh?: number
 }) {
   const reduced = useReducedMotion()
   const snap = !!reduced
   const map = useSpineMap()
-  const plate = usePlateSize()
+  const local = useSceneScroll()
+  const coarse = useRef(coarsePointer()).current
   const rootRef = useRef<HTMLDivElement | null>(null)
   const coordsRef = useRef<HTMLSpanElement>(null)
+  const [done, setDone] = useState(false)
 
   useEffect(() => {
     if (snap) return
-    const root = rootRef.current
-    if (!root) return
     let raf = 0
 
     const frame = () => {
       raf = 0
-      const bounds = boundsRef?.current ?? root
-      if (!bounds) return
-      const p = plateRect(bounds, root, sx, sy, plate)
-      const ox = p.left - p.rect.left
-      const oy = p.top - p.rect.top
+      // grow progress first — before any root bail, so scrolling back up
+      // re-mounts the veil
+      const p = growVh ? Math.min(Math.max(local.get() / growVh, 0), 1) : 1
+      setDone(growVh ? p >= 1 : false)
+      // re-read each frame: after a scroll-back remount a captured root
+      // would be a detached node
+      const root = rootRef.current
+      if (!root) return
+      const b = (boundsRef?.current ?? root).getBoundingClientRect()
+      // no proxy cursor on touch: the plate rests at the bounds' centre
+      const size = grownSize(p)
+      const cx = coarse ? b.left + b.width / 2 : sx.get()
+      const cy = coarse ? b.top + b.height / 2 : sy.get()
+      const pr = plateRect(b, root, cx, cy, size)
+      const ox = pr.left - pr.rect.left
+      const oy = pr.top - pr.rect.top
 
-      // veil hole + plate/furniture position
+      // veil hole + plate/furniture position + size (all frame-owned)
       root.style.setProperty("--pl", `${ox}px`)
       root.style.setProperty("--pt", `${oy}px`)
-      root.style.setProperty("--pr", `${p.right - p.rect.left}px`)
-      root.style.setProperty("--pb", `${p.bottom - p.rect.top}px`)
+      root.style.setProperty("--pr", `${pr.right - pr.rect.left}px`)
+      root.style.setProperty("--pb", `${pr.bottom - pr.rect.top}px`)
       const setTf = (sel: string, x: number, y: number) => {
         const el = root.querySelector<HTMLElement>(sel)
-        if (el) el.style.transform = `translate(${x}px, ${y}px)`
+        if (el) {
+          el.style.transform = `translate(${x}px, ${y}px)`
+          el.style.width = `${size.w}px`
+          el.style.height = `${size.h}px`
+        }
       }
       setTf("#" + styles["hero-plate"], ox, oy)
       setTf("#" + styles["hero-reveal-furniture"], ox, oy)
@@ -185,13 +216,13 @@ export function CursorReveal({
         if (el) el.style[prop] = `${v}px`
       }
       setPx("#hero-cxvl", "left", ox)
-      setPx("#hero-cxvr", "left", p.right - p.rect.left)
+      setPx("#hero-cxvr", "left", pr.right - pr.rect.left)
       setPx("#hero-cxht", "top", oy)
-      setPx("#hero-cxhb", "top", p.bottom - p.rect.top)
+      setPx("#hero-cxhb", "top", pr.bottom - pr.rect.top)
 
       // coords readout — plate-centre lat/lng straight to the DOM
       if (map && coordsRef.current) {
-        const c = map.unproject([(p.left + p.right) / 2, (p.top + p.bottom) / 2])
+        const c = map.unproject([(pr.left + pr.right) / 2, (pr.top + pr.bottom) / 2])
         coordsRef.current.textContent = `${Math.abs(c.lat).toFixed(4)}° ${c.lat >= 0 ? "N" : "S"}  ${Math.abs(c.lng).toFixed(4)}° ${c.lng >= 0 ? "E" : "W"}`
       }
 
@@ -208,7 +239,7 @@ export function CursorReveal({
             (el): el is HTMLElement =>
               !!el && el.classList.contains(HERO_MARKER_CLASS) && el.isConnected,
           )
-        for (const el of contents) clipToPlate(el, p)
+        for (const el of contents) clipToPlate(el, pr)
       }
     }
     const schedule = () => {
@@ -216,6 +247,7 @@ export function CursorReveal({
     }
     const u1 = sx.on("change", schedule)
     const u2 = sy.on("change", schedule)
+    const u3 = local.on("change", schedule)
     // markers mount when their scene flips them on (PhotoMarkers lingers
     // in on the reveal) — a fresh marker carries no clip until a frame
     // runs, which otherwise waits for the first pointer move. Watch for
@@ -232,15 +264,16 @@ export function CursorReveal({
     return () => {
       u1()
       u2()
+      u3()
       mo?.disconnect()
       if (map) map.off("move", schedule)
       window.removeEventListener("scroll", schedule)
       window.removeEventListener("resize", schedule)
       if (raf) cancelAnimationFrame(raf)
     }
-  }, [snap, map, boundsRef, sx, sy, plate, on])
+  }, [snap, map, boundsRef, sx, sy, local, growVh, on])
 
-  if (snap) return null
+  if (snap || done) return null
   return (
     <div ref={rootRef} className={styles.root} data-on={on ? "" : undefined}>
       <div className={styles.veil} aria-hidden />
@@ -248,12 +281,12 @@ export function CursorReveal({
       <span id={"hero-cxvr"} className={`${styles.cx} ${styles.cxV}`} aria-hidden />
       <span id={"hero-cxht"} className={`${styles.cx} ${styles.cxH}`} aria-hidden />
       <span id={"hero-cxhb"} className={`${styles.cx} ${styles.cxH}`} aria-hidden />
-      <div id={styles["hero-plate"]} style={{ width: plate.w, height: plate.h }}>
+      <div id={styles["hero-plate"]}>
         <span className={`${styles.frame} ${styles.tagTl}`}>{tagTl}</span>
         {tagTr && <span className={`${styles.frame} ${styles.tagTr}`}>{tagTr}</span>}
         <span className={`${styles.frame} ${styles.dot}`} />
       </div>
-      <div id={styles["hero-reveal-furniture"]} style={{ width: plate.w, height: plate.h }}>
+      <div id={styles["hero-reveal-furniture"]}>
         <span className={`${styles.frame} ${styles.north}`}>N ↑</span>
         <span ref={coordsRef} className={`${styles.frame} ${styles.coords}`} />
       </div>
