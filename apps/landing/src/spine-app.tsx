@@ -5,10 +5,10 @@ import { BootFade, useBootPhase } from "@/lib/boot"
 import { Spine } from "@/spine/spine"
 import type { SpineScene } from "@/spine/timeline"
 import { heroCamera, heroHold } from "@/scenes/hero"
-import { cityHold, heroCityTransition } from "@/scenes/city-ledger"
-import { architectHold, cityArchitectTransition } from "@/scenes/architect-ledger"
-import { statsHold, architectStatsTransition } from "@/scenes/stats"
-import { statsFullTransition, footerHold } from "@/scenes/footer"
+import { cityHold } from "@/scenes/city-ledger"
+import { architectHold } from "@/scenes/architect-ledger"
+import { statsHold } from "@/scenes/stats"
+import { footerHold } from "@/scenes/footer"
 import { ScrollThumb } from "@/components/scroll-thumb"
 import { SiteHeader } from "@/components/site-header"
 
@@ -16,13 +16,9 @@ export function SpineApp() {
   const scenes = useMemo<SpineScene[]>(
     () => [
       heroHold(landingData),
-      heroCityTransition(),
       cityHold(landingData),
-      cityArchitectTransition(),
       architectHold(landingData),
-      architectStatsTransition(),
       statsHold(landingData),
-      statsFullTransition(),
       footerHold(landingData),
     ],
     [],

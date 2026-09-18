@@ -23,6 +23,8 @@ export type LandingJson = {
   /** Whole-collection count; `all` is a curated subset */
   buildingCount: number
   countryCounts: { code: string; count: number }[]
+  /** Whole-collection count per city name — powers the hero's city count */
+  cityCounts: Record<string, number>
 }
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -102,7 +104,7 @@ const wantedSlugs = [
 async function main(): Promise<void> {
   // Same queries as packages/data sqlite-queries, adjusted for Postgres:
   // is_cover is boolean; explicit ORDER BY keeps output deterministic.
-  const [architects, cities, summaryRows, countRows, buildingCount] = await Promise.all([
+  const [architects, cities, summaryRows, countRows, buildingCount, cityCountRows] = await Promise.all([
     sql<{ id: number; name: string }[]>`
       SELECT id, name FROM architects ORDER BY name
     `,
@@ -135,6 +137,13 @@ async function main(): Promise<void> {
       ORDER BY c.code
     `,
     sql<{ count: string | number }>`SELECT COUNT(*) AS count FROM architectures`,
+    sql<{ name: string; count: string | number }[]>`
+      SELECT ci.name, COUNT(*) AS count
+      FROM architectures a
+      JOIN cities ci ON a.city_id = ci.id
+      GROUP BY ci.name
+      ORDER BY ci.name
+    `,
   ])
 
   const all = summaryRows.map(mapSummaryRow)
@@ -142,6 +151,9 @@ async function main(): Promise<void> {
     code: r.code,
     count: Number(r.count),
   }))
+  const cityCounts = Object.fromEntries(
+    cityCountRows.map((r) => [r.name, Number(r.count)]),
+  )
 
   const missing = wantedSlugs.filter(
     (slug) => !all.some((a) => a.slug === slug),
@@ -158,6 +170,7 @@ async function main(): Promise<void> {
     all,
     buildingCount: Number(buildingCount[0].count),
     countryCounts,
+    cityCounts,
   }
 
   await mkdir(dirname(OUT_PATH), { recursive: true })

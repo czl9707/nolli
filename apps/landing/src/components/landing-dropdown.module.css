@@ -1,0 +1,28 @@
+/* LandingDropdown — the menu keeps the uniform button look: a paper
+   ground under a hairline, plain items ARE ghost LandingButtons (pane-
+   filled, left-aligned rows; radix's data-highlighted arms the ghost
+   state), stacked edge to edge with hairline separators between groups. */
+
+.content {
+  background: rgb(var(--color-primary-background));
+  border: var(--border);
+  box-shadow: 0 10px 28px rgb(0 0 0 / 0.14);
+  padding: 0;
+  z-index: 40;
+}
+
+/* plain items are pane-mode LandingButtons — the menu rows they fill */
+.content [data-slot="landing-button"] {
+  justify-content: flex-start;
+  padding-left: var(--spacing-paragraph);
+}
+
+.label {
+  display: flex;
+  padding: .6rem 1rem 0;
+}
+
+.separator {
+  height: 0;
+  border-top: var(--border);
+}

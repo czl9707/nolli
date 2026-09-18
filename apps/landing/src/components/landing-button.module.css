@@ -1,0 +1,162 @@
+/* LandingButton — rest is a solid ground with the grass sheet showing
+   through at half strength; hover fades the ground to transparent while
+   the sheet stays. The button's own color drives label + bracket
+   together (currentColor). Sharp corners and hairlines follow the
+   spine's shape system.
+   Layer stack: ground = background-color, grass sheet = ::before,
+   bracket = ::after — children render on top of the sheet, under the
+   bracket. */
+
+.button {
+  box-sizing: border-box;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  padding: 0 1rem;
+  cursor: pointer;
+  text-decoration: none;
+  border: none;
+  white-space: nowrap;
+  pointer-events: auto;
+  /* the ground */
+
+  transition:
+    background-color var(--transition-instant) ease-out,
+    color var(--transition-instant) ease-out;
+}
+
+/* weak default height — zero specificity, so any consumer class (or the
+   pane fill below) overrides it without a specificity fight */
+:where(.button) {
+  height: 2.75rem;
+}
+
+/* pane mode — fill the ancestor Pane cell instead of sizing inline */
+.button[data-size="pane"] {
+  width: 100%;
+  height: 100%;
+}
+
+/* the grass sheet — above the ground, showing through at half strength
+   in both states */
+.button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+/* ── variants ────────────────────────────────────────────────────────── */
+
+.button[data-variant="accent"] {
+  background-color: rgb(var(--color-hero-foreground));
+  color: rgb(var(--color-hero-background));
+  
+  &::before {
+    background-image: var(--pattern-grass-oppo);
+    opacity: 0.4;
+  }
+
+  &:hover, &:focus-visible {
+    color: rgb(var(--color-hero-foreground));
+    background-color: rgb(var(--color-hero-foreground) / .1);
+
+    &::before {
+      background-image: var(--pattern-grass);
+      opacity: 0.4;
+    }
+  }
+}
+
+.button[data-variant="default"] {
+  background-color: rgb(var(--color-primary-foreground));
+  color: rgb(var(--color-primary-background));
+
+  &::before {
+    background-image: var(--pattern-grass);
+    opacity: 0.4;
+  }
+
+  &:hover, &:focus-visible {
+    background-color: rgb(var(--color-primary-foreground) / .1);
+    color: rgb(var(--color-primary-foreground));
+  }
+}
+
+/* ghost: no ground — the grass sheet rides the page itself; radix menu
+   navigation reports data-highlighted on the item (button via asChild),
+   so it arms the same way hover does */
+.button[data-variant="ghost"] {
+  background-color: transparent;
+  color: rgb(var(--color-primary-foreground) / 0.8);
+
+  &::before {
+    background-image: var(--pattern-grass);
+    opacity: 0.4;
+  }
+
+  &:hover, &:focus-visible, &[data-highlighted] {
+    background-color: rgb(var(--color-primary-foreground) / .15);
+    color: rgb(var(--color-primary-foreground));
+  }
+}
+
+.button:focus-visible {
+  outline: 1px solid rgb(var(--color-hero-foreground));
+  outline-offset: 2px;
+}
+
+/* ring hidden while the pointer hovers the button: closing a radix menu
+   returns focus to the trigger and, after keyboard navigation inside,
+   Chrome marks it :focus-visible — the explicit none also keeps the UA's
+   default ring (outline: auto) from showing through */
+.button:focus-visible:hover {
+  outline: none;
+}
+
+/* ── the bracket decoration ──────────────────────────────────────────── */
+/* rests as an L at the bottom-right corner; on hover (or while a radix
+   trigger reports data-state="open") it travels diagonally to the
+   top-left, its border sides crossfading as it moves */
+
+.buttonDecoration::after {
+  content: "";
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border: 2px solid transparent;
+  border-bottom-color: currentColor;
+  border-right-color: currentColor;
+  /* the 8px box's top-left corner: 6px off the bottom-right at rest */
+  top: calc(100% - 18px);
+  left: calc(100% - 18px);
+  transition:
+    top var(--transition-instant) ease-out,
+    left var(--transition-instant) ease-out,
+    border-color var(--transition-instant) ease-out,
+    opacity var(--transition-instant) ease-out;
+}
+
+.buttonDecoration:hover::after,
+.buttonDecoration:focus-visible::after,
+.buttonDecoration[data-state="open"]::after {
+  top: 6px;
+  left: 6px;
+  border-top-color: currentColor;
+  border-left-color: currentColor;
+  border-bottom-color: transparent;
+  border-right-color: transparent;
+}
+
+.buttonDecoration[data-state="open"]::after {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button,
+  .button::before,
+  .button::after {
+    transition: none !important;
+  }
+}

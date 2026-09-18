@@ -73,7 +73,12 @@ export function useBoot(): BootCtx {
 }
 
 function useBootSequence(mapReady: boolean): BootPhase {
-  const [phase, setPhase] = useState<BootPhase>("blank")
+  const [phase, setPhase] = useState<BootPhase>(() => {
+    // debug override: ?boot=<phase> starts the machine at that phase, so
+    // headless captures can see past the map-idle wait
+    const v = new URLSearchParams(window.location.search).get("boot")
+    return BOOT_PHASES.includes(v as BootPhase) ? (v as BootPhase) : "blank"
+  })
   const t0 = useRef(performance.now())
 
   useEffect(() => {

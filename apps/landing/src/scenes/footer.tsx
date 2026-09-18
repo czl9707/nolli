@@ -1,5 +1,5 @@
 import { siInstagram, siThreads, type SimpleIcon } from "simple-icons"
-import { Body1, Body3, Button, H3, H4, H6, Note, PaperPhoto } from "@nolli/ui"
+import { Body1, Body3, Button, H4, H6, Note, PaperPhoto } from "@nolli/ui"
 import {
   ABOUT_PATH,
   MAP_APP_URL,
@@ -8,11 +8,10 @@ import {
   TERMS_PATH,
   WORLD_CAMERA,
 } from "@/lib/constants"
-import { TRANSITION_LEAD_VH, type HoldScene, type SpineScene, type TransitionScene } from "@/spine/timeline"
+import type { HoldScene } from "@/spine/timeline"
 import type { ArchSummary, LandingData } from "@/lib/landing-data"
 import { useIsMobile } from "@nolli/ui"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
-import { MapTransition } from "./map-transition"
 import styles from "./footer.module.css"
 
 const LINK_GROUPS: Array<{
@@ -37,43 +36,25 @@ const LINK_GROUPS: Array<{
   },
 ]
 
-export function footerScenes(data: LandingData): SpineScene[] {
-  return [statsFullTransition(), footerHold(data)]
-}
-
-const SCENE_VH = 100;
-
-export function statsFullTransition(): TransitionScene {
-  return {
-    kind: "transition",
-    id: "stats-full",
-    fromShape: "[data-spine-shape='stats']",
-    toShape: "[data-spine-shape='footer']",
-    heightVh: 0
-  }
-}
+const SCENE_VH = 100
 
 export function footerHold(data: LandingData): HoldScene {
   return {
-    kind: "hold",
     id: "footer",
     shape: "[data-spine-shape='footer']",
     heightVh: SCENE_VH,
+    camera: WORLD_CAMERA,
     Component: () => <FooterScene data={data} />,
   }
 }
 
-
 function FooterScene({ data }: { data: LandingData }) {
   const mobile = useIsMobile()
   return (
-    <>
-      <MapTransition target={WORLD_CAMERA} untilVh={SCENE_VH - TRANSITION_LEAD_VH} />
-      <Screen className={`${styles.veil} ${styles.screen}`}>
-        <div className={styles.shape} data-spine-shape="footer" aria-hidden />
-        {mobile ? <FooterMobile data={data}/> : <FooterDesktop data={data} />}
-      </Screen>
-    </>
+    <Screen className={`${styles.veil} ${styles.screen}`}>
+      <div className={styles.shape} data-spine-shape="footer" aria-hidden />
+      {mobile ? <FooterMobile data={data}/> : <FooterDesktop data={data} />}
+    </Screen>
   )
 }
 

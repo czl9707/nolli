@@ -4,6 +4,8 @@
 body {
   --font-mono: "Red Hat Mono Variable", ui-monospace, monospace;
   --pattern-building: url("/patterns/light/building.png");
+  --pattern-grass: url("/patterns/light/grass.png");
+  --pattern-grass-oppo: url("/patterns/dark/grass.png");
 
   --color-hero-foreground: 227 182 77;
   --color-hero-background: 23 23 23;
@@ -22,10 +24,23 @@ body {
 
   /* cell roll easing — JS mirror ROLL_EASE in lib/constants */
   --ease-roll: cubic-bezier(0.22, 1, 0.36, 1);
+
+    
+  --grid-padding: max(
+    calc((100vw - var(--landing-plate-max)) / 2),
+    var(--spacing-group)
+  );
+  --grid-col: calc((100vw - 2 * var(--grid-padding)) / 12);
+
+  @media (--smaller-than-sm) {
+    --grid-padding: var(--spacing-paragraph);
+  }
 }
 
 body[data-theme="dark"] {
   --pattern-building: url("/patterns/dark/building.png");
+  --pattern-grass: url("/patterns/dark/grass.png");
+  --pattern-grass-oppo: url("/patterns/light/grass.png");
 }
 
 html,

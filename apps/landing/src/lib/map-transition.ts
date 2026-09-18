@@ -1,31 +1,20 @@
-import { animate } from "framer-motion"
 import type MapLibreGL from "maplibre-gl"
-import { flyToSceneCinematic, type SceneCamera } from "@nolli/map"
+import { type SceneCamera } from "@nolli/map"
 
-export type TransitionMode = "fly" | "snapshot"
-
-/** close enough to glide: centers within this fraction of the viewport's
- *  min side and under this much zoom change */
-const NEAR_MAX_ZOOM_DELTA = 5
-const NEAR_MAX_SCREEN_FRACTION = 1
+/** Every scene transition runs the jump flow, sequenced with the spine's
+ * shape morph: freeze the old view as an image, blur it up (css
+ * transition, over the morph window's start), hold the blurred frame
+ * while the layer morphs to the next pane (SNAPSHOT_SHAPE_MS — the frame
+ * rides the layer, so the morph reads as the blurred map reshaping), then
+ * jump, let tiles load unseen, and fade the frame out to the settled
+ * map. */
+export const SNAPSHOT_SHAPE_MS = 500
 
 const BLUR_PX = 24
 const VEIL_PAD_PX = BLUR_PX * 5
 const BLUR_UP_S = 0.15
 const DISSOLVE_S = 0.15
 const IDLE_TIMEOUT_MS = 1000
-
-/** Mode for a transition, from the target's screen-space distance to the
- *  current view center and its zoom delta. Pure — the caller measures. */
-export function transitionMode(screenPx: number, minSidePx: number, zoomDelta: number): TransitionMode {
-  if (Math.abs(zoomDelta) > NEAR_MAX_ZOOM_DELTA) return "snapshot"
-  if (screenPx > minSidePx * NEAR_MAX_SCREEN_FRACTION) return "snapshot"
-  return "fly"
-}
-
-/** one transition at a time — a second fire while one runs just lands
- *  instantly; jumpTo can't mis-land, so latest intent is already on screen */
-let busy = false
 
 function onceIdle(map: MapLibreGL.Map, timeoutMs: number): Promise<void> {
   return new Promise((resolve) => {
@@ -43,9 +32,9 @@ function onceIdle(map: MapLibreGL.Map, timeoutMs: number): Promise<void> {
 }
 
 /** Snapshot the canvas mirror-extended into a wide padding so the blur
- *  kernel only ever samples real map content (see VEIL_PAD_PX). The
- *  visible interior stays pixel-exact against the live map. Needs the
- *  map created with preserveDrawingBuffer. */
+ * kernel only ever samples real map content (see VEIL_PAD_PX). The
+ * visible interior stays pixel-exact against the live map. Needs the
+ * map created with preserveDrawingBuffer. */
 function paddedSnapshot(canvas: HTMLCanvasElement): string {
   const dpr = window.devicePixelRatio || 1
   const p = Math.round(VEIL_PAD_PX * dpr)
@@ -72,48 +61,52 @@ function paddedSnapshot(canvas: HTMLCanvasElement): string {
   return out.toDataURL()
 }
 
-/** Far transition: freeze the old view as an image, blur it up, jump +
- *  load tiles unseen, then dissolve the frozen frame away to the settled
- *  map (pure fade at held blur — a blur ramp-down would show the tiles
- *  loading through it). */
-async function snapshotTransition(map: MapLibreGL.Map, cam: SceneCamera): Promise<void> {
-  const img = document.createElement("img")
-  img.src = paddedSnapshot(map.getCanvas())
-  Object.assign(img.style, {
-    position: "absolute",
-    left: `${-VEIL_PAD_PX}px`, top: `${-VEIL_PAD_PX}px`,
-    width: `calc(100% + ${2 * VEIL_PAD_PX}px)`, height: `calc(100% + ${2 * VEIL_PAD_PX}px)`,
-    objectFit: "cover",
-    // above scene markers too (they sit at z up to 100000) — the veil
-    // covers the whole departing view
-    zIndex: "2147483000", pointerEvents: "none",
-  })
-  map.getContainer().appendChild(img)
+// One veil at a time. `gen` supersedes: a fire while a sequence is mid-run
+// re-targets the jump instead of letting the old sequence jump to a stale
+// destination afterwards; the current generation owns the veil and its
+// removal.
+let gen = 0
+let veil: HTMLImageElement | null = null
+
+async function snapshotTransition(map: MapLibreGL.Map, cam: SceneCamera, myGen: number): Promise<void> {
+  const stale = () => myGen !== gen
   try {
-    await animate(img, { filter: `blur(${BLUR_PX}px)` }, { duration: BLUR_UP_S })
+    if (!veil) {
+      veil = document.createElement("img")
+      Object.assign(veil.style, {
+        position: "absolute",
+        left: `${-VEIL_PAD_PX}px`, top: `${-VEIL_PAD_PX}px`,
+        width: `calc(100% + ${2 * VEIL_PAD_PX}px)`, height: `calc(100% + ${2 * VEIL_PAD_PX}px)`,
+        objectFit: "cover",
+        // above scene markers too (they sit at z up to 100000) — the veil
+        // covers the whole departing view
+        zIndex: "2147483000", pointerEvents: "none",
+        transition: `filter ${BLUR_UP_S}s ease-out, opacity ${DISSOLVE_S}s ease-out`,
+      })
+      veil.src = paddedSnapshot(map.getCanvas())
+      map.getContainer().appendChild(veil)
+      // force style resolution so the blur-up transition runs from none
+      veil.getBoundingClientRect()
+      veil.style.filter = `blur(${BLUR_PX}px)`
+    }
+    await new Promise((r) => setTimeout(r, SNAPSHOT_SHAPE_MS))
+    if (stale()) return
     map.jumpTo({ center: cam.center, zoom: cam.zoom })
     await onceIdle(map, IDLE_TIMEOUT_MS)
-    await animate(img, { opacity: 0 }, { duration: DISSOLVE_S })
+    if (stale()) return
+    veil.style.opacity = "0"
+    await new Promise((r) => setTimeout(r, DISSOLVE_S * 1000))
   } finally {
-    img.remove()
+    if (!stale() && veil) {
+      veil.remove()
+      veil = null
+    }
   }
 }
 
-/** Run the scene transition the camera distance calls for. */
+/** Run the transition; the camera jump lands exactly when the spine's
+ * shape morph (SNAPSHOT_SHAPE_MS) completes. */
 export function applyMapTransition(map: MapLibreGL.Map, cam: SceneCamera): void {
-  const target = map.project(cam.center)
-  const { clientWidth, clientHeight } = map.getContainer()
-  const dx = target.x - clientWidth / 2
-  const dy = target.y - clientHeight / 2
-  const mode = transitionMode(Math.hypot(dx, dy), Math.min(clientWidth, clientHeight), cam.zoom - map.getZoom())
-  if (mode === "fly") {
-    flyToSceneCinematic(map, cam)
-    return
-  }
-  if (busy) {
-    map.jumpTo({ center: cam.center, zoom: cam.zoom })
-    return
-  }
-  busy = true
-  snapshotTransition(map, cam).finally(() => { busy = false })
+  gen++
+  snapshotTransition(map, cam, gen)
 }

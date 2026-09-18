@@ -11,12 +11,11 @@ import type { ArchSummary } from "@/lib/landing-data"
 import { type SceneCamera } from "@nolli/map"
 import { MAP_APP_URL, ROLL_EASE } from "@/lib/constants"
 import { useWhereami } from "@/lib/whereami"
-import { TRANSITION_LEAD_VH, type HoldScene, type TransitionScene } from "@/spine/timeline"
+import type { HoldScene } from "@/spine/timeline"
 import type { CollectionStats, LandingData } from "@/lib/landing-data"
 import { useIsMobile } from "@nolli/ui"
 import { ArrowUpRight } from "lucide-react"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
-import { MapTransition } from "./map-transition"
 import styles from "./stats.module.css"
 
 const SCENE_ID = "stats"
@@ -37,10 +36,10 @@ const COUNTRY_BADGES = [
 ]
 
 export const statsHold = (data: LandingData): HoldScene => ({
-  kind: "hold",
   id: SCENE_ID,
   shape: "[data-spine-shape='stats']",
   heightVh: SCENE_VH,
+  camera: WORLD,
   Component: () => (
     <StatsScene
       stats={data.stats}
@@ -48,17 +47,6 @@ export const statsHold = (data: LandingData): HoldScene => ({
       architectNames={data.architectLedger.map((e) => e.name)}
     />
   ),
-})
-
-// Architect → stats morph: the spine interpolates the map shape; no
-// overlay of its own.
-export const architectStatsTransition = (): TransitionScene => ({
-  kind: "transition",
-  id: "architect-stats",
-  fromShape: "[data-spine-shape='architect']",
-  toShape: "[data-spine-shape='stats']",
-  heightVh: 20,
-  Component: () => <div className={styles.veil} aria-hidden />,
 })
 
 type StatsProps = {
@@ -82,9 +70,8 @@ function StatsMobile({ stats, photoPool, architectNames }: StatsProps) {
         <Pane size="calc(var(--size-header-height) + 3svh)"/>
         <Pane>
           <div className={styles.shape} aria-hidden data-spine-shape="stats" />
-          <MapTransition sceneId={SCENE_ID} untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={WORLD} />
           <HSplit>
-            <Pane className={`${styles.statementPane} ${styles.cell}`} size="35svh">
+            <Pane className={`${styles.statementPane} ${styles.cell}`} size="35svh" blurred>
               <H2 className={styles.statementText}>
                 A Map. A Collection.
                 <br />
@@ -97,21 +84,21 @@ function StatsMobile({ stats, photoPool, architectNames }: StatsProps) {
               />
               <PhotoStack archs={photoPool} />
             </Pane>
-            <Pane size="17svh" className={styles.cell}>
+            <Pane size="17svh" className={styles.cell} blurred>
               <NumberBlock
                 value={stats.architects} label="Designed by" delay={0.15} size="m"
                 sub="Architects"
               />
               <BadgeRows items={architectNames} />
             </Pane>
-            <Pane size="17svh" className={styles.cell}>
+            <Pane size="17svh" className={styles.cell} blurred>
               <NumberBlock
                 value={stats.countries} label="Located across" delay={0.3} size="m"
                 sub="Countries"
               />
               <BadgeRows items={COUNTRY_BADGES} />
             </Pane>
-            <Pane size="17svh" className={styles.cell}>
+            <Pane size="17svh" className={styles.cell} blurred>
               <WhereCta>
                 <WhereBlock stats={stats} />
               </WhereCta>
@@ -136,9 +123,8 @@ function StatsDesktop({ stats, photoPool, architectNames }: StatsProps) {
             <Pane>
               <HSplit>
                 <Pane>
-                  <MapTransition sceneId={SCENE_ID} untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={WORLD} />
                   <HSplit>
-                    <Pane className={`${styles.statementPane} ${styles.cell}`}>
+                    <Pane blurred className={`${styles.statementPane} ${styles.cell}`}>
                       <H2 className={styles.statementText}>
                         A Map. A Collection.
                         <br />
@@ -153,21 +139,21 @@ function StatsDesktop({ stats, photoPool, architectNames }: StatsProps) {
                     </Pane>
                     <Pane size="40%">
                       <VSplit>
-                        <Pane size={`calc(var(--grid-col) * 4)`} className={styles.cell}>
+                        <Pane size={`calc(var(--grid-col) * 4)`} className={styles.cell} blurred>
                           <NumberBlock
                             value={stats.architects} label="Designed by" delay={0.15} size="m"
                             sub="Architects"
                           />
                           <BadgeRows items={architectNames} />
                         </Pane>
-                        <Pane size={`calc(var(--grid-col) * 4)`} className={styles.cell}>
+                        <Pane size={`calc(var(--grid-col) * 4)`} className={styles.cell} blurred>
                           <NumberBlock
                             value={stats.countries} label="Located across" delay={0.3} size="m"
                             sub="Countries"
                           />
                           <BadgeRows items={COUNTRY_BADGES} />
                         </Pane>
-                        <Pane size={`calc(var(--grid-col) * 4)`} className={styles.cell}>
+                        <Pane size={`calc(var(--grid-col) * 4)`} className={styles.cell} blurred>
                           <WhereCta>
                             <WhereBlock stats={stats} />
                           </WhereCta>

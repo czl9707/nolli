@@ -66,6 +66,7 @@ export const VSplit = forwardRef<HTMLDivElement, { children: ReactNode; classNam
 export function Pane({
   size,
   filled,
+  blurred,
   className,
   children,
 }: {
@@ -74,13 +75,15 @@ export function Pane({
   size?: string
   /** Tile the pane with the building pattern (map fill texture). */
   filled?: boolean
+  /** Frost whatever sits behind the pane (the map layer). */
+  blurred?: boolean
   className?: string
   children?: ReactNode
 }) {
   const fill = size === undefined
   return (
     <div
-      className={[styles.pane, fill ? styles.paneFill : "", className]
+      className={[styles.pane, fill ? styles.paneFill : "", blurred ? styles.paneBlurred : "", className]
         .filter(Boolean)
         .join(" ")}
       style={{ flexBasis: size }}

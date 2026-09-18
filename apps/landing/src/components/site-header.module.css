@@ -1,26 +1,20 @@
-/* Site header (prototype winner header-A "Topline"). Full-width frosted
-   strip over the map (translucent fill + backdrop blur + 1px bottom rule)
-   so the same ink reads over every scene. CTA is the app's Button. */
+/* Site header — a row of grid panes on a frosted strip (translucent fill +
+   backdrop blur + 1px bottom rule) so the same ink reads over every
+   scene; the pane splits draw the vertical hairlines. */
 
 .bar {
   position: sticky;
   top: 0;
   z-index: 20;
+  height: var(--size-header-height);
   pointer-events: none;
-  color: rgb(var(--color-primary-foreground));
-  background: rgb(var(--color-primary-background) / 0.75);
-  backdrop-filter: blur(14px);
   border-bottom: var(--border);
 }
 
-.row {
-  position: relative;
+.brandPane {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  height: var(--size-header-height);
   padding-left: var(--spacing-component);
-  padding-right: var(--spacing-component);
 }
 
 .brand {
@@ -39,23 +33,11 @@
   font-size: 1.25rem;
 }
 
-.right {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-component);
-  pointer-events: auto;
+.dropdownConent {
+  width: calc(var(--grid-col) * 4);
 }
 
-.links {
-  display: flex;
-  gap: var(--spacing-paragraph);
-}
-
-.links a {
-  color: rgb(var(--color-primary-foreground) / 0.75);
-  text-decoration: none;
-}
-
-.links a:hover {
-  color: rgb(var(--color-primary-foreground));
+.dropdownItem {
+  height: var(--size-header-height);
+  width: calc(var(--grid-col) * 4);
 }

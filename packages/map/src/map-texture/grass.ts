@@ -9,6 +9,12 @@ export function grassPattern(_theme: Theme): string {
         <feDistantLight azimuth="3" elevation="100"/>
       </feSpecularLighting>
       <feColorMatrix type="saturate" values="0" x="0%" y="0%" width="100%" height="100%" in="specularLighting" result="colormatrix"/>
+      <feComponentTransfer in="colormatrix">
+        <feFuncR type="table" tableValues="0 0"/>
+        <feFuncG type="table" tableValues="0 0"/>
+        <feFuncB type="table" tableValues="0 0"/>
+        <feFuncA type="table" tableValues="0 .5"/>
+      </feComponentTransfer>
     </filter>
   </defs>
   <rect width="256" height="256" fill="#ff0000" filter="url(#nnnoise-filter)"/>

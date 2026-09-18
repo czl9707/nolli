@@ -7,14 +7,13 @@ import { useEffect, useRef, useState, type ReactNode } from "react"
 import { useMotionValueEvent } from "framer-motion"
 import { H2 } from "@nolli/ui"
 import type { SceneCamera } from "@nolli/map"
-import { useSceneScroll, useSpineMap } from "@/spine/spine"
+import { useSceneOwnsMap, useSceneScroll, useSpineMap } from "@/spine/spine"
 import { useIsMobile } from "@nolli/ui"
 import { useLinger } from "@/lib/use-linger"
-import { TRANSITION_LEAD_VH, type HoldScene, type TransitionScene } from "@/spine/timeline"
+import type { HoldScene } from "@/spine/timeline"
 import type { ArchEntry, LandingData } from "@/lib/landing-data"
 import { ArchImageMarkers } from "@/components/arch-markers"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
-import { MapTransition } from "./map-transition"
 import { RollButton } from "@/components/roll-button"
 import { RollText } from "@/components/roll-text"
 import styles from "./architect-ledger.module.css"
@@ -28,30 +27,11 @@ const VEIL_VISIBLE_VH = SCENE_VH - 80
 const WORLD: SceneCamera = { center: [12, 25], zoom: 1.05 }
 
 export const architectHold = (data: LandingData): HoldScene => ({
-  kind: "hold",
   id: SCENE_ID,
   shape: "[data-spine-shape='architect']",
   heightVh: SCENE_VH,
+  camera: WORLD,
   Component: () => <ArchitectLedger entries={data.architectLedger} />,
-})
-
-// City → architect morph: the spine interpolates the map shape; no
-// overlay of its own.
-export const cityArchitectTransition = (): TransitionScene => ({
-  kind: "transition",
-  id: "city-architect",
-  fromShape: "[data-spine-shape='city']",
-  toShape: "[data-spine-shape='architect']",
-  heightVh: 20,
-  Component: () => {
-    return <Screen style={{ height: "20svh" }}>
-      <VSplit>
-        <Pane size="var(--grid-padding)" filled/>
-        <Pane />
-        <Pane size="var(--grid-padding)" filled/>
-      </VSplit>
-    </Screen>
-  }
 })
 
 /** Shared architect state + the router between the two trees. Selection,
@@ -63,12 +43,19 @@ function ArchitectLedger({ entries }: { entries: ArchEntry[] }) {
   const [selected, setSelected] = useState(entries[0]?.name ?? "")
   const selectedEntry = entries.find((e) => e.name === selected) ?? entries[0]
 
-  // markers own the map band across the same window the flight parks in
+  const ownsMap = useSceneOwnsMap()
+  // markers own the map band across the same window the flight parks in —
+  // and only while the scene owns the map (fade at the fire edge)
   const [markersOn, setMarkersOn] = useState(() => {
     const v = local.get()
-    return v >= 0 && v < VEIL_VISIBLE_VH
+    return ownsMap && v >= 0 && v < VEIL_VISIBLE_VH
   })
-  useMotionValueEvent(local, "change", (v) => setMarkersOn(v >= 0 && v < VEIL_VISIBLE_VH))
+  useMotionValueEvent(local, "change", (v) => setMarkersOn(ownsMap && v >= 0 && v < VEIL_VISIBLE_VH))
+  // ownership can flip without a scroll change after it (deep-link load)
+  useEffect(() => {
+    const v = local.get()
+    setMarkersOn(ownsMap && v >= 0 && v < VEIL_VISIBLE_VH)
+  }, [ownsMap, local])
 
   const rows: ArchEntry[][] = []
   const perRow = Math.ceil(entries.length / 2)
@@ -108,7 +95,6 @@ function ArchitectLedger({ entries }: { entries: ArchEntry[] }) {
   ))
   
   return <>
-    <MapTransition sceneId={SCENE_ID} untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={WORLD} />
     <MapVeil on={markersOn} />
     <ArchImageMarkers entries={entries} selectedId={selectedEntry?.id ?? -1} on={markersOn} />
     {

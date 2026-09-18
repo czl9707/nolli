@@ -116,13 +116,8 @@
   left: 0;
   top: 0;
   border-radius: var(--size-border-radius);
-  backdrop-filter: brightness(1) saturate(1);
   transition: backdrop-filter var(--transition-short) ease-out;
   z-index: 100000;
-
-  .root[data-on] & {
-    backdrop-filter: brightness(1.14) saturate(1.06);
-  }
 }
 
 #hero-plate .frame,

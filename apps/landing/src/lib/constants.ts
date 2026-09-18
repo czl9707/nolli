@@ -162,4 +162,4 @@ export const WORLD_CAMERA: SceneCamera = { center: [10, 25], zoom: 1.5 }
 /** Hero camera fit insets off the stage rect (px): left clears the centered
  * lede, x pads the column side, top/bottom keep the pin band level with the
  * lede (horizontal separation keeps them apart). */
-export const HERO_FIT_PAD = { left: 100, right: 150, top: 100, bottom: 350 }
+export const HERO_FIT_PAD = { left: 100, right: 100, top: 100, bottom: 300 }

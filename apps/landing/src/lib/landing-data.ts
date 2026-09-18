@@ -27,6 +27,8 @@ export type HeroCity = {
   name: string
   /** ISO-2 code ("FR"), printed compact in the hero sheet */
   country: string
+  /** Whole-collection architecture count for this city (deck is a subset) */
+  architecturesCount: number
 }
 
 export type CollectionStats = {
@@ -59,6 +61,8 @@ type LandingJson = {
   /** Whole-collection count; `all` is a curated subset */
   buildingCount: number
   countryCounts: { code: string; count: number }[]
+  /** Whole-collection count per city name */
+  cityCounts: Record<string, number>
 }
 
 const baked = bakedJson as LandingJson
@@ -90,7 +94,7 @@ function pickHeroCity(): HeroCity {
 
   const name = cities[Math.floor(Math.random() * cities.length)]
   const country = baked.cities.find((c) => c.name === name)?.countryCode ?? ""
-  return { name, country }
+  return { name, country, architecturesCount: baked.cityCounts[name] ?? 0 }
 }
 
 function buildLandingData(): LandingData {

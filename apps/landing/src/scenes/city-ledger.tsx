@@ -5,19 +5,19 @@
 // tail.
 import { useCallback, useEffect, useRef, useState, type ReactNode, type RefObject } from "react"
 import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useTransform, type MotionValue, type Variants } from "framer-motion"
-import { Body1, Body2, H2, Note } from "@nolli/ui"
+import { Body2, H2, Note } from "@nolli/ui"
 import { applyMapTransition } from "@/lib/map-transition"
 import { type ArchSummary, type LandingData } from "@/lib/landing-data"
 import { CITY_LEDGER } from "@/lib/constants"
-import { useSceneScroll, useSpineMap } from "@/spine/spine"
-import { TRANSITION_LEAD_VH, type HoldScene, type TransitionScene } from "@/spine/timeline"
+import { useSceneOwnsMap, useSceneScroll, useSpineMap } from "@/spine/spine"
+import type { SceneCamera } from "@nolli/map"
+import type { HoldScene } from "@/spine/timeline"
 import { fitCamera } from "@/lib/camera"
 import { useIsMobile } from "@nolli/ui"
 import { CityMarkers } from "@/components/city-markers"
 import { RollButton } from "@/components/roll-button"
 import { RollText } from "@/components/roll-text"
 import { HSplit, Pane, Screen, VSplit } from "./grid"
-import { MapTransition } from "./map-transition"
 import styles from "./city-ledger.module.css"
 
 /** City grid row height. */
@@ -55,24 +55,18 @@ const CITY_POOL: string[] = [
 /** Scroll vh between pre-entry roll steps. */
 const ROLL_STEP_VH = 6
 
-export const cityHold = (data: LandingData): HoldScene => ({
-  kind: "hold",
-  id: "city",
-  shape: "[data-spine-shape='city']",
-  heightVh: SCENE_VH,
-  Component: () => <CityLedger data={data} />,
-})
+export const cityHold = (data: LandingData): HoldScene => {
+  const fit: RefObject<SceneCamera | null> = { current: null }
+  return {
+    id: "city",
+    shape: "[data-spine-shape='city']",
+    heightVh: SCENE_VH,
+    camera: () => fit.current,
+    Component: () => <CityLedger data={data} fit={fit} />,
+  }
+}
 
-export const heroCityTransition = (): TransitionScene => ({
-  kind: "transition",
-  id: "hero-city",
-  fromShape: "[data-spine-shape='hero']",
-  toShape: "[data-spine-shape='city']",
-  heightVh: 20,
-  Component: () => <div className={styles.veil} aria-hidden />,
-})
-
-function CityLedger({ data }: { data: LandingData }) {
+function CityLedger({ data, fit }: { data: LandingData; fit: RefObject<SceneCamera | null> }) {
   const map = useSpineMap()
   const local = useSceneScroll()
   const mobile = useIsMobile()
@@ -105,10 +99,7 @@ function CityLedger({ data }: { data: LandingData }) {
     )
   }, [mobile])
 
-  // fly in as the transition hands us the screen; camera measured at fire
-  // time from the pane's live px box
-  const archsRef = useRef(archs)
-  archsRef.current = archs
+  useEffect(() => { fit.current = cameraFor(archs) }, [fit, archs, cameraFor])
 
   const onSelect = useCallback(
     (name: string) => {
@@ -123,13 +114,20 @@ function CityLedger({ data }: { data: LandingData }) {
   )
 
   const fade = useTransform(local, [SCENE_VH - ENTRY_VH, SCENE_VH], [1, 0])
+  const ownsMap = useSceneOwnsMap()
   // markers own the screen from the landing run-in (same edge the entry
-  // flight fires on) to the exit window
+  // flight fires on) to the exit window — and only while the scene owns
+  // the map (fade at the fire edge, not the scene tail)
   const [markersOn, setMarkersOn] = useState(() => {
     const v = local.get()
-    return v >= -ENTRY_VH && v < SCENE_VH - ENTRY_VH
+    return ownsMap && v >= -ENTRY_VH && v < SCENE_VH - ENTRY_VH
   })
-  useMotionValueEvent(local, "change", (v) => setMarkersOn(v >= -ENTRY_VH && v < SCENE_VH - ENTRY_VH))
+  useMotionValueEvent(local, "change", (v) => setMarkersOn(ownsMap && v >= -ENTRY_VH && v < SCENE_VH - ENTRY_VH))
+  // ownership can flip without a scroll change after it (deep-link load)
+  useEffect(() => {
+    const v = local.get()
+    setMarkersOn(ownsMap && v >= -ENTRY_VH && v < SCENE_VH - ENTRY_VH)
+  }, [ownsMap, local])
 
   const cityRows = (
     <>
@@ -154,19 +152,16 @@ function CityLedger({ data }: { data: LandingData }) {
   }
 
   return (
-    <>
-      <Screen className={styles.city}>
-        <MapTransition untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={() => cameraFor(archsRef.current)} />
-        <CityMarkers archs={archs} on={markersOn} selected={cardSlug} onSelect={setCardSlug} />
-        <motion.div className={styles.splits} style={{ opacity: fade }}>
-          {mobile ? (
-            <CityMobile {...treeProps} />
-          ) : (
-            <CityDesktop {...treeProps} />
-          )}
-        </motion.div>
-      </Screen>
-    </>
+    <Screen className={styles.city}>
+      <CityMarkers archs={archs} on={markersOn} selected={cardSlug} onSelect={setCardSlug} />
+      <motion.div className={styles.splits} style={{ opacity: fade }}>
+        {mobile ? (
+          <CityMobile {...treeProps} />
+        ) : (
+          <CityDesktop {...treeProps} />
+        )}
+      </motion.div>
+    </Screen>
   )
 }
 

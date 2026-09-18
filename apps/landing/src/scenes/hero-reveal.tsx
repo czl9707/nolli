@@ -17,8 +17,8 @@ import type { ArchSummary } from "@/lib/landing-data"
 import { useSceneScroll, useSpineMap } from "@/spine/spine"
 import styles from "./hero-reveal.module.css"
 
-/** The plate's rest dimensions — also the hero CTA pane's fixed size. */
-export const PLATE = { w: 480, h: 280 }
+/** The plate's rest dimensions. */
+const PLATE = { w: 480, h: 280 }
 
 /** Plate size at a viewport width — full size on wide screens, shrinking
  * with narrow ones so the plate always keeps roam room inside its bounds
@@ -33,13 +33,24 @@ const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 
 /** True on coarse pointers (touch) — no proxy cursor exists there. */
 const coarsePointer = () => window.matchMedia("(pointer: coarse)").matches
 
-/** Plate size grown by scroll progress: rest plate → full viewport. */
-function grownSize(p: number) {
+/** Plate size grown by scroll progress: rest plate → covers the whole
+ * root. The end size is measured against the root while the clamp centres
+ * oversized plates on the BOUNDS (which sit below the header): a plain
+ * viewport-sized plate centred on the bounds leaves the header strip
+ * veiled, and the unmount at full progress would flip it to map in one
+ * jump. Overshoot past the root is harmless — the root clips it. */
+function grownSize(p: number, b: DOMRect, r: DOMRect) {
   const rest = plateSize(window.innerWidth)
   const e = easeInOut(p)
+  const bcx = (b.left + b.right) / 2
+  const bcy = (b.top + b.bottom) / 2
+  const end = {
+    w: 2 * Math.max(bcx - r.left, r.right - bcx),
+    h: 2 * Math.max(bcy - r.top, r.bottom - bcy),
+  }
   return {
-    w: rest.w + (window.innerWidth - rest.w) * e,
-    h: rest.h + (window.innerHeight - rest.h) * e,
+    w: rest.w + (end.w - rest.w) * e,
+    h: rest.h + (end.h - rest.h) * e,
   }
 }
 
@@ -53,6 +64,10 @@ const OVERHANG = { top: 14, right: 10, bottom: 10, left: 10 }
 
 /** Radius (px, plate-centre to marker) within which a pick counts as revealed. */
 const REVEAL_R = 180
+
+/** The plate's live rect in viewport px — written by the reveal's frame
+ * loop each frame, read wherever plate membership matters. */
+export type PlateRect = { left: number; top: number; right: number; bottom: number }
 
 export function useCursorSprings() {
   const sx = useSpring(useMotionValue(window.innerWidth * 0.62), { stiffness: 130, damping: 22 })
@@ -141,6 +156,7 @@ function clipToPlate(el: HTMLElement, p: { left: number; top: number; right: num
  * the hole. Reduced motion renders nothing — markers show unclipped. */
 export function CursorReveal({
   boundsRef,
+  plateRef,
   sx,
   sy,
   tagTl = "Architecture",
@@ -149,6 +165,9 @@ export function CursorReveal({
   growVh,
 }: {
   boundsRef?: RefObject<HTMLDivElement | null>
+  /** Receives the live plate rect (viewport px) every frame — the arch
+   * list's active highlight follows it, grown plate included. */
+  plateRef?: RefObject<PlateRect | null>
   sx: MotionValue<number>
   sy: MotionValue<number>
   tagTl?: string
@@ -186,11 +205,13 @@ export function CursorReveal({
       const root = rootRef.current
       if (!root) return
       const b = (boundsRef?.current ?? root).getBoundingClientRect()
+      const r = root.getBoundingClientRect()
       // no proxy cursor on touch: the plate rests at the bounds' centre
-      const size = grownSize(p)
+      const size = grownSize(p, b, r)
       const cx = coarse ? b.left + b.width / 2 : sx.get()
       const cy = coarse ? b.top + b.height / 2 : sy.get()
       const pr = plateRect(b, root, cx, cy, size)
+      if (plateRef) plateRef.current = { left: pr.left, top: pr.top, right: pr.right, bottom: pr.bottom }
       const ox = pr.left - pr.rect.left
       const oy = pr.top - pr.rect.top
 
@@ -271,7 +292,7 @@ export function CursorReveal({
       window.removeEventListener("resize", schedule)
       if (raf) cancelAnimationFrame(raf)
     }
-  }, [snap, map, boundsRef, sx, sy, local, growVh, on])
+  }, [snap, map, boundsRef, plateRef, sx, sy, local, growVh, on])
 
   if (snap || done) return null
   return (
@@ -294,13 +315,19 @@ export function CursorReveal({
   )
 }
 
+/** Picks currently inside the reveal plate. With a live plate rect the
+ * test is plate membership — a pick goes active exactly when its marker
+ * shows through the hole, the grown plate revealing the whole deck as it
+ * covers the map. Without one (reduced motion renders no plate) it falls
+ * back to a fixed radius around the cursor. */
 export function usePlateArchs(
   sx: MotionValue<number>,
   sy: MotionValue<number>,
   archs: ArchSummary[],
   map: MapRef | null,
+  plateRef?: RefObject<PlateRect | null>,
+  local?: MotionValue<number>,
 ) {
-  const [nearest, setNearest] = useState<ArchSummary | null>(null)
   const [active, setActive] = useState<ReadonlySet<string>>(new Set())
 
   useEffect(() => {
@@ -308,21 +335,20 @@ export function usePlateArchs(
     let raf = 0
     const update = () => {
       raf = 0
+      const plate = plateRef?.current
+      const box = map.getContainer().getBoundingClientRect()
       const cx = sx.get()
       const cy = sy.get()
-      let best: ArchSummary | null = null
-      let bestD = Infinity
       const inside: string[] = []
       for (const a of archs) {
         const p = map.project([a.coordinates.lng, a.coordinates.lat])
-        const d = (p.x - cx) ** 2 + (p.y - cy) ** 2
-        if (d < bestD) {
-          bestD = d
-          best = a
-        }
-        if (d < REVEAL_R ** 2) inside.push(a.slug)
+        const x = p.x + box.left
+        const y = p.y + box.top
+        const hit = plate
+          ? x > plate.left && x < plate.right && y > plate.top && y < plate.bottom
+          : (x - cx) ** 2 + (y - cy) ** 2 < REVEAL_R ** 2
+        if (hit) inside.push(a.slug)
       }
-      setNearest((prev) => (prev?.slug === (best as ArchSummary | null)?.slug ? prev : best))
       setActive((prev) => {
         const same = prev.size === inside.length && inside.every((s) => prev.has(s))
         return same ? prev : new Set(inside)
@@ -333,15 +359,17 @@ export function usePlateArchs(
     }
     const u1 = sx.on("change", schedule)
     const u2 = sy.on("change", schedule)
+    const u3 = local?.on("change", schedule)
     map.on("move", schedule)
     schedule()
     return () => {
       u1()
       u2()
+      u3?.()
       map.off("move", schedule)
       if (raf) cancelAnimationFrame(raf)
     }
-  }, [map, sx, sy, archs])
+  }, [map, sx, sy, archs, plateRef, local])
 
-  return { nearest, active }
+  return { active }
 }
