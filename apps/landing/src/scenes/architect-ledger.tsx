@@ -121,30 +121,30 @@ function ArchitectMobile({ mapBand, statement, ledgerRows }: ArchitectTreeProps)
       <HSplit>
         <Pane size="calc(var(--size-header-height) + 10svh)">
           <VSplit>
-            <Pane size="var(--grid-padding)" filled/>
+            <Pane size="var(--size-page-padding)" filled/>
             <Pane />
-            <Pane size="var(--grid-padding)" filled/>
+            <Pane size="var(--size-page-padding)" filled/>
           </VSplit>
         </Pane>
         <Pane size="55svh">
           {mapBand}
           <VSplit>
-            <Pane size="var(--grid-padding)" filled/>
+            <Pane size="var(--size-page-padding)" filled/>
             <Pane>
               <div className={styles.bandText}>{statement}</div>
             </Pane>
-            <Pane size="var(--grid-padding)" filled/>
+            <Pane size="var(--size-page-padding)" filled/>
           </VSplit>
         </Pane>
         <Pane>
           <VSplit>
-            <Pane size="var(--grid-padding)" filled/>
+            <Pane size="var(--size-page-padding)" filled/>
             <Pane>
               <HSplit>
                 {ledgerRows}
               </HSplit>
             </Pane>
-            <Pane size="var(--grid-padding)" filled/>
+            <Pane size="var(--size-page-padding)" filled/>
           </VSplit>
         </Pane>
         <Pane size="20svh"/>
@@ -161,7 +161,7 @@ function ArchitectDesktop({ mapBand, statement, ledgerRows }: ArchitectTreeProps
       <HSplit>
         <Pane>
           <VSplit>
-            <Pane size="var(--grid-padding)" filled/>
+            <Pane size="var(--size-page-padding)" filled/>
             <Pane>
               <HSplit>
                 <Pane size="12svh" />
@@ -176,7 +176,7 @@ function ArchitectDesktop({ mapBand, statement, ledgerRows }: ArchitectTreeProps
                 </Pane>
               </HSplit>
             </Pane>
-            <Pane size="var(--grid-padding)" filled/>
+            <Pane size="var(--size-page-padding)" filled/>
           </VSplit>
 
         </Pane>

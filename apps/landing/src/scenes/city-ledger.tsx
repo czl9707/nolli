@@ -207,7 +207,7 @@ function CityDesktop({ paneRef, statement, cityRows }: CityTreeProps) {
       <Pane size="12svh" />
       <Pane>
         <VSplit>
-          <Pane size="var(--grid-padding)" filled/>
+          <Pane size="var(--size-page-padding)" filled/>
           <Pane>
             <HSplit>
               <Pane>
@@ -228,7 +228,7 @@ function CityDesktop({ paneRef, statement, cityRows }: CityTreeProps) {
               <Pane size="8svh"/>
             </HSplit>
           </Pane>
-          <Pane size="var(--grid-padding)" filled/>
+          <Pane size="var(--size-page-padding)" filled/>
         </VSplit>
       </Pane>
     </HSplit>

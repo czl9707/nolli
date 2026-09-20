@@ -119,7 +119,7 @@ type HeroTreeProps = {
 function HeroTree({ boundsRef, cursorCls, archs, active, scale, city }: HeroTreeProps) {
   return (
     <HSplit>
-      <Pane size="var(--size-header-height)" />
+      {/* <Pane size="var(--size-header-height)" /> */}
       <Pane className={`${styles.heroPane} ${cursorCls}`}>
         <div className={styles.boundingBox} ref={boundsRef}/>
         <Lede />

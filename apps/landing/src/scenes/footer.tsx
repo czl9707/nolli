@@ -68,7 +68,7 @@ function FooterMobile({ data }: { data: LandingData }) {
         <HSplit>
           <Pane>
             <VSplit>
-              <Pane size="var(--grid-padding)" filled/>
+              <Pane size="var(--size-page-padding)" filled/>
               <Pane>
                 <HSplit>
                   <Pane size="fit-content" className={styles.commonPane}>
@@ -86,7 +86,7 @@ function FooterMobile({ data }: { data: LandingData }) {
                   </Pane>
                 </HSplit>
               </Pane>
-              <Pane size="var(--grid-padding)" filled/>
+              <Pane size="var(--size-page-padding)" filled/>
             </VSplit>
           </Pane>
           <PhotoDock pool={dockPool(data, 9)} />
@@ -105,7 +105,7 @@ function FooterDesktop({ data }: { data: LandingData }) {
         <HSplit>
           <Pane>
             <VSplit>
-              <Pane size="var(--grid-padding)" />
+              <Pane size="var(--size-page-padding)" />
               <Pane>
                 <VSplit>
                   <Pane size="calc(var(--grid-col) * 7)" className={styles.commonPane}>
@@ -119,7 +119,7 @@ function FooterDesktop({ data }: { data: LandingData }) {
                   </Pane>
                 </VSplit>
               </Pane>
-              <Pane size="var(--grid-padding)" />
+              <Pane size="var(--size-page-padding)" />
             </VSplit>
           </Pane>
           <PhotoDock pool={dockPool(data, 9)} />

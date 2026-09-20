@@ -13,7 +13,7 @@ export function Bleed({ children, className }: { children?: ReactNode; className
 // HSplit/VSplit = flex rows/columns of <Pane>s. Each Pane declares its OWN
 // size at the child level:
 //   <Pane size="calc(var(--grid-col) * 8)" />   8 of 12 col tracks
-//   <Pane size="calc(var(--grid-padding) + var(--grid-col) * 2)" />
+//   <Pane size="calc(var(--size-page-padding) + var(--grid-col) * 2)" />
 //                                                 margin + 2 cols, ONE pane
 //   <Pane size="220px" />                         exact CSS length
 //   <Pane />                                      fill the rest
@@ -70,7 +70,7 @@ export function Pane({
   className,
   children,
 }: {
-  /** Width/height as any CSS length — compose from var(--grid-padding) and
+  /** Width/height as any CSS length — compose from var(--size-page-padding) and
    * var(--grid-col). Omit to fill the rest. */
   size?: string
   /** Tile the pane with the building pattern (map fill texture). */

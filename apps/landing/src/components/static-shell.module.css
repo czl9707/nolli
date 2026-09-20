@@ -14,7 +14,7 @@
   display: grid;
   grid-template-columns: 16rem minmax(0, 1fr);
   gap: var(--spacing-component);
-  max-width: calc(var(--landing-plate-max) + 2 * var(--spacing-component));
+  max-width: calc(var(--size-page-max-width) + 2 * var(--spacing-component));
   margin: 0 auto;
   padding: var(--spacing-group) var(--spacing-component) var(--spacing-block);
 }

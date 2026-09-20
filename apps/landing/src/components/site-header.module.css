@@ -1,20 +1,62 @@
-/* Site header — a row of grid panes on a frosted strip (translucent fill +
-   backdrop blur + 1px bottom rule) so the same ink reads over every
-   scene; the pane splits draw the vertical hairlines. */
+/* Site header — a vellum card bar floating under the viewport top; the
+   same ink reads over every scene through the frost. */
 
-.bar {
+.barContainer {
   position: sticky;
-  top: 0;
+  top: var(--size-header-top);
   z-index: 20;
-  height: var(--size-header-height);
-  pointer-events: none;
-  border-bottom: var(--border);
-}
-
-.brandPane {
   display: flex;
   align-items: center;
-  padding-left: var(--spacing-component);
+  justify-content: center;
+
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-component);
+  height: var(--size-header-height);
+  padding: var(--spacing-inset);
+  margin: 0 var(--size-page-padding);
+  padding-left: var(--spacing-paragraph);
+  box-sizing: border-box;
+  pointer-events: auto;
+}
+
+@media (--smaller-than-sm) {
+  .bar {
+    width: 100%;
+  }
+}
+
+/* furniture-phase entrance — the card box stays ungrouped (no backdrop
+   root, so the vellum frost is live from its first frame) while its
+   ground + content fade in together. Outside the boot provider the
+   phase reads "done", so static pages show the bar immediately. */
+.bar:not([data-in]) {
+  visibility: hidden;
+}
+
+.bar[data-variant="vellum"]::after {
+  opacity: 0;
+}
+
+.bar > * {
+  opacity: 0;
+}
+
+.bar[data-in] > *,
+.bar[data-in][data-variant="vellum"]::after {
+  opacity: 1;
+  transition: opacity 0.5s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar[data-in] > *,
+  .bar[data-in][data-variant="vellum"]::after {
+    transition: none;
+  }
 }
 
 .brand {
@@ -22,7 +64,6 @@
   align-items: center;
   gap: var(--spacing-paragraph);
   text-decoration: none;
-  pointer-events: auto;
 }
 
 .mark {
@@ -33,11 +74,24 @@
   font-size: 1.25rem;
 }
 
-.dropdownConent {
-  width: calc(var(--grid-col) * 4);
+.nav {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-paragraph);
+  height: 100%;
 }
 
-.dropdownItem {
-  height: var(--size-header-height);
-  width: calc(var(--grid-col) * 4);
+.bar .cta {
+  background-color: rgb(var(--color-hero-foreground));
+  color: rgb(var(--color-hero-background));
+  border-radius: var(--size-border-radius-sm);
+  height: 100%;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+.menuContent {
+  min-width: calc(var(--grid-col) * 4);
 }

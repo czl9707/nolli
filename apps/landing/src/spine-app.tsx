@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react"
 import Lenis from "lenis"
 import { landingData } from "@/lib/landing-data"
-import { BootFade, useBootPhase } from "@/lib/boot"
+import { useBootPhase } from "@/lib/boot"
 import { Spine } from "@/spine/spine"
 import type { SpineScene } from "@/spine/timeline"
 import { heroCamera, heroHold } from "@/scenes/hero"
@@ -54,11 +54,10 @@ export function SpineApp() {
     <main data-boot={revealed ? undefined : ""}>
       {/* app chrome — fixed at this level it stacks above the spine's scene
           flow (z2) without a portal; main is no stacking context. The header
-          enters with the furniture phase */}
+          drives its own furniture-phase entrance (a subtree opacity fade
+          here would form a backdrop root and delay the card's frost). */}
       <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 20 }}>
-        <BootFade at="furniture" style={{ position: "absolute", inset: 0 }}>
-          <SiteHeader />
-        </BootFade>
+        <SiteHeader />
       </div>
       <ScrollThumb />
       <Spine scenes={scenes} camera={bootCamera} />

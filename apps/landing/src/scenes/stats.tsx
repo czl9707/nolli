@@ -119,7 +119,7 @@ function StatsDesktop({ stats, photoPool, architectNames }: StatsProps) {
         <Pane>
           <VSplit>
             <div className={styles.shape} aria-hidden data-spine-shape="stats" />
-            <Pane size="var(--grid-padding)" filled/>
+            <Pane size="var(--size-page-padding)" filled/>
             <Pane>
               <HSplit>
                 <Pane>
@@ -164,7 +164,7 @@ function StatsDesktop({ stats, photoPool, architectNames }: StatsProps) {
                 </Pane>
               </HSplit>
             </Pane>
-            <Pane size="var(--grid-padding)" filled/>
+            <Pane size="var(--size-page-padding)" filled/>
           </VSplit>
         </Pane>
         <Pane size="8svh"/>

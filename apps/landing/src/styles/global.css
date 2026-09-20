@@ -27,17 +27,24 @@ body {
 
   /* card language — outer radius X, docked-inner inset Y (concentric
      offset: inner corners X−Y). */
-  --card-radius: 0.6rem;
-  --card-inset: 0.15rem;
+  --size-border-radius: 0.6rem;
+  --spacing-inset: 0.3rem;
+  --size-border-radius-sm: calc(var(--size-border-radius) - var(--spacing-inset));
+  --size-border-radius-lg: calc(var(--size-border-radius) + var(--spacing-inset));
 
-  --grid-padding: max(
-    calc((100vw - var(--landing-plate-max)) / 2),
+  --size-header-height: 3rem;
+  --size-header-top: var(--spacing-component);
+
+  --size-page-max-width: 80rem;
+  --size-page-padding: max(
+    calc((100vw - var(--size-page-max-width)) / 2),
     var(--spacing-group)
   );
-  --grid-col: calc((100vw - 2 * var(--grid-padding)) / 12);
+  --grid-col: calc((100vw - 2 * var(--size-page-padding)) / 12);
+
 
   @media (--smaller-than-sm) {
-    --grid-padding: var(--spacing-paragraph);
+    --size-page-padding: var(--spacing-paragraph);
   }
 }
 
@@ -70,7 +77,6 @@ body {
   background: rgb(var(--color-primary-background));
   color: rgb(var(--color-primary-foreground));
   overscroll-behavior-y: none;
-  --landing-plate-max: 80rem;
 }
 
 /* Boot scroll lock: until the map reveals, the spine is a flat plate with
