@@ -15,6 +15,9 @@ export type HoldScene = {
   /** camera this hold settles into; a function computes at fire time
    * (measured panes) and a null return defers to the next trigger */
   camera: SceneCamera | (() => SceneCamera | null)
+  /** corner radius (px) the glued map layer wears while this scene owns it;
+   * morphs with the boundary fire's shape tween. Default 0 = square. */
+  mapRadius?: number
   Component: () => ReactNode
 }
 

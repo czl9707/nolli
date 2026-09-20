@@ -25,7 +25,11 @@ body {
   /* cell roll easing — JS mirror ROLL_EASE in lib/constants */
   --ease-roll: cubic-bezier(0.22, 1, 0.36, 1);
 
-    
+  /* card language — outer radius X, docked-inner inset Y (concentric
+     offset: inner corners X−Y). */
+  --card-radius: 0.6rem;
+  --card-inset: 0.15rem;
+
   --grid-padding: max(
     calc((100vw - var(--landing-plate-max)) / 2),
     var(--spacing-group)

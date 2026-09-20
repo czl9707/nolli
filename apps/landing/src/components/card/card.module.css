@@ -1,0 +1,36 @@
+.card {
+  box-sizing: border-box;
+  position: relative;
+  /* contains the vellum ::before's negative z-index: frost sits above the
+     card's own pattern ground, below the children's content */
+  isolation: isolate;
+  border-radius: var(--card-radius);
+  overflow: hidden;
+}
+
+.card[data-variant="solid"] {
+  background: rgb(var(--color-secondary-background));
+}
+
+.card[data-variant="outline"] {
+  border: var(--border);
+}
+
+/* vellum — the div wears the grass pattern + tint; the ::before is the
+   frosted window: inset Y from the frame, radius X−Y, blurring only what
+   sits behind the card. Crisp pattern frame, blurred world within. */
+.card[data-variant="vellum"] {
+  background-image: var(--pattern-grass);
+  background-size: 150% 150%;
+  background-color: rgb(var(--color-primary-foreground) / 0.25);
+  color: rgb(var(--color-primary-foreground));
+}
+
+.card[data-variant="vellum"]::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  backdrop-filter: blur(3px);
+  pointer-events: none;
+}
