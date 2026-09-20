@@ -25,26 +25,26 @@ body {
   /* cell roll easing — JS mirror ROLL_EASE in lib/constants */
   --ease-roll: cubic-bezier(0.22, 1, 0.36, 1);
 
-  /* card language — outer radius X, docked-inner inset Y (concentric
-     offset: inner corners X−Y). */
-  --size-border-radius: 0.6rem;
   --spacing-inset: 0.3rem;
-  --size-border-radius-sm: calc(var(--size-border-radius) - var(--spacing-inset));
-  --size-border-radius-lg: calc(var(--size-border-radius) + var(--spacing-inset));
 
   --size-header-height: 3rem;
   --size-header-top: var(--spacing-component);
 
-  --size-page-max-width: 80rem;
+  --size-page-max-width: 128rem;
   --size-page-padding: max(
     calc((100vw - var(--size-page-max-width)) / 2),
     var(--spacing-group)
   );
   --grid-col: calc((100vw - 2 * var(--size-page-padding)) / 12);
 
+  /* hairline column field — the page grid scenes place on; the global
+     overlay draws its lines at the same cell pitch */
+  --page-cols: 4;
+  --page-col: calc((100vw - 2 * var(--size-page-padding)) / var(--page-cols));
 
   @media (--smaller-than-sm) {
     --size-page-padding: var(--spacing-paragraph);
+    --page-cols: 2;
   }
 }
 

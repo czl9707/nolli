@@ -65,15 +65,6 @@ function resolveCamera(scene: SpineScene): SceneCamera | null {
   return typeof scene.camera === "function" ? scene.camera() : scene.camera
 }
 
-/** The glued layer's corner radius for a scene — CSS-transitioned so it
- * morphs with the fire's rect tween (SCENE_EASE is cubic in-out; the
- * bezier string below is its CSS twin). */
-const RADIUS_TRANSITION = `border-radius ${SNAPSHOT_SHAPE_MS}ms cubic-bezier(0.65, 0, 0.35, 1)`
-
-function radiusPx(scene: SpineScene | undefined): string {
-  return scene?.mapRadius ? `${scene.mapRadius}px` : "0px"
-}
-
 /** Landing spine. One map layer GLUED to the active scene's shape pane —
  * stuck while the pane sticks, riding up with it when the pane scrolls
  * away. Crossing a hold's trigger boundary flips allegiance: the layer
@@ -184,7 +175,6 @@ export function Spine({
     setOwnerId(id)
     appliedCam.current = !!cam
     lastFire.current = { boundaryVh, dir }
-    if (layerRef.current) layerRef.current.style.borderRadius = radiusPx(seg.scene)
     if (cam && map) applyMapTransition(map, cam)
     const prev = lastRect.current ?? live
     if (reduced) {
@@ -234,17 +224,6 @@ export function Spine({
     appliedId.current = targetHoldAt(timeline, scrollVh.get())
     appliedCam.current = appliedId.current === timeline.segments[0].scene.id
     setOwnerId(appliedId.current)
-    // deep-link entry: the restored scene's radius applies with no fire
-    if (layerRef.current) {
-      layerRef.current.style.transition = "none"
-      layerRef.current.style.borderRadius = radiusPx(
-        timeline.segments.find((s) => s.scene.id === appliedId.current)?.scene,
-      )
-      // re-arm the morph on the next frame
-      requestAnimationFrame(() => {
-        if (layerRef.current) layerRef.current.style.transition = RADIUS_TRANSITION
-      })
-    }
   }, [shapesReady, timeline, scrollVh])
 
   // initial placement: scenes own the camera afterwards. Layout effect so
@@ -302,8 +281,6 @@ export function Spine({
             position: "absolute",
             left: 0, top: 0, width: window.innerWidth, height: window.innerHeight,
             overflow: "hidden",
-            borderRadius: radiusPx(scenes[0]),
-            transition: RADIUS_TRANSITION,
           }}
             initial={reduced ? false : { opacity: 0, filter: FOCUS_PULL }}
             animate={{

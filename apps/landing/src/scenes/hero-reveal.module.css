@@ -115,7 +115,6 @@
   position: absolute;
   left: 0;
   top: 0;
-  border-radius: var(--size-border-radius);
   transition: backdrop-filter var(--transition-short) ease-out;
   z-index: 100000;
 }

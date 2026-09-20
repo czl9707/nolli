@@ -1,11 +1,7 @@
-/* LandingButton — rest is a solid ground with the grass sheet showing
-   through at half strength; hover fades the ground to transparent while
-   the sheet stays. The button's own color drives label + bracket
-   together (currentColor). Sharp corners and hairlines follow the
-   spine's shape system.
-   Layer stack: ground = background-color, grass sheet = ::before,
-   bracket = ::after — children render on top of the sheet, under the
-   bracket. */
+/* LandingButton — rest is a solid ground, hover fades it to transparent.
+   The button's own color drives label + bracket together (currentColor).
+   Layer stack: ground = background-color, bracket = ::after — children
+   render under the bracket. */
 
 .button {
   box-sizing: border-box;
@@ -39,33 +35,15 @@
   height: 100%;
 }
 
-/* the grass sheet — above the ground, showing through at half strength
-   in both states */
-.button::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-}
-
 /* ── variants ────────────────────────────────────────────────────────── */
 
 .button[data-variant="accent"] {
   background-color: rgb(var(--color-hero-foreground));
   color: rgb(var(--color-hero-background));
-  
-  &::before {
-    background-image: var(--pattern-grass-oppo);
-    opacity: 0.4;
-  }
 
   &:hover, &:focus-visible {
     color: rgb(var(--color-hero-foreground));
     background-color: rgb(var(--color-hero-foreground) / .1);
-
-    &::before {
-      background-image: var(--pattern-grass);
-      opacity: 0.4;
-    }
   }
 }
 
@@ -73,28 +51,17 @@
   background-color: rgb(var(--color-primary-foreground));
   color: rgb(var(--color-primary-background));
 
-  &::before {
-    background-image: var(--pattern-grass);
-    opacity: 0.4;
-  }
-
   &:hover, &:focus-visible {
     background-color: rgb(var(--color-primary-foreground) / .1);
     color: rgb(var(--color-primary-foreground));
   }
 }
 
-/* ghost: no ground — the grass sheet rides the page itself; radix menu
-   navigation reports data-highlighted on the item (button via asChild),
-   so it arms the same way hover does */
+/* ghost: no ground — radix menu navigation reports data-highlighted on
+   the item (button via asChild), so it arms the same way hover does */
 .button[data-variant="ghost"] {
   background-color: transparent;
   color: rgb(var(--color-primary-foreground) / 0.8);
-
-  &::before {
-    background-image: var(--pattern-grass);
-    opacity: 0.4;
-  }
 
   &:hover, &:focus-visible, &[data-highlighted] {
     background-color: rgb(var(--color-primary-foreground) / .15);
@@ -155,7 +122,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .button,
-  .button::before,
   .button::after {
     transition: none !important;
   }
