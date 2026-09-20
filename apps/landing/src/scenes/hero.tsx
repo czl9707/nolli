@@ -20,7 +20,6 @@ import { fitCamera } from "@/lib/camera"
 import type { LandingData } from "@/lib/landing-data"
 import { PhotoMarkers } from "@/components/photo-markers"
 import { CursorReveal, HERO_MARKER_CLASS, useCursorSprings, usePlateArchs, type PlateRect } from "./hero-reveal"
-import { HSplit, Pane, Screen } from "./grid"
 import styles from "./hero.module.css"
 
 export const heroHold = (data: LandingData): HoldScene => ({
@@ -91,16 +90,14 @@ function HeroScene({ data }: { data: LandingData }) {
         on={markersOn && ownsMap && phaseAtLeast(bootPhase, "reveal")}
         className={HERO_MARKER_CLASS}
       />
-      <Screen>
-        <HeroTree
-          boundsRef={boundsRef}
-          cursorCls={reduced ? "" : styles.cursorHide}
-          archs={archs}
-          active={active}
-          scale={scale}
-          city={data.heroCity}
-        />
-      </Screen>
+      <HeroTree
+        boundsRef={boundsRef}
+        cursorCls={reduced ? "" : styles.cursorHide}
+        archs={archs}
+        active={active}
+        scale={scale}
+        city={data.heroCity}
+      />
     </section>
   )
 }
@@ -118,12 +115,10 @@ type HeroTreeProps = {
  * (Note labels, serif values) with the arch list under it. */
 function HeroTree({ boundsRef, cursorCls, archs, active, scale, city }: HeroTreeProps) {
   return (
-    <HSplit>
-      {/* <Pane size="var(--size-header-height)" /> */}
-      <Pane className={`${styles.heroPane} ${cursorCls}`}>
-        <div className={styles.boundingBox} ref={boundsRef}/>
-        <Lede />
-        <BootFade at="furniture" className={styles.infoColumn} delay={0.12}>
+    <div className={`${styles.workarea} ${cursorCls}`}>
+      <div className={styles.boundingBox} ref={boundsRef} />
+      <Lede />
+      <BootFade at="furniture" className={styles.infoColumn} delay={0.12}>
           <Note className={styles.infoLabel}>Where are We?</Note>
           <span className={styles.infoValue}>
             {city.country ? `${city.country} · ` : ""}
@@ -144,9 +139,8 @@ function HeroTree({ boundsRef, cursorCls, archs, active, scale, city }: HeroTree
               </li>
             ))}
           </ul>
-        </BootFade>
-      </Pane>
-    </HSplit>
+      </BootFade>
+    </div>
   )
 }
 
