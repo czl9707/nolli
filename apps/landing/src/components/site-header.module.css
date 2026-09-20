@@ -1,39 +1,27 @@
 /* Site header — a vellum card bar floating under the viewport top; the
    same ink reads over every scene through the frost. */
 
-.barContainer {
+.bar {
   position: sticky;
   top: var(--size-header-top);
   z-index: 20;
   display: flex;
   align-items: center;
-  justify-content: center;
-
-}
-
-.bar {
-  display: flex;
-  align-items: center;
   justify-content: space-between;
   gap: var(--spacing-component);
   height: var(--size-header-height);
+  margin: var(--size-header-top) var(--spacing-component) 0;
   padding: var(--spacing-inset);
-  margin: 0 var(--size-page-padding);
-  padding-left: var(--spacing-paragraph);
+  padding-left: var(--spacing-component);
   box-sizing: border-box;
   pointer-events: auto;
 }
 
-@media (--smaller-than-sm) {
-  .bar {
-    width: 100%;
-  }
-}
-
-/* furniture-phase entrance — the card box stays ungrouped (no backdrop
-   root, so the vellum frost is live from its first frame) while its
-   ground + content fade in together. Outside the boot provider the
-   phase reads "done", so static pages show the bar immediately. */
+/* furniture-phase entrance — the card box hides via visibility (no
+   backdrop root, so the vellum frost is live from its first frame) and
+   the ground + content fade in together; the frost pseudo itself is
+   never inside an opacity group. Outside the boot provider the phase
+   reads "done", so static pages show the bar immediately. */
 .bar:not([data-in]) {
   visibility: hidden;
 }

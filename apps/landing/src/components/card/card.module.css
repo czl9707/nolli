@@ -30,7 +30,7 @@
   inset: 0;
   z-index: -2;
   background-image: var(--pattern-grass);
-  background-color: rgb(128 128 128 / 0.2);
+  background-color: rgb(var(--color-primary-foreground) / 0.15);
   pointer-events: none;
 }
 
