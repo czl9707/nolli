@@ -11,6 +11,7 @@ import { LandingMap } from "@/components/landing-map"
 import { applyMapTransition, SNAPSHOT_SHAPE_MS } from "@/lib/map-transition"
 import { phaseAtLeast, useBoot, useBootPhase } from "@/lib/boot"
 import { buildTimeline, crossedBoundary, targetHoldAt, REARM_VH, type PxRect, type SpineScene } from "./timeline"
+import hairlineStyles from "@/scenes/page-layout.module.css"
 
 // boot map arrival: the layer starts placed at a wide zoom and glides into
 // the hero fit as the map beat opens, developing from blurred/dim to sharp
@@ -65,6 +66,15 @@ function resolveCamera(scene: SpineScene): SceneCamera | null {
   return typeof scene.camera === "function" ? scene.camera() : scene.camera
 }
 
+/** Rules-vs-map layering per hold: the sticky frame jumps z at the fire —
+ * a clean cut mid transition, no tween. The frame (map layer + portal)
+ * sits at --z-map-behind (0, under the items by DOM order — a negative-z
+ * frame blanks the map's WebGL canvas) or at --z-map-above over the rules
+ * and items; the site header (z20) stays above either. */
+function applyLayering(el: HTMLDivElement | null, scene: SpineScene) {
+  if (el) el.style.zIndex = scene.rulesOverMap === false ? "var(--z-map-above)" : "var(--z-map-behind)"
+}
+
 /** Landing spine. One map layer GLUED to the active scene's shape pane —
  * stuck while the pane sticks, riding up with it when the pane scrolls
  * away. Crossing a hold's trigger boundary flips allegiance: the layer
@@ -117,6 +127,7 @@ export function Spine({
   const appliedCam = useRef(false)
   const lastFire = useRef<{ boundaryVh: number; dir: 1 | -1 } | null>(null)
   const layerRef = useRef<HTMLDivElement>(null)
+  const frameRef = useRef<HTMLDivElement>(null)
   const lastRect = useRef<PxRect | null>(null)
   const tween = useRef<{ from: PxRect; start: number; durationMs: number } | null>(null)
   const off = useRef<PxRect>({ left: 0, top: 0, width: 0, height: 0 })
@@ -171,6 +182,7 @@ export function Spine({
     const live = pane.getBoundingClientRect()
     const map = mapRef.current
     const cam = resolveCamera(seg.scene)
+    applyLayering(frameRef.current, seg.scene)
     appliedId.current = id
     setOwnerId(id)
     appliedCam.current = !!cam
@@ -223,6 +235,8 @@ export function Spine({
     if (!shapesReady || appliedId.current) return
     appliedId.current = targetHoldAt(timeline, scrollVh.get())
     appliedCam.current = appliedId.current === timeline.segments[0].scene.id
+    const seg = timeline.segments.find((s) => s.scene.id === appliedId.current)
+    if (seg) applyLayering(frameRef.current, seg.scene)
     setOwnerId(appliedId.current)
   }, [shapesReady, timeline, scrollVh])
 
@@ -273,7 +287,10 @@ export function Spine({
   return (
     <Ctx.Provider value={ctx}>
       <div ref={wrapperRef} style={{ position: "relative", height: `${timeline.totalVh + 100}svh` }}>
-        <div style={{ position: "sticky", top: 0, height: "100svh", overflow: "hidden" }}>
+        <div
+          ref={frameRef}
+          style={{ position: "sticky", top: 0, height: "100svh", overflow: "hidden", zIndex: "var(--z-map-behind)" }}
+        >
           {/* focus pull: the layer develops from blurred/dim to sharp
               alongside its fade-in at the map beat. Rect styles are written
               by the glue loop's rAF, not React — initial values only. */}
@@ -294,7 +311,14 @@ export function Spine({
             </LandingMap>
           </motion.div>
         </div>
-        <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 2, pointerEvents: "none" }}>
+        {/* the hairline column field — one fixed overlay at --z-rules:
+            above the map frame, below every scene item (z0); it follows the
+            boot phases (css below — draws in at the furniture beat) */}
+        <div className={hairlineStyles.hairlines} data-boot-phase={bootPhase} />
+        {/* scene flow — z auto, NOT a stacking context: scene items join the
+            global z scale directly (reveal drops below the rules, panes and
+            content sit at 0 over them) */}
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, pointerEvents: "none" }}>
           {timeline.segments.map(({ scene }, i) => (
             <SceneIdCtx.Provider key={scene.id} value={scene.id}>
               {/* the wrapper's +100vh buffer rides the LAST scene's wrapper,

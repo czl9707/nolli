@@ -1,50 +1,60 @@
-/* Site header — a vellum card bar floating under the viewport top; the
-   same ink reads over every scene through the frost. */
+/* Site header — a full-width strip delimited by Rules top and bottom;
+   transparent over the map and the hairline field, ink reads through. */
 
 .bar {
   position: sticky;
   top: var(--size-header-top);
-  z-index: 20;
+  z-index: 100;
+  margin-top: var(--size-header-top);
+  pointer-events: auto;
+  overflow: visible;
+}
+
+/* the content row rides between the two rules; its inline padding aligns
+   brand and buttons to the column field (the rules span the full width) */
+.row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--spacing-component);
   height: var(--size-header-height);
-  margin: var(--size-header-top) var(--spacing-component) 0;
-  padding: var(--spacing-inset);
-  padding-left: var(--spacing-component);
+  padding-inline: var(--size-page-padding);
   box-sizing: border-box;
-  pointer-events: auto;
 }
 
-/* furniture-phase entrance — the card box hides via visibility (no
-   backdrop root, so the vellum frost is live from its first frame) and
-   the ground + content fade in together; the frost pseudo itself is
-   never inside an opacity group. Outside the boot provider the phase
-   reads "done", so static pages show the bar immediately. */
-.bar:not([data-in]) {
+/* furniture-phase entrance — the row pane (data-in lives there) hides via
+   visibility; the pane's texture ground and its content then fade in
+   together (the ::after override outspecifies the kit's .paneBlurred::after;
+   the frost pseudo is never inside an opacity group). The strip's rules are
+   always there. Outside the boot provider the phase reads "done", so static
+   pages show the header immediately. */
+.row:not([data-in]) {
   visibility: hidden;
 }
 
-.bar[data-variant="vellum"]::after {
+.row:not([data-in])::after {
   opacity: 0;
 }
 
-.bar > * {
+.row > * {
   opacity: 0;
 }
 
-.bar[data-in] > *,
-.bar[data-in][data-variant="vellum"]::after {
+.row[data-in]::after,
+.row[data-in] > * {
   opacity: 1;
   transition: opacity 0.5s ease-out;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .bar[data-in] > *,
-  .bar[data-in][data-variant="vellum"]::after {
+  .row[data-in]::after,
+  .row[data-in] > * {
     transition: none;
   }
+}
+
+.lastRule {
+  margin-top: 3px;
 }
 
 .brand {
@@ -72,7 +82,6 @@
 .bar .cta {
   background-color: rgb(var(--color-hero-foreground));
   color: rgb(var(--color-hero-background));
-  border-radius: var(--size-border-radius-sm);
   height: 100%;
 
   &:hover {
@@ -81,5 +90,5 @@
 }
 
 .menuContent {
-  min-width: calc(var(--grid-col) * 4);
+  min-width: calc(var(--page-col) * 2);
 }

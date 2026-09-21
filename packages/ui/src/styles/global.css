@@ -199,8 +199,6 @@ body[data-theme='dark'] {
     flex-direction: column;
     justify-content: stretch;
     align-items: stretch;
-    background-color: rgb(var(--color-primary-background));
-    color: rgb(var(--color-primary-foreground));
     z-index: 0;
 }
 

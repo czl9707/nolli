@@ -9,7 +9,7 @@
 // system cursor.
 import { useEffect, useRef, useState, type RefObject } from "react"
 import { motion, useMotionValueEvent, useReducedMotion, type MotionValue } from "framer-motion"
-import { Body2, H5, Note, useIsMobile, TRANSITION_INSTANT, TRANSITION_SHORT } from "@nolli/ui"
+import { Body2, H5, Note, TRANSITION_INSTANT, TRANSITION_SHORT } from "@nolli/ui"
 import { BootFade, phaseAtLeast, useBootPhase } from "@/lib/boot"
 import type { MapRef, SceneCamera } from "@nolli/map"
 import type { ArchSummary } from "@/lib/landing-data"
@@ -28,6 +28,7 @@ export const heroHold = (data: LandingData): HoldScene => ({
   shape: "[data-spine-shape='hero']",
   heightVh: SCENE_VH,
   camera: heroCamera(data),
+  rulesOverMap: true,
   Component: () => <HeroScene data={data} />,
 })
 
@@ -72,11 +73,7 @@ function HeroScene({ data }: { data: LandingData }) {
   const scale = useScaleText(map, sy)
 
   return (
-    <section
-      data-spine-shape="hero"
-      data-boot-phase={bootPhase}
-      className={styles.hero}
-    >
+    <>
       <CursorReveal
         boundsRef={boundsRef}
         plateRef={plateRef}
@@ -86,22 +83,28 @@ function HeroScene({ data }: { data: LandingData }) {
         growVh={SCENE_VH - 100}
         tagTr={data.heroCity.name}
       />
-      <PhotoMarkers
-        archs={archs}
-        on={markersOn && ownsMap && phaseAtLeast(bootPhase, "reveal")}
-        className={HERO_MARKER_CLASS}
-      />
-      <Screen>
-        <HeroTree
-          boundsRef={boundsRef}
-          cursorCls={reduced ? "" : styles.cursorHide}
+      <section
+        data-spine-shape="hero"
+        data-boot-phase={bootPhase}
+        className={styles.hero}
+      >
+        <PhotoMarkers
           archs={archs}
-          active={active}
-          scale={scale}
-          city={data.heroCity}
+          on={markersOn && ownsMap && phaseAtLeast(bootPhase, "reveal")}
+          className={HERO_MARKER_CLASS}
         />
-      </Screen>
-    </section>
+        <Screen>
+          <HeroTree
+            boundsRef={boundsRef}
+            cursorCls={reduced ? "" : styles.cursorHide}
+            archs={archs}
+            active={active}
+            scale={scale}
+            city={data.heroCity}
+          />
+        </Screen>
+      </section>
+    </>
   )
 }
 

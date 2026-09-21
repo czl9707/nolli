@@ -296,20 +296,22 @@ export function CursorReveal({
 
   if (snap || done) return null
   return (
-    <div ref={rootRef} className={styles.root} data-on={on ? "" : undefined}>
-      <div className={styles.veil} aria-hidden />
-      <span id={"hero-cxvl"} className={`${styles.cx} ${styles.cxV}`} aria-hidden />
-      <span id={"hero-cxvr"} className={`${styles.cx} ${styles.cxV}`} aria-hidden />
-      <span id={"hero-cxht"} className={`${styles.cx} ${styles.cxH}`} aria-hidden />
-      <span id={"hero-cxhb"} className={`${styles.cx} ${styles.cxH}`} aria-hidden />
-      <div id={styles["hero-plate"]}>
-        <span className={`${styles.frame} ${styles.tagTl}`}>{tagTl}</span>
-        {tagTr && <span className={`${styles.frame} ${styles.tagTr}`}>{tagTr}</span>}
-        <span className={`${styles.frame} ${styles.dot}`} />
-      </div>
-      <div id={styles["hero-reveal-furniture"]}>
-        <span className={`${styles.frame} ${styles.north}`}>N ↑</span>
-        <span ref={coordsRef} className={`${styles.frame} ${styles.coords}`} />
+    <div className={styles.stickyWrapper}>
+      <div ref={rootRef} className={styles.root} data-on={on ? "" : undefined}>
+        <div className={styles.veil} aria-hidden />
+        <span id={"hero-cxvl"} className={`${styles.cx} ${styles.cxV}`} aria-hidden />
+        <span id={"hero-cxvr"} className={`${styles.cx} ${styles.cxV}`} aria-hidden />
+        <span id={"hero-cxht"} className={`${styles.cx} ${styles.cxH}`} aria-hidden />
+        <span id={"hero-cxhb"} className={`${styles.cx} ${styles.cxH}`} aria-hidden />
+        <div id={styles["hero-plate"]}>
+          <span className={`${styles.frame} ${styles.tagTl}`}>{tagTl}</span>
+          {tagTr && <span className={`${styles.frame} ${styles.tagTr}`}>{tagTr}</span>}
+          <span className={`${styles.frame} ${styles.dot}`} />
+        </div>
+        <div id={styles["hero-reveal-furniture"]}>
+          <span className={`${styles.frame} ${styles.north}`}>N ↑</span>
+          <span ref={coordsRef} className={`${styles.frame} ${styles.coords}`} />
+        </div>
       </div>
     </div>
   )
