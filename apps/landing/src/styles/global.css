@@ -25,9 +25,7 @@ body {
   /* cell roll easing — JS mirror ROLL_EASE in lib/constants */
   --ease-roll: cubic-bezier(0.22, 1, 0.36, 1);
 
-  --spacing-inset: 0.3rem;
-
-  --size-header-height: 3rem;
+  --size-header-height: 3.5rem;
   --size-header-top: var(--spacing-component);
 
   --size-page-max-width: 128rem;

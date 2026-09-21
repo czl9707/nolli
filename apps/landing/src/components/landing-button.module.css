@@ -82,44 +82,6 @@
   outline: none;
 }
 
-/* ── the bracket decoration ──────────────────────────────────────────── */
-/* rests as an L at the bottom-right corner; on hover (or while a radix
-   trigger reports data-state="open") it travels diagonally to the
-   top-left, its border sides crossfading as it moves */
-
-.buttonDecoration::after {
-  content: "";
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  border: 2px solid transparent;
-  border-bottom-color: currentColor;
-  border-right-color: currentColor;
-  /* the 8px box's top-left corner: 6px off the bottom-right at rest */
-  top: calc(100% - 18px);
-  left: calc(100% - 18px);
-  transition:
-    top var(--transition-instant) ease-out,
-    left var(--transition-instant) ease-out,
-    border-color var(--transition-instant) ease-out,
-    opacity var(--transition-instant) ease-out;
-}
-
-.buttonDecoration:hover::after,
-.buttonDecoration:focus-visible::after,
-.buttonDecoration[data-state="open"]::after {
-  top: 6px;
-  left: 6px;
-  border-top-color: currentColor;
-  border-left-color: currentColor;
-  border-bottom-color: transparent;
-  border-right-color: transparent;
-}
-
-.buttonDecoration[data-state="open"]::after {
-  opacity: 1;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .button,
   .button::after {

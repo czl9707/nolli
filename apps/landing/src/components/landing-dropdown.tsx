@@ -29,7 +29,7 @@ function LandingDropdownTrigger({
 }) {
   return (
     <DM.Trigger asChild {...props}>
-      <LandingButton variant={variant} size={size} decoration className={className}>
+      <LandingButton variant={variant} size={size} className={className}>
         {children}
       </LandingButton>
     </DM.Trigger>

@@ -1,5 +1,6 @@
-/* Site header — a full-width strip delimited by Rules top and bottom;
-   transparent over the map and the hairline field, ink reads through. */
+/* Site header — a full-width strip delimited by Rules top and bottom; one
+   blurred pane per column cell, each carrying --border on its side (the
+   borders land on the global hairlines). */
 
 .bar {
   position: sticky;
@@ -10,45 +11,70 @@
   overflow: visible;
 }
 
-/* the content row rides between the two rules; its inline padding aligns
-   brand and buttons to the column field (the rules span the full width) */
-.row {
-  display: flex;
+/* a column cell of the cut: a 2-track grid so cells split in half; the
+   halves carry the same side border */
+.cell {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   align-items: center;
-  justify-content: space-between;
-  gap: var(--spacing-component);
   height: var(--size-header-height);
-  padding-inline: var(--size-page-padding);
-  box-sizing: border-box;
+  border-left: var(--border);
 }
 
-/* furniture-phase entrance — the row pane (data-in lives there) hides via
-   visibility; the pane's texture ground and its content then fade in
+.half {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  height: 100%;
+}
+
+.half + .half {
+  border-left: var(--border);
+}
+
+/* mobile's right cell — the dropdown trigger fills the pane whole */
+.menuCell {
+  display: flex;
+}
+
+.menuTrigger {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  /* label left, hamburger right */
+  justify-content: space-between;
+  padding-inline: var(--spacing-paragraph);
+}
+
+/* furniture-phase entrance — the panes (data-in lives there) hide via
+   visibility; each pane's texture ground and its content then fade in
    together (the ::after override outspecifies the kit's .paneBlurred::after;
    the frost pseudo is never inside an opacity group). The strip's rules are
    always there. Outside the boot provider the phase reads "done", so static
    pages show the header immediately. */
-.row:not([data-in]) {
+.cell:not([data-in]) {
   visibility: hidden;
 }
 
-.row:not([data-in])::after {
+.cell:not([data-in])::after {
   opacity: 0;
 }
 
-.row > * {
+.cell > * {
   opacity: 0;
 }
 
-.row[data-in]::after,
-.row[data-in] > * {
+.cell[data-in]::after,
+.cell[data-in] > * {
   opacity: 1;
   transition: opacity 0.5s ease-out;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .row[data-in]::after,
-  .row[data-in] > * {
+  .cell[data-in]::after,
+  .cell[data-in] > * {
     transition: none;
   }
 }
@@ -60,6 +86,7 @@
 .brand {
   display: flex;
   align-items: center;
+  margin-left: var(--spacing-paragraph);
   gap: var(--spacing-paragraph);
   text-decoration: none;
 }
@@ -72,23 +99,13 @@
   font-size: 1.25rem;
 }
 
-.nav {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-paragraph);
-  height: 100%;
-}
-
-.bar .cta {
-  background-color: rgb(var(--color-hero-foreground));
-  color: rgb(var(--color-hero-background));
-  height: 100%;
-
-  &:hover {
-    opacity: 0.8;
-  }
-}
-
+/* the menu mirrors the strip: one column cell wide, every row a
+   header-height cell */
 .menuContent {
-  min-width: calc(var(--page-col) * 2);
+  width: var(--page-col);
+}
+
+.menuContent [data-slot="landing-button"] {
+  height: var(--size-header-height);
+  width: 100%;
 }
