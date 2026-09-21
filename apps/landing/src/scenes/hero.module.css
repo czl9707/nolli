@@ -42,15 +42,33 @@
 
 .boundingBox {
   position: absolute;
-  inset: 0;
+  top: calc(var(--size-header-height) + var(--size-header-top));
+  left: var(--size-page-padding);
+  right: var(--size-page-padding);
+  bottom: 0; 
 }
 
-/* ── lede (bottom-left) ───────────────────────────────────────────────── */
+/* ── page-grid placement ────────────────────────────────────────────────
+   One full-height row: lede pane on the two left columns, info pane on
+   the two right ones. */
 
-.heroPane {
+.screen {
+  height: 100%;
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.ledePane {
   display: flex;
-  flex-direction: row;
-  align-items: stretch;
+  flex-direction: column;
+  justify-content: flex-end;
+  grid-column: 1 / span 2;
+}
+
+.infoPane {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  grid-column: 3 / span 2;
 }
 
 /* the plate IS the cursor while the pointer is inside the workarea —
@@ -61,23 +79,21 @@
 }
 
 .ledeColumn {
-  flex: 1 1;
   box-sizing: border-box;
-  padding: 0 var(--spacing-component) var(--spacing-group);
+  padding-bottom: var(--spacing-group);
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
   gap: 1.5rem;
 }
 
 /* ── info block (top-right) ───────────────────────────────────────────── */
 
-/* in-flow flex child: row puts it top-right of the workarea (stretch +
- * column + no justify = content at top), the mobile column stacks it first */
+/* fills the info pane (stretch carries the arch list's width); padding
+ * tops past the header strip */
 .infoColumn {
   box-sizing: border-box;
-  max-width: calc(var(--grid-col) * 4);
-  padding: calc(var(--spacing-component) + var(--size-header-height) + var(--size-header-top)) var(--spacing-component) 0;
+  align-self: stretch;
+  padding-top: calc(var(--spacing-component) + var(--size-header-height) + var(--size-header-top));
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -165,28 +181,34 @@
   opacity: .75;
 }
 
-/* ── mobile: vertical split ─────────────────────────────────────────────
-   Info column in-flow on top, lede below it. The arch list flexes into
-   the space between them; overflow hides behind the list's bottom mask,
-   so the two blocks never collide. Kept AFTER the base rules — equal
-   specificity means a media block placed earlier loses the cascade */
+/* ── mobile: vertical stack ─────────────────────────────────────────────
+   Both panes go full-width rows — info first, lede pinned under it. The
+   info row flexes; the arch list flexes inside it, overflow hiding behind
+   its bottom mask, so the two blocks never collide. Kept AFTER the base
+   rules — equal specificity means a media block placed earlier loses the
+   cascade */
 
 @media (--smaller-than-sm) {
-  .heroPane {
-    flex-direction: column;
+  .screen {
+    grid-template-rows: minmax(0, 1fr) auto;
   }
 
-  .ledeColumn {
-    order: 2;
-    flex: 0 0 auto;
-    gap: 1rem;
+  .ledePane,
+  .infoPane {
+    grid-column: 1 / -1;
+  }
+
+  .infoPane {
+    min-height: 0;
   }
 
   .infoColumn {
-    max-width: none;
-    order: 1;
     flex: 1 1 auto;
     min-height: 0;
+  }
+
+  .ledeColumn {
+    gap: 1rem;
   }
 
   .archList {

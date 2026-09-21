@@ -7,7 +7,7 @@
 // list whose highlight follows the reveal plate). The reveal bounds span
 // the workarea, and the cursor hides inside it only — the header keeps the
 // system cursor.
-import { useEffect, useRef, useState, type RefObject } from "react"
+import { useEffect, useRef, useState } from "react"
 import { motion, useMotionValueEvent, useReducedMotion, type MotionValue } from "framer-motion"
 import { Body2, H5, Note, TRANSITION_INSTANT, TRANSITION_SHORT } from "@nolli/ui"
 import { BootFade, phaseAtLeast, useBootPhase } from "@/lib/boot"
@@ -20,7 +20,7 @@ import { fitCamera } from "@/lib/camera"
 import type { LandingData } from "@/lib/landing-data"
 import { PhotoMarkers } from "@/components/photo-markers"
 import { CursorReveal, HERO_MARKER_CLASS, useCursorSprings, usePlateArchs, type PlateRect } from "./hero-reveal"
-import { HSplit, Pane, Screen } from "./grid"
+import { Pane, Screen } from "./page-layout"
 import styles from "./hero.module.css"
 
 export const heroHold = (data: LandingData): HoldScene => ({
@@ -93,10 +93,9 @@ function HeroScene({ data }: { data: LandingData }) {
           on={markersOn && ownsMap && phaseAtLeast(bootPhase, "reveal")}
           className={HERO_MARKER_CLASS}
         />
-        <Screen>
+        <Screen className={reduced ? "" : styles.cursorHide}>
+          <div className={styles.boundingBox} ref={boundsRef} />
           <HeroTree
-            boundsRef={boundsRef}
-            cursorCls={reduced ? "" : styles.cursorHide}
             archs={archs}
             active={active}
             scale={scale}
@@ -109,23 +108,18 @@ function HeroScene({ data }: { data: LandingData }) {
 }
 
 type HeroTreeProps = {
-  boundsRef: RefObject<HTMLDivElement | null>
-  cursorCls: string
   archs: ArchSummary[]
   active: ReadonlySet<string>
   scale: string
   city: LandingData["heroCity"]
 }
 
-/** One tree, desktop and mobile: lede bottom-left, info block top-right
- * (Note labels, serif values) with the arch list under it. */
-function HeroTree({ boundsRef, cursorCls, archs, active, scale, city }: HeroTreeProps) {
+/** One tree, desktop and mobile: info block top-right (Note labels, serif
+ * values) with the arch list under it, lede bottom-left. */
+function HeroTree({ archs, active, scale, city }: HeroTreeProps) {
   return (
-    <HSplit>
-      {/* <Pane size="var(--size-header-height)" /> */}
-      <Pane className={`${styles.heroPane} ${cursorCls}`}>
-        <div className={styles.boundingBox} ref={boundsRef}/>
-        <Lede />
+    <>
+      <Pane className={styles.infoPane}>
         <BootFade at="furniture" className={styles.infoColumn} delay={0.12}>
           <Note className={styles.infoLabel}>Where are We?</Note>
           <span className={styles.infoValue}>
@@ -149,7 +143,10 @@ function HeroTree({ boundsRef, cursorCls, archs, active, scale, city }: HeroTree
           </ul>
         </BootFade>
       </Pane>
-    </HSplit>
+      <Pane className={styles.ledePane}>
+        <Lede />
+      </Pane>
+    </>
   )
 }
 

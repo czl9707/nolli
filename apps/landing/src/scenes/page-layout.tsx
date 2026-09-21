@@ -14,7 +14,7 @@ export function Bleed({ children, className }: { children?: ReactNode; className
 export const Screen = forwardRef<
   HTMLDivElement,
   { children: ReactNode; className?: string; style?: CSSProperties; height?: string;}
->(function Screen({ children, className, height, style}, ref) {
+>(function Screen({ children, className, height = "100svh", style}, ref) {
   return (
     <section
       ref={ref}
