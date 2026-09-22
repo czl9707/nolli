@@ -16,21 +16,6 @@
   z-index: 1;
 }
 
-/* closing rule — every internal split draws one, the screen edge too.
- * Drawn as an overlay, not border-bottom: the full-bleed veil is a CHILD
- * of this section and children paint over the parent's border. */
-.hero::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border-bottom: var(--border);
-  z-index: 2;
-  pointer-events: none;
-  transition: border-color var(--transition-short) ease-out;
-}
-
 /* boot: the closing rule follows the furniture phase (the hero section
    carries the live phase, data-boot-phase) */
 .hero[data-boot-phase="blank"]::after,
