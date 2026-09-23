@@ -39,7 +39,15 @@
 
 .screen {
   height: 100%;
-  grid-template-rows: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+
+/* closing rule closes the screen in its own hairline row: the panes fill
+   the flexible row above it, and the 1px row pulls the rule's line (drawn
+   at the element top) one pixel inside the bottom edge */
+.closingRule {
+  grid-row: 2;
+  height: 1px;
 }
 
 .ledePane {
@@ -47,6 +55,7 @@
   flex-direction: column;
   justify-content: flex-end;
   grid-column: 1 / span 2;
+  grid-row: 1;
 }
 
 .infoPane {
@@ -54,6 +63,7 @@
   flex-direction: column;
   align-items: flex-end;
   grid-column: 3 / span 2;
+  grid-row: 1;
 }
 
 /* the plate IS the cursor while the pointer is inside the workarea —
@@ -73,11 +83,14 @@
 
 /* ── info block (top-right) ───────────────────────────────────────────── */
 
-/* fills the info pane (stretch carries the arch list's width); padding
- * tops past the header strip */
+/* fills the info pane (stretch carries the arch list's width, flex grows
+ * the column to the pane's full height); padding tops past the header
+ * strip */
 .infoColumn {
   box-sizing: border-box;
   align-self: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
   padding-top: calc(var(--spacing-component) + var(--size-header-height) + var(--size-header-top));
   display: flex;
   flex-direction: column;
@@ -121,6 +134,10 @@
      shrink-to-fits to max-content and long deck names overflow the
      viewport's left edge */
   align-self: stretch;
+  /* fills the grown column's remaining height, so the mask fades at the
+     screen's bottom edge */
+  flex: 1 1 auto;
+  min-height: 0;
   max-width: 100%;
   overflow: hidden;
   mask-image: linear-gradient(to bottom, #000 calc(100% - 3rem), transparent);
@@ -174,30 +191,26 @@
    cascade */
 
 @media (--smaller-than-sm) {
-  .screen {
-    grid-template-rows: minmax(0, 1fr) auto;
-  }
-
   .ledePane,
   .infoPane {
     grid-column: 1 / -1;
   }
 
   .infoPane {
+    grid-row: 1;
     min-height: 0;
   }
 
-  .infoColumn {
-    flex: 1 1 auto;
-    min-height: 0;
+  .ledePane {
+    grid-row: 2;
+  }
+
+  /* the rule closes under the lede row */
+  .closingRule {
+    grid-row: 3;
   }
 
   .ledeColumn {
     gap: 1rem;
-  }
-
-  .archList {
-    flex: 1 1 auto;
-    min-height: 0;
   }
 }

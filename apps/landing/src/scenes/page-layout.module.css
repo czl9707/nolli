@@ -72,8 +72,15 @@
 
 .rule {
   position: relative;
-  border-top: var(--border);
+  height: 0;
   z-index: var(--z-rules);
+}
+
+.rule::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  border-top: var(--border);
 }
 
 .ruleFull {

@@ -27,10 +27,10 @@ describe("targetHoldAt", () => {
   const t = buildTimeline([hold("hero", 200), hold("city", 200), hold("arch", 200)])
   it("steps at start − lead, holding before it", () => {
     expect(targetHoldAt(t, 0)).toBe("hero")
-    expect(targetHoldAt(t, 139.9)).toBe("hero")
-    expect(targetHoldAt(t, 140)).toBe("city") // 200 − 60
-    expect(targetHoldAt(t, 339.9)).toBe("city")
-    expect(targetHoldAt(t, 340)).toBe("arch") // 400 − 60
+    expect(targetHoldAt(t, 200 - TRIGGER_LEAD_VH - 0.1)).toBe("hero")
+    expect(targetHoldAt(t, 200 - TRIGGER_LEAD_VH)).toBe("city")
+    expect(targetHoldAt(t, 400 - TRIGGER_LEAD_VH - 0.1)).toBe("city")
+    expect(targetHoldAt(t, 400 - TRIGGER_LEAD_VH)).toBe("arch")
   })
   it("clamps outside the timeline", () => {
     expect(targetHoldAt(t, -50)).toBe("hero")
@@ -45,13 +45,13 @@ describe("targetHoldAt", () => {
 describe("crossedBoundary", () => {
   const t = buildTimeline([hold("hero", 200), hold("city", 200), hold("arch", 200)])
   it("reports the same boundary vh for forward and reverse fires across one edge", () => {
-    expect(crossedBoundary(t, "hero", "city")).toEqual({ boundaryVh: 140, dir: 1 })
-    expect(crossedBoundary(t, "city", "hero")).toEqual({ boundaryVh: 140, dir: -1 })
-    expect(crossedBoundary(t, "city", "arch")).toEqual({ boundaryVh: 340, dir: 1 })
-    expect(crossedBoundary(t, "arch", "city")).toEqual({ boundaryVh: 340, dir: -1 })
+    expect(crossedBoundary(t, "hero", "city")).toEqual({ boundaryVh: 200 - TRIGGER_LEAD_VH, dir: 1 })
+    expect(crossedBoundary(t, "city", "hero")).toEqual({ boundaryVh: 200 - TRIGGER_LEAD_VH, dir: -1 })
+    expect(crossedBoundary(t, "city", "arch")).toEqual({ boundaryVh: 400 - TRIGGER_LEAD_VH, dir: 1 })
+    expect(crossedBoundary(t, "arch", "city")).toEqual({ boundaryVh: 400 - TRIGGER_LEAD_VH, dir: -1 })
   })
   it("treats a null source as the first hold", () => {
     expect(crossedBoundary(t, null, "hero")).toEqual({ boundaryVh: -TRIGGER_LEAD_VH, dir: -1 })
-    expect(crossedBoundary(t, null, "city")).toEqual({ boundaryVh: 140, dir: 1 })
+    expect(crossedBoundary(t, null, "city")).toEqual({ boundaryVh: 200 - TRIGGER_LEAD_VH, dir: 1 })
   })
 })

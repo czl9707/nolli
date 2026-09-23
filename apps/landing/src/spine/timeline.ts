@@ -29,7 +29,7 @@ export type SpineTimeline = {
 }
 
 /** A boundary fires this many vh before the next hold starts. */
-export const TRIGGER_LEAD_VH = 60
+export const TRIGGER_LEAD_VH = 45
 /** Hysteresis: after firing on a boundary, the scroll must clear the
  * threshold by this much before the same boundary can fire again. */
 export const REARM_VH = 10

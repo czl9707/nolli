@@ -20,7 +20,7 @@ import { fitCamera } from "@/lib/camera"
 import type { LandingData } from "@/lib/landing-data"
 import { PhotoMarkers } from "@/components/photo-markers"
 import { CursorReveal, HERO_MARKER_CLASS, useCursorSprings, usePlateArchs, type PlateRect } from "./hero-reveal"
-import { Pane, Screen } from "./page-layout"
+import { Pane, Rule, Screen } from "./page-layout"
 import styles from "./hero.module.css"
 
 export const heroHold = (data: LandingData): HoldScene => ({
@@ -93,7 +93,7 @@ function HeroScene({ data }: { data: LandingData }) {
           on={markersOn && ownsMap && phaseAtLeast(bootPhase, "reveal")}
           className={HERO_MARKER_CLASS}
         />
-        <Screen className={reduced ? "" : styles.cursorHide}>
+        <Screen className={[styles.screen, reduced ? "" : styles.cursorHide].filter(Boolean).join(" ")}>
           <div className={styles.boundingBox} ref={boundsRef} />
           <HeroTree
             archs={archs}
@@ -101,6 +101,7 @@ function HeroScene({ data }: { data: LandingData }) {
             scale={scale}
             city={data.heroCity}
           />
+          <Rule full className={styles.closingRule}/>
         </Screen>
       </section>
     </>
