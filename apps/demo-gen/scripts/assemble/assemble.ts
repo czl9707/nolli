@@ -71,7 +71,9 @@ async function main(slug: string) {
   });
   const out = resolve(outDir, `${slug}.mp4`);
   console.log(`Rendering → ${out}`);
-  await renderMedia({ composition, serveUrl, codec: "h264", outputLocation: out, browserExecutable: browserExecutable() });
+  // Single-frame concurrency: Remotion's default (half the cores) spawns that
+  // many Chrome renderers, which OOMs this WSL host.
+  await renderMedia({ composition, serveUrl, codec: "h264", outputLocation: out, browserExecutable: browserExecutable(), concurrency: 1 });
   console.log("Done.");
 }
 

@@ -1,7 +1,8 @@
-import type { Browser, Page } from "playwright";
+import type { Browser, Locator, Page } from "playwright";
 import { MAP_TRANSITION_SHORT, MAP_TRANSITION_LONG } from "@nolli/ui/constants";
 import {
   BASE_URL,
+  BOARD_PHOTO,
   applyBrowserCaptureContext,
   waitForToastDisappear,
   waitForTilesLoaded,
@@ -44,6 +45,25 @@ export type NolliCaptureMap = {
 
 // ── Camera ──────────────────────────────────────────────────────────────────
 
+export const cam = (page: Page) =>
+  page.evaluate(() => {
+    const m = (window as unknown as { __nolliMap?: NolliCaptureMap }).__nolliMap;
+    if (!m) return null;
+    const c = m.getCenter();
+    return { zoom: m.getZoom(), lng: c.lng, lat: c.lat };
+  });
+
+// Flip the page's slow-mo factor in place. Exported for narrative scripts
+// holding the realtime clock across a whole beat (see panBoardAround for why
+// some beats need __SLOWMO=1).
+export const setSlowmo = (page: Page, factor: number) =>
+  page.evaluate(
+    (v) => {
+      (window as unknown as { __SLOWMO?: number }).__SLOWMO = v;
+    },
+    factor,
+  );
+
 // In-page camera primitive mirroring packages/map/src/map-flyto.ts
 // (flyToArchCinematic), on the app's own transition constants.
 export const flyTo = (page: Page, lat: number, lng: number, zoom: number) =>
@@ -66,14 +86,6 @@ export const flyTo = (page: Page, lat: number, lng: number, zoom: number) =>
       farMs: MAP_TRANSITION_LONG * 1000,
     },
   );
-
-const cam = (page: Page) =>
-  page.evaluate(() => {
-    const m = (window as unknown as { __nolliMap?: NolliCaptureMap }).__nolliMap;
-    if (!m) return null;
-    const c = m.getCenter();
-    return { zoom: m.getZoom(), lng: c.lng, lat: c.lat };
-  });
 
 const mapCenter = (page: Page) =>
   page.evaluate(() => {
@@ -181,11 +193,7 @@ export async function navigateToArch(page: Page, target: BuildingRow, beat: (lab
 
 // ── Pans ────────────────────────────────────────────────────────────────────
 
-// Build a pan (dx, dy, dur) from a base angle + a ±fanHalf spread, with random
-// magnitude/duration. Used by the map look-around: pan 1 glances OUT away from
-// the pin (wide fan), pan 2 glances BACK toward the pin (narrow fan); a zero
-// fan with a random base is the undirected fallback when the pin can't frame
-// the pan.
+// Pan from a base angle + a ±fanHalf spread, randomized magnitude/duration.
 const panFromAngle = (base: number, fanHalfDeg: number): { dx: number; dy: number; dur: number } => {
   const angle = base + (Math.random() - 0.5) * 2 * ((fanHalfDeg * Math.PI) / 180);
   const mag = rand(JOURNEY.panMagMin, JOURNEY.panMagMax);
@@ -199,13 +207,10 @@ const panFromAngle = (base: number, fanHalfDeg: number): { dx: number; dy: numbe
 const randomPan = (): { dx: number; dy: number; dur: number } =>
   panFromAngle(Math.random() * Math.PI * 2, 0);
 
-// `mapPanCount` "look around" pans around the target pin — a human out-and-back
-// glance. Pan 1 glances OUT, away from the pin (wide fan → "some direction" but
-// reliably outward); pan 2 glances BACK toward the pin within a narrow fan. The
-// pin's home is offset from viewport center (the selection panel shifts the map's
-// effective center), so "away from the pin" on pan 1 is what guarantees the two
-// pans differ — aiming pan 1 at the pin would send both the same way. Asserts
-// per-pan movement (getCenter before/after) so a silent no-op pan fails.
+// Out-and-back look-around: pan 1 glances OUT away from the pin on a wide fan,
+// pan 2 BACK toward it on a narrow one — the pin sits off-center (the selection
+// panel shifts the map), so "away" on pan 1 is what makes the two pans differ.
+// Asserts per-pan movement so a silent no-op fails.
 export async function panMapAround(
   page: Page,
   cursor: Cursor,
@@ -242,11 +247,9 @@ export async function panMapAround(
       `    map pan ${i + 1}/${JOURNEY.mapPanCount} dx=${signed(p.dx)} dy=${signed(p.dy)}` +
         ` (center=${before.lng.toFixed(3)},${before.lat.toFixed(3)})`,
     );
-    // Ride the pan through the middle: start the cursor at center + pan/2 so
-    // the content-follow (which shifts the cursor by −pan over the pan) sweeps
-    // it through the viewport center, landing at center − pan/2. It never
-    // strays more than half a pan from the middle; a drag started wherever the
-    // cursor happened to sit parks it a full pan-length off to one side.
+    // Start at center + pan/2 so the content-follow sweeps the cursor through
+    // the middle — a drag started wherever the cursor sat parks it a full
+    // pan-length off to one side.
     const half = { x: p.dx / 2, y: p.dy / 2 };
     const start = {
       x: Math.max(VIEWPORT.width * 0.2, Math.min(VIEWPORT.width * 0.8, VIEWPORT.width / 2 + half.x)),
@@ -264,5 +267,132 @@ export async function panMapAround(
       throw new Error("Map pan produced no movement — panBy didn't take.");
     }
     await appWait(page, JOURNEY.panHold);
+  }
+}
+
+// Board look-around as two real-pointer drags (useBoardPan has no panBy to
+// drive). Drag >3px suppresses item clicks, so the drag pans from anywhere;
+// movement is asserted via a photo's box so a swallowed drag fails.
+//
+// Runs at __SLOWMO=1: framer never flushes the pan MotionValue's DOM write
+// per-pointermove under the slowed clock — the board "teleports" at pointerup
+// instead of panning. Cursor pacing (appMs/slowmo) keeps the clip's duration
+// unchanged.
+export async function panBoardAround(page: Page, cursor: Cursor) {
+  await setSlowmo(page, 1);
+  try {
+    const witness = page.locator(BOARD_PHOTO).first();
+    // Out on the negative diagonal, back on the return: clampPan's window
+    // ([viewport−canvas−pad, +pad] ≈ [−680, 200] / [−620, 200]) has the most
+    // room on the negative side.
+    for (const [i, sign] of [-1, 1].entries()) {
+      const dx = Math.round(sign * JOURNEY.boardPanMag * 0.7);
+      const dy = Math.round(sign * JOURNEY.boardPanMag * 0.45);
+      const half = { x: dx / 2, y: dy / 2 };
+      const start = {
+        x: Math.max(VIEWPORT.width * 0.25, Math.min(VIEWPORT.width * 0.7, VIEWPORT.width / 2 + half.x)),
+        y: Math.max(VIEWPORT.height * 0.25, Math.min(VIEWPORT.height * 0.7, VIEWPORT.height / 2 + half.y)),
+      };
+      const dist = Math.hypot(start.x - cursor.pos().x, start.y - cursor.pos().y);
+      await cursor.move(start, Math.max(70, Math.min(120, dist / 1.8)));
+      const before = await witness.boundingBox();
+      await cursor.drag({ x: start.x + dx, y: start.y + dy }, JOURNEY.boardPanDur);
+      const after = await witness.boundingBox();
+      if (before && after && Math.hypot(after.x - before.x, after.y - before.y) < 5) {
+        throw new Error("Board pan produced no movement — drag was swallowed.");
+      }
+      console.log(
+        `    board pan leg ${i + 1} dx=${signed(dx)} dy=${signed(dy)}` +
+          ` (witness Δ=(${signed(Math.round((after?.x ?? 0) - (before?.x ?? 0)))},${signed(Math.round((after?.y ?? 0) - (before?.y ?? 0)))}))`,
+      );
+      await page.waitForTimeout(JOURNEY.boardPanHold / JOURNEY.slowmo);
+    }
+  } finally {
+    await setSlowmo(page, JOURNEY.slowmo);
+  }
+}
+
+// Single-leg board pan toward a target photo, magnitude clamped to
+// boardPanToMag so a distant photo doesn't slam into the clamp window at full
+// stretch. Same __SLOWMO=1 requirement and witness-assert as panBoardAround.
+export async function panBoardTo(page: Page, cursor: Cursor, photo: Locator) {
+  await setSlowmo(page, 1);
+  try {
+    const box = await photo.boundingBox();
+    if (!box) throw new Error("panBoardTo: target photo not visible.");
+    const cx = box.x + box.width / 2;
+    const cy = box.y + box.height / 2;
+    let dx = VIEWPORT.width / 2 - cx;
+    let dy = VIEWPORT.height / 2 - cy;
+    const mag = Math.hypot(dx, dy);
+    if (mag > JOURNEY.boardPanToMag) {
+      dx = (dx / mag) * JOURNEY.boardPanToMag;
+      dy = (dy / mag) * JOURNEY.boardPanToMag;
+    }
+    const half = { x: dx / 2, y: dy / 2 };
+    const start = {
+      x: Math.max(VIEWPORT.width * 0.25, Math.min(VIEWPORT.width * 0.7, VIEWPORT.width / 2 - half.x)),
+      y: Math.max(VIEWPORT.height * 0.25, Math.min(VIEWPORT.height * 0.7, VIEWPORT.height / 2 - half.y)),
+    };
+    const dist = Math.hypot(start.x - cursor.pos().x, start.y - cursor.pos().y);
+    await cursor.move(start, Math.max(70, Math.min(120, dist / 1.8)));
+    const before = await photo.boundingBox();
+    await cursor.drag({ x: start.x + dx, y: start.y + dy }, JOURNEY.boardPanDur);
+    const after = await photo.boundingBox();
+    if (before && after && Math.hypot(after.x - before.x, after.y - before.y) < 5) {
+      throw new Error("Board pan produced no movement — drag was swallowed.");
+    }
+    console.log(
+      `    board pan-to dx=${signed(Math.round(dx))} dy=${signed(Math.round(dy))}` +
+        ` (witness Δ=(${signed(Math.round((after?.x ?? 0) - (before?.x ?? 0)))},${signed(Math.round((after?.y ?? 0) - (before?.y ?? 0)))}))`,
+    );
+    await page.waitForTimeout(JOURNEY.boardPanHold / JOURNEY.slowmo);
+  } finally {
+    await setSlowmo(page, JOURNEY.slowmo);
+  }
+}
+
+// Drag the surface back to pan 0,0 before leaving board mode: the imperative
+// `animate(panX, 0)` useBoardPan runs on the mode flip never flushes under the
+// slowed clock, so an exit with a live pan leaves the map view shifted until a
+// later render. A real drag home at __SLOWMO=1 makes that reset a no-op.
+export async function panBoardReset(page: Page, cursor: Cursor) {
+  await setSlowmo(page, 1);
+  try {
+    const readPan = () =>
+      page.evaluate(() => {
+        const el = document.querySelector<HTMLElement>("div[class*='surface']");
+        const m = new DOMMatrixReadOnly(el?.style.transform || "none");
+        return { x: m.m41, y: m.m42 };
+      });
+    const pan = await readPan();
+    if (Math.hypot(pan.x, pan.y) >= 5) {
+      // Surface moves WITH the pointer: canceling pan P needs a drag delta of −P.
+      const start = { x: VIEWPORT.width / 2 + pan.x / 2, y: VIEWPORT.height / 2 + pan.y / 2 };
+      await cursor.move(
+        {
+          x: Math.max(1, Math.min(VIEWPORT.width - 1, start.x)),
+          y: Math.max(1, Math.min(VIEWPORT.height - 1, start.y)),
+        },
+        JOURNEY.boardPanDur,
+      );
+      await cursor.drag(
+        {
+          x: Math.max(1, Math.min(VIEWPORT.width - 1, start.x - pan.x)),
+          y: Math.max(1, Math.min(VIEWPORT.height - 1, start.y - pan.y)),
+        },
+        JOURNEY.boardPanDur,
+      );
+    }
+    const after = await readPan();
+    if (Math.hypot(after.x, after.y) >= 5) {
+      throw new Error(
+        `Board pan reset missed — surface still at (${after.x.toFixed(0)},${after.y.toFixed(0)}).`,
+      );
+    }
+    console.log(`    board pan reset (was (${pan.x.toFixed(0)},${pan.y.toFixed(0)}))`);
+    await page.waitForTimeout(JOURNEY.boardPanHold / JOURNEY.slowmo);
+  } finally {
+    await setSlowmo(page, JOURNEY.slowmo);
   }
 }

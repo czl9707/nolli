@@ -1,6 +1,5 @@
 import { join } from "node:path";
 import { readJsonOr } from "@nolli/remotion/cli";
-import { MAP_TRANSITION_LONG } from "@nolli/ui/constants";
 import { FPS } from "../../src/lib/constants";
 
 // Building slugs the demo visits, in order: open on the first, real-navigate
@@ -14,25 +13,19 @@ export const DEFAULT_TUNING = {
   establishZoom: 10,
   // The zoom we visit buildings at: the opening dive and the nav-arrival warm-up.
   visitZoom: 14,
-  establishHold: 1000,
-  flyHold: 400,
-  // The nav flyTo itself runs at @nolli/ui's MAP_TRANSITION_LONG (app-ms) +
-  // a short settle before the arrival pan — derived so it tracks the constant
-  // instead of freezing it (page-ops' flyTo already reads the live value).
-  navLandMs: MAP_TRANSITION_LONG * 1000 + 300,
+  // Post-landing settle before the arrival pan; the fly itself is gated by
+  // waitForMapMoveEnd in the capture script.
+  navLandMs: 1300,
   mapPanCount: 2,
-  // boardOpenSettle absorbs the "Go to Pin Board" morph-in (framer-motion) +
-  // the inset camera flyTo (a real setTimeout, unscaled by slow-mo, so it lands
-  // in app-time faster than its delay suggests). boardHold is then a PURE
-  // static pause after the bloom finishes — readable even after the final-cut
-  // 2× playbackRate. Together ~3.5s app.
+  // boardOpenSettle absorbs the board morph-in + inset flyTo (a real setTimeout,
+  // unscaled by slow-mo). boardHold is the pure static pause after it —
+  // readable even after the final-cut 2× playbackRate. Together ~3.5s app.
   boardOpenSettle: 2000,
   boardHold: 1500,
-  // Final beat: held after the lightbox entrance fully settles — the clip ends here.
   detailHold: 2000,
 
-  // Look-around fan half-widths (deg): pan 1 glances OUT away from the pin on a
-  // wide fan; pan 2 glances BACK toward the pin on a narrow one.
+  // Look-around fan half-widths (deg): pan 1 OUT on a wide fan, pan 2 BACK on a
+  // narrow one.
   panOutFanHalf: 60,
   panFanHalf: 20,
   panMagMin: 150,
@@ -41,13 +34,25 @@ export const DEFAULT_TUNING = {
   panDurMax: 400,
   panHold: 500,
 
+  // Board look-around (panBoardAround): diagonal drag magnitude in px,
+  // split 0.7/0.45 across x/y.
+  boardPanMag: 480,
+  boardPanDur: 400,
+  boardPanHold: 400,
+
+  // photoHold = lightbox on-screen time after its entrance; photoCloseSettle
+  // absorbs the framer exit; mapReturnSettle covers the board→map morph.
+  // boardPanToMag caps a pan-to-photo drag (panBoardTo).
+  photoHold: 1000,
+  photoCloseSettle: 400,
+  mapReturnSettle: 1200,
+  boardPanToMag: 480,
+
   screencastQuality: 96,
   maxFrames: 24 * FPS,
 
-  // Visible-cursor feel (see ../assets/cursor.ts). app-ms, like the rest. The
-  // approach to a click target, the hover-on-target before pressing (the "I'm
-  // here" beat), and the post-release settle. Cursor is still during camera
-  // beats and only moves to deliberately click/drag — visual tuning.
+  // Visible-cursor feel (../assets/cursor.ts), app-ms like the rest: approach,
+  // hover-on-target, post-release settle. Cursor only moves to click/drag.
   cursorMoveAppMs: 260,
   cursorHoverAppMs: 220,
   cursorDwellAppMs: 110,

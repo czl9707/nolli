@@ -3,7 +3,7 @@ export const FPS = 30;
 export const VIDEO = { width: 1920, height: 1080 } as const;
 /** Theme background token (stamped dark in DemoComposition). */
 export const BG = "rgb(var(--color-primary-background))";
-/** Frames per still image scene (0.6s @ 30fps + margin). */
+/** Frames per still image scene (0.6s @ 30fps). */
 export const STILL_FRAMES = 18;
 
 // Text/logo segment tuning. Only primitives live here — fixed reveal windows

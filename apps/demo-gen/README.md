@@ -107,13 +107,16 @@ step.
    Windows:
 
    ```powershell
-   netsh interface portproxy add v4tov4 listenaddress=<wsl-gateway-ip> listenport=9333 connectaddress=127.0.0.1 connectport=9333
    New-NetFirewallRule -DisplayName "WSL CDP 9333 (nolli capture)" -Direction Inbound -LocalPort 9333 -Protocol TCP -RemoteAddress <wsl-subnet-cidr> -Action Allow
    ```
 
-   `<wsl-gateway-ip>` is the `default via` IP from `ip route show default`
-   (e.g. `172.28.96.1`), and `<wsl-subnet-cidr>` that IP's subnet (e.g.
-   `172.28.96.0/20`). Stills and demo are captured at 2× device scale
+   Chrome binds CDP on 127.0.0.1 only; the capture script spawns a small
+   PowerShell relay on the Windows side bridging the gateway IP to it, so WSL
+   connects directly — no portproxy needed. The relay dies with the capture
+   process.
+   `<wsl-subnet-cidr>` is the `default via` IP's subnet from
+   `ip route show default` (e.g. gateway `172.28.96.1` → `172.28.96.0/20`).
+   Stills and demo are captured at 2× device scale
    (3840×2160) and downscaled in the composition — map linework stays crisp.
 
 ## Pipeline
@@ -147,23 +150,24 @@ Both re-download the DB when passed `--fresh` (e.g.
   the `shots` in `images.json`, and `video.json` for the same slug. Delete a
   file to re-seed it fresh.
 
-### 2. Assets — capture stills + the map-journey demo
+### 2. Assets — capture stills + the board-first demo
 
 ```sh
 pnpm assets <slug>          # images, then demo (umbrella)
 pnpm assets:images <slug>   # just the still photos
-pnpm assets:demo <slug>     # just the map journey
+pnpm assets:demo <slug>     # just the demo clip
 ```
 
 - **images** — reads `images.json`. Per shot: `board` screenshots the board
   view with the n-th photo opened in the lightbox
   (`images/<building>-board-<n>.png`); `detail` screenshots the architecture
   page (`images/<building>-detail.png`). Writes `out/<slug>/images/*`.
-- **demo** — reads `demo.json`. Drives the real app through the journey (the
-  slug list, in order) via the `?capture=1` handles (`window.__nolliMap` for the
-  camera, `window.__nolliNavigateArch` for the real arch→arch navigation),
-  captured with a slow-mo CDP screencast and resampled to real-time 30 fps.
-  Writes `out/<slug>/demo-1.mp4`.
+- **demo** — reads `demo.json` (the first journey slug is the subject; the
+  fly target is picked at runtime from the sidebar's "Also by" cards). Opens
+  on the pin board (entrance plays pre-roll, unrecorded), walks the board,
+  exits to the map, flies to a related architecture, looks around, and closes
+  on the board morph-in — captured with a slow-mo CDP screencast and resampled
+  to real-time 30 fps. Writes `out/<slug>/demo-1.mp4`.
   **Needs the dev server.**
 
 ### 3. Assemble — render the final video
