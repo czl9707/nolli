@@ -45,15 +45,11 @@ async function captureDemoBoard(
   let master: MasterFrame[] = [];
   const capture = await launchCaptureBrowser();
   try {
-    // Open on the map route, then enter the board via the app's own button —
-    // an in-app push, NOT a cold /board deep-link. The board's exit overlay
-    // navigate(-1)s, and every full page load resets react-router's history
-    // idx to 0, so a cold board link has no prior entry: its fallback
-    // navigates to /arch/:slug WITHOUT ?capture=1 and the capture bridges
-    // (window.__nolliMap) unmount for the rest of the session. The button
-    // push keeps idx > 0 and carries the capture search, so back returns to
-    // the capture URL. The morph-in + pin bloom + inset recenter all play
-    // here, pre-roll — the recording starts on the settled board.
+    // Enter the board via the app's own button, never a cold /board deep-link:
+    // the exit overlay navigate(-1)s, and a full page load resets react-router's
+    // history idx to 0, so the fallback navigates without ?capture=1 and the
+    // capture bridges unmount for the rest of the session. The entrance plays
+    // here, pre-roll.
     const { context, page } = await setupPageForCapture(capture.browser, start);
     await page.getByRole("button", { name: /go to pin board/i }).click();
     const overlayText = page.getByText(/click to go back to map view/i);
@@ -63,10 +59,8 @@ async function captureDemoBoard(
       throw new Error(`Board has ${photoCount} photos — need >=2 for the pan-to beats.`);
     }
     beat("board entrance settled (pre-roll)");
-    // The inset map is already framed by the app's own board-entry flyTo; the
-    // journey's only flight (the "Also by" click) is same-architect/nearby, so
-    // its destination tiles stream during the slow-mo flight — no warm jumps,
-    // which would wreck the inset framing we just waited for.
+    // The only flight (the "Also by" click) is nearby — its tiles stream during
+    // the slow-mo flight, and a warm jumpTo would wreck the inset framing.
     const insetTiles = await waitForTilesLoaded(page, 6000);
     beat(insetTiles ? "inset tiles loaded" : "inset tiles TIMED OUT — recording anyway");
     await flipSlowmo(page);
@@ -87,8 +81,7 @@ async function captureDemoBoard(
     const rec = await startRecording(context, page);
     await cursor.appear();
 
-    // Pick the two pan targets: the first photo, and whichever photo sits
-    // farthest from it — a long second leg reads as "exploring", not "nudging".
+    // Second pan target = farthest photo: a long leg reads as "exploring".
     const photos = page.locator(BOARD_PHOTO);
     const boxes = await Promise.all(
       Array.from({ length: photoCount }, (_, i) => photos.nth(i).boundingBox()),
@@ -107,7 +100,7 @@ async function captureDemoBoard(
     }
     beat(`photos picked: #${a} → #${b} (Δ${Math.round(bestDist)}px)`);
 
-    // Beat 1: pan to photo A, open it, hold, close.
+    // Beat 1
     await panBoardTo(page, cursor, photos.nth(a));
     beat("pan-to A done");
     await clickOn(photos.nth(a));
@@ -124,7 +117,7 @@ async function captureDemoBoard(
       .catch(() => false);
     beat(openOk ? "lightbox A open (backdrop opacity 1)" : "BACKDROP GATE TIMED OUT — lightbox never opened");
     await appWait(page, JOURNEY.photoHold);
-    // Close on the backdrop's corner — well clear of the centered image frame.
+    // Corner click — clear of the centered image frame.
     await clickOn({ x: VIEWPORT.width * 0.06, y: VIEWPORT.height * 0.06 });
     const closeOk = await page
       .waitForFunction(
@@ -140,17 +133,13 @@ async function captureDemoBoard(
     beat(closeOk ? "lightbox A closed" : "CLOSE GATE TIMED OUT — lightbox never closed");
     await appWait(page, JOURNEY.photoCloseSettle);
 
-    // Beat 2: pan to photo B — no open, the board has more to show.
+    // Beat 2 — pan only, no open.
     await panBoardTo(page, cursor, photos.nth(b));
     beat("pan-to B done");
 
-    // Beat 3: surface to the map via the inset overlay (navigate(-1) morph).
-    // panBoardReset first — a live pan at exit leaves the map view shifted
-    // under the slowed clock — and the morph itself also runs at __SLOWMO=1:
-    // framer never flushes the variant writes (surface transform, mapSlot
-    // size/border) under the slowed clock, so the mapSlot would keep its
-    // 10px board border and land smaller than home. Clip pacing is app-time
-    // either way; only capture density during the ~0.5s morph drops.
+    // Beat 3 — exit to map. Runs at __SLOWMO=1 (panBoardReset too): framer
+    // never flushes variant writes under the slowed clock, so the mapSlot
+    // would keep its board styling. Pacing is app-time either way.
     await panBoardReset(page, cursor);
     beat("board pan reset");
     await setSlowmo(page, 1);
@@ -158,14 +147,14 @@ async function captureDemoBoard(
       await clickOn(overlayText);
       await overlayText.waitFor({ state: "hidden", timeout: 8000 });
       await waitForMapMoveEnd(page);
-      // Wall = app-ms at __SLOWMO=1 (appWait would scale by the journey's 0.4).
+      // appWait would scale by the journey's 0.4 — we're at __SLOWMO=1 here.
       await page.waitForTimeout(JOURNEY.mapReturnSettle);
     } finally {
       await setSlowmo(page, JOURNEY.slowmo);
     }
     beat("back on map view");
 
-    // Beat 4: real "Also by" card click → the app's own inter-arch fly.
+    // Beat 4
     await page.getByText(/^Also by /).first().waitFor({ state: "visible", timeout: 10000 });
     const cards = page.locator("[data-selected]");
     const cardCount = await cards.count();
@@ -184,17 +173,15 @@ async function captureDemoBoard(
     const landed = await cam(page);
     beat(`fly landed (zoom ${landed?.zoom} lng ${landed?.lng.toFixed(3)})`);
 
-    // Beat 5: look around the new pin.
+    // Beat 5
     await panMapAround(page, cursor, {
       longitude: landed?.lng ?? start.longitude,
       latitude: landed?.lat ?? start.latitude,
     });
     beat("map pans done");
 
-    // Beat 6: closing shot — the board morph-in, recorded this time. Runs at
-    // __SLOWMO=1 like the exit: framer never flushes the entry morph's variant
-    // writes under the slowed clock either — the mapSlot would keep its
-    // borderless home styling and the final board would lose its white frame.
+    // Beat 6 — board morph-in, recorded. Same __SLOWMO=1 requirement as the
+    // exit: an unflushed entry morph loses the mapSlot's white board frame.
     await setSlowmo(page, 1);
     try {
       await clickOn(page.getByRole("button", { name: /go to pin board/i }));
@@ -206,8 +193,7 @@ async function captureDemoBoard(
     }
 
     master = await endRecording(rec);
-    // The settled board is static (a static page emits no frames to record) —
-    // its hold is padded into the timeline.
+    // Static board emits no frames — pad the hold into the timeline.
     padHold(master, JOURNEY.boardHold);
     beat("board open — end of demo");
   } finally {

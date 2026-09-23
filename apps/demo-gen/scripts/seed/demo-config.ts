@@ -13,22 +13,19 @@ export const DEFAULT_TUNING = {
   establishZoom: 10,
   // The zoom we visit buildings at: the opening dive and the nav-arrival warm-up.
   visitZoom: 14,
-  // The "Also by" fly is gated by waitForMapMoveEnd in the capture script;
-  // this is the pure post-landing settle before the arrival pan starts.
+  // Post-landing settle before the arrival pan; the fly itself is gated by
+  // waitForMapMoveEnd in the capture script.
   navLandMs: 1300,
   mapPanCount: 2,
-  // boardOpenSettle absorbs the "Go to Pin Board" morph-in (framer-motion) +
-  // the inset camera flyTo (a real setTimeout, unscaled by slow-mo, so it lands
-  // in app-time faster than its delay suggests). boardHold is then a PURE
-  // static pause after the bloom finishes — readable even after the final-cut
-  // 2× playbackRate. Together ~3.5s app.
+  // boardOpenSettle absorbs the board morph-in + inset flyTo (a real setTimeout,
+  // unscaled by slow-mo). boardHold is the pure static pause after it —
+  // readable even after the final-cut 2× playbackRate. Together ~3.5s app.
   boardOpenSettle: 2000,
   boardHold: 1500,
-  // Final beat: held after the lightbox entrance fully settles — the clip ends here.
   detailHold: 2000,
 
-  // Look-around fan half-widths (deg): pan 1 glances OUT away from the pin on a
-  // wide fan; pan 2 glances BACK toward the pin on a narrow one.
+  // Look-around fan half-widths (deg): pan 1 OUT on a wide fan, pan 2 BACK on a
+  // narrow one.
   panOutFanHalf: 60,
   panFanHalf: 20,
   panMagMin: 150,
@@ -37,17 +34,15 @@ export const DEFAULT_TUNING = {
   panDurMax: 400,
   panHold: 500,
 
-  // Board look-around (see page-ops' panBoardAround). boardPanMag is the drag's
-  // diagonal magnitude in px; the drag splits it 0.7/0.45 across x/y.
+  // Board look-around (panBoardAround): diagonal drag magnitude in px,
+  // split 0.7/0.45 across x/y.
   boardPanMag: 480,
   boardPanDur: 400,
   boardPanHold: 400,
 
-  // Board-first narrative (assets-demo-board.ts). photoHold is the lightbox's
-  // on-screen time after its entrance settles; photoCloseSettle absorbs the
-  // framer exit before the next board pan. mapReturnSettle covers the
-  // board→map morph (mapSlot resize + sidebar reopen). boardPanToMag caps a
-  // pan-to-photo drag (see page-ops' panBoardTo).
+  // photoHold = lightbox on-screen time after its entrance; photoCloseSettle
+  // absorbs the framer exit; mapReturnSettle covers the board→map morph.
+  // boardPanToMag caps a pan-to-photo drag (panBoardTo).
   photoHold: 1000,
   photoCloseSettle: 400,
   mapReturnSettle: 1200,
@@ -56,10 +51,8 @@ export const DEFAULT_TUNING = {
   screencastQuality: 96,
   maxFrames: 24 * FPS,
 
-  // Visible-cursor feel (see ../assets/cursor.ts). app-ms, like the rest. The
-  // approach to a click target, the hover-on-target before pressing (the "I'm
-  // here" beat), and the post-release settle. Cursor is still during camera
-  // beats and only moves to deliberately click/drag — visual tuning.
+  // Visible-cursor feel (../assets/cursor.ts), app-ms like the rest: approach,
+  // hover-on-target, post-release settle. Cursor only moves to click/drag.
   cursorMoveAppMs: 260,
   cursorHoverAppMs: 220,
   cursorDwellAppMs: 110,

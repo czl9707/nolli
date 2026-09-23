@@ -191,10 +191,9 @@ export function createCursor(page: Page, opts: CursorOptions) {
     };
   }
 
-  // Real pointer drag (press-move-release) for surfaces that pan on native
-  // pointer events — the pin board's useBoardPan, unlike the map's panBy. The
-  // cursor overlay rides along on its own pointermove listener, so no follow
-  // protocol is needed; cur tracks the release point for the next move.
+  // Real pointer drag for surfaces that pan on native pointer events (the
+  // board's useBoardPan) rather than the map's panBy. The overlay rides its
+  // own pointermove listener — no follow protocol needed.
   async function drag(point: Vec, appMs: number): Promise<void> {
     const steps = 6;
     await page.mouse.down();
