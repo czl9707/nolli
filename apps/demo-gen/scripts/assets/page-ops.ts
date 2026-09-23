@@ -1,9 +1,11 @@
 import type { Browser, Locator, Page } from "playwright";
+import { MAP_TRANSITION_SHORT, MAP_TRANSITION_LONG } from "@nolli/ui/constants";
 import {
   BASE_URL,
   BOARD_PHOTO,
   applyBrowserCaptureContext,
   waitForToastDisappear,
+  waitForTilesLoaded,
 } from "./capture-helpers";
 import type { Cursor } from "./cursor";
 import type { BuildingRow } from "../seed/manifest";
@@ -64,6 +66,29 @@ export const setSlowmo = (page: Page, factor: number) =>
     factor,
   );
 
+// In-page camera primitive mirroring packages/map/src/map-flyto.ts
+// (flyToArchCinematic), on the app's own transition constants.
+export const flyTo = (page: Page, lat: number, lng: number, zoom: number) =>
+  page.evaluate(
+    ({ lat, lng, zoom, nearMs, farMs }) => {
+      const m = (window as unknown as { __nolliMap?: NolliCaptureMap }).__nolliMap;
+      if (!m) return;
+      const dest = Math.max(m.getZoom(), zoom);
+      const delta = dest - m.getZoom();
+      const contains = m.getBounds().contains([lng, lat]);
+      const duration = contains ? nearMs + delta * 200 : farMs;
+      m.stop();
+      m.flyTo({ center: [lng, lat], zoom: dest, duration, curve: 1.2, speed: 1.0, essential: true });
+    },
+    {
+      lat,
+      lng,
+      zoom,
+      nearMs: MAP_TRANSITION_SHORT * 1000,
+      farMs: MAP_TRANSITION_LONG * 1000,
+    },
+  );
+
 const mapCenter = (page: Page) =>
   page.evaluate(() => {
     const m = (window as unknown as { __nolliMap?: NolliCaptureMap }).__nolliMap;
@@ -105,6 +130,27 @@ export async function setupPageForCapture(browser: Browser, start: BuildingRow) 
   return { context, page };
 }
 
+// Warm both flyTo destinations' zoom at their centers BEFORE slow-mo, so each
+// swoop snaps in instantly during capture. Jumps run at real time (setTimeout
+// isn't patched) and are invisible (screencast hasn't started). Leaves the
+// camera at the establishing zoom on the first building (the journey's start state).
+export async function warmTiles(page: Page, start: BuildingRow, last: BuildingRow) {
+  const jumpTo = (center: [number, number], zoom: number) =>
+    page.evaluate(
+      ({ center, zoom }) => {
+        (window as unknown as { __nolliMap?: NolliCaptureMap }).__nolliMap?.jumpTo({ center, zoom });
+      },
+      { center, zoom },
+    );
+  for (const b of [start, last]) {
+    await jumpTo([b.longitude, b.latitude], JOURNEY.visitZoom);
+    await waitForTilesLoaded(page, 6000);
+  }
+  await jumpTo([start.longitude, start.latitude], JOURNEY.establishZoom);
+  await waitForTilesLoaded(page, 6000);
+  console.log("  tile warm done");
+}
+
 // Flip the whole app (MapLibre camera + framer-motion) into slow-mo for capture.
 export async function flipSlowmo(page: Page) {
   await page.evaluate(
@@ -112,6 +158,38 @@ export async function flipSlowmo(page: Page) {
       (window as unknown as { __SLOWMO?: number }).__SLOWMO = s;
     },
     JOURNEY.slowmo,
+  );
+}
+
+// ── Navigation ──────────────────────────────────────────────────────────────
+
+// Real arch→arch navigation — the money shot. Goes through the app's own nav
+// handler (window.__nolliNavigateArch, the "Also by" card path), not a
+// synthetic flyTo, so the URL change + sidebar update + MapFlyNavigator fly
+// are exactly the inter-arch transition a user gets.
+export async function navigateToArch(page: Page, target: BuildingRow, beat: (label: string) => void) {
+  const hasNav = await page.evaluate(
+    () => !!(window as unknown as { __nolliNavigateArch?: unknown }).__nolliNavigateArch,
+  );
+  if (!hasNav) {
+    throw new Error("window.__nolliNavigateArch not found — ArchNavCaptureBridge didn't run.");
+  }
+  const camBeforeNav = await cam(page);
+  beat(`nav trigger → ${target.slug} (from zoom ${camBeforeNav?.zoom} lng ${camBeforeNav?.lng.toFixed(3)})`);
+  await page.evaluate(
+    (slug) => {
+      (window as unknown as { __nolliNavigateArch?: (s: string, fly?: boolean) => void }).__nolliNavigateArch?.(slug, true);
+    },
+    target.slug,
+  );
+  // Fixed wait for the off-screen fly to land + settle, then straight into the
+  // arrival pan. A waitForMapMoveEnd here resolved unpredictably — `select` is
+  // async, so isMoving() was already false at the first poll.
+  await appWait(page, JOURNEY.navLandMs);
+  const camAfterNav = await cam(page);
+  beat(
+    `navLandMs done (zoom ${camAfterNav?.zoom} lng ${camAfterNav?.lng.toFixed(3)}, ` +
+      `Δlng ${((camAfterNav?.lng ?? 0) - (camBeforeNav?.lng ?? 0)).toFixed(3)})`,
   );
 }
 

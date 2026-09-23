@@ -10,6 +10,9 @@ export type Journey = string[];
 // code edit here. Values are app-ms (the units the final real-time clip shows).
 export const DEFAULT_TUNING = {
   slowmo: 0.4,
+  establishZoom: 10,
+  // The zoom we visit buildings at: the opening dive and the nav-arrival warm-up.
+  visitZoom: 14,
   // The "Also by" fly is gated by waitForMapMoveEnd in the capture script;
   // this is the pure post-landing settle before the arrival pan starts.
   navLandMs: 1300,
