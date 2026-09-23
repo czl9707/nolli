@@ -191,6 +191,25 @@ export function createCursor(page: Page, opts: CursorOptions) {
     };
   }
 
+  // Real pointer drag (press-move-release) for surfaces that pan on native
+  // pointer events — the pin board's useBoardPan, unlike the map's panBy. The
+  // cursor overlay rides along on its own pointermove listener, so no follow
+  // protocol is needed; cur tracks the release point for the next move.
+  async function drag(point: Vec, appMs: number): Promise<void> {
+    const steps = 6;
+    await page.mouse.down();
+    for (let i = 1; i <= steps; i++) {
+      const t = i / steps;
+      const ease = t * t * (3 - 2 * t); // smoothstep — in/out like MapLibre's pan easing
+      const x = cur.x + (point.x - cur.x) * ease;
+      const y = cur.y + (point.y - cur.y) * ease;
+      await page.mouse.move(clamp(x, 0, viewport.width), clamp(y, 0, viewport.height));
+      await page.waitForTimeout(wall(appMs / steps));
+    }
+    await page.mouse.up();
+    cur = { x: clamp(point.x, 0, viewport.width), y: clamp(point.y, 0, viewport.height) };
+  }
+
   // The overlay is hidden until the first pointermove — a single move reveals
   // it. No path, no glide-in (that read as a bad initial move).
   async function appear(): Promise<void> {
@@ -204,6 +223,7 @@ export function createCursor(page: Page, opts: CursorOptions) {
     move,
     click,
     dragMap,
+    drag,
     // Read-only current position (callers compute drag endpoints as pos+delta).
     pos: () => ({ ...cur }) as Readonly<Vec>,
   };

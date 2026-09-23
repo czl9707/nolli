@@ -1,10 +1,9 @@
-import type { Browser, Page } from "playwright";
-import { MAP_TRANSITION_SHORT, MAP_TRANSITION_LONG } from "@nolli/ui/constants";
+import type { Browser, Locator, Page } from "playwright";
 import {
   BASE_URL,
+  BOARD_PHOTO,
   applyBrowserCaptureContext,
   waitForToastDisappear,
-  waitForTilesLoaded,
 } from "./capture-helpers";
 import type { Cursor } from "./cursor";
 import type { BuildingRow } from "../seed/manifest";
@@ -44,36 +43,26 @@ export type NolliCaptureMap = {
 
 // ── Camera ──────────────────────────────────────────────────────────────────
 
-// In-page camera primitive mirroring packages/map/src/map-flyto.ts
-// (flyToArchCinematic), on the app's own transition constants.
-export const flyTo = (page: Page, lat: number, lng: number, zoom: number) =>
-  page.evaluate(
-    ({ lat, lng, zoom, nearMs, farMs }) => {
-      const m = (window as unknown as { __nolliMap?: NolliCaptureMap }).__nolliMap;
-      if (!m) return;
-      const dest = Math.max(m.getZoom(), zoom);
-      const delta = dest - m.getZoom();
-      const contains = m.getBounds().contains([lng, lat]);
-      const duration = contains ? nearMs + delta * 200 : farMs;
-      m.stop();
-      m.flyTo({ center: [lng, lat], zoom: dest, duration, curve: 1.2, speed: 1.0, essential: true });
-    },
-    {
-      lat,
-      lng,
-      zoom,
-      nearMs: MAP_TRANSITION_SHORT * 1000,
-      farMs: MAP_TRANSITION_LONG * 1000,
-    },
-  );
-
-const cam = (page: Page) =>
+export const cam = (page: Page) =>
   page.evaluate(() => {
     const m = (window as unknown as { __nolliMap?: NolliCaptureMap }).__nolliMap;
     if (!m) return null;
     const c = m.getCenter();
     return { zoom: m.getZoom(), lng: c.lng, lat: c.lat };
   });
+
+// Flip the page's slow-mo factor in place — board beats that drive real
+// pointer drags run at __SLOWMO=1 (see panBoardAround's header for why) and
+// restore the journey factor in a finally. Exported for narrative scripts
+// that hold the realtime clock across a whole beat (e.g. the board→map exit,
+// whose morph writes don't flush under the slowed clock either).
+export const setSlowmo = (page: Page, factor: number) =>
+  page.evaluate(
+    (v) => {
+      (window as unknown as { __SLOWMO?: number }).__SLOWMO = v;
+    },
+    factor,
+  );
 
 const mapCenter = (page: Page) =>
   page.evaluate(() => {
@@ -116,27 +105,6 @@ export async function setupPageForCapture(browser: Browser, start: BuildingRow) 
   return { context, page };
 }
 
-// Warm both flyTo destinations' zoom at their centers BEFORE slow-mo, so each
-// swoop snaps in instantly during capture. Jumps run at real time (setTimeout
-// isn't patched) and are invisible (screencast hasn't started). Leaves the
-// camera at the establishing zoom on the first building (the journey's start state).
-export async function warmTiles(page: Page, start: BuildingRow, last: BuildingRow) {
-  const jumpTo = (center: [number, number], zoom: number) =>
-    page.evaluate(
-      ({ center, zoom }) => {
-        (window as unknown as { __nolliMap?: NolliCaptureMap }).__nolliMap?.jumpTo({ center, zoom });
-      },
-      { center, zoom },
-    );
-  for (const b of [start, last]) {
-    await jumpTo([b.longitude, b.latitude], JOURNEY.visitZoom);
-    await waitForTilesLoaded(page, 6000);
-  }
-  await jumpTo([start.longitude, start.latitude], JOURNEY.establishZoom);
-  await waitForTilesLoaded(page, 6000);
-  console.log("  tile warm done");
-}
-
 // Flip the whole app (MapLibre camera + framer-motion) into slow-mo for capture.
 export async function flipSlowmo(page: Page) {
   await page.evaluate(
@@ -144,38 +112,6 @@ export async function flipSlowmo(page: Page) {
       (window as unknown as { __SLOWMO?: number }).__SLOWMO = s;
     },
     JOURNEY.slowmo,
-  );
-}
-
-// ── Navigation ──────────────────────────────────────────────────────────────
-
-// Real arch→arch navigation — the money shot. Goes through the app's own nav
-// handler (window.__nolliNavigateArch, the "Also by" card path), not a
-// synthetic flyTo, so the URL change + sidebar update + MapFlyNavigator fly
-// are exactly the inter-arch transition a user gets.
-export async function navigateToArch(page: Page, target: BuildingRow, beat: (label: string) => void) {
-  const hasNav = await page.evaluate(
-    () => !!(window as unknown as { __nolliNavigateArch?: unknown }).__nolliNavigateArch,
-  );
-  if (!hasNav) {
-    throw new Error("window.__nolliNavigateArch not found — ArchNavCaptureBridge didn't run.");
-  }
-  const camBeforeNav = await cam(page);
-  beat(`nav trigger → ${target.slug} (from zoom ${camBeforeNav?.zoom} lng ${camBeforeNav?.lng.toFixed(3)})`);
-  await page.evaluate(
-    (slug) => {
-      (window as unknown as { __nolliNavigateArch?: (s: string, fly?: boolean) => void }).__nolliNavigateArch?.(slug, true);
-    },
-    target.slug,
-  );
-  // Fixed wait for the off-screen fly to land + settle, then straight into the
-  // arrival pan. A waitForMapMoveEnd here resolved unpredictably — `select` is
-  // async, so isMoving() was already false at the first poll.
-  await appWait(page, JOURNEY.navLandMs);
-  const camAfterNav = await cam(page);
-  beat(
-    `navLandMs done (zoom ${camAfterNav?.zoom} lng ${camAfterNav?.lng.toFixed(3)}, ` +
-      `Δlng ${((camAfterNav?.lng ?? 0) - (camBeforeNav?.lng ?? 0)).toFixed(3)})`,
   );
 }
 
@@ -264,5 +200,145 @@ export async function panMapAround(
       throw new Error("Map pan produced no movement — panBy didn't take.");
     }
     await appWait(page, JOURNEY.panHold);
+  }
+}
+
+// Board look-around: the out-and-back glance panMapAround gives the map, as two
+// real-pointer drags on the board viewport (useBoardPan pans on native pointer
+// events — there is no panBy to drive). The surface (2400×1500) is larger than
+// the viewport (1920×1080), so a diagonal drag has travel in both directions.
+// Drag >3px suppresses item clicks and the map inset is covered by its overlay
+// in board mode, so the drag pans the board from anywhere. Movement is asserted
+// via a photo's screen box — the pan shifts every item, so a static box means
+// the drag was swallowed.
+//
+// The whole beat runs at __SLOWMO=1: framer-motion never flushes the pan
+// MotionValue's DOM write per-pointermove under the slowed clock (the transform
+// sits at its pre-drag value until the pointerup re-render — the board
+// "teleports" instead of panning). At real time it writes per-move, and the
+// cursor helpers' wall-time pacing (appMs/slowmo) already stretches the drag to
+// slowmo-equivalent wall duration, so the clip's pacing is unchanged.
+export async function panBoardAround(page: Page, cursor: Cursor) {
+  await setSlowmo(page, 1);
+  try {
+    const witness = page.locator(BOARD_PHOTO).first();
+    // Leg 1 heads out on the NEGATIVE diagonal and leg 2 returns: clampPan's
+    // window is [viewport−canvas−pad, +pad] ≈ [-680, 200] / [-620, 200] from
+    // the board's home, so the negative side has the most room.
+    for (const [i, sign] of [-1, 1].entries()) {
+      const dx = Math.round(sign * JOURNEY.boardPanMag * 0.7);
+      const dy = Math.round(sign * JOURNEY.boardPanMag * 0.45);
+      const half = { x: dx / 2, y: dy / 2 };
+      const start = {
+        x: Math.max(VIEWPORT.width * 0.25, Math.min(VIEWPORT.width * 0.7, VIEWPORT.width / 2 + half.x)),
+        y: Math.max(VIEWPORT.height * 0.25, Math.min(VIEWPORT.height * 0.7, VIEWPORT.height / 2 + half.y)),
+      };
+      const dist = Math.hypot(start.x - cursor.pos().x, start.y - cursor.pos().y);
+      await cursor.move(start, Math.max(70, Math.min(120, dist / 1.8)));
+      const before = await witness.boundingBox();
+      await cursor.drag({ x: start.x + dx, y: start.y + dy }, JOURNEY.boardPanDur);
+      const after = await witness.boundingBox();
+      if (before && after && Math.hypot(after.x - before.x, after.y - before.y) < 5) {
+        throw new Error("Board pan produced no movement — drag was swallowed.");
+      }
+      console.log(
+        `    board pan leg ${i + 1} dx=${signed(dx)} dy=${signed(dy)}` +
+          ` (witness Δ=(${signed(Math.round((after?.x ?? 0) - (before?.x ?? 0)))},${signed(Math.round((after?.y ?? 0) - (before?.y ?? 0)))}))`,
+      );
+      await page.waitForTimeout(JOURNEY.boardPanHold / JOURNEY.slowmo);
+    }
+  } finally {
+    await setSlowmo(page, JOURNEY.slowmo);
+  }
+}
+
+// Single-leg board pan TOWARD a target photo: the drag delta is
+// center − photo-center (the surface follows the pointer, so the photo lands
+// near the viewport middle), magnitude clamped to boardPanToMag so a distant
+// photo doesn't slam into the clamp window at full stretch. Same __SLOWMO=1
+// requirement and witness-assert as panBoardAround.
+export async function panBoardTo(page: Page, cursor: Cursor, photo: Locator) {
+  await setSlowmo(page, 1);
+  try {
+    const box = await photo.boundingBox();
+    if (!box) throw new Error("panBoardTo: target photo not visible.");
+    const cx = box.x + box.width / 2;
+    const cy = box.y + box.height / 2;
+    let dx = VIEWPORT.width / 2 - cx;
+    let dy = VIEWPORT.height / 2 - cy;
+    const mag = Math.hypot(dx, dy);
+    if (mag > JOURNEY.boardPanToMag) {
+      dx = (dx / mag) * JOURNEY.boardPanToMag;
+      dy = (dy / mag) * JOURNEY.boardPanToMag;
+    }
+    const half = { x: dx / 2, y: dy / 2 };
+    const start = {
+      x: Math.max(VIEWPORT.width * 0.25, Math.min(VIEWPORT.width * 0.7, VIEWPORT.width / 2 - half.x)),
+      y: Math.max(VIEWPORT.height * 0.25, Math.min(VIEWPORT.height * 0.7, VIEWPORT.height / 2 - half.y)),
+    };
+    const dist = Math.hypot(start.x - cursor.pos().x, start.y - cursor.pos().y);
+    await cursor.move(start, Math.max(70, Math.min(120, dist / 1.8)));
+    const before = await photo.boundingBox();
+    await cursor.drag({ x: start.x + dx, y: start.y + dy }, JOURNEY.boardPanDur);
+    const after = await photo.boundingBox();
+    if (before && after && Math.hypot(after.x - before.x, after.y - before.y) < 5) {
+      throw new Error("Board pan produced no movement — drag was swallowed.");
+    }
+    console.log(
+      `    board pan-to dx=${signed(Math.round(dx))} dy=${signed(Math.round(dy))}` +
+        ` (witness Δ=(${signed(Math.round((after?.x ?? 0) - (before?.x ?? 0)))},${signed(Math.round((after?.y ?? 0) - (before?.y ?? 0)))}))`,
+    );
+    await page.waitForTimeout(JOURNEY.boardPanHold / JOURNEY.slowmo);
+  } finally {
+    await setSlowmo(page, JOURNEY.slowmo);
+  }
+}
+
+// Drag the board surface back to its home transform (pan 0,0) before leaving
+// board mode. useBoardPan resets the pan with an imperative framer
+// `animate(panX, 0)` on the mode flip — which never flushes its DOM write
+// under the slowed clock (same class as panBoardAround's pointermove gotcha),
+// so exiting with a live pan leaves the whole map view shifted by the pan
+// offset until some later React render happens to flush it. Returning the pan
+// with a real drag at __SLOWMO=1 first makes that reset a 0→0 no-op.
+export async function panBoardReset(page: Page, cursor: Cursor) {
+  await setSlowmo(page, 1);
+  try {
+    const readPan = () =>
+      page.evaluate(() => {
+        const el = document.querySelector<HTMLElement>("div[class*='surface']");
+        const m = new DOMMatrixReadOnly(el?.style.transform || "none");
+        return { x: m.m41, y: m.m42 };
+      });
+    const pan = await readPan();
+    if (Math.hypot(pan.x, pan.y) >= 5) {
+      // The surface moves WITH the pointer, so canceling pan P needs a drag
+      // delta of −P: start at center + P/2, drag to center − P/2.
+      const start = { x: VIEWPORT.width / 2 + pan.x / 2, y: VIEWPORT.height / 2 + pan.y / 2 };
+      await cursor.move(
+        {
+          x: Math.max(1, Math.min(VIEWPORT.width - 1, start.x)),
+          y: Math.max(1, Math.min(VIEWPORT.height - 1, start.y)),
+        },
+        JOURNEY.boardPanDur,
+      );
+      await cursor.drag(
+        {
+          x: Math.max(1, Math.min(VIEWPORT.width - 1, start.x - pan.x)),
+          y: Math.max(1, Math.min(VIEWPORT.height - 1, start.y - pan.y)),
+        },
+        JOURNEY.boardPanDur,
+      );
+    }
+    const after = await readPan();
+    if (Math.hypot(after.x, after.y) >= 5) {
+      throw new Error(
+        `Board pan reset missed — surface still at (${after.x.toFixed(0)},${after.y.toFixed(0)}).`,
+      );
+    }
+    console.log(`    board pan reset (was (${pan.x.toFixed(0)},${pan.y.toFixed(0)}))`);
+    await page.waitForTimeout(JOURNEY.boardPanHold / JOURNEY.slowmo);
+  } finally {
+    await setSlowmo(page, JOURNEY.slowmo);
   }
 }

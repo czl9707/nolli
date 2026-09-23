@@ -1,6 +1,5 @@
 import { join } from "node:path";
 import { readJsonOr } from "@nolli/remotion/cli";
-import { MAP_TRANSITION_LONG } from "@nolli/ui/constants";
 import { FPS } from "../../src/lib/constants";
 
 // Building slugs the demo visits, in order: open on the first, real-navigate
@@ -11,15 +10,9 @@ export type Journey = string[];
 // code edit here. Values are app-ms (the units the final real-time clip shows).
 export const DEFAULT_TUNING = {
   slowmo: 0.4,
-  establishZoom: 10,
-  // The zoom we visit buildings at: the opening dive and the nav-arrival warm-up.
-  visitZoom: 14,
-  establishHold: 1000,
-  flyHold: 400,
-  // The nav flyTo itself runs at @nolli/ui's MAP_TRANSITION_LONG (app-ms) +
-  // a short settle before the arrival pan — derived so it tracks the constant
-  // instead of freezing it (page-ops' flyTo already reads the live value).
-  navLandMs: MAP_TRANSITION_LONG * 1000 + 300,
+  // The "Also by" fly is gated by waitForMapMoveEnd in the capture script;
+  // this is the pure post-landing settle before the arrival pan starts.
+  navLandMs: 1300,
   mapPanCount: 2,
   // boardOpenSettle absorbs the "Go to Pin Board" morph-in (framer-motion) +
   // the inset camera flyTo (a real setTimeout, unscaled by slow-mo, so it lands
@@ -40,6 +33,22 @@ export const DEFAULT_TUNING = {
   panDurMin: 200,
   panDurMax: 400,
   panHold: 500,
+
+  // Board look-around (see page-ops' panBoardAround). boardPanMag is the drag's
+  // diagonal magnitude in px; the drag splits it 0.7/0.45 across x/y.
+  boardPanMag: 480,
+  boardPanDur: 400,
+  boardPanHold: 400,
+
+  // Board-first narrative (assets-demo-board.ts). photoHold is the lightbox's
+  // on-screen time after its entrance settles; photoCloseSettle absorbs the
+  // framer exit before the next board pan. mapReturnSettle covers the
+  // board→map morph (mapSlot resize + sidebar reopen). boardPanToMag caps a
+  // pan-to-photo drag (see page-ops' panBoardTo).
+  photoHold: 1000,
+  photoCloseSettle: 400,
+  mapReturnSettle: 1200,
+  boardPanToMag: 480,
 
   screencastQuality: 96,
   maxFrames: 24 * FPS,
