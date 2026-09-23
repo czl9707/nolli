@@ -91,14 +91,15 @@ function CityLedger({ data, fit }: { data: LandingData; fit: RefObject<SceneCame
     [archsByCity, map, cameraFor],
   )
 
-  // map ownership is the single gate: markers, cubes' auto-advance, and
-  // the paper ground all follow the spine's owned-scene edge
+  // map ownership gates the live pieces — markers and the cubes'
+  // auto-advance follow the spine's owned-scene edge (the pane itself is
+  // always in the page)
   const ownsMap = useSceneOwnsMap()
 
   return (
     <Screen className={styles.city} height={`${SCENE_VH}svh`}>
       <CityMarkers archs={archs} on={ownsMap} selected={cardSlug} onSelect={setCardSlug} />
-      <Pane className={styles.mapPaneWrap} data-owns={ownsMap ? "true" : "false"}>
+      <Pane className={styles.mapPaneWrap}>
         <div ref={paneRef} data-spine-shape="city" className={styles.mapPane} />
       </Pane>
       <Pane col="1" className={styles.contentPane}>

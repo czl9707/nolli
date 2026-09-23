@@ -11,54 +11,39 @@
   padding-bottom: 20svh;
 }
 
+/* the map pane — a paper frame always in the page (no animation): the
+   whole pane sits one step under the spine's map layer, so the map paints
+   over the inset ground whenever it lands here */
 .mapPaneWrap {
   grid-column: 2 / -1;
   grid-row: 1;
   position: relative;
-  /* position: fixed;
-  left: calc(var(--size-page-padding) + var(--page-col));
-  right: var(--size-page-padding);
-  top: calc(var(--size-header-top) + var(--size-header-height) + 5svh);
-  bottom: 10svh; */
   background: rgb(var(--color-paper-background));
-  transition: background-color var(--transition-instant) ease;
-  transition-delay: .3s;
-  z-index: -101;
+  z-index: calc(var(--z-map-behind) - 2);
 }
 
 .mapPaneWrap::before {
   content: "";
-  position: absolute;
   inset: 0;
-  background-image: url("/patterns/light/grass.png");
-  opacity: 0.5;
-  transition: opacity var(--transition-instant) ease;
-  transition-delay: .3s;
-  pointer-events: none;
-
-  body[data-theme="dark"] & {
-    background-image: url("/patterns/dark/grass.png");
-  }
+  position: absolute;
+  opacity: .75;
+  background-image: var(--pattern-grass-oppo);
+  z-index: calc(var(--z-map-behind) - 1);
 }
 
-/* the paper ground only shows while this scene owns the map — otherwise
-   the pane is just a hole in the page */
-.mapPaneWrap[data-owns="false"] {
-  background-color: transparent;
-  transition-delay: 0s;
-}
-
-.mapPaneWrap[data-owns="false"]::before {
-  opacity: 0;
-  transition-delay: 0s;
-}
+/* inset ground pane — secondary color + grass pattern; the map layer
+   lands on the same inset rect and covers it */
+/* .mapGround {
+  inset: var(--spacing-paragraph);
+} */
 
 /* the shape pane — empty in the DOM; the spine's map layer lands on its
-   rect (filling the pane exactly). Inset below the header strip so the
-   camera fit and the markers clear it. */
+rect (filling the pane exactly). Inset below the header strip so the
+camera fit and the markers clear it. */
 .mapPane {
   position: absolute;
   inset: var(--spacing-paragraph);
+  background-color: rgb(var(--color-secondary-background));
 }
 
 .contentPane {
@@ -154,7 +139,7 @@
   height: .5rem;
   padding: 0;
   border: none;
-  background: rgb(var(--color-paper-foreground) / 0.25);
+  background: rgb(var(--color-paper-foreground));
   cursor: pointer;
   transition:
     width var(--transition-instant) ease,

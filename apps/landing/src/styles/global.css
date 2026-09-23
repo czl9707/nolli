@@ -28,7 +28,7 @@ body {
   --size-header-height: 3.5rem;
   --size-header-top: var(--spacing-component);
 
-  --size-page-max-width: 128rem;
+  --size-page-max-width: 96rem;
   --size-page-padding: max(
     calc((100vw - var(--size-page-max-width)) / 2),
     var(--spacing-group)
