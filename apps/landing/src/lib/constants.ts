@@ -1,5 +1,3 @@
-import type { SceneCamera } from "@nolli/map"
-
 export const MAP_APP_URL = "https://nolli-map.com"
 export const LANDING_URL = "https://landing.nolli-map.com"
 export const POSTER_URL = "https://poster.nolli-map.com"
@@ -156,8 +154,6 @@ export const STATS_DECK_SLUGS = [
 
 /** Cell roll easing — CSS mirror --ease-roll in styles/global.css */
 export const ROLL_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1]
-
-export const WORLD_CAMERA: SceneCamera = { center: [10, 25], zoom: 1.5 }
 
 /** Hero camera fit insets off the stage rect (px): left clears the centered
  * lede, x pads the column side, top/bottom keep the pin band level with the

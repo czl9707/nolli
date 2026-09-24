@@ -155,6 +155,10 @@ export function Spine({
         if (t - tw.start >= tw.durationMs) tween.current = null
       }
       const p = pane.getBoundingClientRect()
+      // the layer is positioned inside the sticky frame; at the spine's
+      // tail the frame itself rides up (wrapper bottom above the frame's),
+      // so placement is pane-rect minus the frame's live offset
+      const f = frameRef.current!.getBoundingClientRect()
       const r: PxRect = {
         left: p.left + off.current.left,
         top: p.top + off.current.top,
@@ -162,8 +166,8 @@ export function Spine({
         height: p.height + off.current.height,
       }
       lastRect.current = r
-      el.style.left = `${r.left}px`
-      el.style.top = `${r.top}px`
+      el.style.left = `${r.left - f.left}px`
+      el.style.top = `${r.top - f.top}px`
       el.style.width = `${r.width}px`
       el.style.height = `${r.height}px`
     }
@@ -286,7 +290,7 @@ export function Spine({
 
   return (
     <Ctx.Provider value={ctx}>
-      <div ref={wrapperRef} style={{ position: "relative", height: `${timeline.totalVh + 100}svh` }}>
+      <div ref={wrapperRef} style={{ position: "relative", height: `${timeline.totalVh}svh` }}>
         <div
           ref={frameRef}
           style={{ position: "sticky", top: 0, height: "100svh", overflow: "hidden", zIndex: "var(--z-map-behind)" }}
@@ -319,16 +323,12 @@ export function Spine({
             global z scale directly (reveal drops below the rules, panes and
             content sit at 0 over them) */}
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, pointerEvents: "none" }}>
-          {timeline.segments.map(({ scene }, i) => (
+          {timeline.segments.map(({ scene }) => (
             <SceneIdCtx.Provider key={scene.id} value={scene.id}>
-              {/* the wrapper's +100vh buffer rides the LAST scene's wrapper,
-                  else the final 100vh of scroll is bare wrapper — the last
-                  screen scrolls off into blank. The last scene's sticky
-                  content holds through the tail instead. */}
               <div
                 data-scene={scene.id}
                 style={{
-                  height: `${scene.heightVh + (i === timeline.segments.length - 1 ? 100 : 0)}svh`,
+                  height: `${scene.heightVh}svh`,
                   position: "relative",
                   pointerEvents: "none",
                 }}

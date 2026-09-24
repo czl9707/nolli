@@ -99,7 +99,7 @@ function StatsScene({ stats, photoPool, architectNames }: StatsProps) {
         </Pane>
         <Pane style={{ gridArea: "cta" }}>
           <LandingButton variant="ghost" className={styles.ctaButton} asChild>
-            <a href={MAP_APP_URL}>
+            <a href={MAP_APP_URL} target="_blank" rel="noopener noreferrer">
               <Note>Open the map</Note>
               <ArrowUpRight size={16} aria-hidden />
             </a>

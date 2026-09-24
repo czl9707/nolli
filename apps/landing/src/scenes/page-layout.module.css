@@ -11,14 +11,6 @@
   padding-inline: var(--size-page-padding);
 }
 
-/* full-bleed layer inside a screen (map background) — covers the whole
-   viewport, padding included */
-.bleed {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-}
-
 /* ── pane ────────────────────────────────────────────────────────────────
    Pure placement: col/row map to grid-column/grid-row. Surfaces are the
    two props — filled (the paper pane: paper ground + contrast grass wash)

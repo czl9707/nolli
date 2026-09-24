@@ -30,7 +30,7 @@ export function SiteHeader() {
       </LandingDropdownTrigger>
       <LandingDropdownContent align="end" className={styles.menuContent}>
         <LandingDropdownItem variant="accent" asChild>
-          <a href={MAP_APP_URL}>
+          <a href={MAP_APP_URL} target="_blank" rel="noopener noreferrer">
             <Note>Explore Nolli</Note>
           </a>
         </LandingDropdownItem>
@@ -87,7 +87,7 @@ export function SiteHeader() {
             </div>
             <div className={styles.half}>
               <LandingButton variant="accent" size="pane" asChild>
-                <a href={MAP_APP_URL}>
+                <a href={MAP_APP_URL} target="_blank" rel="noopener noreferrer">
                   <Note>Explore Nolli</Note>
                   <ArrowUpRight size={16} aria-hidden />
                 </a>

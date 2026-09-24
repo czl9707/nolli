@@ -1,15 +1,9 @@
 // Hairline page-grid primitives for the landing spine — the column-field
-// counterpart to grid.tsx (which stays until every scene has migrated).
+// layout every scene places on.
 // A Screen is a native CSS grid on --page-cols; panes place onto cells and
 // rules are standalone grid children, so lines and content are decoupled.
 import { type CSSProperties, type ComponentPropsWithoutRef, type ReactNode, forwardRef } from "react"
 import styles from "./page-layout.module.css"
-
-/** Full-bleed layer inside a screen (map background) — covers the whole
- * viewport, padding included. */
-export function Bleed({ children, className }: { children?: ReactNode; className?: string }) {
-  return <div className={[styles.bleed, className].filter(Boolean).join(" ")}>{children}</div>
-}
 
 export const Screen = forwardRef<
   HTMLDivElement,

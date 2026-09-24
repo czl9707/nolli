@@ -33,7 +33,6 @@ body {
     calc((100vw - var(--size-page-max-width)) / 2),
     var(--spacing-group)
   );
-  --grid-col: calc((100vw - 2 * var(--size-page-padding)) / 12);
 
   /* hairline column field — the page grid scenes place on; the global
      overlay draws its lines at the same cell pitch */
