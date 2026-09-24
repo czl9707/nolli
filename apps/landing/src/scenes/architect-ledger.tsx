@@ -8,12 +8,12 @@ import { useEffect, useRef, useState, type CSSProperties } from "react"
 import { motion, useMotionValueEvent, useTransform } from "framer-motion"
 import { H2 } from "@nolli/ui"
 import type { SceneCamera } from "@nolli/map"
-import { useSceneOwnsMap, useSceneScroll, useSpineMap } from "@/spine/spine"
+import { useSceneOwnsMap, useSceneScroll } from "@/spine/spine"
 import { useIsMobile } from "@nolli/ui"
-import { useLinger } from "@/lib/use-linger"
 import type { HoldScene } from "@/spine/timeline"
 import type { ArchEntry, LandingData } from "@/lib/landing-data"
 import { ArchImageMarkers } from "@/components/arch-markers"
+import { MapVeil } from "@/components/map-veil"
 import { RollText } from "@/components/roll-text"
 import styles from "./architect-ledger.module.css"
 
@@ -75,7 +75,7 @@ function ArchitectLedger({ entries, progressVh }: { entries: ArchEntry[]; progre
   } as CSSProperties
 
   return <>
-    <MapVeil on={ownsMap} />
+    <MapVeil />
     <ArchImageMarkers entries={entries} selectedId={selectedEntry?.id ?? -1} on={ownsMap} />
     {/* the framed pane and the statement are two sticky panes with
      * IDENTICAL geometry (top, height, margins, drift value) so they
@@ -124,31 +124,4 @@ function useScrollPaged(entries: ArchEntry[], local: ReturnType<typeof useSceneS
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   return selected
-}
-
-/** The dark veil over the map band. Photo markers are maplibre markers in
- * the canvas container, so the veil is inserted there imperatively, right
- * after the canvas — above the tiles, under every marker (a scene-DOM or
- * portal veil would paint over the cards). Fades with map ownership. */
-function MapVeil({ on }: { on: boolean }) {
-  const [mounted, visible] = useLinger(on, 400)
-  const map = useSpineMap()
-  const veilRef = useRef<HTMLDivElement | null>(null)
-  useEffect(() => {
-    if (!mounted || !map) return
-    const canvas = map.getCanvas()
-    const veil = document.createElement("div")
-    veil.className = styles.veil
-    veil.setAttribute("aria-hidden", "true")
-    canvas.parentElement!.insertBefore(veil, canvas.nextSibling)
-    veilRef.current = veil
-    return () => {
-      veil.remove()
-      veilRef.current = null
-    }
-  }, [mounted, map])
-  useEffect(() => {
-    if (veilRef.current) veilRef.current.style.opacity = visible ? "1" : "0"
-  }, [visible])
-  return null
 }

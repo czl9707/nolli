@@ -29,7 +29,7 @@ export const Screen = forwardRef<
 export type PaneProps = ComponentPropsWithoutRef<"div"> & {
   /** grid-column value, e.g. "1 / span 2". Default: next free cell. */
   col?: string
-  /** Texture ground (grass pattern + tint). */
+  /** Paper pane — paper ground + contrast grass wash. */
   filled?: boolean
   /** Texture + frost — the vellum recipe; blurs the ground with the map
    * behind the pane. */

@@ -65,17 +65,6 @@
   background-color: rgb(var(--color-secondary-background));
 }
 
-/* dim veil over the background map, inserted in the map's canvas container
-   between canvas and markers */
-.veil {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  pointer-events: none;
-  background: rgb(var(--color-primary-background) / 0.92);
-  transition: opacity var(--transition-short) ease;
-}
-
 /* statement on the band's bottom-left — its own drift mirror (the drift
    wrapper sits under the map; this one rides above it) */
 .bandText {

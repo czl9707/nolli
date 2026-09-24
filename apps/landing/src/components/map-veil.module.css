@@ -1,0 +1,10 @@
+/* dim veil over the spine's map layer, inserted in the map's canvas
+   container between canvas and markers */
+.veil {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  background: rgb(var(--color-primary-background) / 0.92);
+  transition: opacity var(--transition-short) ease;
+}

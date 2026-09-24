@@ -5,7 +5,7 @@
 
 .screen {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   display: grid;
   grid-template-columns: repeat(var(--page-cols), 1fr);
   padding-inline: var(--size-page-padding);
@@ -21,10 +21,11 @@
 
 /* ── pane ────────────────────────────────────────────────────────────────
    Pure placement: col/row map to grid-column/grid-row. Surfaces are the
-   two props — filled (texture ground) and blurred (texture + frost, the
-   vellum recipe: ground on ::after beneath the ::before backdrop frost, so
-   the frost blurs the ground with the world behind, and the ground can be
-   faded by consumers without forming a backdrop root). */
+   two props — filled (the paper pane: paper ground + contrast grass wash)
+   and blurred (texture + frost, the vellum recipe: ground on ::after
+   beneath the ::before backdrop frost, so the frost blurs the ground with
+   the world behind, and the ground can be faded by consumers without
+   forming a backdrop root). */
 
 .pane {
   position: relative;
@@ -34,13 +35,20 @@
   isolation: isolate;
 }
 
+/* the paper pane — paper ground, the pane's own ink, and the contrast
+   grass wash under the content (the framed-map pane recipe) */
+.paneFilled {
+  background: rgb(var(--color-paper-background));
+  color: rgb(var(--color-paper-foreground));
+}
+
 .paneFilled::after {
   content: "";
   position: absolute;
   inset: 0;
   z-index: -2;
-  background-image: var(--pattern-grass);
-  background-color: rgb(var(--color-primary-foreground) / 0.25);
+  opacity: .5;
+  background-image: var(--pattern-grass-oppo);
   pointer-events: none;
 }
 
@@ -59,6 +67,7 @@
   inset: 0;
   z-index: -2;
   background-image: var(--pattern-grass);
+  background-size: 64px 64px;
   background-color: rgb(var(--color-primary-foreground) / 0.1);
   pointer-events: none;
 }
