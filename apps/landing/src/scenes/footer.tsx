@@ -1,18 +1,18 @@
+// Footer — the last part of the page, in normal flow after the spine (no
+// hold, no map of its own: the map rides the stats card off-screen). Brand
+// block and the two nav columns sit on the page grid; the photo dock piles
+// along the bottom edge.
 import { siInstagram, siThreads, type SimpleIcon } from "simple-icons"
-import { Body1, Body3, Button, H3, H4, H6, Note, PaperPhoto } from "@nolli/ui"
+import { Body1, Body3, Button, H4, Note, PaperPhoto } from "@nolli/ui"
 import {
   ABOUT_PATH,
   MAP_APP_URL,
   POSTER_URL,
   PRIVACY_PATH,
   TERMS_PATH,
-  WORLD_CAMERA,
 } from "@/lib/constants"
-import { TRANSITION_LEAD_VH, type HoldScene, type SpineScene, type TransitionScene } from "@/spine/timeline"
 import type { ArchSummary, LandingData } from "@/lib/landing-data"
-import { useIsMobile } from "@nolli/ui"
-import { HSplit, Pane, Screen, VSplit } from "./grid"
-import { MapTransition } from "./map-transition"
+import { Pane, Screen } from "./page-layout"
 import styles from "./footer.module.css"
 
 const LINK_GROUPS: Array<{
@@ -37,120 +37,27 @@ const LINK_GROUPS: Array<{
   },
 ]
 
-export function footerScenes(data: LandingData): SpineScene[] {
-  return [statsFullTransition(), footerHold(data)]
-}
-
-const SCENE_VH = 100;
-
-export function statsFullTransition(): TransitionScene {
-  return {
-    kind: "transition",
-    id: "stats-full",
-    fromShape: "[data-spine-shape='stats']",
-    toShape: "[data-spine-shape='footer']",
-    heightVh: 0
-  }
-}
-
-export function footerHold(data: LandingData): HoldScene {
-  return {
-    kind: "hold",
-    id: "footer",
-    shape: "[data-spine-shape='footer']",
-    heightVh: SCENE_VH,
-    Component: () => <FooterScene data={data} />,
-  }
-}
-
-
-function FooterScene({ data }: { data: LandingData }) {
-  const mobile = useIsMobile()
+export function Footer({ data }: { data: LandingData }) {
   return (
-    <>
-      <MapTransition target={WORLD_CAMERA} untilVh={SCENE_VH - TRANSITION_LEAD_VH} />
-      <Screen className={`${styles.veil} ${styles.screen}`}>
-        <div className={styles.shape} data-spine-shape="footer" aria-hidden />
-        {mobile ? <FooterMobile data={data}/> : <FooterDesktop data={data} />}
-      </Screen>
-    </>
-  )
-}
-
-/** Mobile re-composition — the cards stack: brand block, Explore column,
- * Resources column, inside the grid margins. */
-function FooterMobile({ data }: { data: LandingData }) {
-  return (
-    <HSplit>
-      <Pane size="calc(var(--size-header-height) + 10svh)" />
-      <Pane className={styles.footer}>
-        <HSplit>
-          <Pane>
-            <VSplit>
-              <Pane size="var(--grid-padding)" filled/>
-              <Pane>
-                <HSplit>
-                  <Pane size="fit-content" className={styles.commonPane}>
-                    <BrandBlock />
-                  </Pane >
-                  <Pane>
-                    <VSplit>
-                      <Pane size="50%" className={styles.commonPane}>
-                        <NavColumn group={LINK_GROUPS[0]} />
-                      </Pane>
-                      <Pane size="50%" className={styles.commonPane}>
-                        <NavColumn group={LINK_GROUPS[1]} />
-                      </Pane>
-                    </VSplit>
-                  </Pane>
-                </HSplit>
-              </Pane>
-              <Pane size="var(--grid-padding)" filled/>
-            </VSplit>
-          </Pane>
-          <PhotoDock pool={dockPool(data, 9)} />
-        </HSplit>
+    <Screen className={styles.screen} height="auto">
+      <Pane className={styles.brandPane} style={{ gridArea: "brand" }}>
+        <BrandBlock />
       </Pane>
-    </HSplit>
-  )
-}
-
-/** Desktop tree — brand + nav columns over the photo dock. */
-function FooterDesktop({ data }: { data: LandingData }) {
-  return (
-    <HSplit>
-      <Pane size="45svh" />
-      <Pane className={styles.footer}>
-        <HSplit>
-          <Pane>
-            <VSplit>
-              <Pane size="var(--grid-padding)" />
-              <Pane>
-                <VSplit>
-                  <Pane size="calc(var(--grid-col) * 7)" className={styles.commonPane}>
-                    <BrandBlock withSpacer />
-                  </Pane>
-                  <Pane size="calc(var(--grid-col) * 2.5)" className={styles.commonPane}>
-                    <NavColumn group={LINK_GROUPS[0]} />
-                  </Pane>
-                  <Pane size="calc(var(--grid-col) * 2.5)" className={styles.commonPane}>
-                    <NavColumn group={LINK_GROUPS[1]} />
-                  </Pane>
-                </VSplit>
-              </Pane>
-              <Pane size="var(--grid-padding)" />
-            </VSplit>
-          </Pane>
-          <PhotoDock pool={dockPool(data, 9)} />
-        </HSplit>
+      <Pane className={styles.navPane} style={{ gridArea: "explore" }}>
+        <NavColumn group={LINK_GROUPS[0]} />
       </Pane>
-    </HSplit>
+      <Pane className={styles.navPane} style={{ gridArea: "resources" }}>
+        <NavColumn group={LINK_GROUPS[1]} />
+      </Pane>
+      <div className={styles.dockWrap} aria-hidden>
+        <PhotoDock pool={dockPool(data, 9)} />
+      </div>
+    </Screen>
   )
 }
 
-/** Brand block shared by both trees — wordmark, statement, socials, legal
- * meta. Desktop stretches it with the spacer before the meta. */
-function BrandBlock({ withSpacer = false }: { withSpacer?: boolean }) {
+/** Brand block — wordmark, statement, socials, legal meta. */
+function BrandBlock() {
   return (
     <>
       <a className={styles.brand} href="#" aria-label="Nolli home">
@@ -164,7 +71,6 @@ function BrandBlock({ withSpacer = false }: { withSpacer?: boolean }) {
         <SocialLink icon={siInstagram} label="Instagram" href="https://www.instagram.com/nolli.map/" />
         <SocialLink icon={siThreads} label="Threads" href="https://www.threads.net/@nolli.map" />
       </div>
-      {withSpacer && <span className={styles.spacer}/>}
       <div className={styles.meta}>
         <Body3 className={styles.legalMark}>© 2026-present Zane Chen</Body3>
         <Body3 className={styles.legalMark}>New York, United States</Body3>
@@ -173,8 +79,9 @@ function BrandBlock({ withSpacer = false }: { withSpacer?: boolean }) {
   )
 }
 
-/** Photo dock - pinned to the screen's bottom edge. The Screen's overflow
- *  clips the pile past the fold; each card jumps on its own. */
+/** Photo dock - pinned to the footer's bottom edge. The wrap clips the
+ *  pile past the fold - only the foot of each card shows. Each card jumps
+ *  on its own: resting depth is uneven, the hovered card springs up */
 function PhotoDock({ pool }: { pool: ArchSummary[] }) {
   return (
     <div className={styles.dock}>
@@ -196,7 +103,7 @@ function PhotoDock({ pool }: { pool: ArchSummary[] }) {
 }
 
 /** Photo pool for the dock: the stats deck first, city-ledger covers
- * filling in behind it. */
+ *  filling in behind it. */
 function dockPool(data: LandingData, n: number): ArchSummary[] {
   const seen = new Set<string>()
   const out: ArchSummary[] = []
@@ -238,7 +145,8 @@ function NavColumn({ group }: { group: (typeof LINK_GROUPS)[number] }) {
       <div className={styles.navList}>
         {group.links.map((l) => (
           <Button key={l.label}  variant="link" size="default" asChild>
-            <a href={l.href}>
+            {/* external links leave the page; paths and mailto stay here */}
+            <a href={l.href} {...(l.href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
               {l.label}
             </a>
           </Button>

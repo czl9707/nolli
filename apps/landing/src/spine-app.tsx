@@ -1,14 +1,14 @@
 import { useEffect, useMemo } from "react"
 import Lenis from "lenis"
 import { landingData } from "@/lib/landing-data"
-import { BootFade, useBootPhase } from "@/lib/boot"
+import { useBootPhase } from "@/lib/boot"
 import { Spine } from "@/spine/spine"
 import type { SpineScene } from "@/spine/timeline"
 import { heroCamera, heroHold } from "@/scenes/hero"
-import { cityHold, heroCityTransition } from "@/scenes/city-ledger"
-import { architectHold, cityArchitectTransition } from "@/scenes/architect-ledger"
-import { statsHold, architectStatsTransition } from "@/scenes/stats"
-import { statsFullTransition, footerHold } from "@/scenes/footer"
+import { cityHold } from "@/scenes/city-ledger"
+import { architectHold } from "@/scenes/architect-ledger"
+import { statsHold } from "@/scenes/stats"
+import { Footer } from "@/scenes/footer"
 import { ScrollThumb } from "@/components/scroll-thumb"
 import { SiteHeader } from "@/components/site-header"
 
@@ -16,14 +16,9 @@ export function SpineApp() {
   const scenes = useMemo<SpineScene[]>(
     () => [
       heroHold(landingData),
-      heroCityTransition(),
       cityHold(landingData),
-      cityArchitectTransition(),
       architectHold(landingData),
-      architectStatsTransition(),
       statsHold(landingData),
-      statsFullTransition(),
-      footerHold(landingData),
     ],
     [],
   )
@@ -58,14 +53,16 @@ export function SpineApp() {
     <main data-boot={revealed ? undefined : ""}>
       {/* app chrome — fixed at this level it stacks above the spine's scene
           flow (z2) without a portal; main is no stacking context. The header
-          enters with the furniture phase */}
+          drives its own furniture-phase entrance (a subtree opacity fade
+          here would form a backdrop root and delay the card's frost). */}
       <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 20 }}>
-        <BootFade at="furniture" style={{ position: "absolute", inset: 0 }}>
-          <SiteHeader />
-        </BootFade>
+        <SiteHeader />
       </div>
       <ScrollThumb />
       <Spine scenes={scenes} camera={bootCamera} />
+      {/* the footer follows the spine in normal flow — the map rides the
+          stats card off-screen and the page ends on solid ground */}
+      <Footer data={landingData} />
     </main>
   )
 }

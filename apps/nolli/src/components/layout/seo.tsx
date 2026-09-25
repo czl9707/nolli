@@ -1,6 +1,6 @@
 import { Helmet } from "react-helmet-async"
 
-const SITE_URL = "https://nolli-map.com"
+const SITE_URL = "https://app.nolli-map.com"
 
 interface SeoProps {
   title: string

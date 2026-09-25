@@ -1,0 +1,119 @@
+/* Hairline page grid for the landing spine. A Screen is a native CSS grid
+   on the global --page-cols column field; panes place onto cells, rules
+   are grid children of their own — never borders — so content and lines
+   stay decoupled and an opaque pane can sit over a rule to cover it. */
+
+.screen {
+  position: relative;
+  overflow: visible;
+  display: grid;
+  grid-template-columns: repeat(var(--page-cols), 1fr);
+  padding-inline: var(--size-page-padding);
+}
+
+/* ── pane ────────────────────────────────────────────────────────────────
+   Pure placement: col/row map to grid-column/grid-row. Surfaces are the
+   two props — filled (the paper pane: paper ground + contrast grass wash)
+   and blurred (texture + frost, the vellum recipe: ground on ::after
+   beneath the ::before backdrop frost, so the frost blurs the ground with
+   the world behind, and the ground can be faded by consumers without
+   forming a backdrop root). */
+
+.pane {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  /* contains the negative-z ground under the frost */
+  isolation: isolate;
+}
+
+/* the paper pane — paper ground, the pane's own ink, and the contrast
+   grass wash under the content (the framed-map pane recipe) */
+.paneFilled {
+  background: rgb(var(--color-paper-background));
+  color: rgb(var(--color-paper-foreground));
+}
+
+.paneFilled::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  opacity: .5;
+  background-image: var(--pattern-grass-oppo);
+  pointer-events: none;
+}
+
+.paneBlurred::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  backdrop-filter: blur(12px);
+  pointer-events: none;
+}
+
+.paneBlurred::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background-image: var(--pattern-grass);
+  background-size: 64px 64px;
+  background-color: rgb(var(--color-primary-foreground) / 0.1);
+  pointer-events: none;
+}
+
+/* ── rule ────────────────────────────────────────────────────────────────
+   Horizontal hairline as a grid child. The element itself is 0-height —
+   the line is an absolute pseudo, so a rule never adds to row math; a
+   pane placed over the same cells covers it. Cell rules span their
+   columns inside the page padding; a full rule bleeds past the padding
+   to the viewport edges. */
+
+.rule {
+  position: relative;
+  height: 0;
+  z-index: var(--z-rules);
+}
+
+.rule::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  border-top: var(--border);
+}
+
+.ruleFull {
+  margin-inline: calc(var(--size-page-padding) * -1);
+}
+
+/* ── global hairline field ───────────────────────────────────────────────
+   One overlay for the whole spine: vertical lines at pagePadding + k·cell
+   (margin edges included), fixed to the viewport at --z-rules — over the
+   map frame, under every scene item (z0); opaque panes cover them. Follows
+   the boot phases (the spine carries data-boot-phase): the field draws in
+   at the furniture beat. */
+
+.hairlines {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-rules);
+  pointer-events: none;
+  background-image: linear-gradient(
+    to right,
+    rgb(var(--color-primary-foreground) / 0.25) 0 1px,
+    transparent 1px 100%
+  );
+  background-size: var(--page-col) 100%;
+  background-position: var(--size-page-padding) 0;
+  opacity: 1;
+  transition: opacity var(--transition-short) ease-out;
+}
+
+.hairlines[data-boot-phase="blank"],
+.hairlines[data-boot-phase="headline"],
+.hairlines[data-boot-phase="map"],
+.hairlines[data-boot-phase="reveal"] {
+  opacity: 0;
+}

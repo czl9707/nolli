@@ -55,6 +55,23 @@ export type SceneCamera = {
   zoom: number
 }
 
+/** Cubic in-out shared by scene flights and the landing spine's rect
+ * tween, so rect morph and camera flight run one curve. */
+export const SCENE_EASE = (t: number): number =>
+  t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+
+/** Flight duration for a scene-to-scene move, from the same short/long
+ * rules flyToSceneCinematic applies. */
+export function sceneFlightDurationMs(
+  map: Pick<MapLibreGL.Map, "getZoom" | "getBounds">,
+  camera: SceneCamera,
+): number {
+  const zoomDelta = Math.abs(camera.zoom - map.getZoom())
+  return map.getBounds().contains(camera.center)
+    ? MAP_TRANSITION_SHORT * 1000 + zoomDelta * 300
+    : MAP_TRANSITION_LONG * 1000
+}
+
 /** Cinematic scene-to-scene move for scripted choreography (landing spine).
  * Unlike flyToArchCinematic: the destination zoom passes through unchanged
  * (scene flights zoom out), and duration follows the same short/long rules.
@@ -66,16 +83,12 @@ export function flyToSceneCinematic(
   map: MapLibreGL.Map,
   camera: SceneCamera,
 ): void {
-  const zoomDelta = Math.abs(camera.zoom - map.getZoom())
-  const duration = map.getBounds().contains(camera.center)
-    ? MAP_TRANSITION_SHORT * 1000 + zoomDelta * 300
-    : MAP_TRANSITION_LONG * 1000
-
+  const duration = sceneFlightDurationMs(map, camera)
   map.stop()
   map.easeTo({
     center: camera.center,
     zoom: camera.zoom,
     duration,
-    easing: (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2),
+    easing: SCENE_EASE,
   })
 }

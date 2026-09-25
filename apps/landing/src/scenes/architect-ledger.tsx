@@ -1,229 +1,155 @@
-// Architect ledger hold on the spine. The map owns the screen under a dark
-// veil — the works pin to their true coordinates, the lit architect's works
-// carded — and the ledger closes the scene as one block of equal cells
-// along the bottom. Selection proves the statement: you can name an
-// architect's works; the map can place them.
-import { useEffect, useRef, useState, type ReactNode } from "react"
-import { useMotionValueEvent } from "framer-motion"
+// Architect ledger hold on the spine. The screen sticks for a full ledger
+// pass: the map band (70svh, inside the page padding) rides a slow drift —
+// a fraction of scroll speed — while the scroll itself pages the ledger,
+// one architect per STEP_VH. The works pin to their true coordinates under
+// the veil, the lit architect's works carded; the statement rides the band
+// and rolls the name — the scroll is the control, no pointer involved.
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react"
+import { motion, useMotionValue, useMotionValueEvent, useScroll, useTransform, type MotionValue } from "framer-motion"
 import { H2 } from "@nolli/ui"
-import type { SceneCamera } from "@nolli/map"
-import { useSceneScroll, useSpineMap } from "@/spine/spine"
+import { useSceneOwnsMap } from "@/spine/spine"
 import { useIsMobile } from "@nolli/ui"
-import { useLinger } from "@/lib/use-linger"
-import { TRANSITION_LEAD_VH, type HoldScene, type TransitionScene } from "@/spine/timeline"
+import type { HoldScene } from "@/spine/timeline"
 import type { ArchEntry, LandingData } from "@/lib/landing-data"
+import { worldCamera } from "@/lib/world-camera"
 import { ArchImageMarkers } from "@/components/arch-markers"
-import { HSplit, Pane, Screen, VSplit } from "./grid"
-import { MapTransition } from "./map-transition"
-import { RollButton } from "@/components/roll-button"
+import { MapVeil } from "@/components/map-veil"
 import { RollText } from "@/components/roll-text"
 import styles from "./architect-ledger.module.css"
 
 const SCENE_ID = "architect"
-const SCENE_VH = 160
-const VEIL_VISIBLE_VH = SCENE_VH - 80
 
-// world view widened so renderWorldCopies:false doesn't crop the ledger's
-// buildings (bounds ≈ −133°..157°)
-const WORLD: SceneCamera = { center: [12, 25], zoom: 1.05 }
+/** Scroll per architect — the ledger pages one name every step. */
+const STEP_VH = 20
 
-export const architectHold = (data: LandingData): HoldScene => ({
-  kind: "hold",
-  id: SCENE_ID,
-  shape: "[data-spine-shape='architect']",
-  heightVh: SCENE_VH,
-  Component: () => <ArchitectLedger entries={data.architectLedger} />,
-})
+/** Total map rise across the ledger pass — the band drifts at a fraction
+ * of scroll speed instead of sticking, centered on the window's midline
+ * (center sweeps 50svh + drift/2 → 50svh − drift/2) so the map never
+ * leaves the viewport. */
+const MAP_DRIFT_VH = 20
 
-// City → architect morph: the spine interpolates the map shape; no
-// overlay of its own.
-export const cityArchitectTransition = (): TransitionScene => ({
-  kind: "transition",
-  id: "city-architect",
-  fromShape: "[data-spine-shape='city']",
-  toShape: "[data-spine-shape='architect']",
-  heightVh: 20,
-  Component: () => {
-    return <Screen style={{ height: "20svh" }}>
-      <VSplit>
-        <Pane size="var(--grid-padding)" filled/>
-        <Pane />
-        <Pane size="var(--grid-padding)" filled/>
-      </VSplit>
-    </Screen>
+/** Map band height in svh — feeds the css vars that park the band. */
+const BAND_MARGIN = 15;
+const BAND_VH = 70
+const BAND_VH_MOBILE = 55
+
+export const architectHold = (data: LandingData): HoldScene => {
+  const entries = data.architectLedger
+  const progressVh = entries.length * STEP_VH
+  return {
+    id: SCENE_ID,
+    shape: "[data-spine-shape='architect']",
+    heightVh: 100 + progressVh,
+    camera: worldCamera,
+    Component: () => <ArchitectLedger entries={entries} />,
   }
-})
+}
 
-/** Shared architect state + the router between the two trees. Selection,
- * the marker window and the shared pieces (map band, statement, ledger
- * rows) live here; the trees only compose panes. */
+/** Pin-local scroll in DOM svh, measured from the scene wrapper's live
+ *  rect. The sticky pin window is DOM geometry (wrapper height minus the
+ *  band's margin box), while the spine's scene-local vh is progress over
+ *  the whole scroll range and runs faster than DOM svh — a spine-local
+ *  driver saturates the drift well before the band unpins, freezing the
+ *  pass mid-stick. Measuring keeps the drift and the paging level with
+ *  the pin exactly, at any timeline shape. */
+function usePinScroll(bandVh: number) {
+  const wrapRef = useRef<HTMLDivElement | null>(null)
+  const pinScroll = useMotionValue(0)
+  const spanRef = useRef(1)
+  const { scrollY } = useScroll()
+  const measure = useCallback(() => {
+    const el = wrapRef.current
+    if (!el) return
+    const vh = window.innerHeight / 100
+    const top = el.getBoundingClientRect().top
+    // the pin starts when the band's natural top (its margin) crosses the
+    // sticky top; it ends one margin box before the wrapper's bottom
+    const startPx = (50 + MAP_DRIFT_VH / 2 - bandVh / 2 - BAND_MARGIN) * vh
+    const spanPx = el.offsetHeight - (2 * BAND_MARGIN + bandVh) * vh
+    spanRef.current = Math.max(spanPx / vh, 1)
+    pinScroll.set((startPx - top) / vh)
+  }, [bandVh])
+  useEffect(() => {
+    wrapRef.current = document.querySelector("[data-scene='architect']")
+    measure()
+  }, [measure])
+  useMotionValueEvent(scrollY, "change", measure)
+  return { pinScroll, spanSvh: spanRef }
+}
+
 function ArchitectLedger({ entries }: { entries: ArchEntry[] }) {
-  const local = useSceneScroll(SCENE_ID)
+  const ownsMap = useSceneOwnsMap()
   const mobile = useIsMobile()
-  const [selected, setSelected] = useState(entries[0]?.name ?? "")
+  const bandVh = mobile ? BAND_VH_MOBILE : BAND_VH
+  const { pinScroll, spanSvh } = usePinScroll(bandVh)
+
+  // scroll pages the ledger: one architect per STEP_VH, clamped at both
+  // ends (the entry holds the first name, the tail holds the last)
+  const selected = useScrollPaged(entries, pinScroll)
   const selectedEntry = entries.find((e) => e.name === selected) ?? entries[0]
 
-  // markers own the map band across the same window the flight parks in
-  const [markersOn, setMarkersOn] = useState(() => {
-    const v = local.get()
-    return v >= 0 && v < VEIL_VISIBLE_VH
+  // the band's drift: the full pin window of scroll lifts the map only
+  // MAP_DRIFT_VH — the glue loop reads the shape's live rect, so the map
+  // layer follows the drift at the band's pace
+  const driftY = useTransform(pinScroll, (v) => {
+    const p = Math.max(0, Math.min(1, v / spanSvh.current))
+    return `${-MAP_DRIFT_VH * p}svh`
   })
-  useMotionValueEvent(local, "change", (v) => setMarkersOn(v >= 0 && v < VEIL_VISIBLE_VH))
 
-  const rows: ArchEntry[][] = []
-  const perRow = Math.ceil(entries.length / 2)
-  for (let i = 0; i < entries.length; i += perRow) rows.push(entries.slice(i, i + perRow))
+  const paneVars = {
+    "--band-vh": `${bandVh}svh`,
+    "--drift-vh": `${MAP_DRIFT_VH}svh`,
+    "--band-margin-vh": `${BAND_MARGIN}svh`
+  } as CSSProperties
 
-  const statement = selectedEntry && (
-    <H2 className={styles.statementText}>
-      You can name the works of <RollText text={selectedEntry.name} />.
-      <br />
-      <span className={styles.accent}>Nolli</span> help you pin them on the map.
-    </H2>
-  )
-
-  const mapBand = (
-    <div className={styles.shape} aria-hidden data-spine-shape="architect" />
-  )
-
-  const ledgerRows = rows.map((row, r) => (
-    <Pane key={r} size="3.5rem">
-      <VSplit>
-        {row.map((e) => (
-          <RollButton
-            key={e.id}
-            className={styles.cell}
-            size="calc(var(--grid-col) * 3)"
-            state={e.name === selected ? "focused" : "default"}
-            onClick={() => setSelected(e.name)}
-            onMouseEnter={() => setSelected(e.name)}
-            onFocus={() => setSelected(e.name)}
-            aria-pressed={e.name === selected}
-            >
-            {e.name}
-          </RollButton>
-        ))}
-      </VSplit>
-    </Pane>
-  ))
-  
   return <>
-    <MapTransition sceneId={SCENE_ID} untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={WORLD} />
-    <MapVeil on={markersOn} />
-    <ArchImageMarkers entries={entries} selectedId={selectedEntry?.id ?? -1} on={markersOn} />
-    {
-      mobile ? (
-        <ArchitectMobile mapBand={mapBand} statement={statement} ledgerRows={ledgerRows} />
-      ) : (
-        <ArchitectDesktop mapBand={mapBand} statement={statement} ledgerRows={ledgerRows} />
-      )
-    }
+    <MapVeil />
+    <ArchImageMarkers entries={entries} selectedId={selectedEntry?.id ?? -1} on={ownsMap} />
+    {/* the framed pane and the statement are two sticky panes with
+     * IDENTICAL geometry (top, height, margins, drift value) so they
+     * stick, unstick and drift as one. The split is forced: one subtree
+     * cannot paint partly under and partly over the spine's map layer —
+     * the frame sits at the map scale, the text at the item scale */}
+    <div className={styles.frameSticky} style={paneVars}>
+      <motion.div className={styles.drift} style={{ y: driftY }}>
+        <div className={styles.frame} aria-hidden />
+        <div className={styles.shape} aria-hidden data-spine-shape="architect" />
+      </motion.div>
+    </div>
+    <div className={styles.textSticky} style={paneVars}>
+      <motion.div className={styles.bandText} style={{ y: driftY }}>
+        <H2 className={styles.statementText}>
+          You can name the works of <RollText text={selectedEntry?.name ?? ""} />.
+          <br />
+          <span className={styles.accent}>Nolli</span> help you pin them on the map.
+        </H2>
+      </motion.div>
+    </div>
   </>
 }
 
-type ArchitectTreeProps = {
-  mapBand: ReactNode
-  statement: ReactNode
-  ledgerRows: ReactNode
-}
-
-/** Mobile re-composition: full-width map band top, statement under it,
- * ledger rows closing the screen — same pieces, re-cut vertically. */
-function ArchitectMobile({ mapBand, statement, ledgerRows }: ArchitectTreeProps) {
-  return (
-    <Screen className={styles.screen}>
-      <HSplit>
-        <Pane size="calc(var(--size-header-height) + 10svh)">
-          <VSplit>
-            <Pane size="var(--grid-padding)" filled/>
-            <Pane />
-            <Pane size="var(--grid-padding)" filled/>
-          </VSplit>
-        </Pane>
-        <Pane size="55svh">
-          {mapBand}
-          <VSplit>
-            <Pane size="var(--grid-padding)" filled/>
-            <Pane>
-              <div className={styles.bandText}>{statement}</div>
-            </Pane>
-            <Pane size="var(--grid-padding)" filled/>
-          </VSplit>
-        </Pane>
-        <Pane>
-          <VSplit>
-            <Pane size="var(--grid-padding)" filled/>
-            <Pane>
-              <HSplit>
-                {ledgerRows}
-              </HSplit>
-            </Pane>
-            <Pane size="var(--grid-padding)" filled/>
-          </VSplit>
-        </Pane>
-        <Pane size="20svh"/>
-      </HSplit>
-    </Screen>
-  )
-}
-
-/** Desktop tree — map band with the statement riding it, ledger block
- * along the right. */
-function ArchitectDesktop({ mapBand, statement, ledgerRows }: ArchitectTreeProps) {
-  return (
-    <Screen className={styles.screen}>
-      <HSplit>
-        <Pane>
-          <VSplit>
-            <Pane size="var(--grid-padding)" filled/>
-            <Pane>
-              <HSplit>
-                <Pane size="12svh" />
-                <Pane>
-                  <HSplit>
-                    <Pane>
-                      {mapBand}
-                      <div className={styles.bandText}>{statement}</div>
-                    </Pane>
-                    {ledgerRows}
-                  </HSplit>
-                </Pane>
-              </HSplit>
-            </Pane>
-            <Pane size="var(--grid-padding)" filled/>
-          </VSplit>
-
-        </Pane>
-        <Pane size="8svh"/>
-      </HSplit>
-    </Screen>
-  )
-}
-
-/** The dark veil over the map band. Photo markers are maplibre markers in
- * the canvas container, so the veil is inserted there imperatively, right
- * after the canvas — above the tiles, under every marker (a scene-DOM or
- * portal veil would paint over the cards). Fades with the same window the
- * markers use. */
-function MapVeil({ on }: { on: boolean }) {
-  const [mounted, visible] = useLinger(on, 400)
-  const map = useSpineMap()
-  const veilRef = useRef<HTMLDivElement | null>(null)
-  useEffect(() => {
-    if (!mounted || !map) return
-    const canvas = map.getCanvas()
-    const veil = document.createElement("div")
-    veil.className = styles.veil
-    veil.setAttribute("aria-hidden", "true")
-    canvas.parentElement!.insertBefore(veil, canvas.nextSibling)
-    veilRef.current = veil
-    return () => {
-      veil.remove()
-      veilRef.current = null
+/** Selection as a function of pin-local scroll — the index the scroll has
+ * paged to, held at both ends. Initialized from the live position so a
+ * deep-link lands on the right name. */
+function useScrollPaged(entries: ArchEntry[], local: MotionValue<number>) {
+  const idxFor = (v: number) =>
+    Math.max(0, Math.min(entries.length - 1, Math.floor(v / STEP_VH)))
+  const [selected, setSelected] = useState(entries[idxFor(0)]?.name ?? "")
+  const current = useRef(selected)
+  useMotionValueEvent(local, "change", (v) => {
+    const name = entries[idxFor(v)]?.name
+    if (name && name !== current.current) {
+      current.current = name
+      setSelected(name)
     }
-  }, [mounted, map])
+  })
   useEffect(() => {
-    if (veilRef.current) veilRef.current.style.opacity = visible ? "1" : "0"
-  }, [visible])
-  return null
+    const name = entries[idxFor(local.get())]?.name
+    if (name) {
+      current.current = name
+      setSelected(name)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  return selected
 }

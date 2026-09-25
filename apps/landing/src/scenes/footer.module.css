@@ -1,26 +1,29 @@
-.shape {
-  position: absolute;
-  inset: 0;
-}
+/* Footer — the page's last fold, in normal flow after the spine: brand
+   block over cols 1-2, the nav columns on 3 and 4, the photo dock piled
+   along the bottom edge (the padding-bottom reserves its zone, so the
+   columns end above the cards). The global hairline field draws over the
+   footer ground like everywhere else. Mobile recomposes to stacked full
+   rows. */
 
-.veil {
-  position: absolute;
-  inset: 0;
-  background: rgb(var(--color-primary-background) / 0.75);
-  pointer-events: none;
-}
-
-/* sticky so the screen holds through the spine buffer riding this scene */
 .screen {
-  position: sticky;
-  top: 0;
-}
-
-.footer {
+  box-sizing: border-box;
   background: rgb(var(--color-primary-background));
-  pointer-events: auto;
+  margin-top: 40svh;
+  padding-bottom: 12rem;
+  align-items: start;
+  grid-template-areas: "brand brand explore resources";
+  grid-template-rows: minmax(45svh, auto);
 }
 
+/* ── panes — flush text columns, no padding, no border ─────────────── */
+
+.brandPane,
+.navPane {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-paragraph);
+  min-width: 0;
+}
 
 /* ── shared pieces ─────────────────────────────────────────────────── */
 
@@ -32,20 +35,10 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  margin-left: -0.5rem;
+  margin-left: -0.7rem;
 }
 
-/* ── the dive ──────────────────────────────────────────────────────── */
-
-.commonPane {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  padding: var(--spacing-component);
-  gap: var(--spacing-paragraph);
-}
-
-/* mark + wordmark, the site-header brand echoed at the scene's head */
+/* mark + wordmark, the site-header brand echoed at the page's foot */
 .brand {
   display: flex;
   align-items: center;
@@ -67,19 +60,12 @@
   opacity: .6;
 }
 
-.accent {
-  color: rgb(var(--color-hero-foreground));
-}
-
 .social {
   display: flex;
   gap: .25rem;
 }
 
-.spacer {
-  flex: 1 1;
-}
-
+/* legal meta follows the socials — the columns end above the dock */
 .meta {
   display: flex;
   flex-direction: column;
@@ -90,12 +76,24 @@
   opacity: .4;
 }
 
-
 /* ── photo dock ────────────────────────────────────────────────────── */
 
-/* pinned to the screen's bottom edge. The Screen's overflow clips the
-   pile past the fold - only the foot of each card shows. Each card jumps
-   on its own: resting depth is uneven, the hovered card springs up */
+/* the clip — only the foot of each card shows past the fold; the wrap
+   spans the footer's full bleed, past the page padding, and reaches high
+   enough that a card's hover spring never clips at its top */
+.dockWrap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 24rem;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* pinned to the footer's bottom edge. Each card jumps on its own:
+   resting depth is uneven, the hovered card springs up */
 .dock {
   position: absolute;
   left: 0;
@@ -107,7 +105,6 @@
   justify-content: space-between;
   align-items: flex-end;
   pointer-events: none;
-  z-index: 3;
 }
 
 .dockPhoto {
@@ -144,9 +141,17 @@
   margin-bottom: -3rem;
 }
 
-/* ── mobile (≤720px) — the dock re-scaled to the narrow screen ─────── */
+/* ── mobile (≤720px) — stacked rows, the dock re-scaled ────────────── */
 
 @media (--smaller-than-sm) {
+  .screen {
+    grid-template-areas:
+      "brand brand"
+      "explore resources";
+    grid-template-rows: auto auto;
+  }
+
+
   .dock {
     height: 10rem;
     margin: 0 -1.5rem;
@@ -167,14 +172,14 @@
 
   /* messy resting depths, scaled to the smaller cards */
   .dockPhoto:nth-child(1) { transform: translateY(.5rem); }
-  .dockPhoto:nth-child(2) { transform: translateY(-0.25rem); }
+  .dockPhoto:nth-child(2) { transform: translateY(-.25rem); }
   .dockPhoto:nth-child(3) { transform: translateY(.75rem); }
   .dockPhoto:nth-child(4) { transform: translateY(0.5rem); }
-  .dockPhoto:nth-child(5) { transform: translateY(-0.75rem); }
+  .dockPhoto:nth-child(5) { transform: translateY(-.75rem); }
   .dockPhoto:nth-child(6) { transform: translateY(.5rem); }
-  .dockPhoto:nth-child(7) { transform: translateY(-0.25rem); }
+  .dockPhoto:nth-child(7) { transform: translateY(-.25rem); }
   .dockPhoto:nth-child(8) { transform: translateY(1rem); }
-  .dockPhoto:nth-child(9) { transform: translateY(-0.5rem); }
+  .dockPhoto:nth-child(9) { transform: translateY(-.5rem); }
 }
 
 /* ── reduced motion ────────────────────────────────────────────────── */

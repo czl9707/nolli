@@ -36,6 +36,9 @@ export const LandingMap = forwardRef<
       <Map
         ref={handleRef}
         styles={mapStyles}
+        // the mobile world holds zoom out past the default floor (0) to fit
+        // the whole ledger span in a narrow band
+        minZoom={-2}
         loading={!patternReady}
         canvasContextAttributes={{ preserveDrawingBuffer: true }}>
         {children}

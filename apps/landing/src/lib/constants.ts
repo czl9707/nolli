@@ -1,7 +1,5 @@
-import type { SceneCamera } from "@nolli/map"
-
-export const MAP_APP_URL = "https://nolli-map.com"
-export const LANDING_URL = "https://landing.nolli-map.com"
+export const MAP_APP_URL = "https://app.nolli-map.com"
+export const LANDING_URL = "https://nolli-map.com"
 export const POSTER_URL = "https://poster.nolli-map.com"
 export const ABOUT_PATH = "/about"
 export const PRIVACY_PATH = "/privacy"
@@ -124,21 +122,21 @@ export const CITY_DECK: Record<string, readonly string[]> = {
     "prada-aoyama",
     "sumida-hokusai-museum",
   ],
-  Chicago: [
-    "860-880-lake-shore-drive",
-    "iit-alumni-memorial-hall",
-    "chicago-federal-complex",
-    "robie-house",
-    "ibm-plaza",
-    "mccormick-tribune-campus-center",
-    "crown-hall",
-  ],
-  Berlin: [
-    "axel-springer-campus",
-    "netherlands-embassy-berlin",
-    "neue-nationalgalerie",
-    "reichstag-dome",
-  ],
+  // Chicago: [
+  //   "860-880-lake-shore-drive",
+  //   "iit-alumni-memorial-hall",
+  //   "chicago-federal-complex",
+  //   "robie-house",
+  //   "ibm-plaza",
+  //   "mccormick-tribune-campus-center",
+  //   "crown-hall",
+  // ],
+  // Berlin: [
+  //   "axel-springer-campus",
+  //   "netherlands-embassy-berlin",
+  //   "neue-nationalgalerie",
+  //   "reichstag-dome",
+  // ],
 }
 
 /** City-ledger names, in grid order. */
@@ -157,9 +155,7 @@ export const STATS_DECK_SLUGS = [
 /** Cell roll easing — CSS mirror --ease-roll in styles/global.css */
 export const ROLL_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1]
 
-export const WORLD_CAMERA: SceneCamera = { center: [10, 25], zoom: 1.5 }
-
 /** Hero camera fit insets off the stage rect (px): left clears the centered
  * lede, x pads the column side, top/bottom keep the pin band level with the
  * lede (horizontal separation keeps them apart). */
-export const HERO_FIT_PAD = { left: 100, right: 150, top: 100, bottom: 350 }
+export const HERO_FIT_PAD = { left: 100, right: 100, top: 100, bottom: 300 }

@@ -1,33 +1,26 @@
-// Stats hold on the spine — the closer before the footer. The map lands as
-// the background of the whole workarea (not a single pane) behind a veil.
-// A big buildings card heads the scene (statement riding its top, photo
-// fan at its foot); architects, countries and the where-you-are count
-// stand in a row beneath — badge marquees under the first two, the map
-// CTA closing the last.
-import { useEffect, useRef, useState } from "react"
-import { motion, useInView, useMotionValue, useReducedMotion, useSpring, useTransform, type Transition } from "framer-motion"
-import { Badge, H2, H3, H4, H6, PaperPhoto, TRANSITION_SHORT } from "@nolli/ui"
+// Stats hold on the spine — the closer before the footer, on the page
+// grid, in normal flow (no stick): the hero card merges the veiled map,
+// the architecture count and the photo deck into one 2×2 pane — the frame
+// at the map scale, the text over it; countries and architects are paper
+// cells with badge marquees; the CTA cell is one LandingButton. The
+// hold's dwell carries the count-ups; the map layer lands on the card's
+// shape under the veil.
+import { useEffect, useRef } from "react"
+import { motion, useInView, useMotionValue, useReducedMotion, useSpring, useTransform } from "framer-motion"
+import { Badge, H2, H3, H6, Note, PaperPhoto, useIsMobile } from "@nolli/ui"
 import type { ArchSummary } from "@/lib/landing-data"
-import { type SceneCamera } from "@nolli/map"
-import { MAP_APP_URL, ROLL_EASE } from "@/lib/constants"
-import { useWhereami } from "@/lib/whereami"
-import { TRANSITION_LEAD_VH, type HoldScene, type TransitionScene } from "@/spine/timeline"
+import { worldCamera } from "@/lib/world-camera"
+import { MAP_APP_URL } from "@/lib/constants"
+import type { HoldScene } from "@/spine/timeline"
 import type { CollectionStats, LandingData } from "@/lib/landing-data"
-import { useIsMobile } from "@nolli/ui"
+import { LandingButton } from "@/components/landing-button"
+import { MapVeil } from "@/components/map-veil"
 import { ArrowUpRight } from "lucide-react"
-import { HSplit, Pane, Screen, VSplit } from "./grid"
-import { MapTransition } from "./map-transition"
+import { Pane, Rule, Screen } from "./page-layout"
 import styles from "./stats.module.css"
 
 const SCENE_ID = "stats"
-const SCENE_VH = 160
-
-// landing tail for the count-ups' completion rules
-const SETTLE_DURATION = 1.4
-const SETTLE_EASE: [number, number, number, number] = [0.16, 1, 0.3, 1]
-
-// same world view the architect hold parks on — this scene only verifies it
-const WORLD: SceneCamera = { center: [12, 25], zoom: 1.05 }
+const SCENE_VH = 100
 
 // country badge list — real ISO codes + Intl.DisplayNames once the cities
 // data flows in; placeholder set until
@@ -37,10 +30,14 @@ const COUNTRY_BADGES = [
 ]
 
 export const statsHold = (data: LandingData): HoldScene => ({
-  kind: "hold",
   id: SCENE_ID,
   shape: "[data-spine-shape='stats']",
   heightVh: SCENE_VH,
+  // no lead: the handoff fires exactly at the scene boundary — the
+  // architect band's pin would still be mid-pass under the default 45vh
+  leadVh: 0,
+  // same world view the architect hold parks on — this scene only verifies it
+  camera: worldCamera,
   Component: () => (
     <StatsScene
       stats={data.stats}
@@ -50,162 +47,72 @@ export const statsHold = (data: LandingData): HoldScene => ({
   ),
 })
 
-// Architect → stats morph: the spine interpolates the map shape; no
-// overlay of its own.
-export const architectStatsTransition = (): TransitionScene => ({
-  kind: "transition",
-  id: "architect-stats",
-  fromShape: "[data-spine-shape='architect']",
-  toShape: "[data-spine-shape='stats']",
-  heightVh: 20,
-  Component: () => <div className={styles.veil} aria-hidden />,
-})
-
 type StatsProps = {
   stats: CollectionStats
   photoPool: ArchSummary[]
   architectNames: string[]
 }
 
-function StatsScene(props: StatsProps) {
+function StatsScene({ stats, photoPool, architectNames }: StatsProps) {
   const mobile = useIsMobile()
-  return mobile ? <StatsMobile {...props} /> : <StatsDesktop {...props} />
-}
-
-// Mobile re-composition — the same cells in one column: big card, architects,
-// countries, where-CTA closing full-width. Side padding panes collapse; the
-// shape stays full-bleed between the cap panes.
-function StatsMobile({ stats, photoPool, architectNames }: StatsProps) {
   return (
-    <Screen className={styles.screen}>
-      <HSplit>
-        <Pane size="calc(var(--size-header-height) + 3svh)"/>
-        <Pane>
+    <>
+      <MapVeil/>
+      <Screen className={styles.screen} height="auto">
+        {/* the hero card — map, architecture count and photo deck merged
+         * into one 2×2 pane, the original top-card layout: the frame sits
+         * at the map scale (one step under the spine's map layer — the
+         * scene is not sticky, so the pane joins the root z scale like the
+         * city scene's), and everything else lives at the text level in a
+         * twin pane over the map */}
+        <Pane className={styles.mapPane} style={{ gridArea: "hero" }}>
           <div className={styles.shape} aria-hidden data-spine-shape="stats" />
-          <MapTransition sceneId={SCENE_ID} untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={WORLD} />
-          <HSplit>
-            <Pane className={`${styles.statementPane} ${styles.cell}`} size="35svh">
-              <H2 className={styles.statementText}>
-                A Map. A Collection.
-                <br />
-                A <span className={styles.accent}>Growing Community</span>.
-              </H2>
-              <span className={styles.spacer} />
-              <NumberBlock
-                value={stats.buildings} label="Has Collected" delay={0} size="l"
-                sub="Architectures"
-              />
-              <PhotoStack archs={photoPool} />
-            </Pane>
-            <Pane size="17svh" className={styles.cell}>
-              <NumberBlock
-                value={stats.architects} label="Designed by" delay={0.15} size="m"
-                sub="Architects"
-              />
-              <BadgeRows items={architectNames} />
-            </Pane>
-            <Pane size="17svh" className={styles.cell}>
-              <NumberBlock
-                value={stats.countries} label="Located across" delay={0.3} size="m"
-                sub="Countries"
-              />
-              <BadgeRows items={COUNTRY_BADGES} />
-            </Pane>
-            <Pane size="17svh" className={styles.cell}>
-              <WhereCta>
-                <WhereBlock stats={stats} />
-              </WhereCta>
-            </Pane>
-          </HSplit>
         </Pane>
-        <Pane size="3svh"/>
-      </HSplit>
-    </Screen>
-  )
-}
-
-function StatsDesktop({ stats, photoPool, architectNames }: StatsProps) {
-  return (
-    <Screen className={styles.screen}>
-      <HSplit>
-        <Pane size="12svh"/>
-        <Pane>
-          <VSplit>
-            <div className={styles.shape} aria-hidden data-spine-shape="stats" />
-            <Pane size="var(--grid-padding)" filled/>
-            <Pane>
-              <HSplit>
-                <Pane>
-                  <MapTransition sceneId={SCENE_ID} untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={WORLD} />
-                  <HSplit>
-                    <Pane className={`${styles.statementPane} ${styles.cell}`}>
-                      <H2 className={styles.statementText}>
-                        A Map. A Collection.
-                        <br />
-                        A <span className={styles.accent}>Growing Community</span>.
-                      </H2>
-                      <span className={styles.spacer} />
-                      <NumberBlock
-                        value={stats.buildings} label="Has Collected" delay={0} size="l"
-                        sub="Architectures"
-                      />
-                      <PhotoStack archs={photoPool} />
-                    </Pane>
-                    <Pane size="40%">
-                      <VSplit>
-                        <Pane size={`calc(var(--grid-col) * 4)`} className={styles.cell}>
-                          <NumberBlock
-                            value={stats.architects} label="Designed by" delay={0.15} size="m"
-                            sub="Architects"
-                          />
-                          <BadgeRows items={architectNames} />
-                        </Pane>
-                        <Pane size={`calc(var(--grid-col) * 4)`} className={styles.cell}>
-                          <NumberBlock
-                            value={stats.countries} label="Located across" delay={0.3} size="m"
-                            sub="Countries"
-                          />
-                          <BadgeRows items={COUNTRY_BADGES} />
-                        </Pane>
-                        <Pane size={`calc(var(--grid-col) * 4)`} className={styles.cell}>
-                          <WhereCta>
-                            <WhereBlock stats={stats} />
-                          </WhereCta>
-                        </Pane>
-                      </VSplit>
-                    </Pane>
-                  </HSplit>
-                </Pane>
-              </HSplit>
-            </Pane>
-            <Pane size="var(--grid-padding)" filled/>
-          </VSplit>
+        <Pane className={styles.heroPane} style={{ gridArea: "hero" }}>
+          <H2 className={styles.statementText}>
+            A Map. A Collection.
+            <br />
+            A <span className={styles.accent}>Growing Community</span>.
+          </H2>
+          <div className={styles.heroFoot}>
+            <NumberBlock
+              value={stats.buildings} label="Has Collected" delay={0} size="l"
+              sub="Architectures"
+            />
+          </div>
+          <div className={styles.heroStack} aria-hidden>
+            <PhotoStack archs={photoPool} />
+          </div>
         </Pane>
-        <Pane size="8svh"/>
-      </HSplit>
-    </Screen>
+        <Pane filled className={styles.cellPane} style={{ gridArea: "ctry" }}>
+          <NumberBlock
+            value={stats.countries} label="Located across" delay={0.3} size="m"
+            sub="Countries"
+          />
+          <BadgeRows items={COUNTRY_BADGES} />
+        </Pane>
+        <Pane filled className={styles.cellPane} style={{ gridArea: "dsg" }}>
+          <NumberBlock
+            value={stats.architects} label="Designed by" delay={0.15} size="m"
+            sub="Architects"
+          />
+          <BadgeRows items={architectNames} />
+        </Pane>
+        <Pane style={{ gridArea: "cta" }}>
+          <LandingButton variant="ghost" className={styles.ctaButton} asChild>
+            <a href={MAP_APP_URL} target="_blank" rel="noopener noreferrer">
+              <Note>Open the map</Note>
+              <ArrowUpRight size={16} aria-hidden />
+            </a>
+          </LandingButton>
+        </Pane>
+        <Rule col="1 / -1" style={{ gridRow: 2, alignSelf: "end" }} />
+      </Screen>
+    </>
   )
 }
 
 /* ── pieces ───────────────────────────────────────────────────────────── */
-
-/** The where-you-are number — visitor's country from /api/whereami, count
- *  from the same DB snapshot as the neighboring numbers. Unknown country
- *  (or zero works) falls back to the worldwide total. CountUp re-targets
- *  when the geo lands, rolling between the two. */
-function WhereBlock({ stats }: { stats: CollectionStats }) {
-  const code = useWhereami()
-  const count = code ? stats.countryArchCounts[code] : undefined
-  return (
-    <NumberBlock
-      value={count ?? stats.buildings}
-      label="There are"
-      delay={0.45}
-      size="m"
-      sub={count ? `in ${code} !` : "Worldwide !"}
-    />
-  )
-}
 
 /** Time-based count-up when scrolled into view — spring physics (no fixed
  *  duration, natural settle), text rendered via useTransform so ticks don't
@@ -233,23 +140,6 @@ function CountUp({ to, delay = 0, className }: {
   return <motion.span ref={ref} className={className}>{text}</motion.span>
 }
 
-/** Hairline that lands when the count-up lands — own in-view trigger, kept
- *  in lockstep via the shared delay. */
-function CompletionRule({ delay = 0, duration = SETTLE_DURATION }: { delay?: number; duration?: number }) {
-  const ref = useRef<HTMLDivElement>(null)
-  const on = useInView(ref, { once: true })
-  const reduce = useReducedMotion()
-  return (
-    <motion.div
-      ref={ref}
-      className={styles.rule}
-      initial={false}
-      animate={on ? { scaleX: 1 } : { scaleX: 0 }}
-      transition={reduce ? { duration: 0 } : { duration, delay, ease: SETTLE_EASE }}
-    />
-  )
-}
-
 function NumberBlock({ value, label, sub, delay, size }: {
   value: number
   label: string
@@ -261,17 +151,17 @@ function NumberBlock({ value, label, sub, delay, size }: {
     <div className={styles.block}>
       <H3 className={styles.label}>{label}</H3>
       <div className={styles.statsLine}>
-        <CountUp to={value} delay={delay} className={`${styles.num} ${styles[size]}`} /> 
+        <CountUp to={value} delay={delay} className={`${styles.num} ${styles[size]}`} />
         <H6 className={styles.sub}>{sub}</H6>
       </div>
-      <CompletionRule delay={delay} />      
     </div>
   )
 }
 
 /** Corner deck of paper photos — landscape covers preferred (the tile crops
  *  to landscape, portrait shots would get re-cropped anyway), portrait
- *  covers only fill gaps. */
+ *  covers only fill gaps. Piles into the card's bottom-right corner and
+ *  bounces toward the top-left — the original fan. */
 function PhotoStack({ archs }: { archs: ArchSummary[] }) {
   const landscape = archs.filter((a) => a.cover.width > a.cover.height)
   const portrait = archs.filter((a) => a.cover.width <= a.cover.height)
@@ -311,45 +201,3 @@ function BadgeRows({ items }: { items: string[] }) {
   )
 }
 
-/** The where-you-are cell is the CTA — the whole pane, hero-CTA pattern.
- * Arming is hover/focus on desktop; on mobile the first tap arms, the
- * second navigates. The resting face (count block + underscored hint
- * label) slides out the top, the armed face (accent ground, arrow) rolls
- * up from below. The hint is inert text — the pane is the link. Faces stay
- * mounted so the count-up never re-runs. */
-function WhereCta({ children }: { children: React.ReactNode }) {
-  const mobile = useIsMobile()
-  const [armed, setArmed] = useState(false)
-  const [tapped, setTapped] = useState(false)
-  const reduced = useReducedMotion()
-  const roll: Transition = reduced ? { duration: 0 } : { duration: TRANSITION_SHORT, ease: ROLL_EASE }
-  const on = mobile ? tapped || armed : armed
-  return (
-    <a
-      className={styles.whereCta}
-      href={MAP_APP_URL}
-      onMouseEnter={() => setArmed(true)}
-      onMouseLeave={() => setArmed(false)}
-      onFocus={() => setArmed(true)}
-      onBlur={() => setArmed(false)}
-      onClick={(e) => {
-        if (!mobile || tapped) return
-        e.preventDefault()
-        setTapped(true)
-      }}
-    >
-      <motion.div className={styles.whereFace} animate={{ y: on ? "-100%" : 0 }} transition={roll}>
-        {children}
-        <span className={styles.whereHint}>Open the map <ArrowUpRight size={16}/></span>
-      </motion.div>
-      <motion.div
-        className={`${styles.whereFace} ${styles.whereArmed}`}
-        initial={false}
-        animate={{ y: on ? 0 : "100%" }}
-        transition={roll}
-      >
-        <H4 className={styles.whereButton}>Open the map <ArrowUpRight size={24}/></H4>
-      </motion.div>
-    </a>
-  )
-}

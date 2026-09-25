@@ -4,6 +4,8 @@
 body {
   --font-mono: "Red Hat Mono Variable", ui-monospace, monospace;
   --pattern-building: url("/patterns/light/building.png");
+  --pattern-grass: url("/patterns/light/grass.png");
+  --pattern-grass-oppo: url("/patterns/dark/grass.png");
 
   --color-hero-foreground: 227 182 77;
   --color-hero-background: 23 23 23;
@@ -22,16 +24,42 @@ body {
 
   /* cell roll easing — JS mirror ROLL_EASE in lib/constants */
   --ease-roll: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --size-header-height: 3.5rem;
+  --size-header-top: var(--spacing-component);
+
+  --size-page-max-width: 96rem;
+  --size-page-padding: max(
+    calc((100vw - var(--size-page-max-width)) / 2),
+    var(--spacing-group)
+  );
+
+  /* hairline column field — the page grid scenes place on; the global
+     overlay draws its lines at the same cell pitch */
+  --page-cols: 4;
+  --page-col: calc((100vw - 2 * var(--size-page-padding)) / var(--page-cols));
+
+  --z-map-behind: -100;
+  --z-rules: 10;
+  --z-map-above: 20;
+
+  @media (--smaller-than-sm) {
+    --size-page-padding: var(--spacing-paragraph);
+    --page-cols: 2;
+  }
 }
 
 body[data-theme="dark"] {
   --pattern-building: url("/patterns/dark/building.png");
+  --pattern-grass: url("/patterns/dark/grass.png");
+  --pattern-grass-oppo: url("/patterns/light/grass.png");
 }
 
 html,
 body,
 #root {
   height: 100%;
+  background: transparent;
 }
 
 html {
@@ -51,7 +79,6 @@ body {
   background: rgb(var(--color-primary-background));
   color: rgb(var(--color-primary-foreground));
   overscroll-behavior-y: none;
-  --landing-plate-max: 80rem;
 }
 
 /* Boot scroll lock: until the map reveals, the spine is a flat plate with

@@ -1,34 +1,19 @@
 /* Hero ledge on the spine — sticky full-viewport hold; the map itself is
    the spine's layer below, this tree is the content overlay above it.
-   Layout: big map cell = lede, vertically centered; plate column on the
-   RIGHT = arch list (growing top cell) + CTA pane (the pane IS the
-   CTA); mirrored title-block strip closes the scene (Info left, fill,
-   Scale + Sheet right, under the column). Plate bounds = everything above
-   the strip. */
+   Layout: lede bottom-left, info block top-right (Note labels, serif
+   values, visible deck); mobile stacks the same blocks vertically. The
+   cursor hides only inside the workarea (the reveal bounds) — the header
+   keeps the system cursor. */
 
 .hero {
   position: sticky;
   top: 0;
   height: 100svh;
   box-sizing: border-box;
+  pointer-events: auto;
   /* above the transition overlay (later sibling) so the closing rule and
      the ride-off content stay visible as the gradient slides over */
   z-index: 1;
-}
-
-/* closing rule — every internal split draws one, the screen edge too.
- * Drawn as an overlay, not border-bottom: the full-bleed veil is a CHILD
- * of this section and children paint over the parent's border. */
-.hero::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border-bottom: var(--border);
-  z-index: 2;
-  pointer-events: none;
-  transition: border-color var(--transition-short) ease-out;
 }
 
 /* boot: the closing rule follows the furniture phase (the hero section
@@ -39,45 +24,79 @@
   border-color: transparent;
 }
 
-/* the plate IS the cursor while the pointer is inside the hero — the
-   section must be hit-testable for cursor:none to resolve (nothing
-   beneath it takes pointer events; snap mode skips this class) */
-.cursorHide {
-  cursor: none;
-  pointer-events: auto;
+
+.boundingBox {
+  position: absolute;
+  top: calc(var(--size-header-height) + var(--size-header-top));
+  left: var(--size-page-padding);
+  right: var(--size-page-padding);
+  bottom: 0; 
 }
+
+/* ── page-grid placement ────────────────────────────────────────────────
+   One full-height row: lede pane on the two left columns, info pane on
+   the two right ones. */
 
 .screen {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
+  height: 100%;
+  grid-template-rows: minmax(0, 1fr) auto;
 }
 
-/* ── lede (big map cell, vertically centered) ─────────────────────────── */
+/* closing rule closes the screen in its own hairline row: the panes fill
+   the flexible row above it, and the 1px row pulls the rule's line (drawn
+   at the element top) one pixel inside the bottom edge */
+.closingRule {
+  grid-row: 2;
+  height: 1px;
+}
 
-.heroPane {
+.ledePane {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  justify-content: flex-end;
+  grid-column: 1 / span 2;
+  grid-row: 1;
 }
 
-/* boot-fade wrapper fill — sits inside a sized pane, so the wrapper can be
-   the whole pane box while the fade owns its opacity */
-.furnitureBox {
-  position: absolute;
-  inset: 0;
+.infoPane {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  grid-column: 3 / span 2;
+  grid-row: 1;
 }
 
+/* the plate IS the cursor while the pointer is inside the workarea —
+   applied to the workarea pane only, so the header keeps the system cursor
+   (never applied under reduced motion: no plate renders) */
+.cursorHide {
+  cursor: none;
+}
 
-.lede {
-  width: 100%;
+.ledeColumn {
   box-sizing: border-box;
-  padding: 0 var(--spacing-component);
+  padding-bottom: var(--spacing-group);
   display: flex;
   flex-direction: column;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
   gap: 1.5rem;
+}
+
+/* ── info block (top-right) ───────────────────────────────────────────── */
+
+/* fills the info pane (stretch carries the arch list's width, flex grows
+ * the column to the pane's full height); padding tops past the header
+ * strip */
+.infoColumn {
+  box-sizing: border-box;
+  align-self: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding-top: calc(var(--spacing-component) + var(--size-header-height) + var(--size-header-top));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: end;
+  gap: .5rem;
 }
 
 .headlineLine {
@@ -98,74 +117,40 @@
 .secondary {
   margin: 0;
   opacity: 0.75;
-  line-height: 1.6;
-  font-size: 1.12rem;
-  max-width: 30rem;
+  max-width: 35rem;
 }
 
-/* ── CTA pane — the pane IS the CTA, plate-sized ─────────────────────── */
+/* ── visible-deck arch list (info column, desktop) ────────────────────── */
 
-.ctaPane {
-  position: absolute;
-  inset: 0;
-  color: inherit;
-  text-decoration: none;
-  pointer-events: auto;
-  cursor: none;
-}
-
-/* one face = the whole cell. Resting face: label + plate hint over the
- * sheet tile. Armed face: accent ground, dark text, arrow. Arming rolls
- * the old face out and the new one in. No :hover anywhere; the system
- * cursor is invisible on this screen, so the plate proxy (deep-penetration
- * test) and keyboard focus are the armed states */
-.ctaFace {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: .5rem;
-}
-
-.ctaFace[data-armed="true"] {
-  background: rgb(var(--color-hero-foreground));
-  color: rgb(var(--color-hero-background));
-  cursor: pointer;
-}
-
-.ctaIcon {
-  margin-left: .35em;
-}
-
-.ctaText {
-  font-size: 2rem;
-  display: flex;
-  align-items: center;
-  transition: transform var(--transition-instant) ease;
-}
-
-/* ── arch list (top cell of the right column) ─────────────────────────── */
-
+/* top-anchored under the info block: overflow grows downward, so the cap
+   fades the bottom edge. The cap also reserves the lede's bottom zone —
+   header + info block head + lede stack — so the list never runs into the
+   headline on short/mobile viewports */
 .archList {
   list-style: none;
   margin: 0;
-  padding: var(--spacing-component);
   text-align: left;
+  /* the column right-aligns its children; without this the ul
+     shrink-to-fits to max-content and long deck names overflow the
+     viewport's left edge */
+  align-self: stretch;
+  /* fills the grown column's remaining height, so the mask fades at the
+     screen's bottom edge */
+  flex: 1 1 auto;
+  min-height: 0;
+  max-width: 100%;
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 3rem), transparent);
 }
 
 .archRow {
   display: flex;
   align-items: baseline;
+  justify-content: flex-end;
   gap: var(--spacing-paragraph);
   line-height: 2;
   opacity: 0.3;
   transition: opacity var(--transition-instant) ease;
-}
-
-.archRow[data-active="true"] {
-  opacity: 1;
 }
 
 .archNum {
@@ -174,42 +159,58 @@
   opacity: 0.5;
 }
 
-/* ── title block strip ───────────────────────────────────────────────── */
-
-
-.monoLabel {
-  font-family: var(--font-mono);
-  font-size: 0.6rem;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  opacity: 0.5;
-  line-height: 1;
+.archRow[data-active="true"] {
+  opacity: .75;
 }
 
-.blockPane {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: .25rem;
-  padding: 0 var(--spacing-component);
+.infoLabel {
+  opacity: .6;
 }
 
-/* fixed-height clip the info block rolls inside */
-.rollClip {
-  position: relative;
-  overflow: hidden;
+/* paragraph gap between label/value groups, not before the first */
+.infoLabel:not(:first-child) {
+  margin-top: var(--spacing-paragraph);
 }
 
-.blockValue {
-  font-family: var(--font-mono);
-  font-size: 0.9rem;
-  line-height: 1.5;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+/* serif values — same family as the headline; sized by clamp so mobile
+   reads smaller without a second class */
+.infoValue {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(1rem, 1.6vw, 1.375rem);
+  line-height: 1.25;
+  text-align: end;
+  opacity: .75;
 }
 
-.blockValueBig {
-  font-size: 1.05rem;
-  font-weight: 500;
+/* ── mobile: vertical stack ─────────────────────────────────────────────
+   Both panes go full-width rows — info first, lede pinned under it. The
+   info row flexes; the arch list flexes inside it, overflow hiding behind
+   its bottom mask, so the two blocks never collide. Kept AFTER the base
+   rules — equal specificity means a media block placed earlier loses the
+   cascade */
+
+@media (--smaller-than-sm) {
+  .ledePane,
+  .infoPane {
+    grid-column: 1 / -1;
+  }
+
+  .infoPane {
+    grid-row: 1;
+    min-height: 0;
+  }
+
+  .ledePane {
+    grid-row: 2;
+  }
+
+  /* the rule closes under the lede row */
+  .closingRule {
+    grid-row: 3;
+  }
+
+  .ledeColumn {
+    gap: 1rem;
+  }
 }

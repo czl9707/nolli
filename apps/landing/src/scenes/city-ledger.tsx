@@ -1,35 +1,32 @@
-// City ledger on the spine. The map is
-// the spine's layer landing on the empty shape pane; photo markers portal
-// into it and gate through a container flag, while the flow tree carries
-// the city dossier + 2x3 city-button grid and fades out over the hold's
-// tail.
-import { useCallback, useEffect, useRef, useState, type ReactNode, type RefObject } from "react"
-import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useTransform, type MotionValue, type Variants } from "framer-motion"
-import { Body1, Body2, H2, Note } from "@nolli/ui"
+// City ledger on the spine. The map is the spine's layer landing on the
+// empty shape pane over the right columns; photo markers portal into it and
+// gate through a container flag, while the dossier column carries the
+// statement, the arch list, and the city cubes — a ledger line at the
+// column's foot (cubes left, city name right). Selection swaps play as a
+// directional pass: the outgoing cube swipes off toward travel and fades,
+// the incoming one swipes in from behind it. Cities advance every
+// ADVANCE_MS; hover pauses, click jumps.
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type RefObject } from "react"
+import { AnimatePresence, motion, useReducedMotion, type Variants } from "framer-motion"
+import { Body2, H2, Note } from "@nolli/ui"
 import { applyMapTransition } from "@/lib/map-transition"
 import { type ArchSummary, type LandingData } from "@/lib/landing-data"
 import { CITY_LEDGER } from "@/lib/constants"
-import { useSceneScroll, useSpineMap } from "@/spine/spine"
-import { TRANSITION_LEAD_VH, type HoldScene, type TransitionScene } from "@/spine/timeline"
+import { useSceneOwnsMap, useSpineMap } from "@/spine/spine"
+import type { SceneCamera } from "@nolli/map"
+import type { HoldScene } from "@/spine/timeline"
 import { fitCamera } from "@/lib/camera"
 import { useIsMobile } from "@nolli/ui"
 import { CityMarkers } from "@/components/city-markers"
-import { RollButton } from "@/components/roll-button"
 import { RollText } from "@/components/roll-text"
-import { HSplit, Pane, Screen, VSplit } from "./grid"
-import { MapTransition } from "./map-transition"
+import { Pane, Rule, Screen } from "./page-layout"
 import styles from "./city-ledger.module.css"
 
-/** City grid row height. */
-const CITY_ROW_H = "3.5rem"
+/** Hold height in scene vh. */
+const SCENE_VH = 130
 
-/** Visibility windows in scene-local vh: the markers flag on at
- * −ENTRY_VH; the content fades and the markers flag off across
- * SCENE_VH − ENTRY_VH → SCENE_VH (fade lengths live in their own css).
- * ENTRY_REARM_VH is hysteresis for the pre-entry roll. */
-const ENTRY_VH = 20
-const ENTRY_REARM_VH = 20
-const SCENE_VH = 200
+/** City auto-advance period. */
+const ADVANCE_MS = 8000
 
 /** Fit padding in pane px: photo cards hang below the pin, so the
  * south-most arch needs far more room below it than the north-most above. */
@@ -38,49 +35,25 @@ const FIT_PADDING = { left: 100, right: 100, top: 100, bottom: 240 }
 /** Same shape scaled to the mobile map pane — a fraction of the px box. */
 const FIT_PADDING_MOBILE = { left: 36, right: 36, top: 36, bottom: 96 }
 
-/** City-name pool for the pre-entry roll — names only, no data behind
- * them; walking the list in order is travel texture, not destinations
- * claimed. Won the prototype round against scramble/decode/flap/blur —
- * ordered pass-through with the page's roll as the swap. */
-const CITY_POOL: string[] = [
-  "Kyoto", "Osaka", "London", "Barcelona", "Vienna", "Prague", "Lisbon",
-  "Copenhagen", "Stockholm", "New York", "Amsterdam", "Zurich", "Munich",
-  "Warsaw", "Athens", "Istanbul", "Cairo", "Dubai", "Mumbai", "Bangkok",
-  "Singapore", "Hong Kong", "Shanghai", "Seoul", "Sydney", "Melbourne",
-  "Tokyo", "Mexico City", "Buenos Aires", "Rio", "Chicago", "Toronto",
-  "Vancouver", "Berlin", "Paris", "Milan", "Rome", "Madrid", "Oslo",
-  "Helsinki",
-]
+export const cityHold = (data: LandingData): HoldScene => {
+  const fit: RefObject<SceneCamera | null> = { current: null }
+  return {
+    id: "city",
+    shape: "[data-spine-shape='city']",
+    heightVh: SCENE_VH,
+    camera: () => fit.current,
+    Component: () => <CityLedger data={data} fit={fit} />,
+  }
+}
 
-/** Scroll vh between pre-entry roll steps. */
-const ROLL_STEP_VH = 6
-
-export const cityHold = (data: LandingData): HoldScene => ({
-  kind: "hold",
-  id: "city",
-  shape: "[data-spine-shape='city']",
-  heightVh: SCENE_VH,
-  Component: () => <CityLedger data={data} />,
-})
-
-export const heroCityTransition = (): TransitionScene => ({
-  kind: "transition",
-  id: "hero-city",
-  fromShape: "[data-spine-shape='hero']",
-  toShape: "[data-spine-shape='city']",
-  heightVh: 20,
-  Component: () => <div className={styles.veil} aria-hidden />,
-})
-
-function CityLedger({ data }: { data: LandingData }) {
+function CityLedger({ data, fit }: { data: LandingData; fit: RefObject<SceneCamera | null> }) {
   const map = useSpineMap()
-  const local = useSceneScroll()
   const mobile = useIsMobile()
   const paneRef = useRef<HTMLDivElement | null>(null)
   const archsByCity = data.cityLedger
 
-  // the hero's random pick is the default city here
-  const [selected, setSelected] = useState<string>(data.heroCity.name)
+  // the carousel always opens on the first city
+  const [selected, setSelected] = useState<string>(CITY_LEDGER[0])
   // the carded arch — always one once the city loads; hovering a row or
   // marker moves the card
   const [cardSlug, setCardSlug] = useState<string | null>(null)
@@ -89,7 +62,6 @@ function CityLedger({ data }: { data: LandingData }) {
   useEffect(() => {
     setCardSlug(archs[0]?.slug ?? null)
   }, [archs])
-  const displayCity = useCityDisplay(local, selected)
 
   // camera fits the archs into the pane's measured px box — read at call
   // time from the ref; every caller (entry flight, city pick) runs long
@@ -105,10 +77,7 @@ function CityLedger({ data }: { data: LandingData }) {
     )
   }, [mobile])
 
-  // fly in as the transition hands us the screen; camera measured at fire
-  // time from the pane's live px box
-  const archsRef = useRef(archs)
-  archsRef.current = archs
+  useEffect(() => { fit.current = cameraFor(archs) }, [fit, archs, cameraFor])
 
   const onSelect = useCallback(
     (name: string) => {
@@ -122,145 +91,34 @@ function CityLedger({ data }: { data: LandingData }) {
     [archsByCity, map, cameraFor],
   )
 
-  const fade = useTransform(local, [SCENE_VH - ENTRY_VH, SCENE_VH], [1, 0])
-  // markers own the screen from the landing run-in (same edge the entry
-  // flight fires on) to the exit window
-  const [markersOn, setMarkersOn] = useState(() => {
-    const v = local.get()
-    return v >= -ENTRY_VH && v < SCENE_VH - ENTRY_VH
-  })
-  useMotionValueEvent(local, "change", (v) => setMarkersOn(v >= -ENTRY_VH && v < SCENE_VH - ENTRY_VH))
-
-  const cityRows = (
-    <>
-      <CityRow cities={CITY_LEDGER.slice(0, 2)} selected={selected} loaded={Object.keys(archsByCity)} onSelect={onSelect} />
-      <CityRow cities={CITY_LEDGER.slice(2, 4)} selected={selected} loaded={Object.keys(archsByCity)} onSelect={onSelect} />
-      <CityRow cities={CITY_LEDGER.slice(4, 6)} selected={selected} loaded={Object.keys(archsByCity)} onSelect={onSelect} />
-    </>
-  )
-
-  const treeProps = {
-    paneRef,
-    statement: (
-      <Statement
-        leadCity={displayCity}
-        listCity={selected}
-        archs={archs}
-        cardSlug={cardSlug}
-        onCard={setCardSlug}
-      />
-    ),
-    cityRows,
-  }
+  // map ownership gates the live pieces — markers and the cubes'
+  // auto-advance follow the spine's owned-scene edge (the pane itself is
+  // always in the page)
+  const ownsMap = useSceneOwnsMap()
 
   return (
-    <>
-      <Screen className={styles.city}>
-        <MapTransition untilVh={SCENE_VH - TRANSITION_LEAD_VH} target={() => cameraFor(archsRef.current)} />
-        <CityMarkers archs={archs} on={markersOn} selected={cardSlug} onSelect={setCardSlug} />
-        <motion.div className={styles.splits} style={{ opacity: fade }}>
-          {mobile ? (
-            <CityMobile {...treeProps} />
-          ) : (
-            <CityDesktop {...treeProps} />
-          )}
-        </motion.div>
-      </Screen>
-    </>
-  )
-}
-
-type CityTreeProps = {
-  paneRef: RefObject<HTMLDivElement | null>
-  statement: ReactNode,
-  cityRows: ReactNode
-}
-
-/** Mobile re-composition — map pane full-width on top, statement + rows
- * stacked under it. Rows carry the tap-to-card. */
-function CityMobile({ paneRef, statement, cityRows }: CityTreeProps) {
-  return (
-    <HSplit>
-      <Pane size="calc(var(--size-header-height) + 5svh)"/>
-      <Pane size="40svh">
+    <Screen className={styles.city} height={`${SCENE_VH}svh`}>
+      <CityMarkers archs={archs} on={ownsMap} selected={cardSlug} onSelect={setCardSlug} />
+      <Pane className={styles.mapPaneWrap}>
         <div ref={paneRef} data-spine-shape="city" className={styles.mapPane} />
       </Pane>
-      <Pane>
-        <VSplit>
-          <Pane size="var(--spacing-paragraph)" filled/>
-          <Pane>
-            <HSplit>
-              <Pane className={styles.statementPane}>
-                {statement}
-              </Pane>
-              {cityRows}
-              <Pane size="5svh"/>
-            </HSplit>
-          </Pane>
-          <Pane size="var(--spacing-paragraph)" filled/>
-        </VSplit>
+      {/* col lives in the css — the mobile block widens the pane to the
+       * full 2-col field, and a `col` prop here would inline-override it */}
+      <Pane className={styles.contentPane}>
+        <div className={styles.content}>
+          <Statement
+            city={selected}
+            listCity={selected}
+            archs={archs}
+            cardSlug={cardSlug}
+            onCard={setCardSlug}
+          />
+          <CityDots selected={selected} onSelect={onSelect} auto={ownsMap} />
+        </div>
       </Pane>
-    </HSplit>
+      <Rule col="1 / -1" />
+    </Screen>
   )
-}
-
-/** Desktop tree — dossier column (statement + city grid) left, the map
- * pane carrying the shape right. */
-function CityDesktop({ paneRef, statement, cityRows }: CityTreeProps) {
-  return (
-    <HSplit>
-      <Pane size="12svh" />
-      <Pane>
-        <VSplit>
-          <Pane size="var(--grid-padding)" filled/>
-          <Pane>
-            <HSplit>
-              <Pane>
-                <VSplit>
-                  <Pane size="calc(var(--grid-col) * 4)">
-                    <HSplit>
-                      <Pane className={styles.statementPane}>
-                        {statement}
-                      </Pane>
-                      {cityRows}
-                    </HSplit>
-                  </Pane>
-                  <Pane size="calc(var(--grid-col) * 8)">
-                    <div ref={paneRef} data-spine-shape="city" className={styles.mapPane} />
-                  </Pane>
-                </VSplit>
-              </Pane>
-              <Pane size="8svh"/>
-            </HSplit>
-          </Pane>
-          <Pane size="var(--grid-padding)" filled/>
-        </VSplit>
-      </Pane>
-    </HSplit>
-  )
-}
-
-/** The lead line's city. Before the entry window it rolls through the
- * city pool in order, a pure function of scroll distance — scrub back
- * replays it. Inside the window it is the selection; the roll itself is
- * the swap animation (in Statement), always upward. */
-function useCityDisplay(local: MotionValue<number>, selected: string) {
-  const [name, setName] = useState(selected)
-  const inHold = useRef(local.get() >= -ENTRY_VH)
-  useMotionValueEvent(local, "change", (v) => {
-    inHold.current = v >= -ENTRY_VH - ENTRY_REARM_VH
-    if (inHold.current) {
-      setName(selected)
-      return
-    }
-    const step = Math.floor((-v - ENTRY_VH) / ROLL_STEP_VH)
-    const idx = ((step % CITY_POOL.length) + CITY_POOL.length) % CITY_POOL.length
-    setName(CITY_POOL[idx])
-  })
-  useEffect(() => {
-    if (inHold.current) setName(selected)
-  }, [selected])
-  return name
 }
 
 /** Arch-list swap choreography: rows blur in and out in a scattered order —
@@ -286,19 +144,17 @@ const rowDelay = (slug: string) => {
   return (h / 997) * 0.24
 }
 
-/** Dossier copy. The lead line rides the lead track — a tall box pulled
- * above the pane, the sticky's containing block — so it pins at the
- * line's docked spot from mid-transition and settles here once the scene
- * lands. The city rolls through its faces; the architecture list under
- * the statement swaps in a blur stagger when the city changes. */
+/** Dossier copy. The city rolls its faces when the selection changes (the
+ * page's roll is the swap animation, always upward); the architecture
+ * list under the statement swaps in a blur stagger with it. */
 function Statement({
-  leadCity,
+  city,
   listCity,
   archs,
   cardSlug,
   onCard,
 }: {
-  leadCity: string
+  city: string
   listCity: string
   archs: ArchSummary[]
   cardSlug: string | null
@@ -309,12 +165,12 @@ function Statement({
   return (
     <>
       <H2 className={styles.statementText}>
-        Travelling to <RollText text={leadCity} />...
+        Travelling to <RollText text={city} />...
         <br />
         Nolli has Architectures Worth Seeing.
       </H2>
       {
-        !mobile && 
+        !mobile &&
         <AnimatePresence mode="wait" initial={false}>
           <motion.ul key={listCity} className={styles.archList} initial="hidden" animate="visible" exit="exit">
             {archs.map((p, i) => (
@@ -336,69 +192,111 @@ function Statement({
   )
 }
 
-/** One row of the city grid — fixed-height pane, split into two cells;
- * each cell IS the button. */
-function CityRow({
-  cities,
+/** The city carousel control — a ledger line at the column's foot: cubes
+ * on the left, the city name small at the right, both over the rule. Idle
+ * cubes are small gray grounds, the selected one large and accent; a
+ * selection change plays as a directional pass — the outgoing cube swipes
+ * off toward travel and fades, the incoming one swipes in from behind it
+ * (all CSS, keyed off data-dir/data-exit). The rule carries the period as
+ * a gold wipe (scaleX so it can hold mid-sweep); the timer tracks the
+ * remaining period so a hover pause freezes wipe and countdown together.
+ * Hovering previews the name; clicking selects. */
+function CityDots({
   selected,
-  loaded,
   onSelect,
+  auto,
 }: {
-  cities: readonly string[]
   selected: string
-  loaded: string[]
   onSelect: (name: string) => void
+  auto: boolean
 }) {
-  return (
-    <Pane size={CITY_ROW_H}>
-      <VSplit>
-        {cities.map((name) => (
-          <CityCell
-            key={name}
-            name={name}
-            selected={name === selected}
-            ready={loaded.includes(name)}
-            onSelect={onSelect}
-          />
-        ))}
-      </VSplit>
-    </Pane>
-  )
-}
+  const reduced = useReducedMotion()
+  const [hovered, setHovered] = useState<number | null>(null)
+  // bumped on every advance/pick so the timer + wipe restart together
+  const [cycle, setCycle] = useState(0)
+  const idx = Math.max(0, CITY_LEDGER.indexOf(selected))
+  const running = auto && !reduced && hovered === null
 
-/** One city cell — RollButton with the city arming model: hover/focus
- * previews the focused face; selection holds it, and handing selection
- * over rolls the old cell back to default. */
-function CityCell({
-  name,
-  selected,
-  ready,
-  onSelect,
-}: {
-  name: string
-  selected: boolean
-  ready: boolean
-  onSelect: (name: string) => void
-}) {
-  const [armed, setArmed] = useState(false)
-  // listeners stay attached even while selected — a leave during selection
-  // must still clear armed, or the cell would re-show the armed face once
-  // deselected. The face itself only arms when interactive.
-  const faceArmed = armed && ready && !selected
-  const arm = (v: boolean) => () => setArmed(v)
+  // ms left in the current period — kept across pauses so resuming
+  // continues the sweep instead of restarting it
+  const remaining = useRef(ADVANCE_MS)
+  const startedAt = useRef(0)
+  useEffect(() => {
+    if (!running) return
+    startedAt.current = Date.now()
+    const t = setTimeout(() => {
+      remaining.current = ADVANCE_MS
+      setCycle((c) => c + 1)
+      onSelect(CITY_LEDGER[(idx + 1) % CITY_LEDGER.length])
+    }, remaining.current)
+    return () => {
+      remaining.current = Math.max(0, remaining.current - (Date.now() - startedAt.current))
+    }
+  }, [running, idx, cycle, onSelect])
+
+  // the cube that just lost the selection + the travel direction — the
+  // only state the css needs to run the exit/entry pass
+  const [exit, setExit] = useState<{ idx: number; dir: "fwd" | "back" } | null>(null)
+  const prevIdx = useRef(idx)
+  useEffect(() => {
+    const old = prevIdx.current
+    prevIdx.current = idx
+    if (old === idx) return
+    const n = CITY_LEDGER.length
+    const d = (idx - old + n) % n
+    // single-step moves (auto-advance, wrap included) always read forward;
+    // longer jumps take the positional direction
+    const dir = d === 1 || d === n - 1 || idx > old ? "fwd" : "back"
+    setExit({ idx: old, dir })
+  }, [idx])
+  // drop the exit flag once its animation has played so a later exit of
+  // the same cube re-fires
+  useEffect(() => {
+    if (!exit) return
+    const t = setTimeout(() => setExit(null), 450)
+    return () => clearTimeout(t)
+  }, [exit])
+
+  const pick = (i: number) => {
+    if (CITY_LEDGER[i] === selected) return
+    remaining.current = ADVANCE_MS
+    setCycle((c) => c + 1)
+    onSelect(CITY_LEDGER[i])
+  }
+
   return (
-    <RollButton
-      state={selected || faceArmed ? "focused" : "default"}
-      disabled={!ready}
-      className={styles.cityButton}
-      onClick={() => onSelect(name)}
-      aria-pressed={selected}
-      onMouseEnter={arm(true)}
-      onMouseLeave={arm(false)}
-      onFocus={arm(true)}
-      onBlur={arm(false)}
-    >
-      {name}
-    </RollButton>
+    <div className={styles.indicatorContainer} data-paused={hovered !== null}>
+      <div className={styles.dotsRow}>
+        <div
+          className={styles.cubes}
+          data-dir={exit?.dir}
+          onPointerLeave={() => setHovered(null)}
+        >
+          {CITY_LEDGER.map((name, i) => (
+            <button
+              key={name}
+              type="button"
+              className={styles.cube}
+              data-active={i === idx}
+              data-exit={exit?.idx === i ? exit.dir : undefined}
+              aria-label={name}
+              aria-current={i === idx}
+              onClick={() => pick(i)}
+              onPointerEnter={() => setHovered(i)}
+            />
+          ))}
+        </div>
+        <span className={styles.currentCubeName}>{CITY_LEDGER[hovered ?? idx]}</span>
+      </div>
+      <div className={styles.rule} aria-hidden>
+        {auto && !reduced && (
+          <span
+            key={`${idx}-${cycle}`}
+            className={styles.ruleFill}
+            style={{ "--city-period": `${ADVANCE_MS}ms` } as CSSProperties}
+          />
+        )}
+      </div>
+    </div>
   )
 }

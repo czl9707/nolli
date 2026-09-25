@@ -1,34 +1,94 @@
-/* Site header (prototype winner header-A "Topline"). Full-width frosted
-   strip over the map (translucent fill + backdrop blur + 1px bottom rule)
-   so the same ink reads over every scene. CTA is the app's Button. */
+/* Site header — a full-width strip delimited by Rules top and bottom; one
+   blurred pane per column cell, each carrying --border on its side (the
+   borders land on the global hairlines). */
 
 .bar {
   position: sticky;
-  top: 0;
-  z-index: 20;
-  pointer-events: none;
-  color: rgb(var(--color-primary-foreground));
-  background: rgb(var(--color-primary-background) / 0.75);
-  backdrop-filter: blur(14px);
-  border-bottom: var(--border);
+  top: var(--size-header-top);
+  z-index: 100;
+  margin-top: var(--size-header-top);
+  pointer-events: auto;
+  overflow: visible;
 }
 
-.row {
-  position: relative;
+/* a column cell of the cut: a 2-track grid so cells split in half; the
+   halves carry the same side border */
+.cell {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  align-items: center;
+  height: var(--size-header-height);
+  border-left: var(--border);
+}
+
+.half {
   display: flex;
   align-items: center;
+  justify-content: center;
+  min-width: 0;
+  height: 100%;
+}
+
+.half + .half {
+  border-left: var(--border);
+}
+
+/* mobile's right cell — the dropdown trigger fills the pane whole */
+.menuCell {
+  display: flex;
+}
+
+.menuTrigger {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  /* label left, hamburger right */
   justify-content: space-between;
-  height: var(--size-header-height);
-  padding-left: var(--spacing-component);
-  padding-right: var(--spacing-component);
+  padding-inline: var(--spacing-paragraph);
+}
+
+/* furniture-phase entrance — the panes (data-in lives there) hide via
+   visibility; each pane's texture ground and its content then fade in
+   together (the ::after override outspecifies the kit's .paneBlurred::after;
+   the frost pseudo is never inside an opacity group). The strip's rules are
+   always there. Outside the boot provider the phase reads "done", so static
+   pages show the header immediately. */
+.cell:not([data-in]) {
+  visibility: hidden;
+}
+
+.cell:not([data-in])::after {
+  opacity: 0;
+}
+
+.cell > * {
+  opacity: 0;
+}
+
+.cell[data-in]::after,
+.cell[data-in] > * {
+  opacity: 1;
+  transition: opacity 0.5s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cell[data-in]::after,
+  .cell[data-in] > * {
+    transition: none;
+  }
+}
+
+.lastRule {
+  margin-top: 3px;
 }
 
 .brand {
   display: flex;
   align-items: center;
+  margin-left: var(--spacing-paragraph);
   gap: var(--spacing-paragraph);
   text-decoration: none;
-  pointer-events: auto;
 }
 
 .mark {
@@ -39,23 +99,13 @@
   font-size: 1.25rem;
 }
 
-.right {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-component);
-  pointer-events: auto;
+/* the menu mirrors the strip: one column cell wide, every row a
+   header-height cell */
+.menuContent {
+  width: var(--page-col);
 }
 
-.links {
-  display: flex;
-  gap: var(--spacing-paragraph);
-}
-
-.links a {
-  color: rgb(var(--color-primary-foreground) / 0.75);
-  text-decoration: none;
-}
-
-.links a:hover {
-  color: rgb(var(--color-primary-foreground));
+.menuContent [data-slot="landing-button"] {
+  height: var(--size-header-height);
+  width: 100%;
 }

@@ -1,62 +1,107 @@
-/* Stats hold — the closer before the footer. The map lands as the ground
-   of the whole workarea behind a veil; the big buildings card heads the
-   scene, architects/countries stack to its right, where-you-are closes
-   as the CTA strip. */
+/* Stats hold — the closer before the footer, on the page grid, in normal
+   flow: svh margins carry it clear of the header and the next scene. The
+   hero card merges the map, the architecture count and the photo deck
+   into one 2×2 pane — the frame at the map scale under the spine's map
+   layer (the scene is not sticky, so the pane joins the root z scale,
+   city-scene pattern), everything else at the text level over the map.
+   Mobile recomposes to full rows. */
 
 .screen {
-  position: sticky;
-  top: 0;
   box-sizing: border-box;
-  /* border-bottom: var(--border); */
-  overflow: visible;
-  background: rgb(var(--color-primary-background) / 0.75);
+  padding-top: 10svh;
+  grid-template-areas:
+    "hero hero . ctry"
+    "hero hero dsg cta";
+  grid-template-rows: repeat(2, 35svh);
+  gap: 0;
+  align-items: stretch;
 }
 
-/* shape anchor — empty in the DOM; the spine's map layer lands on its rect */
-.shape {
-  position: absolute;
-  inset: 0;
-}
+/* ── panes ───────────────────────────────────────────────────────────── */
 
-/* architect → stats transition veil */
-.veil {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgb(var(--color-primary-background) / 0.75), transparent);
-}
-
-/* variant overlay — carries the pane grid above the map ground */
-.overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-}
-
-/* ── card pieces ───────────────────────────────────────────────────────── */
-
-/* fills a pane; number block top, badge rows pinned to the bottom */
-.cell {
+/* every card cell shares one box: padding, gap, column flex; paper cells
+   add the Pane `filled` surface */
+.cellPane {
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-component);
   padding: var(--spacing-component);
-  
-  backdrop-filter: blur(6px);
+  min-width: 0;
+  min-height: 0;
 }
 
-@media (--smaller-than-sm) {
-  .cell {
-    padding: var(--spacing-paragraph);
-    flex-direction: row;
-    gap: var(--spacing-component);
-  }
+/* badges sit on the paper ground — the pane's ink, not the page's */
+.cellPane .badgeItem {
+  color: rgb(var(--color-paper-foreground));
+  border-color: rgb(var(--color-paper-foreground) / 0.4);
 }
+
+/* ── the hero card — map frame under, text over ──────────────────────── */
+
+/* the frame — the whole 2×2 card at the map scale, one step under the
+   spine's map layer; the map lands on the shape and covers the ground */
+.mapPane {
+  position: relative;
+  background: rgb(var(--color-paper-background));
+  z-index: calc(var(--z-map-behind) - 2);
+  /* hack to show the border... */
+  border-right: var(--border);
+  border-color: rgb(var(--color-paper-foreground)); 
+}
+
+.mapPane::before {
+  content: "";
+  inset: 0;
+  position: absolute;
+  opacity: .5;
+  background-image: var(--pattern-grass-oppo);
+  pointer-events: none;
+}
+
+/* shape anchor — empty in the DOM; the spine's map layer lands on its
+   rect (filling it exactly) over the secondary ground */
+.shape {
+  position: absolute;
+  inset: .5rem;
+  background-color: rgb(var(--color-secondary-background));
+}
+
+/* the text level — twin pane over the map, the original top-card layout:
+   statement at the top, the counts at the foot, the photo deck piled
+   into the bottom-right corner and cropped by the card */
+.heroPane {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-component);
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.heroFoot {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-component);
+}
+
+/* the deck clips at the map's inset — photos crop on the ground line,
+   not the card edge */
+.heroStack {
+  position: absolute;
+  inset: .5rem;
+  overflow: hidden;
+}
+
+/* ── card pieces ─────────────────────────────────────────────────────── */
 
 .block {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  flex: 1 0 30%;
   gap: 0.4em;
   min-width: 0;
 }
@@ -69,15 +114,15 @@
 }
 
 .num.m {
-  font-size: clamp(2.5rem, 4.6vw, 4.25rem);
+  font-size: clamp(1.75rem, 3vw, 3.5rem);
 }
 
 .num.l {
-  font-size: clamp(3.5rem, 7vw, 6.5rem);
+  font-size: clamp(2.75rem, 4.5vw, 6rem);
 }
 
 .label {
-  font-size: clamp(1.25rem, 2vw, 2rem);
+  font-size: clamp(1.25rem, 1.75vw, 2.5rem);
   font-style: italic;
   opacity: 0.85;
 }
@@ -90,85 +135,14 @@
 }
 
 .sub {
-  font-size: clamp(1rem, 1.75vw, 1.75rem);
+  font-size: clamp(.9rem, 1.3vw, 1.4rem);
   font-family: var(--font-serif);
   font-style: italic;
   opacity: 0.7;
 }
 
-/* where-card CTA — the whole pane is the link. Two stacked faces: rest
-   (count block) and armed (accent ground + arrow); hover/focus rolls one
-   out the top and the other up from below (hero-CTA roll). */
-.whereCta {
-  position: absolute;
-  inset: 0;
-  display: block;
-  overflow: hidden;
-  text-decoration: none;
-  /* scene layer is pointer-transparent spine-wide; the cell is interactive */
-  pointer-events: auto;
-}
-
-.whereFace {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: var(--spacing-component);
-  padding: var(--spacing-component);
-  
-}
-@media(--smaller-than-sm) {
-  .whereFace {
-    flex-direction: row;
-    padding: var(--spacing-paragraph);
-  }
-}
-
-.whereArmed {
-  background: rgb(var(--color-hero-foreground));
-  color: rgb(var(--color-primary-background));
-  align-items: center;
-  justify-content: center;
-}
-
-/* underscored playful hint pinned to the rest face's bottom-right —
-   inert text; the pane behind it is the link */
-.whereHint {
-  margin-top: auto;
-  align-self: flex-end;
-  font-family: var(--font-playful);
-  font-size: 1.05rem;
-  line-height: 1.3;
-  padding: 0 0.25em;
-  border-bottom: 2px solid rgb(var(--color-hero-foreground) / 0.5);
-}
-
-.whereButton {
-  font-family: var(--font-playful);
-}
-
-/* ── big buildings card ────────────────────────────────────────────────── */
-
-.statementPane {
-  display: flex;
-  flex-direction: column !important;
-  justify-content: flex-end;
-  padding: var(--spacing-component);
-}
-
-.spacer {
-  flex: 1 1;
-}
-/* statement rides the card top instead of owning a pane */
-.title {
-  padding: 0;
-  margin-bottom: auto;
-}
-
 .statementText {
-  font-size: clamp(1.5rem, 2.5vw, 2.25rem);
+  font-size: clamp(1.5rem, 2.5vw, 2.75rem);
   font-style: italic;
 }
 
@@ -178,80 +152,20 @@
   color: rgb(var(--color-hero-foreground));
 }
 
-/* corner deck — landscape photos piled into the card's bottom-right corner,
-   edges cropped by the pane, every card sitting at its own skewed angle
-   and depth (uneven margins). Hover punches the deck away from the corner
-   into a rougher fan — order kept, stacking untouched; leaving re-piles.
-   The container itself is the hover zone. */
-.stack {
+/* ── CTA cell — one full-width pane button ───────────────────────────── */
+
+/* the scene layer is pointer-transparent spine-wide; the button opts in */
+.ctaButton {
   position: absolute;
-  right: -5rem;
-  bottom: -3rem;
-  width: 32rem;
-  height: 18rem;
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
-  
+  border: var(--border);
+  inset: var(--spacing-paragraph);
+  top: unset;
   pointer-events: auto;
+  height: 3.5rem;
+  justify-content: center;
 }
 
-.stackPhoto {
-  position: relative;
-  overflow: visible;
-  flex: 0 0;
-  flex-basis: 17rem;
-  transition: transform 0.38s cubic-bezier(0.3, 1.75, 0.35, 1);
-}
-
-/* uneven pile depth */
-.stackPhoto + .stackPhoto { margin-left: -15.3rem; }
-
-/* rest — skewed pile */
-.stackPhoto:nth-child(1) { transform: translate(0.2rem, -0.5rem) rotate(-6deg); }
-.stackPhoto:nth-child(2) { transform: translate(-0.4rem, 0.3rem) rotate(4deg); }
-.stackPhoto:nth-child(3) { transform: translate(0.1rem, -0.7rem) rotate(-3deg); }
-.stackPhoto:nth-child(4) { transform: translate(-0.3rem, 0.2rem) rotate(8deg); }
-.stackPhoto:nth-child(5) { transform: translate(0.4rem, -0.4rem) rotate(-4deg); }
-
-/* hover — punched fan */
-.stack:hover .stackPhoto:nth-child(1) { transform: translate(-13.8rem, -1.6rem) rotate(-12deg); }
-.stack:hover .stackPhoto:nth-child(2) { transform: translate(-11.1rem, -6.2rem) rotate(7deg); }
-.stack:hover .stackPhoto:nth-child(3) { transform: translate(-8.7rem, -3.2rem) rotate(-6deg); }
-.stack:hover .stackPhoto:nth-child(4) { transform: translate(-6.3rem, -6.4rem) rotate(10deg); }
-.stack:hover .stackPhoto:nth-child(5) { transform: translate(-3.1rem, -1.5rem) rotate(-8deg); }
-
-.stackPhoto img {
-  display: block;
-  width: 100%;
-  height: 17rem;
-  object-fit: cover;
-}
-
-
-@media (--smaller-than-sm) {
-  /* photo fan re-scaled to the narrow card */
-  .stack {
-    width: 20rem;
-    height: 10rem;
-    right: -2.5rem;
-    bottom: -1.25rem;
-  }
-
-  .stackPhoto {
-    flex-basis: 9.5rem;
-  }
-
-  .stackPhoto + .stackPhoto {
-    margin-left: -8.5rem;
-  }
-
-  .stackPhoto img {
-    height: 10rem;
-  }
-}
-
-/* ── badge marquees ────────────────────────────────────────────────────── */
+/* ── badge marquees ──────────────────────────────────────────────────── */
 
 /* pinned to the card bottom, under the number block */
 .badges {
@@ -290,8 +204,72 @@
   }
 }
 
+/* ── corner photo deck ───────────────────────────────────────────────── */
 
-/* ── reduced motion ────────────────────────────────────────────────────── */
+/* piles into the bottom-right corner, hanging past it; the pane crops
+   the pile and the fan */
+.stack {
+  position: absolute;
+  right: -4rem;
+  bottom: -2.5rem;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  pointer-events: auto;
+}
+
+.stackPhoto {
+  position: relative;
+  overflow: visible;
+  flex: 0 0 14rem;
+  transition: transform 0.38s cubic-bezier(0.3, 1.75, 0.35, 1);
+}
+
+/* uneven pile depth — the old deck proportion: each card shows a strip */
+.stackPhoto + .stackPhoto { margin-left: -12.5rem; }
+
+/* rest — skewed pile */
+.stackPhoto:nth-child(1) { transform: translate(0.2rem, -0.5rem) rotate(-6deg); }
+.stackPhoto:nth-child(2) { transform: translate(-0.4rem, 0.3rem) rotate(4deg); }
+.stackPhoto:nth-child(3) { transform: translate(0.1rem, -0.7rem) rotate(-3deg); }
+.stackPhoto:nth-child(4) { transform: translate(-0.3rem, 0.2rem) rotate(8deg); }
+.stackPhoto:nth-child(5) { transform: translate(0.4rem, -0.4rem) rotate(-4deg); }
+
+/* hover — punched fan at the ORIGINAL spread (cards part by ~2.5rem, not
+   slivers), bouncing toward the top-left */
+.stack:hover .stackPhoto:nth-child(1) { transform: translate(-13.8rem, -1.6rem) rotate(-12deg); }
+.stack:hover .stackPhoto:nth-child(2) { transform: translate(-11.1rem, -6.2rem) rotate(7deg); }
+.stack:hover .stackPhoto:nth-child(3) { transform: translate(-8.7rem, -3.2rem) rotate(-6deg); }
+.stack:hover .stackPhoto:nth-child(4) { transform: translate(-6.3rem, -6.4rem) rotate(10deg); }
+.stack:hover .stackPhoto:nth-child(5) { transform: translate(-3.1rem, -1.5rem) rotate(-8deg); }
+
+.stackPhoto img {
+  display: block;
+  width: 100%;
+  height: 13rem;
+  object-fit: cover;
+}
+
+/* ── mobile: full rows ───────────────────────────────────────────────── */
+
+@media (--smaller-than-sm) {
+  .screen {
+    grid-template-areas:
+      "hero hero"
+      "ctry dsg"
+      "cta cta";
+    grid-template-rows: 70svh auto auto;
+    margin-top: calc(var(--size-header-top) + var(--size-header-height));
+    margin-bottom: var(--spacing-group);
+  }
+
+  .heroStack {
+    transform: scale(0.7);
+    transform-origin: bottom right;
+  }
+}
+
+/* ── reduced motion ──────────────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
   .stackPhoto {

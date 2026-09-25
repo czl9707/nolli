@@ -1,39 +1,83 @@
+/* City ledger on the page grid — dossier column on the left column, the
+   spine's map layer landing on the shape pane over the right three.
+   Mobile flips the panes to full-width rows: map on top, dossier under
+   it. */
+
 .city {
-  position: sticky;
-  top: 0;
   box-sizing: border-box;
   overflow: visible;
+  grid-template-rows: minmax(0, 1fr);
+  padding-top: 35svh;
+  padding-bottom: 20svh;
 }
 
-.splits {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
+/* the map pane — a paper frame always in the page (no animation): the
+   whole pane sits one step under the spine's map layer, so the map paints
+   over the inset ground whenever it lands here */
+.mapPaneWrap {
+  grid-column: 2 / -1;
+  grid-row: 1;
+  position: relative;
+  background: rgb(var(--color-paper-background));
+  z-index: calc(var(--z-map-behind) - 2);
 }
+
+.mapPaneWrap::before {
+  content: "";
+  inset: 0;
+  position: absolute;
+  opacity: .75;
+  background-image: var(--pattern-grass-oppo);
+  z-index: calc(var(--z-map-behind) - 1);
+}
+
+/* inset ground pane — secondary color + grass pattern; the map layer
+   lands on the same inset rect and covers it */
+/* .mapGround {
+  inset: var(--spacing-paragraph);
+} */
 
 /* the shape pane — empty in the DOM; the spine's map layer lands on its
-   rect (filling the pane exactly) */
+rect (filling the pane exactly). Inset below the header strip so the
+camera fit and the markers clear it. */
 .mapPane {
   position: absolute;
-  inset: 0;
+  inset: var(--spacing-paragraph);
+  background-color: rgb(var(--color-secondary-background));
 }
 
-.statementPane {
-  padding: var(--spacing-component);
+.contentPane {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.content {
+  box-sizing: border-box;
+  height: 100%;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-paragraph);
+  /* the spine's scene wrappers are pointer-events: none — the dossier
+     column opts itself back in (the map pane stays transparent to the
+     pointer so the map layer's markers keep their events) */
+  pointer-events: auto;
 }
 
 .statementText {
   font-size: clamp(1.5rem, 2.5vw, 2.25rem);
   font-style: italic;
+  padding-right: var(--spacing-paragraph);
 }
 
 .archList {
   list-style: none;
   padding-top: var(--spacing-component);
+  padding-right: var(--spacing-paragraph);
+  margin: 0;
   pointer-events: auto;
+  overflow: hidden;
+  min-height: 0;
 }
 
 .archList li {
@@ -61,16 +105,148 @@
   opacity: 1;
 }
 
-/* city grid — shared RollButton cells; overrides the cell default */
-.cityButton {
-  font-size: 1.2rem;
+/* ── city cubes ─────────────────────────────────────────────────────────
+   A ledger line at the column's foot: cubes left, the city name small at
+   the right, both over the rule. Idle cubes are small gray grounds, the
+   selected one large and accent. A selection change plays as a pass in
+   the travel direction: the outgoing cube swipes off toward travel and
+   fades (data-exit), the incoming one swipes in from behind it and fades
+   in (data-active under data-dir). All animation lives here — the js
+   only marks direction. */
+
+.indicatorContainer {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-paragraph);
+}
+
+.dotsRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-right: var(--spacing-paragraph);
+}
+
+.cubes {
+  display: flex;
+  gap: .25rem;
+  align-items: center;
+}
+
+.cube {
+  width: .5rem;
+  height: .5rem;
+  padding: 0;
+  border: none;
+  background: rgb(var(--color-paper-foreground));
+  cursor: pointer;
+  transition:
+    width var(--transition-instant) ease,
+    height var(--transition-instant) ease,
+    background var(--transition-instant) ease;
+}
+
+.cube:hover {
+  background: rgb(var(--color-paper-foreground) / 0.45);
+}
+
+.cube[data-active="true"],
+.cube[data-active="true"]:hover {
+  width: 1rem;
+  height: 1rem;
+  background: rgb(var(--color-hero-foreground));
+  animation: cube-in-fwd var(--transision-short) var(--ease-roll) both;
+}
+
+.cubes[data-dir="back"] .cube[data-active="true"] {
+  animation-name: cube-in-back;
+}
+
+/* the outgoing cube: swipe off toward travel and fade */
+.cube[data-exit="fwd"] {
+  animation: cube-out-fwd var(--transision-short) ease-in forwards;
+}
+
+.cube[data-exit="back"] {
+  animation: cube-out-back var(--transision-short) ease-in forwards;
+}
+
+@keyframes cube-in-fwd {
+  from { transform: translateX(-.75rem); opacity: 0; }
+}
+
+@keyframes cube-in-back {
+  from { transform: translateX(.75rem); opacity: 0; }
+}
+
+@keyframes cube-out-fwd {
+  to { transform: translateX(.75rem); opacity: 0; }
+}
+
+@keyframes cube-out-back {
+  to { transform: translateX(-.75rem); opacity: 0; }
+}
+
+.currentCubeName {
   font-family: var(--font-serif);
+  font-size: 1rem;
   font-style: italic;
 }
 
-/* hero → city transition veil */
-.veil {
+.rule {
+  position: relative;
+  border-top: var(--border);
+  height: 0px;
+}
+
+.ruleFill {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, rgb(var(--color-primary-background) / 0.92), transparent);
+  top: -1px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: rgb(var(--color-hero-foreground));
+  transform-origin: left;
+  animation: dots-wipe var(--city-period, 8s) linear forwards;
+}
+
+/* hover holds the sweep mid-flight — the timer keeps the remaining
+   period, so wipe and countdown resume together */
+.indicatorContainer[data-paused="true"] .ruleFill {
+  animation-play-state: paused;
+}
+
+@keyframes dots-wipe {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* ── mobile: map row over dossier row ───────────────────────────────────
+   Kept AFTER the base rules — equal specificity means a media block
+   placed earlier loses the cascade. */
+
+@media (--smaller-than-sm) {
+  .city {
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .mapPaneWrap,
+  .contentPane {
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
+
+  .mapPaneWrap {
+    height: 40svh;
+  }
+
+  /* thin frame — the paragraph inset eats the map on a narrow screen */
+  .mapPane {
+    inset: .5rem;
+  }
+
+  .content {
+    padding-top: var(--spacing-component);
+  }
 }
