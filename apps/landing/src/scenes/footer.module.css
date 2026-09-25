@@ -149,12 +149,8 @@
       "brand brand"
       "explore resources";
     grid-template-rows: auto auto;
-    padding-bottom: 5rem;
   }
 
-  .dockWrap {
-    height: 5rem;
-  }
 
   .dock {
     height: 10rem;

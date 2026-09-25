@@ -9,7 +9,7 @@ import { useEffect, useRef } from "react"
 import { motion, useInView, useMotionValue, useReducedMotion, useSpring, useTransform } from "framer-motion"
 import { Badge, H2, H3, H6, Note, PaperPhoto, useIsMobile } from "@nolli/ui"
 import type { ArchSummary } from "@/lib/landing-data"
-import { type SceneCamera } from "@nolli/map"
+import { worldCamera } from "@/lib/constants"
 import { MAP_APP_URL } from "@/lib/constants"
 import type { HoldScene } from "@/spine/timeline"
 import type { CollectionStats, LandingData } from "@/lib/landing-data"
@@ -21,9 +21,6 @@ import styles from "./stats.module.css"
 
 const SCENE_ID = "stats"
 const SCENE_VH = 100
-
-// same world view the architect hold parks on — this scene only verifies it
-const WORLD: SceneCamera = { center: [12, 25], zoom: 1.05 }
 
 // country badge list — real ISO codes + Intl.DisplayNames once the cities
 // data flows in; placeholder set until
@@ -39,7 +36,8 @@ export const statsHold = (data: LandingData): HoldScene => ({
   // no lead: the handoff fires exactly at the scene boundary — the
   // architect band's pin would still be mid-pass under the default 45vh
   leadVh: 0,
-  camera: WORLD,
+  // same world view the architect hold parks on — this scene only verifies it
+  camera: worldCamera,
   Component: () => (
     <StatsScene
       stats={data.stats}

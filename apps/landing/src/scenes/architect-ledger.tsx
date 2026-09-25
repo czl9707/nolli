@@ -7,11 +7,11 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react"
 import { motion, useMotionValue, useMotionValueEvent, useScroll, useTransform, type MotionValue } from "framer-motion"
 import { H2 } from "@nolli/ui"
-import type { SceneCamera } from "@nolli/map"
 import { useSceneOwnsMap } from "@/spine/spine"
 import { useIsMobile } from "@nolli/ui"
 import type { HoldScene } from "@/spine/timeline"
 import type { ArchEntry, LandingData } from "@/lib/landing-data"
+import { worldCamera } from "@/lib/constants"
 import { ArchImageMarkers } from "@/components/arch-markers"
 import { MapVeil } from "@/components/map-veil"
 import { RollText } from "@/components/roll-text"
@@ -33,10 +33,6 @@ const BAND_MARGIN = 15;
 const BAND_VH = 70
 const BAND_VH_MOBILE = 55
 
-// world view widened so renderWorldCopies:false doesn't crop the ledger's
-// buildings (bounds ≈ −133°..157°)
-const WORLD: SceneCamera = { center: [12, 25], zoom: 1.05 }
-
 export const architectHold = (data: LandingData): HoldScene => {
   const entries = data.architectLedger
   const progressVh = entries.length * STEP_VH
@@ -44,7 +40,7 @@ export const architectHold = (data: LandingData): HoldScene => {
     id: SCENE_ID,
     shape: "[data-spine-shape='architect']",
     heightVh: 100 + progressVh,
-    camera: WORLD,
+    camera: worldCamera,
     Component: () => <ArchitectLedger entries={entries} />,
   }
 }

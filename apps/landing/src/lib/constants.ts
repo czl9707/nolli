@@ -1,9 +1,20 @@
-export const MAP_APP_URL = "https://nolli-map.com"
-export const LANDING_URL = "https://landing.nolli-map.com"
+import type { SceneCamera } from "@nolli/map"
+import { isMobile } from "@nolli/ui"
+
+export const MAP_APP_URL = "https://app.nolli-map.com"
+export const LANDING_URL = "https://nolli-map.com"
 export const POSTER_URL = "https://poster.nolli-map.com"
 export const ABOUT_PATH = "/about"
 export const PRIVACY_PATH = "/privacy"
 export const TERMS_PATH = "/terms"
+
+/** World hold camera. The ledger bounds span −133°..157° of longitude —
+ *  zoom 1.05 fits that span into the desktop band; the mobile band is
+ *  ~4× narrower, so the zoom drops to keep every pinned work on the map. */
+export function worldCamera(): SceneCamera {
+  const center = [12, 25] as [number, number]
+  return isMobile() ? { center, zoom: -1.15 } : { center, zoom: 1.05 }
+}
 
 /** Architect-ledger decks — curated works per architect, in show order.
  * Only these slugs are baked into landing.json. */

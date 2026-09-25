@@ -6,7 +6,7 @@
 import { createPortal } from "react-dom"
 import { motion } from "framer-motion"
 import { MapContext, MapMarker, MarkerContent } from "@nolli/map"
-import { PaperPhoto, TRANSITION_SHORT, hashId, jitter } from "@nolli/ui"
+import { PaperPhoto, TRANSITION_SHORT, hashId, jitter, useIsMobile } from "@nolli/ui"
 import { ROLL_EASE } from "@/lib/constants"
 import { useMapPortal, useSpineMap } from "@/spine/spine"
 import { useLinger } from "@/lib/use-linger"
@@ -14,6 +14,9 @@ import type { ArchEntry, ArchSummary } from "@/lib/landing-data"
 
 const LIT_MAX = { w: 168, h: 112 }
 const DIM_MAX = { w: 132, h: 88 }
+/* the mobile band is a quarter the width — the cards scale with it */
+const LIT_MAX_MOBILE = { w: 126, h: 84 }
+const DIM_MAX_MOBILE = { w: 99, h: 66 }
 
 /** Cards per architect, like the scatter before the marker migration. */
 const WORKS_SHOWN = 4
@@ -55,7 +58,10 @@ function ArchImageMarker({
 }) {
   const s = hashId(work.slug)
   const { lng, lat } = work.coordinates
-  const max = selected ? LIT_MAX : DIM_MAX
+  const mobile = useIsMobile()
+  const max = mobile
+    ? (selected ? LIT_MAX_MOBILE : DIM_MAX_MOBILE)
+    : (selected ? LIT_MAX : DIM_MAX)
   const ratio = work.cover.width / work.cover.height
   const w = ratio >= max.w / max.h ? max.w : Math.round(max.h * ratio)
   const h = ratio >= max.w / max.h ? Math.round(max.w / ratio) : max.h

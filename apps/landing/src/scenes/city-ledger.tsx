@@ -102,7 +102,9 @@ function CityLedger({ data, fit }: { data: LandingData; fit: RefObject<SceneCame
       <Pane className={styles.mapPaneWrap}>
         <div ref={paneRef} data-spine-shape="city" className={styles.mapPane} />
       </Pane>
-      <Pane col="1" className={styles.contentPane}>
+      {/* col lives in the css — the mobile block widens the pane to the
+       * full 2-col field, and a `col` prop here would inline-override it */}
+      <Pane className={styles.contentPane}>
         <div className={styles.content}>
           <Statement
             city={selected}

@@ -86,3 +86,11 @@
   font-weight: 600;
   color: rgb(var(--color-hero-foreground));
 }
+
+/* ── mobile — thin frame, the paragraph inset eats the map ─────────── */
+
+@media (--smaller-than-sm) {
+  .shape {
+    inset: .5rem;
+  }
+}

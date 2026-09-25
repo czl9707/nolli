@@ -241,6 +241,11 @@ camera fit and the markers clear it. */
     height: 40svh;
   }
 
+  /* thin frame — the paragraph inset eats the map on a narrow screen */
+  .mapPane {
+    inset: .5rem;
+  }
+
   .content {
     padding-top: var(--spacing-component);
   }
