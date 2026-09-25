@@ -1,8 +1,10 @@
-/* Static page shell — landing-hosted legal/about pages. Serif display
-   voice comes from typography token overrides on the content column (they
-   cascade into the @nolli/ui components); sticky TOC rail on the left
-   collapses away under 900px. The page scroller is html (see
-   html:has(main[data-static]) in global.css). */
+/* Static page shell — landing-hosted legal/about pages, on the same page
+   column field the spine carries: a Screen supplies the grid + inline
+   padding, TOC rail on col 1, content over the middle two, the hairline
+   field overhead. Serif display voice comes from typography token
+   overrides on the content column (they cascade into the @nolli/ui
+   components); the TOC collapses away on small screens. The page scroller
+   is html (see html:has(main[data-static]) in global.css). */
 
 .main {
   min-height: 100%;
@@ -10,22 +12,21 @@
   color: rgb(var(--color-primary-foreground));
 }
 
+/* block padding only — the Screen carries the column field + inline pad */
 .columns {
-  display: grid;
-  grid-template-columns: 16rem minmax(0, 1fr);
-  gap: var(--spacing-component);
-  max-width: calc(var(--size-page-max-width) + 2 * var(--spacing-component));
-  margin: 0 auto;
-  padding: var(--spacing-group) var(--spacing-component) var(--spacing-block);
+  padding-top: var(--spacing-group);
+  padding-bottom: var(--spacing-block);
 }
 
 .content {
+  grid-column: 2 / span 2;
   max-width: 44rem;
 }
 
 .toc {
+  grid-column: 1;
   position: sticky;
-  top: calc(var(--size-header-height) + var(--spacing-component));
+  top: calc(var(--size-header-height) + var(--size-header-top) + var(--spacing-component));
   align-self: start;
   display: flex;
   flex-direction: column;
@@ -77,12 +78,13 @@
   margin-top: 0.5rem;
 }
 
-@media (max-width: 900px) {
-  .columns {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
+/* small screens — the field is 2 cols; content takes it full, TOC gone */
+@media (--smaller-than-sm) {
   .toc {
     display: none;
+  }
+
+  .content {
+    grid-column: 1 / -1;
   }
 }

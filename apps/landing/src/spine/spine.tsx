@@ -11,7 +11,7 @@ import { LandingMap } from "@/components/landing-map"
 import { applyMapTransition, SNAPSHOT_SHAPE_MS } from "@/lib/map-transition"
 import { phaseAtLeast, useBoot, useBootPhase } from "@/lib/boot"
 import { buildTimeline, crossedBoundary, targetHoldAt, REARM_VH, type PxRect, type SpineScene } from "./timeline"
-import hairlineStyles from "@/scenes/page-layout.module.css"
+import { Hairlines } from "@/scenes/page-layout"
 
 // boot map arrival: the layer starts placed at a wide zoom and glides into
 // the hero fit as the map beat opens, developing from blurred/dim to sharp
@@ -317,8 +317,8 @@ export function Spine({
         </div>
         {/* the hairline column field — one fixed overlay at --z-rules:
             above the map frame, below every scene item (z0); it follows the
-            boot phases (css below — draws in at the furniture beat) */}
-        <div className={hairlineStyles.hairlines} data-boot-phase={bootPhase} />
+            boot phases (draws in at the furniture beat) */}
+        <Hairlines phase={bootPhase} />
         {/* scene flow — z auto, NOT a stacking context: scene items join the
             global z scale directly (reveal drops below the rules, panes and
             content sit at 0 over them) */}

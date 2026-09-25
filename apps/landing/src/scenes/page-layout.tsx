@@ -65,3 +65,10 @@ export const Rule = forwardRef<
     />
   )
 })
+
+/** The global hairline column field — one fixed overlay at --z-rules over
+ *  whatever page renders it. The spine drives it with the boot phase
+ *  (lines draw in at the furniture beat); static pages pass "done". */
+export function Hairlines({ phase }: { phase: string }) {
+  return <div className={styles.hairlines} data-boot-phase={phase} aria-hidden />
+}

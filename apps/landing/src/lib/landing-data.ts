@@ -90,9 +90,7 @@ function loadArchitectLedger(): ArchEntry[] {
 }
 
 function pickHeroCity(): HeroCity {
-  const cities = CITY_LEDGER.filter((c) => c !== "Berlin");
-
-  const name = cities[Math.floor(Math.random() * cities.length)]
+  const name = CITY_LEDGER[Math.floor(Math.random() * CITY_LEDGER.length)]
   const country = baked.cities.find((c) => c.name === name)?.countryCode ?? ""
   return { name, country, architecturesCount: baked.cityCounts[name] ?? 0 }
 }

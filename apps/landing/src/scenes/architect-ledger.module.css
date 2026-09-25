@@ -54,7 +54,6 @@
   position: absolute;
   opacity: .75;
   background-image: var(--pattern-grass-oppo);
-  z-index: -1;
 }
 
 /* shape anchor — empty in the DOM; the spine's map layer lands on its

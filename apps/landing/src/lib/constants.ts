@@ -122,21 +122,21 @@ export const CITY_DECK: Record<string, readonly string[]> = {
     "prada-aoyama",
     "sumida-hokusai-museum",
   ],
-  Chicago: [
-    "860-880-lake-shore-drive",
-    "iit-alumni-memorial-hall",
-    "chicago-federal-complex",
-    "robie-house",
-    "ibm-plaza",
-    "mccormick-tribune-campus-center",
-    "crown-hall",
-  ],
-  Berlin: [
-    "axel-springer-campus",
-    "netherlands-embassy-berlin",
-    "neue-nationalgalerie",
-    "reichstag-dome",
-  ],
+  // Chicago: [
+  //   "860-880-lake-shore-drive",
+  //   "iit-alumni-memorial-hall",
+  //   "chicago-federal-complex",
+  //   "robie-house",
+  //   "ibm-plaza",
+  //   "mccormick-tribune-campus-center",
+  //   "crown-hall",
+  // ],
+  // Berlin: [
+  //   "axel-springer-campus",
+  //   "netherlands-embassy-berlin",
+  //   "neue-nationalgalerie",
+  //   "reichstag-dome",
+  // ],
 }
 
 /** City-ledger names, in grid order. */

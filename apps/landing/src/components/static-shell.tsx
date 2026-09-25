@@ -1,5 +1,6 @@
 import { Body1, Body2, Caption, H1, H3, H4 } from "@nolli/ui"
 import { SiteHeader } from "@/components/site-header"
+import { Hairlines, Screen } from "@/scenes/page-layout"
 import styles from "./static-shell.module.css"
 
 export interface StaticBlock {
@@ -50,7 +51,9 @@ export function StaticShell({ content }: { content: StaticPageContent }) {
   return (
     <main data-static className={styles.main}>
       <SiteHeader />
-      <div className={styles.columns}>
+      {/* the same hairline column field the spine pages carry */}
+      <Hairlines phase="done" />
+      <Screen className={styles.columns} height="auto">
         <nav className={styles.toc} aria-label="sections">
           {toc.map((e) => (
             <Body2 key={e.id} className={styles.tocItem} asChild>
@@ -84,7 +87,7 @@ export function StaticShell({ content }: { content: StaticPageContent }) {
             })}
           </div>
         </div>
-      </div>
+      </Screen>
     </main>
   )
 }
