@@ -60,7 +60,7 @@ function StatsScene({ stats, photoPool, architectNames }: StatsProps) {
   return (
     <>
       <MapVeil/>
-      <Screen className={styles.screen} height={mobile ? "auto" : "100svh"}>
+      <Screen className={styles.screen} height="auto">
         {/* the hero card — map, architecture count and photo deck merged
          * into one 2×2 pane, the original top-card layout: the frame sits
          * at the map scale (one step under the spine's map layer — the

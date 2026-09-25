@@ -8,7 +8,7 @@
 
 .screen {
   box-sizing: border-box;
-  padding-top: 30svh;
+  padding-top: 10svh;
   grid-template-areas:
     "hero hero . ctry"
     "hero hero dsg cta";
