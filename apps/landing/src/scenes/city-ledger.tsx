@@ -79,22 +79,22 @@ function CityLedger({ data, fit }: { data: LandingData; fit: RefObject<SceneCame
 
   useEffect(() => { fit.current = cameraFor(archs) }, [fit, archs, cameraFor])
 
+  // map ownership gates the live pieces — markers, the cubes' auto-advance,
+  // and the camera moves all follow the spine's owned-scene edge (the pane
+  // itself is always in the page)
+  const ownsMap = useSceneOwnsMap()
+
   const onSelect = useCallback(
     (name: string) => {
       setSelected(name)
       const cityArchs = archsByCity[name]
-      if (!map || !cityArchs?.length) return
+      if (!ownsMap || !map || !cityArchs?.length) return
       const cam = cameraFor(cityArchs)
       if (!cam) return
       applyMapTransition(map, cam)
     },
-    [archsByCity, map, cameraFor],
+    [archsByCity, map, cameraFor, ownsMap],
   )
-
-  // map ownership gates the live pieces — markers and the cubes'
-  // auto-advance follow the spine's owned-scene edge (the pane itself is
-  // always in the page)
-  const ownsMap = useSceneOwnsMap()
 
   return (
     <Screen className={styles.city} height={`${SCENE_VH}svh`}>
