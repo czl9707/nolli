@@ -15,6 +15,9 @@ export type HoldScene = {
   /** camera this hold settles into; a function computes at fire time
    * (measured panes) and a null return defers to the next trigger */
   camera: SceneCamera | (() => SceneCamera | null)
+  /** how early (vh) this hold's boundary fires — the runway it carves out
+   * of the PREVIOUS scene's tail. Default TRIGGER_LEAD_VH. */
+  leadVh?: number
   /** hairlines over the map (default) or the map over the hairlines —
    * applied as a z-index jump on the map layer at the boundary fire */
   rulesOverMap?: boolean
@@ -43,37 +46,40 @@ export function buildTimeline(scenes: SpineScene[]): SpineTimeline {
     segments.push({ scene, startVh: acc, heightVh: scene.heightVh })
     acc += scene.heightVh
   }
-  for (let i = 0; i < scenes.length - 1; i++)
-    if (scenes[i].heightVh < TRIGGER_LEAD_VH)
+  for (let i = 0; i < scenes.length - 1; i++) {
+    const lead = scenes[i + 1].leadVh ?? TRIGGER_LEAD_VH
+    if (scenes[i].heightVh < lead)
       throw new Error(
-        `hold '${scenes[i].id}': heightVh ${scenes[i].heightVh} < lead ${TRIGGER_LEAD_VH} — its tail needs runway for the next boundary's trigger`,
+        `hold '${scenes[i].id}': heightVh ${scenes[i].heightVh} < lead ${lead} — its tail needs runway for the next boundary's trigger`,
       )
+  }
   return { totalVh: acc, segments }
 }
 
 /** The hold the spine should be animating toward at a scroll position:
- * steps at each hold's start − lead. */
-export function targetHoldAt(tl: SpineTimeline, vh: number, leadVh = TRIGGER_LEAD_VH): string {
+ * steps at each hold's start − its own lead. */
+export function targetHoldAt(tl: SpineTimeline, vh: number): string {
   let id = tl.segments[0].scene.id
   for (const s of tl.segments) {
-    if (vh >= s.startVh - leadVh) id = s.scene.id
+    if (vh >= s.startVh - (s.scene.leadVh ?? TRIGGER_LEAD_VH)) id = s.scene.id
     else break
   }
   return id
 }
 
 /** The boundary a fire crossed, keyed on the hold PAIR (the later hold's
- * start − lead) rather than the target, so forward and reverse fires on
- * the same edge report the same vh and hysteresis can match them. */
+ * start − the later hold's lead) rather than the target, so forward and
+ * reverse fires on the same edge report the same vh and hysteresis can
+ * match them. */
 export function crossedBoundary(
   tl: SpineTimeline,
   fromId: string | null,
   toId: string,
-  leadVh = TRIGGER_LEAD_VH,
 ): { boundaryVh: number; dir: 1 | -1 } {
   const idx = (id: string | null) =>
     tl.segments.findIndex((s) => s.scene.id === (id ?? tl.segments[0].scene.id))
   const to = idx(toId)
   const from = Math.max(idx(fromId), 0)
-  return { boundaryVh: tl.segments[Math.max(to, from)].startVh - leadVh, dir: to > from ? 1 : -1 }
+  const later = tl.segments[Math.max(to, from)]
+  return { boundaryVh: later.startVh - (later.scene.leadVh ?? TRIGGER_LEAD_VH), dir: to > from ? 1 : -1 }
 }

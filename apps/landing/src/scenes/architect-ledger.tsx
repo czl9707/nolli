@@ -29,7 +29,7 @@ const STEP_VH = 20
 const MAP_DRIFT_VH = 20
 
 /** Map band height in svh — feeds the css vars that park the band. */
-const BAND_MARGIN = 20;
+const BAND_MARGIN = 15;
 const BAND_VH = 70
 const BAND_VH_MOBILE = 55
 

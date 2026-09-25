@@ -36,9 +36,13 @@ describe("targetHoldAt", () => {
     expect(targetHoldAt(t, -50)).toBe("hero")
     expect(targetHoldAt(t, 9999)).toBe("arch")
   })
-  it("honors a custom lead", () => {
-    expect(targetHoldAt(t, 180, 20)).toBe("city")
-    expect(targetHoldAt(t, 179.9, 20)).toBe("hero")
+  it("honors a per-scene lead", () => {
+    const t2 = buildTimeline([hold("hero", 200), { ...hold("city", 200), leadVh: 20 }, hold("arch", 200)])
+    expect(targetHoldAt(t2, 180)).toBe("city")
+    expect(targetHoldAt(t2, 179.9)).toBe("hero")
+    // other edges keep the default lead
+    expect(targetHoldAt(t2, 400 - TRIGGER_LEAD_VH - 0.1)).toBe("city")
+    expect(targetHoldAt(t2, 400 - TRIGGER_LEAD_VH)).toBe("arch")
   })
 })
 
@@ -53,5 +57,10 @@ describe("crossedBoundary", () => {
   it("treats a null source as the first hold", () => {
     expect(crossedBoundary(t, null, "hero")).toEqual({ boundaryVh: -TRIGGER_LEAD_VH, dir: -1 })
     expect(crossedBoundary(t, null, "city")).toEqual({ boundaryVh: 200 - TRIGGER_LEAD_VH, dir: 1 })
+  })
+  it("keys the boundary on the later hold's per-scene lead", () => {
+    const t2 = buildTimeline([hold("hero", 200), { ...hold("city", 200), leadVh: 20 }, hold("arch", 200)])
+    expect(crossedBoundary(t2, "hero", "city")).toEqual({ boundaryVh: 180, dir: 1 })
+    expect(crossedBoundary(t2, "city", "hero")).toEqual({ boundaryVh: 180, dir: -1 })
   })
 })

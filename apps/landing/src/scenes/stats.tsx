@@ -36,6 +36,9 @@ export const statsHold = (data: LandingData): HoldScene => ({
   id: SCENE_ID,
   shape: "[data-spine-shape='stats']",
   heightVh: SCENE_VH,
+  // no lead: the handoff fires exactly at the scene boundary — the
+  // architect band's pin would still be mid-pass under the default 45vh
+  leadVh: 0,
   camera: WORLD,
   Component: () => (
     <StatsScene
@@ -57,7 +60,7 @@ function StatsScene({ stats, photoPool, architectNames }: StatsProps) {
   return (
     <>
       <MapVeil/>
-      <Screen className={styles.screen} height={mobile ? "auto" : "70svh"}>
+      <Screen className={styles.screen} height={mobile ? "auto" : "100svh"}>
         {/* the hero card — map, architecture count and photo deck merged
          * into one 2×2 pane, the original top-card layout: the frame sits
          * at the map scale (one step under the spine's map layer — the
