@@ -198,9 +198,9 @@ function Statement({
  * selection change plays as a directional pass — the outgoing cube swipes
  * off toward travel and fades, the incoming one swipes in from behind it
  * (all CSS, keyed off data-dir/data-exit). The rule carries the period as
- * a gold wipe (scaleX so it can hold mid-sweep); every switch — advance,
- * pick, pause/resume — clears the one timer and schedules a fresh full
- * period, and the wipe restarts with it. Hovering previews the name;
+ * a gold wipe (scaleX so it can hold mid-sweep) that pauses with the
+ * countdown under hover and resumes from the same spot; advances and
+ * picks restart both at a full period. Hovering previews the name;
  * clicking selects. */
 function CityDots({
   selected,
@@ -218,20 +218,34 @@ function CityDots({
   const idx = Math.max(0, CITY_LEDGER.indexOf(selected))
   const running = auto && !reduced && hovered === null
 
-  // one timer: every switch (advance, pick, pause/resume, ownership edge)
-  // clears it and schedules a fresh full period — no carried remainders,
-  // so the countdown and the wipe always restart together
+  // one timer. Advances and picks schedule a fresh full period; a hover
+  // pause freezes the countdown instead — the remaining ms are banked
+  // once, on the running->stopped edge only, so a teardown after an
+  // advance or a pick can never subtract from the period it just reset
   const timer = useRef(0)
+  const remaining = useRef(ADVANCE_MS)
+  const startedAt = useRef(0)
   const clearTimer = useCallback(() => window.clearTimeout(timer.current), [])
   useEffect(() => {
     if (!running) return
-    clearTimer()
+    startedAt.current = Date.now()
     timer.current = window.setTimeout(() => {
+      remaining.current = ADVANCE_MS
       setCycle((c) => c + 1)
       onSelect(CITY_LEDGER[(idx + 1) % CITY_LEDGER.length])
-    }, ADVANCE_MS)
+    }, remaining.current)
     return clearTimer
   }, [running, idx, cycle, onSelect, clearTimer])
+
+  // bank what's left exactly once, when the countdown actually stops —
+  // resuming continues the sweep instead of restarting it
+  const wasRunning = useRef(false)
+  useEffect(() => {
+    if (wasRunning.current && !running) {
+      remaining.current = Math.max(0, remaining.current - (Date.now() - startedAt.current))
+    }
+    wasRunning.current = running
+  }, [running])
 
   // the cube that just lost the selection + the travel direction — the
   // only state the css needs to run the exit/entry pass
@@ -258,7 +272,9 @@ function CityDots({
 
   const pick = (i: number) => {
     if (CITY_LEDGER[i] === selected) return
+    // the click restarts the countdown at a full period
     clearTimer()
+    remaining.current = ADVANCE_MS
     setCycle((c) => c + 1)
     onSelect(CITY_LEDGER[i])
   }
@@ -290,7 +306,7 @@ function CityDots({
       <div className={styles.rule} aria-hidden>
         {auto && !reduced && (
           <span
-            key={`${idx}-${cycle}-${running}`}
+            key={`${idx}-${cycle}`}
             className={styles.ruleFill}
             style={{ "--city-period": `${ADVANCE_MS}ms` } as CSSProperties}
           />

@@ -211,8 +211,8 @@ camera fit and the markers clear it. */
   animation: dots-wipe var(--city-period, 8s) linear forwards;
 }
 
-/* hover holds the sweep — both the timer and the wipe restart fresh on
-   resume, so they stay in step */
+/* hover holds the sweep mid-flight — the timer banks its remaining ms on
+   the pause edge, so wipe and countdown resume together */
 .indicatorContainer[data-paused="true"] .ruleFill {
   animation-play-state: paused;
 }
