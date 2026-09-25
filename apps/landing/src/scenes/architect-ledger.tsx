@@ -4,11 +4,11 @@
 // one architect per STEP_VH. The works pin to their true coordinates under
 // the veil, the lit architect's works carded; the statement rides the band
 // and rolls the name — the scroll is the control, no pointer involved.
-import { useEffect, useRef, useState, type CSSProperties } from "react"
-import { motion, useMotionValueEvent, useTransform } from "framer-motion"
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react"
+import { motion, useMotionValue, useMotionValueEvent, useScroll, useTransform, type MotionValue } from "framer-motion"
 import { H2 } from "@nolli/ui"
 import type { SceneCamera } from "@nolli/map"
-import { useSceneOwnsMap, useSceneScroll } from "@/spine/spine"
+import { useSceneOwnsMap } from "@/spine/spine"
 import { useIsMobile } from "@nolli/ui"
 import type { HoldScene } from "@/spine/timeline"
 import type { ArchEntry, LandingData } from "@/lib/landing-data"
@@ -45,29 +45,61 @@ export const architectHold = (data: LandingData): HoldScene => {
     shape: "[data-spine-shape='architect']",
     heightVh: 100 + progressVh,
     camera: WORLD,
-    Component: () => <ArchitectLedger entries={entries} progressVh={progressVh} />,
+    Component: () => <ArchitectLedger entries={entries} />,
   }
 }
 
-function ArchitectLedger({ entries, progressVh }: { entries: ArchEntry[]; progressVh: number }) {
-  const local = useSceneScroll(SCENE_ID)
+/** Pin-local scroll in DOM svh, measured from the scene wrapper's live
+ *  rect. The sticky pin window is DOM geometry (wrapper height minus the
+ *  band's margin box), while the spine's scene-local vh is progress over
+ *  the whole scroll range and runs faster than DOM svh — a spine-local
+ *  driver saturates the drift well before the band unpins, freezing the
+ *  pass mid-stick. Measuring keeps the drift and the paging level with
+ *  the pin exactly, at any timeline shape. */
+function usePinScroll(bandVh: number) {
+  const wrapRef = useRef<HTMLDivElement | null>(null)
+  const pinScroll = useMotionValue(0)
+  const spanRef = useRef(1)
+  const { scrollY } = useScroll()
+  const measure = useCallback(() => {
+    const el = wrapRef.current
+    if (!el) return
+    const vh = window.innerHeight / 100
+    const top = el.getBoundingClientRect().top
+    // the pin starts when the band's natural top (its margin) crosses the
+    // sticky top; it ends one margin box before the wrapper's bottom
+    const startPx = (50 + MAP_DRIFT_VH / 2 - bandVh / 2 - BAND_MARGIN) * vh
+    const spanPx = el.offsetHeight - (2 * BAND_MARGIN + bandVh) * vh
+    spanRef.current = Math.max(spanPx / vh, 1)
+    pinScroll.set((startPx - top) / vh)
+  }, [bandVh])
+  useEffect(() => {
+    wrapRef.current = document.querySelector("[data-scene='architect']")
+    measure()
+  }, [measure])
+  useMotionValueEvent(scrollY, "change", measure)
+  return { pinScroll, spanSvh: spanRef }
+}
+
+function ArchitectLedger({ entries }: { entries: ArchEntry[] }) {
   const ownsMap = useSceneOwnsMap()
   const mobile = useIsMobile()
+  const bandVh = mobile ? BAND_VH_MOBILE : BAND_VH
+  const { pinScroll, spanSvh } = usePinScroll(bandVh)
 
   // scroll pages the ledger: one architect per STEP_VH, clamped at both
   // ends (the entry holds the first name, the tail holds the last)
-  const selected = useScrollPaged(entries, local)
+  const selected = useScrollPaged(entries, pinScroll)
   const selectedEntry = entries.find((e) => e.name === selected) ?? entries[0]
 
-  // the band's drift: a full ledger pass of scroll lifts the map only
+  // the band's drift: the full pin window of scroll lifts the map only
   // MAP_DRIFT_VH — the glue loop reads the shape's live rect, so the map
   // layer follows the drift at the band's pace
-  const driftY = useTransform(local, (v) => {
-    const p = Math.max(0, Math.min(1, v / progressVh))
+  const driftY = useTransform(pinScroll, (v) => {
+    const p = Math.max(0, Math.min(1, v / spanSvh.current))
     return `${-MAP_DRIFT_VH * p}svh`
   })
 
-  const bandVh = mobile ? BAND_VH_MOBILE : BAND_VH
   const paneVars = {
     "--band-vh": `${bandVh}svh`,
     "--drift-vh": `${MAP_DRIFT_VH}svh`,
@@ -100,10 +132,10 @@ function ArchitectLedger({ entries, progressVh }: { entries: ArchEntry[]; progre
   </>
 }
 
-/** Selection as a function of scene-local scroll — the index the scroll
- * has paged to, held at both ends. Initialized from the live position so a
+/** Selection as a function of pin-local scroll — the index the scroll has
+ * paged to, held at both ends. Initialized from the live position so a
  * deep-link lands on the right name. */
-function useScrollPaged(entries: ArchEntry[], local: ReturnType<typeof useSceneScroll>) {
+function useScrollPaged(entries: ArchEntry[], local: MotionValue<number>) {
   const idxFor = (v: number) =>
     Math.max(0, Math.min(entries.length - 1, Math.floor(v / STEP_VH)))
   const [selected, setSelected] = useState(entries[idxFor(0)]?.name ?? "")
