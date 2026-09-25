@@ -198,9 +198,10 @@ function Statement({
  * selection change plays as a directional pass — the outgoing cube swipes
  * off toward travel and fades, the incoming one swipes in from behind it
  * (all CSS, keyed off data-dir/data-exit). The rule carries the period as
- * a gold wipe (scaleX so it can hold mid-sweep); the timer tracks the
- * remaining period so a hover pause freezes wipe and countdown together.
- * Hovering previews the name; clicking selects. */
+ * a gold wipe (scaleX so it can hold mid-sweep); every switch — advance,
+ * pick, pause/resume — clears the one timer and schedules a fresh full
+ * period, and the wipe restarts with it. Hovering previews the name;
+ * clicking selects. */
 function CityDots({
   selected,
   onSelect,
@@ -217,22 +218,20 @@ function CityDots({
   const idx = Math.max(0, CITY_LEDGER.indexOf(selected))
   const running = auto && !reduced && hovered === null
 
-  // ms left in the current period — kept across pauses so resuming
-  // continues the sweep instead of restarting it
-  const remaining = useRef(ADVANCE_MS)
-  const startedAt = useRef(0)
+  // one timer: every switch (advance, pick, pause/resume, ownership edge)
+  // clears it and schedules a fresh full period — no carried remainders,
+  // so the countdown and the wipe always restart together
+  const timer = useRef(0)
+  const clearTimer = useCallback(() => window.clearTimeout(timer.current), [])
   useEffect(() => {
     if (!running) return
-    startedAt.current = Date.now()
-    const t = setTimeout(() => {
-      remaining.current = ADVANCE_MS
+    clearTimer()
+    timer.current = window.setTimeout(() => {
       setCycle((c) => c + 1)
       onSelect(CITY_LEDGER[(idx + 1) % CITY_LEDGER.length])
-    }, remaining.current)
-    return () => {
-      remaining.current = Math.max(0, remaining.current - (Date.now() - startedAt.current))
-    }
-  }, [running, idx, cycle, onSelect])
+    }, ADVANCE_MS)
+    return clearTimer
+  }, [running, idx, cycle, onSelect, clearTimer])
 
   // the cube that just lost the selection + the travel direction — the
   // only state the css needs to run the exit/entry pass
@@ -259,7 +258,7 @@ function CityDots({
 
   const pick = (i: number) => {
     if (CITY_LEDGER[i] === selected) return
-    remaining.current = ADVANCE_MS
+    clearTimer()
     setCycle((c) => c + 1)
     onSelect(CITY_LEDGER[i])
   }
@@ -291,7 +290,7 @@ function CityDots({
       <div className={styles.rule} aria-hidden>
         {auto && !reduced && (
           <span
-            key={`${idx}-${cycle}`}
+            key={`${idx}-${cycle}-${running}`}
             className={styles.ruleFill}
             style={{ "--city-period": `${ADVANCE_MS}ms` } as CSSProperties}
           />
