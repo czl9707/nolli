@@ -15,6 +15,10 @@ const VEIL_PAD_PX = BLUR_PX * 5
 const BLUR_UP_S = 0.15
 const DISSOLVE_S = 0.15
 const IDLE_TIMEOUT_MS = 1000
+/** Dim on the snapshot image: the capture sees the bare canvas, not the
+ * scene's dim veil (a DOM layer above it), so the blurred frame would
+ * flash bright against the veiled map around it. */
+const SNAPSHOT_BRIGHTNESS = 0.8
 
 function onceIdle(map: MapLibreGL.Map, timeoutMs: number): Promise<void> {
   return new Promise((resolve) => {
@@ -87,7 +91,7 @@ async function snapshotTransition(map: MapLibreGL.Map, cam: SceneCamera, myGen: 
       map.getContainer().appendChild(veil)
       // force style resolution so the blur-up transition runs from none
       veil.getBoundingClientRect()
-      veil.style.filter = `blur(${BLUR_PX}px)`
+      veil.style.filter = `blur(${BLUR_PX}px) brightness(${SNAPSHOT_BRIGHTNESS})`
     }
     await new Promise((r) => setTimeout(r, SNAPSHOT_SHAPE_MS))
     if (stale()) return
