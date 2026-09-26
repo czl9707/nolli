@@ -1,5 +1,6 @@
 import type MapLibreGL from "maplibre-gl"
 import { type SceneCamera } from "@nolli/map"
+import veilStyles from "@/components/map-veil.module.css"
 
 /** Every scene transition runs the jump flow, sequenced with the spine's
  * shape morph: freeze the old view as an image, blur it up (css
@@ -15,10 +16,6 @@ const VEIL_PAD_PX = BLUR_PX * 5
 const BLUR_UP_S = 0.15
 const DISSOLVE_S = 0.15
 const IDLE_TIMEOUT_MS = 1000
-/** Dim on the snapshot image: the capture sees the bare canvas, not the
- * scene's dim veil (a DOM layer above it), so the blurred frame would
- * flash bright against the veiled map around it. */
-const SNAPSHOT_BRIGHTNESS = 0.8
 
 function onceIdle(map: MapLibreGL.Map, timeoutMs: number): Promise<void> {
   return new Promise((resolve) => {
@@ -35,10 +32,21 @@ function onceIdle(map: MapLibreGL.Map, timeoutMs: number): Promise<void> {
   })
 }
 
+/** The scene's dim veil over the map (see MapVeil — inserted in the
+ * canvas container, above the tiles, under every marker). Null when the
+ * veil is unmounted; the capture then stays undimmed. */
+function sceneVeil(canvas: HTMLCanvasElement): HTMLElement | null {
+  return canvas.parentElement?.querySelector(`.${veilStyles.veil}`) ?? null
+}
+
 /** Snapshot the canvas mirror-extended into a wide padding so the blur
  * kernel only ever samples real map content (see VEIL_PAD_PX). The
- * visible interior stays pixel-exact against the live map. Needs the
- * map created with preserveDrawingBuffer. */
+ * visible interior stays pixel-exact against the live map. The veil's
+ * dim is baked into the pixels — the snapshot image sits above the real
+ * veil in z, so the live dimming must be carried in the capture (read
+ * mid-fade: continuity holds at the capture instant, then the frozen
+ * frame holds that value while the real veil fades on). Needs the map
+ * created with preserveDrawingBuffer. */
 function paddedSnapshot(canvas: HTMLCanvasElement): string {
   const dpr = window.devicePixelRatio || 1
   const p = Math.round(VEIL_PAD_PX * dpr)
@@ -62,6 +70,16 @@ function paddedSnapshot(canvas: HTMLCanvasElement): string {
   band(-1, -1, 0, 0); band(-1, -1, 1, 0)    // corners: tl / tr
   band(-1, -1, 0, 1); band(-1, -1, 1, 1)    // bl / br
   ctx.drawImage(canvas, 0, 0)
+  const veil = sceneVeil(canvas)
+  if (veil) {
+    const cs = getComputedStyle(veil)
+    // the veil color carries its own alpha (rgb(... / 0.92)); the element
+    // opacity multiplies on top via globalAlpha
+    ctx.globalAlpha = Number(cs.opacity)
+    ctx.fillStyle = cs.backgroundColor
+    ctx.fillRect(-p, -p, out.width, out.height)
+    ctx.globalAlpha = 1
+  }
   return out.toDataURL()
 }
 
@@ -91,7 +109,7 @@ async function snapshotTransition(map: MapLibreGL.Map, cam: SceneCamera, myGen: 
       map.getContainer().appendChild(veil)
       // force style resolution so the blur-up transition runs from none
       veil.getBoundingClientRect()
-      veil.style.filter = `blur(${BLUR_PX}px) brightness(${SNAPSHOT_BRIGHTNESS})`
+      veil.style.filter = `blur(${BLUR_PX}px)`
     }
     await new Promise((r) => setTimeout(r, SNAPSHOT_SHAPE_MS))
     if (stale()) return
