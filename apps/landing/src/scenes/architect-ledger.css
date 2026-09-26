@@ -1,0 +1,56 @@
+/* Architect ledger — scroll-driven band drift.
+   The band's drift rides a view timeline instead of framer: the scene's
+   invisible subject (absolute, full wrapper height) names it, and
+   timeline-scope on body hoists the name so the spine's map layer — a
+   different subtree — can ride the SAME curve over the SAME range. Pane
+   and layer then move in lockstep on the compositor: no rAF chase, no
+   lag, on any input path. The range comes from the scene as custom
+   props — percentages of the subject's cover travel (svh constants,
+   nothing measures the DOM).
+
+   Two traps kept in mind here:
+   - no var() fallbacks: postcss-custom-properties (preserve:false) folds
+     unknown vars into their fallback at build time, pinning the range
+   - timeline-scope on :root is a no-op — body is the shared ancestor of
+     both the scene (declarer) and the spine layer (rider)
+
+   Without support, or under reduced motion, the band simply parks (no
+   drift); the rect glue keeps the layer on its untransformed anchor
+   either way. */
+
+body {
+  timeline-scope: --arch-view;
+}
+
+.arch-view-subject {
+  position: absolute;
+  inset: 0;
+  view-timeline-name: --arch-view;
+}
+
+.arch-drift-ride,
+.spine-map-layer[data-owner="architect"] {
+  animation: arch-drift linear both;
+  animation-timeline: --arch-view;
+  animation-range: var(--arch-drift-from) var(--arch-drift-to);
+}
+
+@keyframes arch-drift {
+  to { transform: translateY(calc(var(--arch-drift-vh) * -1)); }
+}
+
+@supports not (animation-timeline: scroll()) {
+  .arch-drift-ride,
+  .spine-map-layer[data-owner="architect"] {
+    animation: none;
+    animation-timeline: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arch-drift-ride,
+  .spine-map-layer[data-owner="architect"] {
+    animation: none;
+    animation-timeline: auto;
+  }
+}

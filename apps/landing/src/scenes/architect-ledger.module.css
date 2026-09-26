@@ -33,7 +33,16 @@
   z-index: 0;
 }
 
-/* the drift wrapper — carries the framed pane through the pass */
+/* the drift wrapper — carries the framed pane through the pass. The
+   motion itself is the global arch-drift-ride class (a scroll-timeline
+   animation shared with the spine's map layer — see global.css); the
+   anchor below is the shape's untransformed twin, so the rect glue's
+   base rect holds for the whole pin */
+.anchor {
+  position: absolute;
+  inset: var(--spacing-paragraph);
+}
+
 .drift {
   position: absolute;
   inset: 0;
@@ -91,6 +100,10 @@
 
 @media (--smaller-than-sm) {
   .shape {
+    inset: .5rem;
+  }
+
+  .anchor {
     inset: .5rem;
   }
 }
