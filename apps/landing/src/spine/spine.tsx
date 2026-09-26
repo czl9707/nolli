@@ -62,6 +62,15 @@ export function useSceneOwnsMap(id?: string): boolean {
   return ctx?.ownerId === (id ?? own)
 }
 
+/** Static vh placement of a scene on the spine — its segment window, for
+ * scroll arithmetic that must know where the scene sits without measuring
+ * the DOM. */
+export function useSceneRange(id?: string): { startVh: number; heightVh: number } {
+  const ctx = useContext(Ctx)
+  const own = useContext(SceneIdCtx)
+  return ctx?.ranges[(id ?? own) ?? ""] ?? { startVh: 0, heightVh: 0 }
+}
+
 function resolveCamera(scene: SpineScene): SceneCamera | null {
   return typeof scene.camera === "function" ? scene.camera() : scene.camera
 }
@@ -136,13 +145,15 @@ export function Spine({
   useEffect(() => {
     let raf = 0
     const frame = (t: number) => {
-      raf = requestAnimationFrame(frame)
       const el = layerRef.current
       const seg = appliedId.current
         ? timeline.segments.find((s) => s.scene.id === appliedId.current)
         : null
       const pane = seg ? document.querySelector(seg.scene.shape) : null
-      if (!el || !pane) return
+      if (!el || !pane) {
+        raf = requestAnimationFrame(frame)
+        return
+      }
       const tw = tween.current
       if (tw) {
         const e = SCENE_EASE(Math.min((t - tw.start) / tw.durationMs, 1))
@@ -170,6 +181,11 @@ export function Spine({
       el.style.top = `${r.top - f.top}px`
       el.style.width = `${r.width}px`
       el.style.height = `${r.height}px`
+      // re-registered at the END of the loop body: rAF callbacks run in
+      // registration order, so the glue stays after the wheel smoother's
+      // (Lenis) scroll write each frame — the layer then reads the
+      // position the page settles into this frame, not the previous one
+      raf = requestAnimationFrame(frame)
     }
     raf = requestAnimationFrame(frame)
     return () => cancelAnimationFrame(raf)
@@ -297,8 +313,10 @@ export function Spine({
         >
           {/* focus pull: the layer develops from blurred/dim to sharp
               alongside its fade-in at the map beat. Rect styles are written
-              by the glue loop's rAF, not React — initial values only. */}
-          <motion.div ref={layerRef} style={{
+              by the glue loop's rAF, not React — initial values only.
+              data-owner names the holding scene so css can attach its
+              scroll-driven motion to the layer (see global.css). */}
+          <motion.div ref={layerRef} className="spine-map-layer" data-owner={ownerId} style={{
             position: "absolute",
             left: 0, top: 0, width: window.innerWidth, height: window.innerHeight,
             overflow: "hidden",
