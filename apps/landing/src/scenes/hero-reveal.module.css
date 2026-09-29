@@ -1,14 +1,17 @@
-/* Cursor-plate reveal over the spine map. The wrapper is FIXED over the
-   hold (the reveal only lives while pinned — it unmounts once grown), and
-   slots into the global z scale BETWEEN the map frame (0) and the hairline
-   field (--z-rules): the veil covers the map but the column rules draw
-   over it. One dim veil over the map with the plate's rect punched out;
-   markers render fully but crop to the plate. (A STICKY wrapper here —
+/* Brush reveal over the spine map. The wrapper is FIXED over the hold at
+   the depth the plate veil had (between the map frame and the hairline
+   field): the canvas paints the veil and the brush's soft holes, and the
+   catch layer owns gestures so drags over the map paint instead of
+   panning it — pan-y keeps vertical scroll native. Widths stay
+   scrollbar-safe: the wrapper spans left:0/right:0 (not 100vw, which
+   would overflow under the native scrollbar). (A STICKY wrapper here —
    masked subtree in sticky compositing — blanks the page's paint.) */
 
 .stickyWrapper {
   position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   height: 100svh;
   pointer-events: none;
   /* between --z-map-behind (-100) and --z-rules (-50) */
@@ -19,189 +22,25 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: 100vw;
+  width: 100%;
   height: 100svh;
   overflow: hidden;
   pointer-events: none;
 }
 
-/* The hole's open factor, as mask alpha. Registered so it TRANSITIONS —
-   the hole band fades from opaque mask (hole closed, the boot state) to
-   transparent (hole open), which is the reveal's fade-in mask cut */
-@property --hole-a {
-  syntax: "<number>";
-  initial-value: 1;
-  inherits: true;
-}
-
-.veil {
+.canvas {
   position: absolute;
   inset: 0;
-  /* flat deepest ink — no gradient; the map shows only through the plate */
-  background: rgb(var(--color-primary-background) / 0.92);
-  --hole-a: 1;
-  transition: --hole-a var(--transition-short) ease-out;
-  -webkit-mask-image: linear-gradient(
-      to right,
-      #000 0 var(--pl),
-      rgb(0 0 0 / var(--hole-a)) var(--pl) var(--pr),
-      #000 var(--pr)
-    ),
-    linear-gradient(to bottom, #000 0 var(--pt), rgb(0 0 0 / var(--hole-a)) var(--pt) var(--pb), #000 var(--pb));
-  -webkit-mask-composite: source-over;
-  mask-image: linear-gradient(
-      to right,
-      #000 0 var(--pl),
-      rgb(0 0 0 / var(--hole-a)) var(--pl) var(--pr),
-      #000 var(--pr)
-    ),
-    linear-gradient(to bottom, #000 0 var(--pt), rgb(0 0 0 / var(--hole-a)) var(--pt) var(--pb), #000 var(--pb));
-  mask-composite: add;
+  width: 100%;
+  height: 100%;
 }
 
-.root[data-on] .veil {
-  --hole-a: 0;
-}
-
-/* frame annotations — everything pinned around the plate/furniture box
-   shares the .frame base (mono, ink, no wrap, tabular digits so the
-   coords readout doesn't jitter); the per-element classes only place it */
-.frame {
+/* Full-root touch catch: pointer-events land here only where nothing
+   above (panes, header, rules) sits, so drags over the map reach the
+   brush and never MapLibre. */
+.catch {
   position: absolute;
-  color: rgb(var(--color-primary-foreground) / 0.85);
-  white-space: nowrap;
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  font-variant-numeric: tabular-nums;
-}
-
-.tagTl {
-  left: 12px;
-  top: -10px;
-  transform: translateY(-100%);
-}
-
-.tagTr {
-  right: 12px;
-  top: -10px;
-  transform: translateY(-100%);
-}
-
-.north {
-  left: 12px;
-  top: calc(100% + 8px);
-}
-
-.coords {
-  right: 12px;
-  top: calc(100% + 10px);
-}
-
-.dot {
-  left: 12px;
-  bottom: 12px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgb(var(--color-destructive));
-}
-
-/* crosshair guides — same styling as pane split borders */
-.cx {
-  position: absolute;
-  z-index: 99999;
-  pointer-events: none;
-  background: rgb(var(--color-primary-foreground) / 0.25);
-}
-
-/* boot: the accessories wait for the reveal phase (the root's data-on
-   comes from the boot sequence). The hole itself fades open via the
-   veil's --hole-a transition above — the plate needs no cover fill. Its
-   backdrop-filter stays NEUTRAL until the reveal (a live filter would
-   tint the closed hole against the surrounding veil), then eases in with
-   the same fade */
-#hero-plate {
-  position: absolute;
-  left: 0;
-  top: 0;
-  transition: backdrop-filter var(--transition-short) ease-out;
-  z-index: 100000;
-}
-
-#hero-plate .frame,
-#hero-reveal-furniture,
-.cx {
-  opacity: 0;
-  transition: opacity var(--transition-short) ease-out;
-
-  .root[data-on] & {
-    opacity: 1;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .veil,
-  #hero-plate,
-  #hero-plate .frame,
-  #hero-reveal-furniture,
-  .cx {
-    transition: none;
-  }
-}
-
-.cxV {
-  top: 0;
-  bottom: 0;
-  width: 1px;
-}
-
-.cxH {
-  left: 0;
-  right: 0;
-  height: 1px;
-}
-
-#hero-reveal-furniture {
-  position: absolute;
-  left: 0;
-  top: 0;
-  z-index: 100001;
-}
-
-/* ── boot reveal: crosshairs draw to the plate ───────────────────────────
-   At the reveal beat the guides grow into place — verticals from the
-   horizontal centre, horizontals from the vertical centre — then the corner
-   tags wipe open after the hole */
-.cxV {
-  transform: scaleY(0);
-}
-
-.cxH {
-  transform: scaleX(0);
-}
-
-.root[data-on] .cxV,
-.root[data-on] .cxH {
-  transform: none;
-  transition: transform 0.45s ease-out 0.1s;
-}
-
-.tagTl,
-.tagTr {
-  clip-path: inset(0 100% 0 0);
-  transition: clip-path 0.45s ease-out 0.25s;
-}
-
-.root[data-on] .tagTl,
-.root[data-on] .tagTr {
-  clip-path: inset(0 0 0 0);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .cxV,
-  .cxH,
-  .tagTl,
-  .tagTr {
-    transition: none;
-  }
+  inset: 0;
+  pointer-events: auto;
+  touch-action: pan-y;
 }

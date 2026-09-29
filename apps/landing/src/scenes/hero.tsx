@@ -1,13 +1,11 @@
 // Hero hold scene on the spine. The spine's map layer IS the hero map; photo
 // markers render through the map portal so they ride the layer, while the
-// reveal (veil/plate/crosshairs) renders in this tree — first child of the
-// sticky section, so it pins during the hold and rides up with the page
-// through the transition, unveiling the map. Layout: lede bottom-left,
-// info block top-right (Note labels, serif values, live scale, the arch
-// list whose highlight follows the reveal plate). The reveal bounds span
-// the workarea, and the cursor hides inside it only — the header keeps the
-// system cursor.
-import { useEffect, useRef, useState } from "react"
+// brush reveal (canvas veil + touch catch) renders in this tree — first
+// child of the sticky section, so it pins during the hold and rides up
+// with the page through the transition, unveiling the map. Layout: lede
+// bottom-left, info block top-right (Note labels, serif values, live
+// scale, the arch list whose highlight follows the brush's trail).
+import { useEffect, useState } from "react"
 import { motion, useMotionValueEvent, useReducedMotion, type MotionValue } from "framer-motion"
 import { Body2, H5, Note, TRANSITION_INSTANT, TRANSITION_SHORT } from "@nolli/ui"
 import { BootFade, phaseAtLeast, useBootPhase } from "@/lib/boot"
@@ -19,7 +17,7 @@ import { HERO_FIT_PAD } from "@/lib/constants"
 import { fitCamera } from "@/lib/camera"
 import type { LandingData } from "@/lib/landing-data"
 import { PhotoMarkers } from "@/components/photo-markers"
-import { CursorReveal, HERO_MARKER_CLASS, useCursorSprings, usePlateArchs, type PlateRect } from "./hero-reveal"
+import { AT_REST_VH, BrushReveal, HERO_MARKER_CLASS, useTrail, useTrailArchs } from "./hero-reveal"
 import { Pane, Rule, Screen } from "./page-layout"
 import styles from "./hero.module.css"
 
@@ -48,7 +46,7 @@ export const heroCamera = (data: LandingData): SceneCamera => {
   )
 }
 
-const SCENE_VH = 200
+const SCENE_VH = 100
 
 /** Shared hero state. Springs, plate activity, scale readout and boot
  * gating live here; the tree only composes panes. */
@@ -56,33 +54,24 @@ function HeroScene({ data }: { data: LandingData }) {
   const map = useSpineMap()
   const bootPhase = useBootPhase()
   const archs = data.heroArchs
-  const { sx, sy } = useCursorSprings()
-  // reveal bounds = the workarea pane
-  const boundsRef = useRef<HTMLDivElement | null>(null)
-  // the reveal's live plate rect (viewport px), written by the reveal's
-  // frame loop — drives the arch list's active highlight
-  const plateRef = useRef<PlateRect | null>(null)
-  const reduced = useReducedMotion()
-
   const localScrollDist = useSceneScroll()
-  const { active } = usePlateArchs(sx, sy, archs, map, plateRef, localScrollDist)
+  const trail = useTrail(localScrollDist)
+
   const ownsMap = useSceneOwnsMap()
   const [markersOn, setMarkersOn] = useState(() => localScrollDist.get() < SCENE_VH)
   useMotionValueEvent(localScrollDist, "change", (v) => setMarkersOn(v < SCENE_VH))
+  // the highlight tracks the brush, which stops taking movement the
+  // moment the hold leaves its top
+  const [atRest, setAtRest] = useState(() => localScrollDist.get() < AT_REST_VH)
+  useMotionValueEvent(localScrollDist, "change", (v) => setAtRest(v < AT_REST_VH))
+  const picksLive = markersOn && atRest && ownsMap && phaseAtLeast(bootPhase, "reveal")
 
-  const scale = useScaleText(map, sy)
+  const { active } = useTrailArchs(trail, archs, map, picksLive)
+  const scale = useScaleText(map, trail.current.sy)
 
   return (
     <>
-      <CursorReveal
-        boundsRef={boundsRef}
-        plateRef={plateRef}
-        sx={sx}
-        sy={sy}
-        on={phaseAtLeast(bootPhase, "reveal")}
-        growVh={SCENE_VH - 100}
-        tagTr={data.heroCity.name}
-      />
+      <BrushReveal trail={trail} on={phaseAtLeast(bootPhase, "reveal")} />
       <section
         data-spine-shape="hero"
         data-boot-phase={bootPhase}
@@ -90,11 +79,10 @@ function HeroScene({ data }: { data: LandingData }) {
       >
         <PhotoMarkers
           archs={archs}
-          on={markersOn && ownsMap && phaseAtLeast(bootPhase, "reveal")}
+          on={picksLive}
           className={HERO_MARKER_CLASS}
         />
-        <Screen className={[styles.screen, reduced ? "" : styles.cursorHide].filter(Boolean).join(" ")}>
-          <div className={styles.boundingBox} ref={boundsRef} />
+        <Screen className={styles.screen}>
           <HeroTree
             archs={archs}
             active={active}

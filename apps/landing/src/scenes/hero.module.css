@@ -24,15 +24,6 @@
   border-color: transparent;
 }
 
-
-.boundingBox {
-  position: absolute;
-  top: calc(var(--size-header-height) + var(--size-header-top));
-  left: var(--size-page-padding);
-  right: var(--size-page-padding);
-  bottom: 0; 
-}
-
 /* ── page-grid placement ────────────────────────────────────────────────
    One full-height row: lede pane on the two left columns, info pane on
    the two right ones. */
@@ -69,10 +60,6 @@
 /* the plate IS the cursor while the pointer is inside the workarea —
    applied to the workarea pane only, so the header keeps the system cursor
    (never applied under reduced motion: no plate renders) */
-.cursorHide {
-  cursor: none;
-}
-
 .ledeColumn {
   box-sizing: border-box;
   padding-bottom: var(--spacing-group);

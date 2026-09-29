@@ -9,7 +9,6 @@ import { cityHold } from "@/scenes/city-ledger"
 import { architectHold } from "@/scenes/architect-ledger"
 import { statsHold } from "@/scenes/stats"
 import { Footer } from "@/scenes/footer"
-import { ScrollThumb } from "@/components/scroll-thumb"
 import { SiteHeader } from "@/components/site-header"
 
 export function SpineApp() {
@@ -58,7 +57,6 @@ export function SpineApp() {
       <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 20 }}>
         <SiteHeader />
       </div>
-      <ScrollThumb />
       <Spine scenes={scenes} camera={bootCamera} />
       {/* the footer follows the spine in normal flow — the map rides the
           stats card off-screen and the page ends on solid ground */}
