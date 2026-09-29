@@ -1,8 +1,7 @@
 // Scene-owned photo markers portalled into the spine's map layer — one
 // component for every scene's set. Visibility is data-show
 // (photo-markers.module.css transitions the fade) and useLinger holds the
-// mount across the exit fade. `className` carries any scene discriminator
-// (the hero's clip driver matches its set by it).
+// mount across the exit fade. `className` carries any scene discriminator.
 import { createPortal } from "react-dom"
 import type { ArchSummary } from "@/lib/landing-data"
 import { MapContext, ArchPhotoPinMarker } from "@nolli/map"

@@ -1,16 +1,20 @@
-// Brush reveal over the spine's map. A canvas veil covers the map at the
-// depth the plate veil had; the pointer's recent history stamps soft
-// holes into it (destination-out radial gradients) that dissolve over
-// TRAIL_MS — the revealed region is literally the cursor's last moment of
-// movement. The canvas + marker clips repaint from ONE persistent rAF
-// loop (expiry animates without pointer input; no event plumbing needed).
-// A full-root catch layer owns touch: pan-y keeps vertical scroll native
-// while other drags paint instead of panning the map. The veil lives
-// exactly while the scene owns the spine's map (useSceneOwnsMap): the
-// ownership flip at the scene boundary is its cut in and out. Scrolling
-// away stops the brush COLLECTING — the live stroke still dissolves on
-// its own clock. All trail coordinates are client px; the root sits at
-// (0,0) so they are canvas-local too.
+// Brush reveal over the spine's map. A 0.92 canvas veil sits above the
+// map layer; the pointer's recent history stamps soft holes into it
+// (destination-out radial gradients) that dissolve over TRAIL_MS — the
+// revealed region is literally the cursor's last moment of movement.
+// Photo markers sit UNDER that translucent veil, so each carries a CSS
+// mask mirroring the trail (same gradients, marker-local px): a marker
+// shows only through the erased region, partially — without the mask it
+// would ghost at 8% like the map does. ONE persistent rAF loop repaints
+// the canvas and rebuilds the masks per frame (expiry animates without
+// pointer input; no event plumbing needed). A full-root catch layer owns
+// touch: pan-y keeps vertical scroll native while other drags paint
+// instead of panning the map. The veil lives exactly while the scene
+// owns the spine's map (useSceneOwnsMap): the ownership flip at the
+// scene boundary is its cut in and out. Scrolling away stops the brush
+// COLLECTING — the live stroke still dissolves on its own clock. All
+// trail coordinates are client px; the root sits at (0,0) so they are
+// canvas-local too.
 import { useEffect, useRef, useState, type RefObject } from "react"
 import { useMotionValue, useReducedMotion, type MotionValue } from "framer-motion"
 import type { MapRef } from "@nolli/map"
@@ -24,15 +28,16 @@ export const TRAIL_MS = 750
 /** Soft hole radius (px) around each stamped point. */
 const BRUSH_R = 160
 
-/** Marker/clip hit radius — inside the gradient's fade so markers surface
- * only where the veil is mostly erased. */
+/** Highlight hit radius — inside the gradient's fade so a pick lights up
+ * only where the veil is mostly erased over it. */
 const HIT_R = BRUSH_R * 0.7
 
 /** Scene-local scroll (vh) under which the scene counts as at rest — the
  * brush only takes movement while the hold is parked at its top. */
 export const AT_REST_VH = 0.5
 
-const HIDDEN_CLIP = "inset(0 0 100% 0)"
+/** A mask that shows nothing — mask-image: none means fully visible. */
+const MASK_HIDDEN = "linear-gradient(transparent, transparent)"
 
 export type TrailPoint = { x: number; y: number; t: number }
 
@@ -60,11 +65,18 @@ export function trailHit(
   return false
 }
 
-/** Inert class applied to every photo marker the hero mounts — the clip
- * driver matches on it to crop only the hero's set to the trail. A plain
- * string (not module css) so the shared .photoMarker class stays
- * identical across scenes. */
+/** Inert class applied to every photo marker the hero mounts — the mask
+ * driver matches on it to veil only the hero's set. A plain string (not
+ * module css) so the shared .photoMarker class stays identical across
+ * scenes. */
 export const HERO_MARKER_CLASS = "hero-pick"
+
+/** The hero's marker contents in the map — the mask driver's set. */
+function heroMarkerContents(map: MapRef): HTMLElement[] {
+  return Array.from(map.getContainer().querySelectorAll<HTMLElement>(".maplibregl-marker"))
+    .map((root) => root.firstElementChild as HTMLElement | null)
+    .filter((el): el is HTMLElement => !!el && el.classList.contains(HERO_MARKER_CLASS) && el.isConnected)
+}
 
 export type TrailStore = {
   points: TrailPoint[]
@@ -120,20 +132,12 @@ export function useTrail(localScroll?: MotionValue<number>): RefObject<TrailStor
   return store
 }
 
-/** The hero's marker contents in the map — the clip driver's set. */
-function heroMarkerContents(map: MapRef): HTMLElement[] {
-  return Array.from(map.getContainer().querySelectorAll<HTMLElement>(".maplibregl-marker"))
-    .map((root) => root.firstElementChild as HTMLElement | null)
-    .filter((el): el is HTMLElement => !!el && el.classList.contains(HERO_MARKER_CLASS) && el.isConnected)
-}
-
-/** Canvas veil + brush holes over the spine map, plus the marker clip
- * driver — ONE persistent rAF loop writes all of it per frame: veil fill,
- * trail stamps (aged, soft, destination-out), and the hero markers'
- * clip-paths (hidden outside the trail, clear inside). The veil lives
- * exactly while this scene owns the spine's map — the ownership flip at
- * the scene boundary is its cut in and out, so any hold scene can reuse
- * it. Reduced motion renders nothing — markers show unclipped. */
+/** The opaque canvas veil over the map layer (map + photo markers) with
+ * the brush's soft holes — ONE persistent rAF loop repaints it per frame:
+ * solid fill, then trail stamps (aged, soft, destination-out). The veil
+ * lives exactly while this scene owns the spine's map — the ownership
+ * flip at the scene boundary is its cut in and out, so any hold scene
+ * can reuse it. Reduced motion renders nothing — the map shows open. */
 export function BrushReveal({
   trail,
   on = true,
@@ -213,33 +217,48 @@ export function BrushReveal({
         }
       }
 
-      // markers crop to the trail; outside it they stay hidden under the
-      // held veil, surfacing only at the ownership cut
+      // the veil is 0.92 — photo markers under it would ghost at 8%, so
+      // each one carries a mask mirroring the trail: the same radial
+      // gradients in marker-local px, add-composited (≈ the canvas's
+      // accumulated erase). Markers with no stroke in reach get a fully
+      // transparent mask; set via JS so the build pipeline never rewrites
+      // the -webkit- twins
       if (map) {
-        const clip = onRef.current
+        const live = onRef.current
         const points = trail.current.points
         for (const el of heroMarkerContents(map)) {
-          if (!clip) {
-            el.style.clipPath = ""
-            continue
+          let layers = MASK_HIDDEN
+          if (live && points.length) {
+            const box = el.getBoundingClientRect()
+            const near: string[] = []
+            for (const p of points) {
+              const lx = p.x - box.left
+              const ly = p.y - box.top
+              if (lx < -BRUSH_R || lx > box.width + BRUSH_R || ly < -BRUSH_R || ly > box.height + BRUSH_R)
+                continue
+              const a = Math.max(1 - (now - p.t) / TRAIL_MS, 0)
+              near.push(
+                `radial-gradient(circle at ${lx}px ${ly}px, rgba(0, 0, 0, ${a}) 0px, rgba(0, 0, 0, 0) ${BRUSH_R}px)`,
+              )
+            }
+            if (near.length) layers = near.join(", ")
           }
-          const box = el.getBoundingClientRect()
-          const hit = trailHit(
-            points,
-            box.left + box.width / 2,
-            box.top + box.height / 2,
-            HIT_R,
-            now,
-            TRAIL_MS,
-          )
-          el.style.clipPath = hit ? "" : HIDDEN_CLIP
+          el.style.maskImage = layers
+          el.style.webkitMaskImage = layers
+          el.style.maskComposite = "add"
+          el.style.webkitMaskComposite = "source-over"
         }
       }
     }
     let raf = requestAnimationFrame(frame)
     return () => {
       cancelAnimationFrame(raf)
-      if (map) for (const el of heroMarkerContents(map)) el.style.clipPath = ""
+      if (map) {
+        for (const el of heroMarkerContents(map)) {
+          el.style.maskImage = ""
+          el.style.webkitMaskImage = ""
+        }
+      }
     }
   }, [snap, map, trail])
 
