@@ -29,15 +29,17 @@ body {
   --size-header-top: var(--spacing-component);
 
   --size-page-max-width: 96rem;
+  /* 100% (not 100vw) — vw counts the classic scrollbar, % resolves
+     against the real layout width at every full-bleed consumer */
   --size-page-padding: max(
-    calc((100vw - var(--size-page-max-width)) / 2),
+    calc((100% - var(--size-page-max-width)) / 2),
     var(--spacing-group)
   );
 
   /* hairline column field — the page grid scenes place on; the global
      overlay draws its lines at the same cell pitch */
   --page-cols: 4;
-  --page-col: calc((100vw - 2 * var(--size-page-padding)) / var(--page-cols));
+  --page-col: calc((100% - 2 * var(--size-page-padding)) / var(--page-cols));
 
   --z-map-behind: -100;
   --z-rules: 10;
@@ -63,18 +65,17 @@ body,
 }
 
 html {
-  scrollbar-width: none;
   scroll-behavior: smooth;
-}
-
-html::-webkit-scrollbar {
-  display: none;
+  /* full-bleed elements deliberately overshoot into the scrollbar strip
+     (100vw counts it) — clip stops that from growing a horizontal
+     scrollbar; `clip`, not `hidden`, so no scroll container appears */
+  overflow-x: clip;
 }
 
 body {
-  /* @nolli/ui sets width: 100vw, which includes the scrollbar — page-wide
-     children (the stage) then overflow by the scrollbar width and the browser
-     grows a horizontal scrollbar. 100% tracks the scrollbar-less html width. */
+  /* @nolli/ui sets width: 100vw, which includes the native scrollbar —
+     page-wide children (the stage) then overflow by the scrollbar width and
+     the browser grows a horizontal scrollbar. 100% excludes it. */
   width: 100%;
   background: rgb(var(--color-primary-background));
   color: rgb(var(--color-primary-foreground));

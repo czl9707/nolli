@@ -84,20 +84,29 @@
   border-top: var(--border);
 }
 
-.ruleFull {
-  margin-inline: calc(var(--size-page-padding) * -1);
+/* a grid child's % resolves against the grid's CONTENT box, so the bleed
+   can't use --size-page-padding — instead overshoot symmetrically into
+   the scrollbar strip (100vw counts it, the layout clips it) and the
+   line lands edge-to-edge on the real width */
+.ruleFull::before {
+  inset-inline: calc((100% - 100vw) / 2);
 }
 
 /* ── global hairline field ───────────────────────────────────────────────
    One overlay for the whole spine: vertical lines at pagePadding + k·cell
    (margin edges included), fixed to the viewport at --z-rules — over the
-   map frame, under every scene item (z0); opaque panes cover them. Follows
-   the boot phases (the spine carries data-boot-phase): the field draws in
-   at the furniture beat. */
+   map frame, under every scene item (z0); opaque panes cover them. The
+   tiles draw inside the padded content box (background-position % means
+   proportional alignment, not an offset — padding + origin/clip
+   content-box places the field instead); the right boundary sits exactly
+   on the content edge, which the clipped repeat would swallow, so an
+   ::after draws it. Follows the boot phases (the spine carries
+   data-boot-phase): the field draws in at the furniture beat. */
 
 .hairlines {
   position: fixed;
   inset: 0;
+  padding-inline: var(--size-page-padding);
   z-index: var(--z-rules);
   pointer-events: none;
   background-image: linear-gradient(
@@ -105,10 +114,21 @@
     rgb(var(--color-primary-foreground) / 0.25) 0 1px,
     transparent 1px 100%
   );
-  background-size: var(--page-col) 100%;
-  background-position: var(--size-page-padding) 0;
+  background-size: calc(100% / var(--page-cols)) 100%;
+  background-origin: content-box;
+  background-clip: content-box;
   opacity: 1;
   transition: opacity var(--transition-short) ease-out;
+}
+
+.hairlines::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: var(--size-page-padding);
+  width: 1px;
+  background: rgb(var(--color-primary-foreground) / 0.25);
 }
 
 .hairlines[data-boot-phase="blank"],
