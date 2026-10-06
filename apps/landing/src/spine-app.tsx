@@ -5,19 +5,14 @@ import { useBootPhase } from "@/lib/boot"
 import { Spine } from "@/spine/spine"
 import type { SpineScene } from "@/spine/timeline"
 import { heroCamera, heroHold } from "@/scenes/hero"
-import { cityHold } from "@/scenes/city-ledger"
-import { architectHold } from "@/scenes/architect-ledger"
-import { statsHold } from "@/scenes/stats"
-import { Footer } from "@/scenes/footer"
+import { placeholderHold } from "@/scenes/placeholder"
 import { SiteHeader } from "@/components/site-header"
 
 export function SpineApp() {
   const scenes = useMemo<SpineScene[]>(
     () => [
       heroHold(landingData),
-      cityHold(landingData),
-      architectHold(landingData),
-      statsHold(landingData),
+      placeholderHold(landingData),
     ],
     [],
   )
@@ -58,9 +53,6 @@ export function SpineApp() {
         <SiteHeader />
       </div>
       <Spine scenes={scenes} camera={bootCamera} />
-      {/* the footer follows the spine in normal flow — the map rides the
-          stats card off-screen and the page ends on solid ground */}
-      <Footer data={landingData} />
     </main>
   )
 }

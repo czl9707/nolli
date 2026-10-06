@@ -1,0 +1,55 @@
+/* Placeholder plate on the map-as-background base. The map's shape anchor
+   is fixed fullscreen (the spine always reads a viewport rect); the plate
+   itself parks sticky for its viewport, and the footer band anchors to the
+   hold's tail. */
+
+.mapAnchor {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* the plate — one sticky viewport with the panel centered on it; it
+   releases upward as the footer band scrolls in */
+.plate {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  display: grid;
+  place-items: center;
+  z-index: 1;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-paragraph);
+  padding: var(--spacing-group) var(--spacing-component);
+  pointer-events: auto;
+}
+
+.panelLabel {
+  opacity: .6;
+}
+
+.panelHead {
+  margin: 0;
+  font-size: clamp(1.75rem, 3vw, 3rem);
+  font-style: italic;
+  font-family: var(--font-serif);
+  font-weight: 400;
+}
+
+/* the footer band — absolute at the hold's tail so the scene wrapper's
+   220svh box carries it; opts back into pointer events (the spine's
+   scene-flow container is pointer-transparent); the footer's own 40svh
+   margin-top is the map reveal strip above the footer ground */
+.footerSlot {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  pointer-events: auto;
+}

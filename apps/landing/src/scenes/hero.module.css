@@ -201,3 +201,12 @@
     gap: 1rem;
   }
 }
+
+/* the map's shape anchor — fixed fullscreen so the spine's glue always
+   reads a viewport rect: the map never moves; the section scrolls over
+   it as normal content */
+.mapAnchor {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}

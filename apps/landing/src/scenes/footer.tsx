@@ -1,7 +1,7 @@
-// Footer — the last part of the page, in normal flow after the spine (no
-// hold, no map of its own: the map rides the stats card off-screen). Brand
-// block and the two nav columns sit on the page grid; the photo dock piles
-// along the bottom edge.
+// Footer — rides the placeholder hold's tail band, inside the spine
+// wrapper, so the sticky map frame stays behind it for its full height.
+// Brand block and the two nav columns sit on the page grid; the photo dock
+// piles along the bottom edge.
 import { siInstagram, siThreads, type SimpleIcon } from "simple-icons"
 import { Body1, Body3, Button, H4, Note, PaperPhoto } from "@nolli/ui"
 import {

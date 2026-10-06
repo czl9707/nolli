@@ -71,9 +71,9 @@ function HeroScene({ data }: { data: LandingData }) {
 
   return (
     <>
+      <div aria-hidden data-spine-shape="hero" className={styles.mapAnchor} />
       <BrushReveal trail={trail} on={phaseAtLeast(bootPhase, "reveal")} />
       <section
-        data-spine-shape="hero"
         data-boot-phase={bootPhase}
         className={styles.hero}
       >
