@@ -1,11 +1,11 @@
-// Hero hold scene on the spine. The spine's map layer IS the hero map; photo
-// markers render through the map portal so they ride the layer, while the
-// brush reveal (canvas veil + touch catch) renders in this tree — first
-// child of the sticky section, so it pins during the hold and rides up
-// with the page through the transition, unveiling the map. Layout: lede
-// bottom-left, info block top-right (Note labels, serif values, live
-// scale, the arch list whose highlight follows the brush's trail).
-import { useEffect, useState } from "react"
+// Hero hold scene on the spine. The spine's map layer IS the hero map; the
+// photo markers render as a fixed overlay above it and the brush reveal
+// (canvas veil + touch catch) renders above both — the veil masks the
+// markers through the shared marks registry, so each shows only through
+// the brush's erased holes. Layout: lede bottom-left, info block
+// top-right (Note labels, serif values, live scale, the arch list whose
+// highlight follows the brush's trail).
+import { useEffect, useRef, useState } from "react"
 import { motion, useMotionValueEvent, useReducedMotion, type MotionValue } from "framer-motion"
 import { Body2, H5, Note, TRANSITION_INSTANT, TRANSITION_SHORT } from "@nolli/ui"
 import { BootFade, phaseAtLeast, useBootPhase } from "@/lib/boot"
@@ -17,7 +17,7 @@ import { HERO_FIT_PAD } from "@/lib/constants"
 import { fitCamera } from "@/lib/camera"
 import type { LandingData } from "@/lib/landing-data"
 import { PhotoMarkers } from "@/components/photo-markers"
-import { AT_REST_VH, BrushReveal, HERO_MARKER_CLASS, useTrail, useTrailArchs } from "./hero-reveal"
+import { AT_REST_VH, BrushReveal, useTrail, useTrailArchs, type MarkRegistry } from "./hero-reveal"
 import { Pane, Rule, Screen } from "./page-layout"
 import styles from "./hero.module.css"
 
@@ -68,20 +68,18 @@ function HeroScene({ data }: { data: LandingData }) {
 
   const { active } = useTrailArchs(trail, archs, map, picksLive)
   const scale = useScaleText(map, trail.current.sy)
+  // the marker overlay fills this — the veil's mask driver reads it
+  const marks: MarkRegistry = useRef(new Map<string, HTMLElement>())
 
   return (
     <>
       <div aria-hidden data-spine-shape="hero" className={styles.mapAnchor} />
-      <BrushReveal trail={trail} on={phaseAtLeast(bootPhase, "reveal")} />
+      <BrushReveal trail={trail} on={phaseAtLeast(bootPhase, "reveal")} marks={marks} />
+      <PhotoMarkers archs={archs} on={picksLive} marks={marks} />
       <section
         data-boot-phase={bootPhase}
         className={styles.hero}
       >
-        <PhotoMarkers
-          archs={archs}
-          on={picksLive}
-          className={HERO_MARKER_CLASS}
-        />
         <Screen className={styles.screen}>
           <HeroTree
             archs={archs}
