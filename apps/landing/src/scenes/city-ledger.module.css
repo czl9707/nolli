@@ -1,81 +1,87 @@
-/* City ledger on the page grid — dossier column on the left column, the
-   spine's map layer landing on the shape pane over the right three.
-   Mobile flips the panes to full-width rows: map on top, dossier under
-   it. */
+/* City ledger on the map background — a sticky full-viewport hold over
+   the spine's fullscreen layer: a static paper veil dims the map end to
+   end (same wash as the hero's brush veil, so the two holds read as one
+   covered run), the photo markers sit above the veil inside the section,
+   and the dossier pane takes the first column. Mobile keeps the same
+   tree full-width. */
+
+/* the map's shape anchor — fixed fullscreen so the spine's glue always
+   reads a viewport rect: the map never moves; the section scrolls over it
+   as normal content */
+.mapAnchor {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
 
 .city {
+  position: sticky;
+  top: 0;
+  height: 100svh;
   box-sizing: border-box;
-  overflow: visible;
-  grid-template-rows: minmax(0, 1fr);
-  padding-top: 35svh;
-  padding-bottom: 20svh;
+  pointer-events: auto;
 }
 
-/* the map pane — a paper frame always in the page (no animation): the
-   whole pane sits one step under the spine's map layer, so the map paints
-   over the inset ground whenever it lands here */
-.mapPaneWrap {
-  grid-column: 2 / -1;
-  grid-row: 1;
-  position: relative;
-  background: rgb(var(--color-paper-background));
-  z-index: calc(var(--z-map-behind) - 2);
-}
-
-.mapPaneWrap::before {
-  content: "";
+.veil {
+  position: absolute;
   inset: 0;
-  position: absolute;
-  opacity: .75;
-  background-image: var(--pattern-grass-oppo);
-  z-index: calc(var(--z-map-behind) - 1);
+  /* lighter than the hero's brush veil — there is no stroke here to erase
+     it, and the map has to read as the scene's ground under the dossier */
+  background: rgb(var(--color-primary-background) / 0.6);
+  pointer-events: none;
 }
 
-/* inset ground pane — secondary color + grass pattern; the map layer
-   lands on the same inset rect and covers it */
-/* .mapGround {
-  inset: var(--spacing-paragraph);
-} */
-
-/* the shape pane — empty in the DOM; the spine's map layer lands on its
-rect (filling the pane exactly). Inset below the header strip so the
-camera fit and the markers clear it. */
-.mapPane {
+/* the marker overlay fills the section; cards are positioned by the
+   component (projection minus this layer's rect) */
+.markerLayer {
   position: absolute;
-  inset: var(--spacing-paragraph);
-  background-color: rgb(var(--color-secondary-background));
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
 
-.contentPane {
+/* ── page-grid placement ────────────────────────────────────────────────
+   One full-height row: the dossier on the first column, the closing rule
+   in its own hairline row. */
+
+.screen {
+  height: 100%;
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+
+.dossierPane {
+  display: flex;
   grid-column: 1;
   grid-row: 1;
 }
 
-.content {
+/* fills the pane, tops past the header strip; opts back into pointer
+   events (the spine's scene wrappers are none) */
+.dossier {
   box-sizing: border-box;
-  height: 100%;
+  align-self: stretch;
+  flex: 1 1 auto;
   min-height: 0;
+  padding-top: calc(var(--spacing-component) + var(--size-header-height) + var(--size-header-top));
   display: flex;
   flex-direction: column;
   gap: var(--spacing-paragraph);
-  /* the spine's scene wrappers are pointer-events: none — the dossier
-     column opts itself back in (the map pane stays transparent to the
-     pointer so the map layer's markers keep their events) */
-  pointer-events: auto;
+}
+
+.closingRule {
+  grid-row: 2;
+  height: 1px;
 }
 
 .statementText {
   font-size: clamp(1.5rem, 2.5vw, 2.25rem);
   font-style: italic;
-  padding-right: var(--spacing-paragraph);
 }
 
 .archList {
   list-style: none;
   padding-top: var(--spacing-component);
-  padding-right: var(--spacing-paragraph);
   margin: 0;
-  pointer-events: auto;
   overflow: hidden;
   min-height: 0;
 }
@@ -93,16 +99,8 @@ camera fit and the markers clear it. */
   opacity: 0.5;
 }
 
-/* rows sit dim like the hero's arch list; the row driving the map's photo
-   card lifts to full. Targets the name, not the li — the swap variants
-   animate li opacity inline, which would override a li-level dim */
 .archName {
-  opacity: 0.3;
-  transition: opacity var(--transition-instant) ease;
-}
-
-.archList li[data-hovered="true"] .archName {
-  opacity: 1;
+  opacity: 0.75;
 }
 
 /* ── city cubes ─────────────────────────────────────────────────────────
@@ -222,31 +220,13 @@ camera fit and the markers clear it. */
   to { transform: scaleX(1); }
 }
 
-/* ── mobile: map row over dossier row ───────────────────────────────────
-   Kept AFTER the base rules — equal specificity means a media block
-   placed earlier loses the cascade. */
+/* ── mobile: the same tree full-width ───────────────────────────────────
+   The dossier keeps the row; the map (and its markers) sit behind the
+   veil across the whole hold. Kept AFTER the base rules — equal
+   specificity means a media block placed earlier loses the cascade. */
 
 @media (--smaller-than-sm) {
-  .city {
-    grid-template-rows: auto minmax(0, 1fr);
-  }
-
-  .mapPaneWrap,
-  .contentPane {
+  .dossierPane {
     grid-column: 1 / -1;
-    grid-row: auto;
-  }
-
-  .mapPaneWrap {
-    height: 40svh;
-  }
-
-  /* thin frame — the paragraph inset eats the map on a narrow screen */
-  .mapPane {
-    inset: .5rem;
-  }
-
-  .content {
-    padding-top: var(--spacing-component);
   }
 }

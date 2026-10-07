@@ -89,10 +89,18 @@ function loadArchitectLedger(): ArchEntry[] {
   })
 }
 
+/** Sheet values for any ledger city — country code + whole-collection
+ * count, the same shape as the hero's pick. */
+export function cityMeta(name: string): HeroCity {
+  return {
+    name,
+    country: baked.cities.find((c) => c.name === name)?.countryCode ?? "",
+    architecturesCount: baked.cityCounts[name] ?? 0,
+  }
+}
+
 function pickHeroCity(): HeroCity {
-  const name = CITY_LEDGER[Math.floor(Math.random() * CITY_LEDGER.length)]
-  const country = baked.cities.find((c) => c.name === name)?.countryCode ?? ""
-  return { name, country, architecturesCount: baked.cityCounts[name] ?? 0 }
+  return cityMeta(CITY_LEDGER[Math.floor(Math.random() * CITY_LEDGER.length)])
 }
 
 function buildLandingData(): LandingData {

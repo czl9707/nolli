@@ -4,18 +4,20 @@
 // markers through the shared marks registry, so each shows only through
 // the brush's erased holes. Layout: lede bottom-left, info block
 // top-right (Note labels, serif values, live scale, the arch list whose
-// highlight follows the brush's trail).
+// highlight follows the brush's trail). The sheet always shows the shared
+// selected city — the city ledger's cubes re-target it, and this scene
+// picks the new deck up on the way back up.
 import { useEffect, useRef, useState } from "react"
 import { motion, useMotionValueEvent, useReducedMotion, type MotionValue } from "framer-motion"
 import { Body2, H5, Note, TRANSITION_INSTANT, TRANSITION_SHORT } from "@nolli/ui"
 import { BootFade, phaseAtLeast, useBootPhase } from "@/lib/boot"
 import type { MapRef, SceneCamera } from "@nolli/map"
-import type { ArchSummary } from "@/lib/landing-data"
+import { cityMeta, type ArchSummary, type LandingData } from "@/lib/landing-data"
+import { selectedCity, useSelectedCity } from "@/lib/city-store"
 import { useSceneOwnsMap, useSceneScroll, useSpineMap } from "@/spine/spine"
 import type { HoldScene } from "@/spine/timeline"
 import { HERO_FIT_PAD } from "@/lib/constants"
 import { fitCamera } from "@/lib/camera"
-import type { LandingData } from "@/lib/landing-data"
 import { PhotoMarkers } from "@/components/photo-markers"
 import { AT_REST_VH, BrushReveal, useTrail, useTrailArchs, type MarkRegistry } from "./hero-reveal"
 import { Pane, Rule, Screen } from "./page-layout"
@@ -25,16 +27,19 @@ export const heroHold = (data: LandingData): HoldScene => ({
   id: "hero",
   shape: "[data-spine-shape='hero']",
   heightVh: SCENE_VH,
-  camera: heroCamera(data),
+  camera: () => {
+    const archs = data.cityLedger[selectedCity()]
+    return archs?.length ? heroCamera(archs) : null
+  },
   rulesOverMap: true,
   Component: () => <HeroScene data={data} />,
 })
 
-export const heroCamera = (data: LandingData): SceneCamera => {
+export const heroCamera = (archs: ArchSummary[]): SceneCamera => {
   const cs = getComputedStyle(document.documentElement)
   const header = parseFloat(cs.getPropertyValue("--size-header-height")) * parseFloat(cs.fontSize)
   return fitCamera(
-    data.heroArchs.map((p) => p.coordinates),
+    archs.map((p) => p.coordinates),
     {
       width: window.innerWidth,
       height: window.innerHeight,
@@ -53,7 +58,8 @@ const SCENE_VH = 100
 function HeroScene({ data }: { data: LandingData }) {
   const map = useSpineMap()
   const bootPhase = useBootPhase()
-  const archs = data.heroArchs
+  const city = useSelectedCity()
+  const archs = data.cityLedger[city] ?? data.heroArchs
   const localScrollDist = useSceneScroll()
   const trail = useTrail(localScrollDist)
 
@@ -85,7 +91,7 @@ function HeroScene({ data }: { data: LandingData }) {
             archs={archs}
             active={active}
             scale={scale}
-            city={data.heroCity}
+            city={cityMeta(city)}
           />
           <Rule full className={styles.closingRule}/>
         </Screen>

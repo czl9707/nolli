@@ -1,123 +1,157 @@
-// City ledger on the spine. The map is the spine's layer landing on the
-// empty shape pane over the right columns; photo markers portal into it and
-// gate through a container flag, while the dossier column carries the
-// statement, the arch list, and the city cubes — a ledger line at the
-// column's foot (cubes left, city name right). Selection swaps play as a
-// directional pass: the outgoing cube swipes off toward travel and fades,
-// the incoming one swipes in from behind it. Cities advance every
-// ADVANCE_MS; hover pauses, click jumps.
-import { useCallback, useEffect, useRef, useState, type CSSProperties, type RefObject } from "react"
+// City ledger on the map background. The map is the spine's fullscreen
+// layer behind the whole hold; the scene lays content on it — a static
+// paper veil dims the map end to end, the photo markers sit above the
+// veil (every arch, always — no hover selection), and the dossier pane
+// takes the first column. A selection (cube pick or auto-advance) writes
+// the shared selected city — the hero sheet reads the same value — and
+// flies the map to the new city's fit, focus pushed right of the column.
+// Cities advance every ADVANCE_MS; hover pauses, click jumps.
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react"
 import { AnimatePresence, motion, useReducedMotion, type Variants } from "framer-motion"
-import { Body2, H2, Note } from "@nolli/ui"
+import { Body2, H2 } from "@nolli/ui"
+import { useIsMobile } from "@nolli/ui"
 import { applyMapTransition } from "@/lib/map-transition"
+import type { SceneCamera } from "@nolli/map"
 import { type ArchSummary, type LandingData } from "@/lib/landing-data"
 import { CITY_LEDGER } from "@/lib/constants"
+import { selectedCity, setSelectedCity, useSelectedCity } from "@/lib/city-store"
 import { useSceneOwnsMap, useSpineMap } from "@/spine/spine"
-import type { SceneCamera } from "@nolli/map"
 import type { HoldScene } from "@/spine/timeline"
 import { fitCamera } from "@/lib/camera"
-import { useIsMobile } from "@nolli/ui"
-import { CityMarkers } from "@/components/city-markers"
+import { useLinger } from "@/lib/use-linger"
+import { MarkerPhoto } from "@/components/photo-markers"
+import markerStyles from "@/components/photo-markers.module.css"
 import { RollText } from "@/components/roll-text"
 import { Pane, Rule, Screen } from "./page-layout"
 import styles from "./city-ledger.module.css"
 
-/** Hold height in scene vh. */
-const SCENE_VH = 130
+/** Hold height in scene vh — 100 of sticky scene + 40 of stay-still
+ * budget. */
+const SCENE_VH = 140
 
 /** City auto-advance period. */
 const ADVANCE_MS = 8000
 
-/** Fit padding in pane px: photo cards hang below the pin, so the
- * south-most arch needs far more room below it than the north-most above. */
-const FIT_PADDING = { left: 100, right: 100, top: 100, bottom: 240 }
+/** Fit padding in viewport px. The dossier owns the first column, so the
+ * focus lands right of it; photo cards hang below the pin, so the
+ * south-most arch needs far more room below than the north-most above. */
+const fitPad = (mobile: boolean) =>
+  mobile
+    ? { left: 48, right: 48, top: 96, bottom: 160 }
+    : { left: Math.round(window.innerWidth * 0.32), right: 100, top: 140, bottom: 240 }
 
-/** Same shape scaled to the mobile map pane — a fraction of the px box. */
-const FIT_PADDING_MOBILE = { left: 36, right: 36, top: 36, bottom: 96 }
-
-export const cityHold = (data: LandingData): HoldScene => {
-  const fit: RefObject<SceneCamera | null> = { current: null }
-  return {
-    id: "city",
-    shape: "[data-spine-shape='city']",
-    heightVh: SCENE_VH,
-    camera: () => fit.current,
-    Component: () => <CityLedger data={data} fit={fit} />,
-  }
+/** The hold's camera — the selected city's deck fit to the full viewport
+ * with the right-biased pad. Null when the city has no deck (the spine's
+ * deferred retry re-fires once it does). */
+export const cityCamera = (data: LandingData): SceneCamera | null => {
+  const archs = data.cityLedger[selectedCity()]
+  if (!archs?.length) return null
+  return fitCamera(
+    archs.map((p) => p.coordinates),
+    { width: window.innerWidth, height: window.innerHeight },
+    fitPad(window.innerWidth < 768),
+  )
 }
 
-function CityLedger({ data, fit }: { data: LandingData; fit: RefObject<SceneCamera | null> }) {
+export const cityHold = (data: LandingData): HoldScene => ({
+  id: "city",
+  shape: "[data-spine-shape='city']",
+  heightVh: SCENE_VH,
+  camera: () => cityCamera(data),
+  rulesOverMap: true,
+  Component: () => <CityLedger data={data} />,
+})
+
+function CityLedger({ data }: { data: LandingData }) {
   const map = useSpineMap()
-  const mobile = useIsMobile()
-  const paneRef = useRef<HTMLDivElement | null>(null)
-  const archsByCity = data.cityLedger
-
-  // the carousel always opens on the first city
-  const [selected, setSelected] = useState<string>(CITY_LEDGER[0])
-  // the carded arch — always one once the city loads; hovering a row or
-  // marker moves the card
-  const [cardSlug, setCardSlug] = useState<string | null>(null)
-  const archs = archsByCity[selected] ?? []
-  // new city → card back to its first arch
-  useEffect(() => {
-    setCardSlug(archs[0]?.slug ?? null)
-  }, [archs])
-
-  // camera fits the archs into the pane's measured px box — read at call
-  // time from the ref; every caller (entry flight, city pick) runs long
-  // after the pane has mounted
-  const cameraFor = useCallback((cityArchs: ArchSummary[]) => {
-    const pane = paneRef.current
-    if (!pane) return null
-    const { width, height } = pane.getBoundingClientRect()
-    return fitCamera(
-      cityArchs.map((p) => p.coordinates),
-      { width, height },
-      mobile ? FIT_PADDING_MOBILE : FIT_PADDING,
-    )
-  }, [mobile])
-
-  useEffect(() => { fit.current = cameraFor(archs) }, [fit, archs, cameraFor])
-
-  // map ownership gates the live pieces — markers, the cubes' auto-advance,
-  // and the camera moves all follow the spine's owned-scene edge (the pane
-  // itself is always in the page)
   const ownsMap = useSceneOwnsMap()
+  const city = useSelectedCity()
+  const archs = data.cityLedger[city] ?? []
 
+  // a pick flies the map; the store write re-targets the hero sheet too
   const onSelect = useCallback(
     (name: string) => {
-      setSelected(name)
-      const cityArchs = archsByCity[name]
-      if (!ownsMap || !map || !cityArchs?.length) return
-      const cam = cameraFor(cityArchs)
-      if (!cam) return
-      applyMapTransition(map, cam)
+      setSelectedCity(name)
+      if (!ownsMap || !map) return
+      const cam = cityCamera(data)
+      if (cam) applyMapTransition(map, cam)
     },
-    [archsByCity, map, cameraFor, ownsMap],
+    [data, map, ownsMap],
   )
 
   return (
-    <Screen className={styles.city} height={`${SCENE_VH}svh`}>
-      <CityMarkers archs={archs} on={ownsMap} selected={cardSlug} onSelect={setCardSlug} />
-      <Pane className={styles.mapPaneWrap}>
-        <div ref={paneRef} data-spine-shape="city" className={styles.mapPane} />
-      </Pane>
-      {/* col lives in the css — the mobile block widens the pane to the
-       * full 2-col field, and a `col` prop here would inline-override it */}
-      <Pane className={styles.contentPane}>
-        <div className={styles.content}>
-          <Statement
-            city={selected}
-            listCity={selected}
-            archs={archs}
-            cardSlug={cardSlug}
-            onCard={setCardSlug}
-          />
-          <CityDots selected={selected} onSelect={onSelect} auto={ownsMap} />
+    <>
+      <div aria-hidden data-spine-shape="city" className={styles.mapAnchor} />
+      <section className={styles.city}>
+        <div aria-hidden className={styles.veil} />
+        <CityMarkers archs={archs} on={ownsMap} />
+        <Screen className={styles.screen}>
+          <Pane className={styles.dossierPane}>
+            <div className={styles.dossier}>
+              <Statement city={city} archs={archs} />
+              <CityDots selected={city} onSelect={onSelect} auto={ownsMap} />
+            </div>
+          </Pane>
+          <Rule full className={styles.closingRule} />
+        </Screen>
+      </section>
+    </>
+  )
+}
+
+/** The hold's photo markers — every arch of the selected city, always on,
+ * above the veil. Same card as the hero's overlay, but positioned inside
+ * the section (viewport projection minus the section rect) so the markers
+ * ride out with the scene instead of hanging on the map when it un-sticks. */
+function CityMarkers({ archs, on }: { archs: ArchSummary[]; on: boolean }) {
+  const [mounted, visible] = useLinger(on, 400)
+  const map = useSpineMap()
+  const rootRef = useRef<HTMLDivElement | null>(null)
+  const els = useRef(new Map<string, HTMLDivElement>())
+
+  useEffect(() => {
+    if (!map || !mounted) return
+    const update = () => {
+      const rb = rootRef.current?.getBoundingClientRect()
+      if (!rb) return
+      for (const a of archs) {
+        const el = els.current.get(a.slug)
+        if (!el) continue
+        const p = map.project([a.coordinates.lng, a.coordinates.lat])
+        el.style.left = `${p.x - rb.left}px`
+        el.style.top = `${p.y - rb.top}px`
+      }
+    }
+    update()
+    map.on("move", update)
+    map.on("resize", update)
+    window.addEventListener("scroll", update, { passive: true })
+    return () => {
+      map.off("move", update)
+      map.off("resize", update)
+      window.removeEventListener("scroll", update)
+    }
+  }, [map, archs, mounted])
+
+  if (!mounted) return null
+  return (
+    <div ref={rootRef} className={styles.markerLayer} aria-hidden>
+      {archs.map((a) => (
+        <div
+          key={a.slug}
+          ref={(el) => {
+            if (el) els.current.set(a.slug, el)
+            else els.current.delete(a.slug)
+          }}
+          className={markerStyles.marker}
+          style={{ zIndex: Math.round((a.coordinates.lat + 90) * 1000) }}
+        >
+          <div className={markerStyles.photoMarker} data-show={visible || undefined}>
+            <MarkerPhoto a={a} />
+          </div>
         </div>
-      </Pane>
-      <Rule col="1 / -1" />
-    </Screen>
+      ))}
+    </div>
   )
 }
 
@@ -149,16 +183,10 @@ const rowDelay = (slug: string) => {
  * list under the statement swaps in a blur stagger with it. */
 function Statement({
   city,
-  listCity,
   archs,
-  cardSlug,
-  onCard,
 }: {
   city: string
-  listCity: string
   archs: ArchSummary[]
-  cardSlug: string | null
-  onCard: (slug: string) => void
 }) {
   const reduced = useReducedMotion()
   const mobile = useIsMobile()
@@ -172,14 +200,12 @@ function Statement({
       {
         !mobile &&
         <AnimatePresence mode="wait" initial={false}>
-          <motion.ul key={listCity} className={styles.archList} initial="hidden" animate="visible" exit="exit">
+          <motion.ul key={city} className={styles.archList} initial="hidden" animate="visible" exit="exit">
             {archs.map((p, i) => (
               <motion.li
                 key={p.slug}
                 variants={reduced ? undefined : itemVariants}
                 custom={rowDelay(p.slug)}
-                data-hovered={cardSlug === p.slug}
-                onMouseEnter={() => onCard(p.slug)}
               >
                 <span className={styles.archNum}>{String(i + 1).padStart(2, "0")}</span>
                 <Body2 className={styles.archName}>{p.name}</Body2>

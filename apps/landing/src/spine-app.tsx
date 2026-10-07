@@ -5,6 +5,7 @@ import { useBootPhase } from "@/lib/boot"
 import { Spine } from "@/spine/spine"
 import type { SpineScene } from "@/spine/timeline"
 import { heroCamera, heroHold } from "@/scenes/hero"
+import { cityHold } from "@/scenes/city-ledger"
 import { placeholderHold } from "@/scenes/placeholder"
 import { SiteHeader } from "@/components/site-header"
 
@@ -12,6 +13,7 @@ export function SpineApp() {
   const scenes = useMemo<SpineScene[]>(
     () => [
       heroHold(landingData),
+      cityHold(landingData),
       placeholderHold(landingData),
     ],
     [],
@@ -21,7 +23,7 @@ export function SpineApp() {
 
   // boot camera = the hero's own fit, so the spine's initial placement
   // plants the map where the hero lands
-  const bootCamera = useMemo(() => heroCamera(landingData), [])
+  const bootCamera = useMemo(() => heroCamera(landingData.heroArchs), [])
 
   // wheel inertia — Lenis eases the native scroll to a stop; skipped for
   // reduced motion (the native step scroll is the accessible default)

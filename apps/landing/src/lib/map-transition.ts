@@ -1,140 +1,20 @@
 import type MapLibreGL from "maplibre-gl"
-import { type SceneCamera } from "@nolli/map"
-import veilStyles from "@/components/map-veil.module.css"
+import { flyToSceneCinematic, type SceneCamera } from "@nolli/map"
 
-/** Every scene transition runs the jump flow, sequenced with the spine's
- * shape morph: freeze the old view as an image, blur it up (css
- * transition, over the morph window's start), hold the blurred frame
- * while the layer morphs to the next pane (SNAPSHOT_SHAPE_MS — the frame
- * rides the layer, so the morph reads as the blurred map reshaping), then
- * jump, let tiles load unseen, and fade the frame out to the settled
- * map. */
+/** The spine's shape-morph window — exported for the spine's placement
+ * tween, which shares its timing. Every scene declares the same
+ * fullscreen shape, so the tween carries no offset. */
 export const SNAPSHOT_SHAPE_MS = 500
-
-const BLUR_PX = 24
-const VEIL_PAD_PX = BLUR_PX * 5
-const BLUR_UP_S = 0.15
-const DISSOLVE_S = 0.15
-const IDLE_TIMEOUT_MS = 1000
-
-function onceIdle(map: MapLibreGL.Map, timeoutMs: number): Promise<void> {
-  return new Promise((resolve) => {
-    let done = false
-    const fire = () => {
-      if (done) return
-      done = true
-      clearTimeout(timer)
-      map.off("idle", fire)
-      resolve()
-    }
-    const timer = setTimeout(fire, timeoutMs)
-    map.once("idle", fire)
-  })
-}
-
-/** The scene's dim veil over the map (see MapVeil — inserted in the
- * canvas container, above the tiles, under every marker). Null when the
- * veil is unmounted; the capture then stays undimmed. */
-function sceneVeil(canvas: HTMLCanvasElement): HTMLElement | null {
-  return canvas.parentElement?.querySelector(`.${veilStyles.veil}`) ?? null
-}
-
-/** Snapshot the canvas mirror-extended into a wide padding so the blur
- * kernel only ever samples real map content (see VEIL_PAD_PX). The
- * visible interior stays pixel-exact against the live map. The veil's
- * dim is baked into the pixels — the snapshot image sits above the real
- * veil in z, so the live dimming must be carried in the capture (read
- * mid-fade: continuity holds at the capture instant, then the frozen
- * frame holds that value while the real veil fades on). Needs the map
- * created with preserveDrawingBuffer. */
-function paddedSnapshot(canvas: HTMLCanvasElement): string {
-  const dpr = window.devicePixelRatio || 1
-  const p = Math.round(VEIL_PAD_PX * dpr)
-  const W = canvas.width, H = canvas.height
-  const out = document.createElement("canvas")
-  out.width = W + 2 * p
-  out.height = H + 2 * p
-  const ctx = out.getContext("2d")!
-  ctx.translate(p, p)
-  const band = (fx: number, fy: number, tx: number, ty: number) => {
-    ctx.save()
-    ctx.translate(tx ? 2 * W : 0, ty ? 2 * H : 0)
-    ctx.scale(fx, fy)
-    ctx.drawImage(canvas, 0, 0)
-    ctx.restore()
-  }
-  band(-1, 1, 0, 0)                          // left
-  band(-1, 1, 1, 0)                          // right
-  band(1, -1, 0, 0)                          // top
-  band(1, -1, 0, 1)                          // bottom
-  band(-1, -1, 0, 0); band(-1, -1, 1, 0)    // corners: tl / tr
-  band(-1, -1, 0, 1); band(-1, -1, 1, 1)    // bl / br
-  ctx.drawImage(canvas, 0, 0)
-  const veil = sceneVeil(canvas)
-  if (veil) {
-    const cs = getComputedStyle(veil)
-    // the veil color carries its own alpha (rgb(... / 0.92)); the element
-    // opacity multiplies on top via globalAlpha
-    ctx.globalAlpha = Number(cs.opacity)
-    ctx.fillStyle = cs.backgroundColor
-    ctx.fillRect(-p, -p, out.width, out.height)
-    ctx.globalAlpha = 1
-  }
-  return out.toDataURL()
-}
-
-// One veil at a time. `gen` supersedes: a fire while a sequence is mid-run
-// re-targets the jump instead of letting the old sequence jump to a stale
-// destination afterwards; the current generation owns the veil and its
-// removal.
-let gen = 0
-let veil: HTMLImageElement | null = null
-
-async function snapshotTransition(map: MapLibreGL.Map, cam: SceneCamera, myGen: number): Promise<void> {
-  const stale = () => myGen !== gen
-  try {
-    if (!veil) {
-      veil = document.createElement("img")
-      Object.assign(veil.style, {
-        position: "absolute",
-        left: `${-VEIL_PAD_PX}px`, top: `${-VEIL_PAD_PX}px`,
-        width: `calc(100% + ${2 * VEIL_PAD_PX}px)`, height: `calc(100% + ${2 * VEIL_PAD_PX}px)`,
-        objectFit: "cover",
-        // above scene markers too (they sit at z up to 100000) — the veil
-        // covers the whole departing view
-        zIndex: "2147483000", pointerEvents: "none",
-        transition: `filter ${BLUR_UP_S}s ease-out, opacity ${DISSOLVE_S}s ease-out`,
-      })
-      veil.src = paddedSnapshot(map.getCanvas())
-      map.getContainer().appendChild(veil)
-      // force style resolution so the blur-up transition runs from none
-      veil.getBoundingClientRect()
-      veil.style.filter = `blur(${BLUR_PX}px)`
-    }
-    await new Promise((r) => setTimeout(r, SNAPSHOT_SHAPE_MS))
-    if (stale()) return
-    map.jumpTo({ center: cam.center, zoom: cam.zoom })
-    await onceIdle(map, IDLE_TIMEOUT_MS)
-    if (stale()) return
-    veil.style.opacity = "0"
-    await new Promise((r) => setTimeout(r, DISSOLVE_S * 1000))
-  } finally {
-    if (!stale() && veil) {
-      veil.remove()
-      veil = null
-    }
-  }
-}
 
 /** Match tolerance for "the view is already there" — a fire whose target
  * equals the live view (e.g. the reverse crossing back into a hold whose
- * camera never moved) has nothing to hide, so it skips the blur flow. */
+ * camera never moved) has nothing to fly, so it skips the move. */
 const CENTER_EPS = 1e-6
 const ZOOM_EPS = 1e-4
 
-/** Run the transition; the camera jump lands exactly when the spine's
- * shape morph (SNAPSHOT_SHAPE_MS) completes. A no-op when the map already
- * sits at the target camera. */
+/** Fly the map to the hold's camera — the map package's cinematic scene
+ * move (stop any in-flight easing first, direct easeTo, short/long
+ * duration by distance; see flyToSceneCinematic). */
 export function applyMapTransition(map: MapLibreGL.Map, cam: SceneCamera): void {
   const c = map.getCenter()
   if (
@@ -143,6 +23,5 @@ export function applyMapTransition(map: MapLibreGL.Map, cam: SceneCamera): void 
     Math.abs(map.getZoom() - cam.zoom) < ZOOM_EPS
   )
     return
-  gen++
-  snapshotTransition(map, cam, gen)
+  flyToSceneCinematic(map, cam)
 }

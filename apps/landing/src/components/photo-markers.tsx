@@ -18,8 +18,10 @@ export function PhotoMarkers({
 }: {
   archs: ArchSummary[]
   on: boolean
-  /** Registry the brush veil masks against — slug → marker element. */
-  marks: RefObject<Map<string, HTMLElement>>
+  /** Registry the brush veil masks against — slug → marker element.
+   * Scenes without a brush veil (the city ledger shows every marker
+   * outright) omit it. */
+  marks?: RefObject<Map<string, HTMLElement>>
 }) {
   const [mounted, visible] = useLinger(on, 400)
   const map = useSpineMap()
@@ -58,10 +60,10 @@ export function PhotoMarkers({
           ref={(el) => {
             if (el) {
               els.current.set(a.slug, el)
-              marks.current.set(a.slug, el)
+              marks?.current.set(a.slug, el)
             } else {
               els.current.delete(a.slug)
-              marks.current.delete(a.slug)
+              marks?.current.delete(a.slug)
             }
           }}
           className={styles.marker}
@@ -78,7 +80,7 @@ export function PhotoMarkers({
 
 /** The marker visual — the photo card with its pin, sized like the map
  * package's photo pin (cover fit inside 160×175). */
-function MarkerPhoto({ a }: { a: ArchSummary }) {
+export function MarkerPhoto({ a }: { a: ArchSummary }) {
   const ratio = a.cover.width / a.cover.height
   let w = 160
   let h = Math.round(w / ratio)
