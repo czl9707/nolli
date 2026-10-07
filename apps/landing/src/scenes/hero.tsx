@@ -74,12 +74,12 @@ function HeroScene({ data }: { data: LandingData }) {
   return (
     <>
       <div aria-hidden data-spine-shape="hero" className={styles.mapAnchor} />
-      <BrushReveal trail={trail} on={phaseAtLeast(bootPhase, "reveal")} marks={marks} />
       <PhotoMarkers archs={archs} on={picksLive} marks={marks} />
       <section
         data-boot-phase={bootPhase}
         className={styles.hero}
       >
+        <BrushReveal trail={trail} on={phaseAtLeast(bootPhase, "reveal")} marks={marks} />
         <Screen className={styles.screen}>
           <HeroTree
             archs={archs}

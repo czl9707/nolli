@@ -11,17 +11,17 @@
 // no event plumbing needed), reading the marker elements from the marks
 // registry the overlay fills. A full-root catch layer owns touch: pan-y
 // keeps vertical scroll native while other drags paint instead of
-// panning the map. The veil lives exactly while the scene owns the
-// spine's map (useSceneOwnsMap): the ownership flip at the scene
-// boundary is its cut in and out. Scrolling away stops the brush
-// COLLECTING — the live stroke still dissolves on its own clock. All
-// trail coordinates are client px; the root sits at (0,0) so they are
-// canvas-local too.
+// panning the map. The veil lives inside the hero section (absolute over
+// its full box), so it rides up with the texts when the hold scrolls away
+// and rides back with them — no ownership cut, no full-screen pop. The
+// brush only COLLECTS while the hold is parked at its top; a stroke left
+// behind dissolves on its own clock. All trail coordinates are client px;
+// the root sits at (0,0) only while the hold is parked, so stamps taken
+// there are canvas-local too.
 import { useEffect, useRef, useState, type RefObject } from "react"
 import { useMotionValue, useReducedMotion, type MotionValue } from "framer-motion"
 import type { MapRef } from "@nolli/map"
 import type { ArchSummary } from "@/lib/landing-data"
-import { useSceneOwnsMap } from "@/spine/spine"
 import styles from "./hero-reveal.module.css"
 
 /** Brush stroke lifetime — a stamped point dissolves over this window. */
@@ -145,7 +145,6 @@ export function BrushReveal({
 }) {
   const reduced = useReducedMotion()
   const snap = !!reduced
-  const ownsMap = useSceneOwnsMap()
   const rootRef = useRef<HTMLDivElement | null>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const onRef = useRef(on)
@@ -193,6 +192,12 @@ export function BrushReveal({
       }
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
 
+      // the veil rides the section, so canvas px = client px minus the
+      // root's live offset — holes stay pinned to the map (fixed) while
+      // the veil scrolls. The root is parked at (0,0) while stamps are
+      // taken (collection stops at rest), so this is identity at rest.
+      const rb = root.getBoundingClientRect()
+
       // stamps paint from whatever history remains — collection already
       // stopped at scroll (useTrail), so the live stroke dissolves on its
       // own clock while the veil holds solid
@@ -203,12 +208,14 @@ export function BrushReveal({
       if (onRef.current) {
         ctx.globalCompositeOperation = "destination-out"
         for (const p of trail.current.points) {
+          const x = p.x - rb.left
+          const y = p.y - rb.top
           const a = Math.max(1 - (now - p.t) / TRAIL_MS, 0)
-          const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, BRUSH_R)
+          const g = ctx.createRadialGradient(x, y, 0, x, y, BRUSH_R)
           g.addColorStop(0, `rgba(0, 0, 0, ${a})`)
           g.addColorStop(1, "rgba(0, 0, 0, 0)")
           ctx.fillStyle = g
-          ctx.fillRect(p.x - BRUSH_R, p.y - BRUSH_R, BRUSH_R * 2, BRUSH_R * 2)
+          ctx.fillRect(x - BRUSH_R, y - BRUSH_R, BRUSH_R * 2, BRUSH_R * 2)
         }
       }
 
@@ -254,9 +261,9 @@ export function BrushReveal({
     }
   }, [snap, marks, trail])
 
-  if (snap || !ownsMap) return null
+  if (snap) return null
   return (
-    <div className={styles.stickyWrapper}>
+    <div className={styles.veilWrap}>
       <div ref={rootRef} className={styles.root}>
         <canvas ref={canvasRef} className={styles.canvas} />
         <div className={styles.catch} aria-hidden />
