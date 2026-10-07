@@ -126,9 +126,23 @@ async function snapshotTransition(map: MapLibreGL.Map, cam: SceneCamera, myGen: 
   }
 }
 
+/** Match tolerance for "the view is already there" — a fire whose target
+ * equals the live view (e.g. the reverse crossing back into a hold whose
+ * camera never moved) has nothing to hide, so it skips the blur flow. */
+const CENTER_EPS = 1e-6
+const ZOOM_EPS = 1e-4
+
 /** Run the transition; the camera jump lands exactly when the spine's
- * shape morph (SNAPSHOT_SHAPE_MS) completes. */
+ * shape morph (SNAPSHOT_SHAPE_MS) completes. A no-op when the map already
+ * sits at the target camera. */
 export function applyMapTransition(map: MapLibreGL.Map, cam: SceneCamera): void {
+  const c = map.getCenter()
+  if (
+    Math.abs(c.lng - cam.center[0]) < CENTER_EPS &&
+    Math.abs(c.lat - cam.center[1]) < CENTER_EPS &&
+    Math.abs(map.getZoom() - cam.zoom) < ZOOM_EPS
+  )
+    return
   gen++
   snapshotTransition(map, cam, gen)
 }
