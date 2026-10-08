@@ -52,19 +52,20 @@
   display: flex;
   grid-column: 1;
   grid-row: 1;
+  align-self: center;
+  height: 70svh;
 }
 
 /* fills the vellum pane (frost + grass from the Pane's blurred recipe);
-   inner padding keeps the copy off the pane edges, topping past the
-   header strip; opts back into pointer events (the spine's scene
-   wrappers are none) */
+   the centered pane already clears the header strip, so the padding is
+   uniform; opts back into pointer events (the spine's scene wrappers
+   are none) */
 .dossier {
   box-sizing: border-box;
   align-self: stretch;
   flex: 1 1 auto;
   min-height: 0;
   padding: var(--spacing-paragraph);
-  padding-top: calc(var(--spacing-component) + var(--size-header-height) + var(--size-header-top));
   display: flex;
   flex-direction: column;
   gap: var(--spacing-paragraph);
