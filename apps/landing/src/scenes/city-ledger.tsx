@@ -86,7 +86,7 @@ function CityLedger({ data }: { data: LandingData }) {
         <div aria-hidden className={styles.veil} />
         <CityMarkers archs={archs} on={ownsMap} />
         <Screen className={styles.screen}>
-          <Pane className={styles.dossierPane}>
+          <Pane className={styles.dossierPane} blurred>
             <div className={styles.dossier}>
               <Statement city={city} archs={archs} />
               <CityDots selected={city} onSelect={onSelect} auto={ownsMap} />
@@ -100,42 +100,37 @@ function CityLedger({ data }: { data: LandingData }) {
 }
 
 /** The hold's photo markers — every arch of the selected city, always on,
- * above the veil. Same card as the hero's overlay, but positioned inside
- * the section (viewport projection minus the section rect) so the markers
- * ride out with the scene instead of hanging on the map when it un-sticks. */
+ * above the veil. A fixed layer over the whole viewport (same trick as
+ * the hero's overlay): the map behind never moves, so raw viewport
+ * projections are exact and nothing repositions on scroll. */
 function CityMarkers({ archs, on }: { archs: ArchSummary[]; on: boolean }) {
   const [mounted, visible] = useLinger(on, 400)
   const map = useSpineMap()
-  const rootRef = useRef<HTMLDivElement | null>(null)
   const els = useRef(new Map<string, HTMLDivElement>())
 
   useEffect(() => {
     if (!map || !mounted) return
     const update = () => {
-      const rb = rootRef.current?.getBoundingClientRect()
-      if (!rb) return
       for (const a of archs) {
         const el = els.current.get(a.slug)
         if (!el) continue
         const p = map.project([a.coordinates.lng, a.coordinates.lat])
-        el.style.left = `${p.x - rb.left}px`
-        el.style.top = `${p.y - rb.top}px`
+        el.style.left = `${p.x}px`
+        el.style.top = `${p.y}px`
       }
     }
     update()
     map.on("move", update)
     map.on("resize", update)
-    window.addEventListener("scroll", update, { passive: true })
     return () => {
       map.off("move", update)
       map.off("resize", update)
-      window.removeEventListener("scroll", update)
     }
   }, [map, archs, mounted])
 
   if (!mounted) return null
   return (
-    <div ref={rootRef} className={styles.markerLayer} aria-hidden>
+    <div className={styles.markerLayer} aria-hidden>
       {archs.map((a) => (
         <div
           key={a.slug}

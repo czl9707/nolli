@@ -25,16 +25,15 @@
 .veil {
   position: absolute;
   inset: 0;
-  /* lighter than the hero's brush veil — there is no stroke here to erase
-     it, and the map has to read as the scene's ground under the dossier */
-  background: rgb(var(--color-primary-background) / 0.6);
+  background: rgb(var(--color-primary-background) / 0.92);
   pointer-events: none;
 }
 
-/* the marker overlay fills the section; cards are positioned by the
-   component (projection minus this layer's rect) */
+/* the marker overlay is fixed over the whole viewport (a child of the
+   sticky section, so it still unmounts with the scene); the map behind
+   never moves, so viewport projections need no scroll correction */
 .markerLayer {
-  position: absolute;
+  position: fixed;
   inset: 0;
   overflow: hidden;
   pointer-events: none;
@@ -55,13 +54,16 @@
   grid-row: 1;
 }
 
-/* fills the pane, tops past the header strip; opts back into pointer
-   events (the spine's scene wrappers are none) */
+/* fills the vellum pane (frost + grass from the Pane's blurred recipe);
+   inner padding keeps the copy off the pane edges, topping past the
+   header strip; opts back into pointer events (the spine's scene
+   wrappers are none) */
 .dossier {
   box-sizing: border-box;
   align-self: stretch;
   flex: 1 1 auto;
   min-height: 0;
+  padding: var(--spacing-paragraph);
   padding-top: calc(var(--spacing-component) + var(--size-header-height) + var(--size-header-top));
   display: flex;
   flex-direction: column;

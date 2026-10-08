@@ -1,5 +1,5 @@
 import type MapLibreGL from "maplibre-gl"
-import { flyToSceneCinematic, type SceneCamera } from "@nolli/map"
+import { sceneFlightDurationMs, type SceneCamera } from "@nolli/map"
 
 /** The spine's shape-morph window — exported for the spine's placement
  * tween, which shares its timing. Every scene declares the same
@@ -12,9 +12,13 @@ export const SNAPSHOT_SHAPE_MS = 500
 const CENTER_EPS = 1e-6
 const ZOOM_EPS = 1e-4
 
-/** Fly the map to the hold's camera — the map package's cinematic scene
- * move (stop any in-flight easing first, direct easeTo, short/long
- * duration by distance; see flyToSceneCinematic). */
+/** The flyTo zoom-out arc — above 1 the path leaves the straight line
+ * and reads as a flight. All cameras on this page sit at city-level
+ * zooms, so the dip stays clear of the renderWorldCopies world-fit clamp
+ * that corrupts flyTo landings on long scene flights. */
+const ARC_CURVE = 1.4
+
+/** Fly the map to the hold's camera on flyTo's arc. */
 export function applyMapTransition(map: MapLibreGL.Map, cam: SceneCamera): void {
   const c = map.getCenter()
   if (
@@ -23,5 +27,12 @@ export function applyMapTransition(map: MapLibreGL.Map, cam: SceneCamera): void 
     Math.abs(map.getZoom() - cam.zoom) < ZOOM_EPS
   )
     return
-  flyToSceneCinematic(map, cam)
+  map.stop()
+  map.flyTo({
+    center: cam.center,
+    zoom: cam.zoom,
+    duration: sceneFlightDurationMs(map, cam),
+    curve: ARC_CURVE,
+    essential: true,
+  })
 }

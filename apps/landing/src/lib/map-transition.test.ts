@@ -9,30 +9,30 @@ function fakeMap(center: [number, number], zoom: number) {
     getZoom: () => zoom,
     getBounds: () => ({ contains: () => true }),
     stop: vi.fn(),
-    easeTo: vi.fn(),
+    flyTo: vi.fn(),
   }
-  return { map, easeTo: map.easeTo, stop: map.stop }
+  return { map, flyTo: map.flyTo, stop: map.stop }
 }
 
 describe("applyMapTransition", () => {
-  it("flies to the target camera", () => {
-    const { map, easeTo, stop } = fakeMap([10, 10], 3)
+  it("flies to the target camera on the arc", () => {
+    const { map, flyTo, stop } = fakeMap([10, 10], 3)
     applyMapTransition(map as never, cam)
     expect(stop).toHaveBeenCalled()
-    expect(easeTo).toHaveBeenCalledWith(
+    expect(flyTo).toHaveBeenCalledWith(
       expect.objectContaining({
         center: cam.center,
         zoom: cam.zoom,
         duration: expect.any(Number),
-        easing: expect.any(Function),
+        curve: expect.any(Number),
       }),
     )
   })
 
   it("is a no-op when the view already sits at the target", () => {
-    const { map, easeTo, stop } = fakeMap(cam.center, cam.zoom)
+    const { map, flyTo, stop } = fakeMap(cam.center, cam.zoom)
     applyMapTransition(map as never, cam)
     expect(stop).not.toHaveBeenCalled()
-    expect(easeTo).not.toHaveBeenCalled()
+    expect(flyTo).not.toHaveBeenCalled()
   })
 })
