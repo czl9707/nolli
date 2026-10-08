@@ -1,87 +1,98 @@
-/* Architect ledger on the page grid — two sticky panes ride the whole
-   ledger pass, parked low (center at 50svh + drift/2) and drifting up
-   --drift-vh, ending near flush at the top — the drift is centered on the
-   window's midline, so the map never leaves the viewport. The framed pane
-   sits under the spine's map layer, the statement pane over it. Mobile
-   shrinks the band. */
+/* Architect ledger on the map background — a sticky full-viewport hold
+   over the spine's fullscreen layer at world scale: a static paper veil
+   dims the map end to end (same wash as the hero's and city's, so the
+   three holds read as one covered run), the dealer's photo stack sits
+   above the veil inside the section, and the dossier pane takes the
+   first column. */
 
-/* the framed pane, its own sticky pane at the map scale (under the spine's
-   map layer): parked low (center at 50svh + drift/2), drifting up through
-   the pass; the map paints over the ground */
-.frameSticky {
+/* the map's shape anchor — fixed fullscreen so the spine's glue always
+   reads a viewport rect: the map never moves; the section scrolls over it
+   as normal content */
+.mapAnchor {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.architect {
   position: sticky;
-  top: calc(50svh + var(--drift-vh) / 2 - var(--band-vh) / 2);
-  height: var(--band-vh);
-  margin-inline: var(--size-page-padding);
-  margin-top: var(--band-margin-vh);
-  margin-bottom: var(--band-margin-vh);
-  z-index: calc(var(--z-map-behind) - 2);
+  top: 0;
+  height: 100svh;
+  box-sizing: border-box;
+  pointer-events: auto;
 }
 
-/* the statement pane — the SAME sticky geometry as the framed pane (top,
-   height, margins), sharing the drift value, so the two never part; the
-   negative top margin pulls it back into the framed pane's flow slot, so
-   they also coincide BEFORE sticking. Sits at the item scale, over the
-   map */
-.textSticky {
-  position: sticky;
-  top: calc(50svh + var(--drift-vh) / 2 - var(--band-vh) / 2);
-  height: var(--band-vh);
-  margin-inline: var(--size-page-padding);
-  margin-top: calc(-1 * var(--band-vh) - var(--band-margin-vh));
-  margin-bottom: var(--band-margin-vh);
-  z-index: 0;
-}
-
-/* the drift wrapper — carries the framed pane through the pass. The
-   motion itself is the global arch-drift-ride class (a scroll-timeline
-   animation shared with the spine's map layer — see global.css); the
-   anchor below is the shape's untransformed twin, so the rect glue's
-   base rect holds for the whole pin */
-.anchor {
-  position: absolute;
-  inset: var(--spacing-paragraph);
-}
-
-.drift {
+.veil {
   position: absolute;
   inset: 0;
+  background: rgb(var(--color-primary-background) / 0.92);
+  pointer-events: none;
 }
 
-/* the framed pane the map rides — paper frame always present; the
-   contrast grass pattern washes it, and the shape grounds in the
-   secondary color — the map layer lands on its rect and covers it */
-.frame {
-  position: absolute;
+/* the dealer's marker overlay is fixed over the whole viewport (a child
+   of the sticky section, so it unmounts with the scene); the map behind
+   never moves, so viewport projections need no scroll correction */
+.markerLayer {
+  position: fixed;
   inset: 0;
-  background: rgb(var(--color-paper-background));
+  overflow: hidden;
+  pointer-events: none;
 }
 
-.frame::before {
-  content: "";
-  inset: 0;
+/* one photo card in the dealer's field — the pin keeps it at the true
+   coordinates (left/top written imperatively), the transform swings it
+   between the pin and the loose stack; the settle curve lands the deal
+   with a soft overshoot */
+.slot {
   position: absolute;
-  opacity: .75;
-  background-image: var(--pattern-grass-oppo);
+  transition: transform 0.7s cubic-bezier(0.34, 1.2, 0.44, 1);
+  will-change: transform;
 }
 
-/* shape anchor — empty in the DOM; the spine's map layer lands on its
-   rect (filling it exactly) over the secondary ground */
-.shape {
-  position: absolute;
-  inset: var(--spacing-paragraph);
-  background-color: rgb(var(--color-secondary-background));
+@media (prefers-reduced-motion: reduce) {
+  .slot {
+    transition: none;
+  }
 }
 
-/* statement on the band's bottom-left — its own drift mirror (the drift
-   wrapper sits under the map; this one rides above it) */
-.bandText {
-  position: absolute;
-  left: var(--spacing-component);
-  bottom: var(--spacing-component);
+/* ── page-grid placement ────────────────────────────────────────────────
+   One full-height row: the dossier on the first column, the closing rule
+   in its own hairline row. */
+
+.screen {
+  height: 100%;
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+
+.dossierPane {
+  display: flex;
+  grid-column: 1;
+  grid-row: 1;
+  align-self: center;
+  /* the margin box is what centers, so the pane settles half a header
+     block lower — balanced under the header strip */
+  margin-top: calc(var(--size-header-height) + var(--size-header-top));
+  height: 70svh;
+}
+
+/* fills the vellum pane (frost + grass from the Pane's blurred recipe);
+   the centered pane already clears the header strip, so the padding is
+   uniform; opts back into pointer events (the spine's scene wrappers
+   are none) */
+.dossier {
+  box-sizing: border-box;
+  align-self: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: var(--spacing-paragraph);
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-component);
+  gap: var(--spacing-paragraph);
+}
+
+.closingRule {
+  grid-row: 2;
+  height: 1px;
 }
 
 .statementText {
@@ -90,20 +101,81 @@
 }
 
 .accent {
+  color: rgb(var(--color-hero-foreground));
   font-family: var(--font-playful);
   font-style: normal;
-  font-weight: 600;
-  color: rgb(var(--color-hero-foreground));
 }
 
-/* ── mobile — thin frame, the paragraph inset eats the map ─────────── */
+.archList {
+  list-style: none;
+  padding-top: var(--spacing-component);
+  margin: 0;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.archList li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-paragraph);
+  line-height: 2;
+}
+
+.archNum {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  opacity: 0.5;
+}
+
+.archName {
+  opacity: 0.75;
+}
+
+/* ── architect picker ───────────────────────────────────────────────────
+   A plain ledger list at the column's foot: name left, works count at
+   the right, hairlines between rows. The picked row reads accent. */
+
+.nameList {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.nameRow {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: .3rem .25rem;
+  border-bottom: var(--border);
+  opacity: 0.75;
+  transition: opacity var(--transition-instant) ease;
+}
+
+.nameRow:hover {
+  opacity: 1;
+}
+
+.nameRow[data-active="true"] {
+  opacity: 1;
+  color: rgb(var(--color-hero-foreground));
+  font-style: italic;
+}
+
+.nameCount {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  opacity: 0.5;
+}
+
+/* ── mobile: the same tree full-width ───────────────────────────────────
+   The dossier keeps the row; the map (and the dealer's stack) sit behind
+   the veil across the whole hold. Kept AFTER the base rules — equal
+   specificity means a media block placed earlier loses the cascade. */
 
 @media (--smaller-than-sm) {
-  .shape {
-    inset: .5rem;
-  }
-
-  .anchor {
-    inset: .5rem;
+  .dossierPane {
+    grid-column: 1 / -1;
   }
 }

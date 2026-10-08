@@ -1,153 +1,276 @@
-// Architect ledger hold on the spine. The screen sticks for a full ledger
-// pass: the map band (70svh, inside the page padding) rides a slow drift —
-// a fraction of scroll speed — while the scroll itself pages the ledger,
-// one architect per STEP_VH. The works pin to their true coordinates under
-// the veil, the lit architect's works carded; the statement rides the band
-// and rolls the name — the scroll is the control, no pointer involved.
-//
-// The drift is scroll-driven css, not framer: the scene's invisible
-// subject names a view timeline, the band rides it, and the spine's map
-// layer rides the same curve (see global.css) — pane and layer move in
-// lockstep on the compositor, no rAF chase. All geometry is svh
-// arithmetic on constants; nothing measures the DOM. The shape anchor is
-// the pane's untransformed twin, so the rect glue's base stays valid
-// through the whole hold.
-import { useEffect, useRef, useState, type CSSProperties } from "react"
-import { useMotionValueEvent, useTransform, type MotionValue } from "framer-motion"
-import { H2 } from "@nolli/ui"
-import { useSceneOwnsMap, useSceneRange, useSceneScroll } from "@/spine/spine"
-import { useIsMobile } from "@nolli/ui"
-import type { HoldScene } from "@/spine/timeline"
-import type { ArchEntry, LandingData } from "@/lib/landing-data"
+// Architect ledger on the map background — the dealer hold. The map is
+// the spine's fullscreen layer at world scale behind the whole hold, a
+// static paper veil dims it end to end, and the dossier pane takes the
+// first column. Every photo of every ledger architect lives in one loose
+// stack docked bottom-right; picking a name deals that architect's works
+// out of the stack onto their true pins (a staggered flight per work),
+// and the previous pick's works stagger back into the stack. Selection is
+// pointer-only — the scroll budget just holds the scene still.
+import { useEffect, useMemo, useRef, useState } from "react"
+import { AnimatePresence, motion, useReducedMotion, type Variants } from "framer-motion"
+import { Body2, H2, useIsMobile } from "@nolli/ui"
 import { worldCamera } from "@/lib/world-camera"
-import { ArchImageMarkers } from "@/components/arch-markers"
-import { MapVeil } from "@/components/map-veil"
+import { type ArchEntry, type ArchSummary, type LandingData } from "@/lib/landing-data"
+import { useSceneOwnsMap, useSpineMap } from "@/spine/spine"
+import type { HoldScene } from "@/spine/timeline"
+import { useLinger } from "@/lib/use-linger"
+import { MarkerPhoto } from "@/components/photo-markers"
+import markerStyles from "@/components/photo-markers.module.css"
 import { RollText } from "@/components/roll-text"
-import "./architect-ledger.css"
+import { Pane, Rule, Screen } from "./page-layout"
 import styles from "./architect-ledger.module.css"
 
-const SCENE_ID = "architect"
+/** Hold height in scene vh — 100 of sticky scene + 40 of stay-still
+ * budget. */
+const SCENE_VH = 140
 
-/** Scroll per architect — the ledger pages one name every step. */
-const STEP_VH = 20
-
-/** Total map rise across the ledger pass — the band drifts at a fraction
- * of scroll speed instead of sticking, centered on the window's midline
- * (center sweeps 50svh + drift/2 → 50svh − drift/2) so the map never
- * leaves the viewport. */
-const MAP_DRIFT_VH = 20
-
-/** Map band height in svh — feeds the css vars that park the band. */
-const BAND_MARGIN = 15;
-const BAND_VH = 70
-const BAND_VH_MOBILE = 55
-
-export const architectHold = (data: LandingData): HoldScene => {
-  const entries = data.architectLedger
-  // the pin spans one STEP per HOP (n−1), not per architect — the last
-  // name rides the release instead of holding a dead extra step
-  const progressVh = (entries.length - 1) * STEP_VH
-  return {
-    id: SCENE_ID,
-    shape: "[data-spine-shape='architect']",
-    heightVh: 100 + progressVh,
-    camera: worldCamera,
-    Component: () => <ArchitectLedger entries={entries} />,
-  }
-}
+export const architectHold = (data: LandingData): HoldScene => ({
+  id: "architect",
+  shape: "[data-spine-shape='architect']",
+  heightVh: SCENE_VH,
+  camera: worldCamera,
+  rulesOverMap: true,
+  Component: () => <ArchitectLedger entries={data.architectLedger} />,
+})
 
 function ArchitectLedger({ entries }: { entries: ArchEntry[] }) {
   const ownsMap = useSceneOwnsMap()
-  const mobile = useIsMobile()
-  const bandVh = mobile ? BAND_VH_MOBILE : BAND_VH
-  const { heightVh } = useSceneRange(SCENE_ID)
+  const [selected, setSelected] = useState(entries[0]?.name ?? "")
+  const entry = entries.find((e) => e.name === selected)
 
-  // pin geometry, pure svh: the band parks its center at 50svh + drift/2;
-  // the pin starts when the band's margin-top crosses the sticky top and
-  // releases exactly when the wrapper's tail margin catches the band's
-  // bottom (the margins are chosen so pin end == release)
-  const startOff = 50 + MAP_DRIFT_VH / 2 - bandVh / 2 - BAND_MARGIN
-  const span = heightVh - (2 * BAND_MARGIN + bandVh)
-
-  // the drift's slice of the subject's cover travel, as percentages —
-  // published on :root so the spine's map layer (a different subtree)
-  // rides the same range
-  const cover = heightVh + 100
-  const fromPct = ((100 - startOff) / cover) * 100
-  const toPct = ((100 - startOff + span) / cover) * 100
-  useEffect(() => {
-    const root = document.documentElement.style
-    root.setProperty("--arch-drift-vh", `${MAP_DRIFT_VH}svh`)
-    root.setProperty("--arch-drift-from", `${fromPct}%`)
-    root.setProperty("--arch-drift-to", `${toPct}%`)
-  }, [fromPct, toPct])
-
-  // scroll pages the ledger: pin-local vh (scroll into the hold, zero at
-  // the pin), one architect per STEP_VH, clamped at both ends
-  const local = useSceneScroll(SCENE_ID)
-  const pinLocal = useTransform(local, (v) => v + startOff)
-  const selected = useScrollPaged(entries, pinLocal)
-  const selectedEntry = entries.find((e) => e.name === selected) ?? entries[0]
-
-  const paneVars = {
-    "--band-vh": `${bandVh}svh`,
-    "--drift-vh": `${MAP_DRIFT_VH}svh`,
-    "--band-margin-vh": `${BAND_MARGIN}svh`
-  } as CSSProperties
-
-  return <>
-    <MapVeil />
-    <ArchImageMarkers entries={entries} selectedId={selectedEntry?.id ?? -1} on={ownsMap} />
-    {/* the timeline subject — an invisible twin of the wrapper that names
-     * the view timeline everything drifts on (see global.css) */}
-    <div className="arch-view-subject" aria-hidden />
-    {/* the framed pane and the statement are two sticky panes with
-     * IDENTICAL geometry (top, height, margins, drift value) so they
-     * stick, unstick and drift as one. The split is forced: one subtree
-     * cannot paint partly under and partly over the spine's map layer —
-     * the frame sits at the map scale, the text at the item scale. The
-     * anchor is the shape's untransformed twin: the rect glue's base. */}
-    <div className={styles.frameSticky} style={paneVars}>
-      <div className={styles.anchor} aria-hidden data-spine-shape="architect" />
-      <div className={`${styles.drift} arch-drift-ride`}>
-        <div className={styles.frame} aria-hidden />
-        <div className={styles.shape} aria-hidden />
-      </div>
-    </div>
-    <div className={styles.textSticky} style={paneVars}>
-      <div className={`${styles.bandText} arch-drift-ride`}>
-        <H2 className={styles.statementText}>
-          You can name the works of <RollText text={selectedEntry?.name ?? ""} />.
-          <br />
-          <span className={styles.accent}>Nolli</span> help you pin them on the map.
-        </H2>
-      </div>
-    </div>
-  </>
+  return (
+    <>
+      <div aria-hidden data-spine-shape="architect" className={styles.mapAnchor} />
+      <section className={styles.architect}>
+        <div aria-hidden className={styles.veil} />
+        <DealerMarkers entries={entries} selected={selected} on={ownsMap} />
+        <Screen className={styles.screen}>
+          <Pane className={styles.dossierPane} blurred>
+            <div className={styles.dossier}>
+              <Statement name={selected} works={entry?.works ?? []} />
+              <NameList entries={entries} selected={selected} onSelect={setSelected} />
+            </div>
+          </Pane>
+          <Rule full className={styles.closingRule} />
+        </Screen>
+      </section>
+    </>
+  )
 }
 
-/** Selection as a function of pin-local scroll — the index the scroll has
- * paged to, held at both ends. Initialized from the live position so a
- * deep-link lands on the right name. */
-function useScrollPaged(entries: ArchEntry[], local: MotionValue<number>) {
-  const idxFor = (v: number) =>
-    Math.max(0, Math.min(entries.length - 1, Math.floor((v - BAND_MARGIN) / STEP_VH)))
-  const [selected, setSelected] = useState(entries[idxFor(0)]?.name ?? "")
-  const current = useRef(selected)
-  useMotionValueEvent(local, "change", (v) => {
-    const name = entries[idxFor(v)]?.name
-    if (name && name !== current.current) {
-      current.current = name
-      setSelected(name)
+/** The hold's photo markers — every work of every ledger architect, above
+ * the veil. A fixed layer over the whole viewport (same trick as the
+ * city's): the map never moves, so raw viewport projections are exact and
+ * nothing repositions on scroll. Each marker sits at its pin (left/top)
+ * and either rests there or is translated into the loose stack docked
+ * bottom-right; selection changes rewrite the transforms and the css
+ * transition flies the cards, with a per-work stagger on the deal out and
+ * on the recall back. The first pass (and the re-style after a resize)
+ * lands without transition, so mounting reads as a quiet stack. */
+const DEAL_STAGGER_MS = 120
+const RECALL_STAGGER_MS = 90
+
+function DealerMarkers({
+  entries,
+  selected,
+  on,
+}: {
+  entries: ArchEntry[]
+  selected: string
+  on: boolean
+}) {
+  const [mounted, visible] = useLinger(on, 400)
+  const map = useSpineMap()
+  const els = useRef(new Map<string, HTMLDivElement>())
+  const all = useMemo(() => entries.flatMap((e) => e.works), [entries])
+
+  // stable loose-stack jitter per photo — offset, spread and tilt from a
+  // slug hash, so the pile reads as a heap and never reshuffles
+  const jitter = useMemo(() => {
+    const m = new Map<string, { x: number; y: number; r: number }>()
+    for (const a of all) {
+      let h = 0
+      for (let i = 0; i < a.slug.length; i++) h = (h * 31 + a.slug.charCodeAt(i)) % 9973
+      m.set(a.slug, {
+        x: ((h % 100) / 100 - 0.5) * 120,
+        y: (((h / 100) | 0) % 100 / 100 - 0.5) * 80,
+        r: (((h / 10000) | 0) % 100 / 100 - 0.5) * 30,
+      })
     }
-  })
+    return m
+  }, [all])
+
+  // the selection's works, in deal order — and what was dealt last pass,
+  // so only the actually-moving cards carry a stagger delay
+  const dealOrder = useMemo(
+    () => new Map(entries.find((e) => e.name === selected)?.works.map((a, i) => [a.slug, i] as const) ?? []),
+    [entries, selected],
+  )
+  const prevDealt = useRef(new Set<string>())
+  // styled at least once — their transitions must never be disabled again
+  const styledOnce = useRef(new Set<string>())
+
   useEffect(() => {
-    const name = entries[idxFor(local.get())]?.name
-    if (name) {
-      current.current = name
-      setSelected(name)
+    if (!map || !mounted) return
+    const recallOrder = new Map<string, number>()
+    for (const e of entries) e.works.forEach((a, i) => recallOrder.set(a.slug, i))
+
+    let anyFresh = false
+    const apply = () => {
+      const mobile = window.innerWidth < 768
+      const sx = window.innerWidth - (mobile ? 110 : 175)
+      const sy = window.innerHeight - (mobile ? 120 : 140)
+      for (const a of all) {
+        const el = els.current.get(a.slug)
+        if (!el) continue
+        const p = map.project([a.coordinates.lng, a.coordinates.lat])
+        el.style.left = `${p.x}px`
+        el.style.top = `${p.y}px`
+        const dealt = dealOrder.has(a.slug)
+        const wasDealt = prevDealt.current.has(a.slug)
+        const j = jitter.get(a.slug)!
+        if (dealt) {
+          el.style.transform = "translate(-50%, 0px) rotate(0deg)"
+          el.style.zIndex = "10"
+        } else {
+          el.style.transform = `translate(calc(-50% + ${sx + j.x - p.x}px), ${sy + j.y - p.y}px) rotate(${j.r}deg)`
+          el.style.zIndex = "1"
+        }
+        // stagger only the cards this change actually moves
+        el.style.transitionDelay =
+          dealt && !wasDealt
+            ? `${(dealOrder.get(a.slug) ?? 0) * DEAL_STAGGER_MS}ms`
+            : !dealt && wasDealt
+              ? `${(recallOrder.get(a.slug) ?? 0) * RECALL_STAGGER_MS}ms`
+              : "0ms"
+        if (!styledOnce.current.has(a.slug)) {
+          styledOnce.current.add(a.slug)
+          anyFresh = true
+          el.style.transitionDuration = "0s"
+        }
+      }
+      prevDealt.current = new Set(dealOrder.keys())
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-  return selected
+    apply()
+    // re-arm the transitions after a fresh card's first placement — side
+    // effect only, the subscription below must survive this pass
+    if (anyFresh) {
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+          for (const el of els.current.values()) el.style.transitionDuration = ""
+        }),
+      )
+    }
+    const onMove = () => apply()
+    map.on("move", onMove)
+    map.on("resize", onMove)
+    return () => {
+      map.off("move", onMove)
+      map.off("resize", onMove)
+    }
+  }, [map, mounted, on, all, entries, dealOrder, jitter])
+
+  if (!mounted) return null
+  return (
+    <div className={styles.markerLayer} aria-hidden>
+      {all.map((a) => (
+        <div
+          key={a.slug}
+          ref={(el) => {
+            if (el) els.current.set(a.slug, el)
+            else els.current.delete(a.slug)
+          }}
+          className={styles.slot}
+        >
+          <div className={markerStyles.photoMarker} data-show={visible || undefined}>
+            <MarkerPhoto a={a} />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/** Arch-list swap choreography — the city dossier's blur stagger. */
+const itemVariants: Variants = {
+  hidden: { opacity: 0, filter: "blur(6px)" },
+  visible: (d: number) => ({
+    opacity: 1,
+    filter: "blur(0px)",
+    transition: { duration: 0.3, ease: "easeOut", delay: d },
+  }),
+  exit: (d: number) => ({
+    opacity: 0,
+    filter: "blur(6px)",
+    transition: { duration: 0.2, ease: "easeIn", delay: d * 0.6 },
+  }),
+}
+
+const rowDelay = (slug: string) => {
+  let h = 0
+  for (let i = 0; i < slug.length; i++) h = (h * 31 + slug.charCodeAt(i)) % 997
+  return (h / 997) * 0.24
+}
+
+/** Dossier copy. The architect rolls its faces on a pick (the page's roll
+ * is the deal animation, always upward); the works list under the
+ * statement swaps in a blur stagger with it. */
+function Statement({ name, works }: { name: string; works: ArchSummary[] }) {
+  const reduced = useReducedMotion()
+  const mobile = useIsMobile()
+  return (
+    <>
+      <H2 className={styles.statementText}>
+        You can name the works of <RollText text={name} />.
+        <br />
+        <span className={styles.accent}>Nolli</span> help you pin them on the map.
+      </H2>
+      {
+        !mobile &&
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.ul key={name} className={styles.archList} initial="hidden" animate="visible" exit="exit">
+            {works.map((p, i) => (
+              <motion.li
+                key={p.slug}
+                variants={reduced ? undefined : itemVariants}
+                custom={rowDelay(p.slug)}
+              >
+                <span className={styles.archNum}>{String(i + 1).padStart(2, "0")}</span>
+                <Body2 className={styles.archName}>{p.name}</Body2>
+              </motion.li>
+            ))}
+          </motion.ul>
+        </AnimatePresence>
+      }
+    </>
+  )
+}
+
+/** The architect picker — a plain ledger list for now. */
+function NameList({
+  entries,
+  selected,
+  onSelect,
+}: {
+  entries: ArchEntry[]
+  selected: string
+  onSelect: (name: string) => void
+}) {
+  return (
+    <div className={styles.nameList}>
+      {entries.map((e) => (
+        <button
+          key={e.name}
+          type="button"
+          className={styles.nameRow}
+          data-active={e.name === selected}
+          aria-pressed={e.name === selected}
+          onClick={() => onSelect(e.name)}
+        >
+          <span>{e.name}</span>
+          <span className={styles.nameCount}>{e.works.length}</span>
+        </button>
+      ))}
+    </div>
+  )
 }
