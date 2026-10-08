@@ -13,10 +13,20 @@ const CENTER_EPS = 1e-6
 const ZOOM_EPS = 1e-4
 
 /** The flyTo zoom-out arc — above 1 the path leaves the straight line
- * and reads as a flight. All cameras on this page sit at city-level
- * zooms, so the dip stays clear of the renderWorldCopies world-fit clamp
- * that corrupts flyTo landings on long scene flights. */
+ * and reads as a flight. The arc dips below both endpoint zooms; once
+ * that dip reaches the renderWorldCopies world-fit clamp (the zoom where
+ * the world spans the viewport) the clamp floors the path and corrupts
+ * the landing — so any flight touching world-scale zooms flies on the
+ * straight line (curve 1 stays between the endpoints), and only
+ * city-level pairs arc. */
 const ARC_CURVE = 1.4
+
+/** The zoom below which the world spans the viewport — the clamp's floor
+ * for this viewport size (the desktop fallback covers node tests). */
+const worldFitZoom = () => {
+  const px = typeof window === "undefined" ? 1440 : Math.max(window.innerWidth, window.innerHeight)
+  return Math.log2(px / 512)
+}
 
 /** Fly the map to the hold's camera on flyTo's arc. */
 export function applyMapTransition(map: MapLibreGL.Map, cam: SceneCamera): void {
@@ -28,11 +38,12 @@ export function applyMapTransition(map: MapLibreGL.Map, cam: SceneCamera): void 
   )
     return
   map.stop()
+  const arc = Math.min(map.getZoom(), cam.zoom) > worldFitZoom() + 1
   map.flyTo({
     center: cam.center,
     zoom: cam.zoom,
     duration: sceneFlightDurationMs(map, cam),
-    curve: ARC_CURVE,
+    curve: arc ? ARC_CURVE : 1,
     essential: true,
   })
 }

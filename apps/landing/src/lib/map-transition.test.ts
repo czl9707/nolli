@@ -35,4 +35,10 @@ describe("applyMapTransition", () => {
     expect(stop).not.toHaveBeenCalled()
     expect(flyTo).not.toHaveBeenCalled()
   })
+
+  it("flies straight (no dip) when the flight touches world-scale zooms", () => {
+    const { map, flyTo } = fakeMap([10, 10], 5)
+    applyMapTransition(map as never, { center: [12, 25], zoom: 1.05 })
+    expect(flyTo).toHaveBeenCalledWith(expect.objectContaining({ curve: 1 }))
+  })
 })
