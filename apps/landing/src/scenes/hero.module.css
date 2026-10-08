@@ -11,9 +11,9 @@
   height: 100svh;
   box-sizing: border-box;
   pointer-events: auto;
-  /* above the transition overlay (later sibling) so the closing rule and
-     the ride-off content stay visible as the gradient slides over */
-  z-index: 1;
+  /* no z-index: during the boundary overlap the next section must paint
+     over this one (later sibling wins), and its veil continues the hero
+     veil's wash seamlessly — the city's photos then read above the veil */
 }
 
 /* boot: the closing rule follows the furniture phase (the hero section

@@ -212,7 +212,7 @@
   height: 1px;
   background: rgb(var(--color-hero-foreground));
   transform-origin: left;
-  animation: dots-wipe var(--city-period, 8s) linear forwards;
+  animation: dots-wipe var(--city-period, 10s) linear forwards;
 }
 
 /* hover holds the sweep — both the timer and the wipe restart fresh on

@@ -30,7 +30,7 @@ import styles from "./city-ledger.module.css"
 const SCENE_VH = 140
 
 /** City auto-advance period. */
-const ADVANCE_MS = 8000
+const ADVANCE_MS = 10000
 
 /** Fit padding in viewport px. The dossier owns the first column, so the
  * focus lands right of it; photo cards hang below the pin, so the
