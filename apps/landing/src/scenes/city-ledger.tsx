@@ -38,7 +38,7 @@ const ADVANCE_MS = 8000
 const fitPad = (mobile: boolean) =>
   mobile
     ? { left: 48, right: 48, top: 96, bottom: 160 }
-    : { left: Math.round(window.innerWidth * 0.32), right: 100, top: 140, bottom: 240 }
+    : { left: Math.round(window.innerWidth * 0.32), right: 100, top: 140, bottom: 300 }
 
 /** The hold's camera — the selected city's deck fit to the full viewport
  * with the right-biased pad. Null when the city has no deck (the spine's
@@ -99,19 +99,43 @@ function CityLedger({ data }: { data: LandingData }) {
   )
 }
 
-/** The hold's photo markers — every arch of the selected city, always on,
- * above the veil. A fixed layer over the whole viewport (same trick as
- * the hero's overlay): the map behind never moves, so raw viewport
- * projections are exact and nothing repositions on scroll. */
+/** The hold's photo markers — every arch of the selected city, above the
+ * veil. A fixed layer over the whole viewport (same trick as the hero's
+ * overlay): the map behind never moves, so raw viewport projections are
+ * exact and nothing repositions on scroll. A city swap keeps the outgoing
+ * set mounted under its fade while the incoming one fades in — the
+ * photoMarker opacity transition plays both, the old set unmounts after. */
+type MarkerSet = { key: string; archs: ArchSummary[]; on: boolean }
+
 function CityMarkers({ archs, on }: { archs: ArchSummary[]; on: boolean }) {
   const [mounted, visible] = useLinger(on, 400)
   const map = useSpineMap()
   const els = useRef(new Map<string, HTMLDivElement>())
+  const city = useSelectedCity()
 
+  const [sets, setSets] = useState<MarkerSet[]>(() =>
+    city ? [{ key: city, archs, on: true }] : [],
+  )
+  useEffect(() => {
+    if (!city) return
+    setSets((ss) =>
+      ss[ss.length - 1]?.key === city
+        ? ss
+        : [...ss.map((s) => ({ ...s, on: false })), { key: city, archs, on: true }],
+    )
+  }, [city, archs])
+  // drop the faded-out sets once their exit transition has played
+  useEffect(() => {
+    if (sets.length <= 1) return
+    const t = setTimeout(() => setSets((ss) => ss.filter((s) => s.on)), 600)
+    return () => clearTimeout(t)
+  }, [sets])
+
+  const all = sets.flatMap((s) => s.archs)
   useEffect(() => {
     if (!map || !mounted) return
     const update = () => {
-      for (const a of archs) {
+      for (const a of all) {
         const el = els.current.get(a.slug)
         if (!el) continue
         const p = map.project([a.coordinates.lng, a.coordinates.lat])
@@ -126,26 +150,28 @@ function CityMarkers({ archs, on }: { archs: ArchSummary[]; on: boolean }) {
       map.off("move", update)
       map.off("resize", update)
     }
-  }, [map, archs, mounted])
+  }, [map, all, mounted])
 
   if (!mounted) return null
   return (
     <div className={styles.markerLayer} aria-hidden>
-      {archs.map((a) => (
-        <div
-          key={a.slug}
-          ref={(el) => {
-            if (el) els.current.set(a.slug, el)
-            else els.current.delete(a.slug)
-          }}
-          className={markerStyles.marker}
-          style={{ zIndex: Math.round((a.coordinates.lat + 90) * 1000) }}
-        >
-          <div className={markerStyles.photoMarker} data-show={visible || undefined}>
-            <MarkerPhoto a={a} />
+      {sets.map((s) =>
+        s.archs.map((a) => (
+          <div
+            key={a.slug}
+            ref={(el) => {
+              if (el) els.current.set(a.slug, el)
+              else els.current.delete(a.slug)
+            }}
+            className={markerStyles.marker}
+            style={{ zIndex: Math.round((a.coordinates.lat + 90) * 1000) }}
+          >
+            <div className={markerStyles.photoMarker} data-show={(visible && s.on) || undefined}>
+              <MarkerPhoto a={a} />
+            </div>
           </div>
-        </div>
-      ))}
+        )),
+      )}
     </div>
   )
 }

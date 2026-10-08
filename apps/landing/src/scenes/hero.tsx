@@ -80,12 +80,15 @@ function HeroScene({ data }: { data: LandingData }) {
   return (
     <>
       <div aria-hidden data-spine-shape="hero" className={styles.mapAnchor} />
-      <PhotoMarkers archs={archs} on={picksLive} marks={marks} />
       <section
         data-boot-phase={bootPhase}
         className={styles.hero}
       >
         <BrushReveal trail={trail} on={phaseAtLeast(bootPhase, "reveal")} marks={marks} />
+        {/* above the veil (DOM order), below the sheet — the marker mask
+            still mirrors the brush trail, so each photo shows only through
+            the holes and never ghosts under the veil */}
+        <PhotoMarkers archs={archs} on={picksLive} marks={marks} />
         <Screen className={styles.screen}>
           <HeroTree
             archs={archs}

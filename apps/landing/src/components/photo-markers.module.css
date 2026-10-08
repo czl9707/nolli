@@ -1,15 +1,15 @@
-/* Photo markers as an overlay above the map (no portal): the layer sits
-   between the map frame (z -100) and the brush veil, so markers still
-   read as pinned to the map while the veil's mask driver (hero-reveal.tsx,
-   via the marks registry) shows them only through the brush's erased
-   holes. The city ledger reuses the marker/card classes for its own
-   in-section overlay. */
+/* Photo markers as a fixed overlay above the map (no portal). The layer
+   renders inside its scene's section, right after the brush veil, so
+   DOM order puts the markers above the veil and below the sheet — the
+   veil's mask driver (hero-reveal.tsx, via the marks registry) still
+   shows each photo only through the brush's erased holes, and the two
+   can never stack the wrong way round. The city ledger reuses the
+   marker/card classes for its own layer. */
 
 .layer {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: -80;
 }
 
 /* one marker — anchored top-center at the projected point (left/top are

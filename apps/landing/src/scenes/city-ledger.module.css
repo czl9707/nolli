@@ -53,6 +53,9 @@
   grid-column: 1;
   grid-row: 1;
   align-self: center;
+  /* the margin box is what centers, so the pane settles half a header
+     block lower — balanced under the header strip */
+  margin-top: calc(var(--size-header-height) + var(--size-header-top));
   height: 70svh;
 }
 
