@@ -74,25 +74,16 @@
   margin-bottom: var(--spacing-paragraph);
 }
 
-/* fills the vellum pane (frost + grass from the Pane's blurred recipe)
-   as a left-right split — statement left, works list + cubes right —
-   which keeps the pane shallow; opts back into pointer events (the
-   spine's scene wrappers are none) */
+/* fills the vellum pane (frost + grass from the Pane's blurred recipe);
+   opts back into pointer events (the spine's scene wrappers are none) */
 .ledger {
   box-sizing: border-box;
   flex: 1 1 auto;
   min-height: 0;
   padding: var(--spacing-paragraph);
-  display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-  gap: var(--spacing-paragraph);
-}
-
-.ledgerSide {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-component);
-  min-height: 0;
 }
 
 .closingRule {
@@ -113,6 +104,7 @@
 
 .archList {
   list-style: none;
+  padding-top: var(--spacing-component);
   margin: 0;
   overflow: hidden;
   min-height: 0;
@@ -142,9 +134,5 @@
 @media (--smaller-than-sm) {
   .ledgerPane {
     grid-column: 1 / -1;
-  }
-
-  .ledger {
-    grid-template-columns: 1fr;
   }
 }
