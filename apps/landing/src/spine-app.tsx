@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from "react"
 import Lenis from "lenis"
+import { registerLenis } from "@/lib/scroll-to"
 import { landingData } from "@/lib/landing-data"
 import { useBootPhase } from "@/lib/boot"
 import { Spine } from "@/spine/spine"
@@ -33,6 +34,7 @@ export function SpineApp() {
     if (!revealed) return
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
     const lenis = new Lenis({ lerp: 0.1 })
+    registerLenis(lenis)
     let raf = 0
     const loop = (t: number) => {
       lenis.raf(t)
@@ -41,6 +43,7 @@ export function SpineApp() {
     raf = requestAnimationFrame(loop)
     return () => {
       cancelAnimationFrame(raf)
+      registerLenis(null)
       lenis.destroy()
     }
   }, [revealed])

@@ -1,9 +1,9 @@
 /* Architect ledger on the map background — a sticky full-viewport hold
    over the spine's fullscreen layer at world scale: a static paper veil
    dims the map end to end (same wash as the hero's and city's, so the
-   three holds read as one covered run), the dealer's photo stack sits
-   above the veil inside the section, and the dossier pane takes the
-   first column. */
+   three holds read as one covered run), the works sit above the veil and
+   ride the scroll onto their pins, and the vellum dossier docks
+   bottom-right. */
 
 /* the map's shape anchor — fixed fullscreen so the spine's glue always
    reads a viewport rect: the map never moves; the section scrolls over it
@@ -29,9 +29,9 @@
   pointer-events: none;
 }
 
-/* the dealer's marker overlay is fixed over the whole viewport (a child
-   of the sticky section, so it unmounts with the scene); the map behind
-   never moves, so viewport projections need no scroll correction */
+/* the marker overlay is fixed over the whole viewport (a child of the
+   sticky section, so it unmounts with the scene); the map behind never
+   moves, so viewport projections need no scroll correction */
 .markerLayer {
   position: fixed;
   inset: 0;
@@ -39,55 +39,51 @@
   pointer-events: none;
 }
 
-/* one photo card in the dealer's field — the pin keeps it at the true
-   coordinates (left/top written imperatively), the transform swings it
-   between the pin and the loose stack; the settle curve lands the deal
-   with a soft overshoot */
+/* one work — left/top are written from map.project (pin top-center), the
+   transform carries the un-scrolled gap to its stick point, written per
+   scroll frame (so NO transition on transform — it is glued to the
+   scroll); dim/lit is the old marquee's treatment: brightness only */
 .slot {
   position: absolute;
-  transition: transform 0.7s cubic-bezier(0.34, 1.2, 0.44, 1);
   will-change: transform;
+  transition: filter 0.65s ease;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .slot {
-    transition: none;
-  }
+.slot[data-state="lit"] {
+  filter: brightness(1);
+}
+
+.slot[data-state="dim"] {
+  filter: brightness(0.35);
 }
 
 /* ── page-grid placement ────────────────────────────────────────────────
-   One full-height row: the dossier on the first column, the closing rule
-   in its own hairline row. */
+   One full-height row: the vellum dossier docked bottom-right over two
+   columns, the closing rule in its own hairline row. */
 
 .screen {
   height: 100%;
   grid-template-rows: minmax(0, 1fr) auto;
 }
 
-.dossierPane {
+.ledgerPane {
   display: flex;
-  grid-column: 1;
+  grid-column: 3 / span 2;
   grid-row: 1;
-  align-self: center;
-  /* the margin box is what centers, so the pane settles half a header
-     block lower — balanced under the header strip */
-  margin-top: calc(var(--size-header-height) + var(--size-header-top));
-  height: 70svh;
+  align-self: end;
+  margin-bottom: var(--spacing-paragraph);
 }
 
 /* fills the vellum pane (frost + grass from the Pane's blurred recipe);
-   the centered pane already clears the header strip, so the padding is
-   uniform; opts back into pointer events (the spine's scene wrappers
-   are none) */
-.dossier {
+   opts back into pointer events (the spine's scene wrappers are none) */
+.ledger {
   box-sizing: border-box;
-  align-self: stretch;
   flex: 1 1 auto;
   min-height: 0;
   padding: var(--spacing-paragraph);
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-paragraph);
+  gap: var(--spacing-component);
 }
 
 .closingRule {
@@ -131,51 +127,12 @@
   opacity: 0.75;
 }
 
-/* ── architect picker ───────────────────────────────────────────────────
-   A plain ledger list at the column's foot: name left, works count at
-   the right, hairlines between rows. The picked row reads accent. */
-
-.nameList {
-  margin-top: auto;
-  display: flex;
-  flex-direction: column;
-}
-
-.nameRow {
-  all: unset;
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  padding: .3rem .25rem;
-  border-bottom: var(--border);
-  opacity: 0.75;
-  transition: opacity var(--transition-instant) ease;
-}
-
-.nameRow:hover {
-  opacity: 1;
-}
-
-.nameRow[data-active="true"] {
-  opacity: 1;
-  color: rgb(var(--color-hero-foreground));
-  font-style: italic;
-}
-
-.nameCount {
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  opacity: 0.5;
-}
-
 /* ── mobile: the same tree full-width ───────────────────────────────────
-   The dossier keeps the row; the map (and the dealer's stack) sit behind
-   the veil across the whole hold. Kept AFTER the base rules — equal
-   specificity means a media block placed earlier loses the cascade. */
+   Kept AFTER the base rules — equal specificity means a media block
+   placed earlier loses the cascade. */
 
 @media (--smaller-than-sm) {
-  .dossierPane {
+  .ledgerPane {
     grid-column: 1 / -1;
   }
 }
