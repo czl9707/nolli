@@ -25,7 +25,7 @@ import cityStyles from "./city-ledger.module.css"
 import styles from "./architect-ledger.module.css"
 
 /** Scroll per architect — the ledger pages one name per step. */
-const STEP_VH = 32
+const STEP_VH = 40
 
 /** Quiet lead before the first step, so the hold settles before the
  * first hand-off. */
@@ -80,8 +80,11 @@ function ArchitectLedger({ entries }: { entries: ArchEntry[] }) {
         <Screen className={styles.screen}>
           <Pane className={styles.ledgerPane} blurred>
             <div className={styles.ledger}>
-              <Statement name={entry?.name ?? ""} works={entry?.works ?? []} />
-              <ArchitectCubes entries={entries} idx={idx} />
+              <Statement name={entry?.name ?? ""} />
+              <div className={styles.ledgerSide}>
+                <WorksList name={entry?.name ?? ""} works={entry?.works ?? []} />
+                <ArchitectCubes entries={entries} idx={idx} />
+              </div>
             </div>
           </Pane>
           <Rule full className={styles.closingRule} />
@@ -204,37 +207,39 @@ const rowDelay = (slug: string) => {
   return (h / 997) * 0.24
 }
 
-/** Dossier copy. The architect rolls its faces as the scroll pages the
- * ledger; the works list under the statement swaps in a blur stagger
- * with it. */
-function Statement({ name, works }: { name: string; works: ArchSummary[] }) {
+/** Dossier copy — the left half of the pane. The architect rolls its
+ * faces as the scroll pages the ledger. */
+function Statement({ name }: { name: string }) {
+  return (
+    <H2 className={styles.statementText}>
+      You can name the works of <RollText text={name} />.
+      <br />
+      <span className={styles.accent}>Nolli</span> help you pin them on the map.
+    </H2>
+  )
+}
+
+/** The works list — the right half's top. It swaps in the city's blur
+ * stagger with the selection. */
+function WorksList({ name, works }: { name: string; works: ArchSummary[] }) {
   const reduced = useReducedMotion()
   const mobile = useIsMobile()
+  if (mobile) return null
   return (
-    <>
-      <H2 className={styles.statementText}>
-        You can name the works of <RollText text={name} />.
-        <br />
-        <span className={styles.accent}>Nolli</span> help you pin them on the map.
-      </H2>
-      {
-        !mobile &&
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.ul key={name} className={styles.archList} initial="hidden" animate="visible" exit="exit">
-            {works.map((p, i) => (
-              <motion.li
-                key={p.slug}
-                variants={reduced ? undefined : itemVariants}
-                custom={rowDelay(p.slug)}
-              >
-                <span className={styles.archNum}>{String(i + 1).padStart(2, "0")}</span>
-                <Body2 className={styles.archName}>{p.name}</Body2>
-              </motion.li>
-            ))}
-          </motion.ul>
-        </AnimatePresence>
-      }
-    </>
+    <AnimatePresence mode="wait" initial={false}>
+      <motion.ul key={name} className={styles.archList} initial="hidden" animate="visible" exit="exit">
+        {works.map((p, i) => (
+          <motion.li
+            key={p.slug}
+            variants={reduced ? undefined : itemVariants}
+            custom={rowDelay(p.slug)}
+          >
+            <span className={styles.archNum}>{String(i + 1).padStart(2, "0")}</span>
+            <Body2 className={styles.archName}>{p.name}</Body2>
+          </motion.li>
+        ))}
+      </motion.ul>
+    </AnimatePresence>
   )
 }
 
