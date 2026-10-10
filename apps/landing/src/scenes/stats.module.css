@@ -1,11 +1,11 @@
 /* Stats hold — the closer, on the page grid: the card sticks for the
    hold's first viewport while the map sits converged on its shape, then
-   the stick releases and the card carries the map away. The hero card
-   merges the map, the architecture count and the photo deck into one 2×2
-   pane — the frame at the map scale under the spine's map layer (the
-   scene joins the root z scale, city-scene pattern), everything else at
-   the text level over the map. The footer band anchors to the hold's
-   tail. Mobile recomposes to full rows. */
+   releases and scrolls up away as the footer band scrolls in. The hero
+   card merges the map, the architecture count and the photo deck into
+   one 2×2 pane — the frame at the map scale under the spine's map layer
+   (the scene joins the root z scale, city-scene pattern), everything
+   else at the text level over the map. The footer band anchors to the
+   hold's tail. Mobile recomposes to full rows. */
 
 .screen {
   box-sizing: border-box;
@@ -18,9 +18,16 @@
   align-items: stretch;
 }
 
+/* the card's viewport — the sticky's container: one viewport of dwell,
+   then a 50svh runway past it; at the runway's end the stick releases and
+   the card scrolls up away as a normal element, its map riding with it,
+   as the footer band scrolls in */
+.stickWrap {
+  height: 150svh;
+}
+
 /* the card's viewport — sticky for the hold's first viewport: the map
-   lands on the card and the pair holds still while the count-ups play;
-   past the dwell the stick releases and the card carries the map away */
+   lands on the card and the pair holds still while the count-ups play */
 .stick {
   position: sticky;
   top: 0;
