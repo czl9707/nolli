@@ -1,10 +1,11 @@
-/* Stats hold — the closer before the footer, on the page grid, in normal
-   flow: svh margins carry it clear of the header and the next scene. The
-   hero card merges the map, the architecture count and the photo deck
-   into one 2×2 pane — the frame at the map scale under the spine's map
-   layer (the scene is not sticky, so the pane joins the root z scale,
-   city-scene pattern), everything else at the text level over the map.
-   Mobile recomposes to full rows. */
+/* Stats hold — the closer, on the page grid, in normal flow: the card
+   scrolls with the page and the spine's map layer follows its shape rect,
+   so the map leaves with the card. The hero card merges the map, the
+   architecture count and the photo deck into one 2×2 pane — the frame at
+   the map scale under the spine's map layer (the scene is not sticky, so
+   the pane joins the root z scale, city-scene pattern), everything else
+   at the text level over the map. The footer band anchors to the hold's
+   tail. Mobile recomposes to full rows. */
 
 .screen {
   box-sizing: border-box;
@@ -163,6 +164,21 @@
   pointer-events: auto;
   height: 3.5rem;
   justify-content: center;
+}
+
+/* ── the footer band ─────────────────────────────────────────────────── */
+
+/* absolute at the hold's tail so the scene wrapper's 220svh box carries
+   it; opts back into pointer events (the spine's scene-flow container is
+   pointer-transparent); the footer's own 40svh margin-top is the strip
+   where the card and its map are still leaving above the footer ground */
+.footerSlot {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  pointer-events: auto;
 }
 
 /* ── badge marquees ──────────────────────────────────────────────────── */

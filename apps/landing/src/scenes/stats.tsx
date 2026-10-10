@@ -1,10 +1,12 @@
-// Stats hold on the spine — the closer before the footer, on the page
-// grid, in normal flow (no stick): the hero card merges the veiled map,
-// the architecture count and the photo deck into one 2×2 pane — the frame
-// at the map scale, the text over it; countries and architects are paper
-// cells with badge marquees; the CTA cell is one LandingButton. The
-// hold's dwell carries the count-ups; the map layer lands on the card's
-// shape under the veil.
+// Stats hold on the spine — the closer, on the page grid, in normal flow
+// (no stick): the hero card merges the veiled map, the architecture count
+// and the photo deck into one 2×2 pane — the frame at the map scale, the
+// text over it; countries and architects are paper cells with badge
+// marquees; the CTA cell is one LandingButton. The hold's dwell carries
+// the count-ups; the map layer lands on the card's shape under the veil,
+// and because the card scrolls with the page, the map scrolls away with
+// it — the spine ends as the card leaves. The footer rides the hold's
+// tail band, after the map is gone.
 import { useEffect, useRef } from "react"
 import { motion, useInView, useMotionValue, useReducedMotion, useSpring, useTransform } from "framer-motion"
 import { Badge, H2, H3, H6, Note, PaperPhoto, useIsMobile } from "@nolli/ui"
@@ -16,11 +18,15 @@ import type { CollectionStats, LandingData } from "@/lib/landing-data"
 import { LandingButton } from "@/components/landing-button"
 import { MapVeil } from "@/components/map-veil"
 import { ArrowUpRight } from "lucide-react"
+import { Footer } from "./footer"
 import { Pane, Rule, Screen } from "./page-layout"
 import styles from "./stats.module.css"
 
 const SCENE_ID = "stats"
-const SCENE_VH = 100
+
+/** Hold height in scene vh: the stats card's viewport, then the footer
+ * band anchoring to the hold's tail. */
+const SCENE_VH = 220
 
 // country badge list — real ISO codes + Intl.DisplayNames once the cities
 // data flows in; placeholder set until
@@ -39,11 +45,16 @@ export const statsHold = (data: LandingData): HoldScene => ({
   // same world view the architect hold parks on — this scene only verifies it
   camera: worldCamera,
   Component: () => (
-    <StatsScene
-      stats={data.stats}
-      photoPool={data.stats.worldArchs}
-      architectNames={data.architectLedger.map((e) => e.name)}
-    />
+    <>
+      <StatsScene
+        stats={data.stats}
+        photoPool={data.stats.worldArchs}
+        architectNames={data.architectLedger.map((e) => e.name)}
+      />
+      <div className={styles.footerSlot}>
+        <Footer data={data} />
+      </div>
+    </>
   ),
 })
 

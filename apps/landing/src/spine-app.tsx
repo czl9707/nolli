@@ -8,7 +8,7 @@ import type { SpineScene } from "@/spine/timeline"
 import { heroCamera, heroHold } from "@/scenes/hero"
 import { cityHold } from "@/scenes/city-ledger"
 import { architectHold } from "@/scenes/architect-ledger"
-import { placeholderHold } from "@/scenes/placeholder"
+import { statsHold } from "@/scenes/stats"
 import { SiteHeader } from "@/components/site-header"
 
 export function SpineApp() {
@@ -17,7 +17,7 @@ export function SpineApp() {
       heroHold(landingData),
       cityHold(landingData),
       architectHold(landingData),
-      placeholderHold(landingData),
+      statsHold(landingData),
     ],
     [],
   )
