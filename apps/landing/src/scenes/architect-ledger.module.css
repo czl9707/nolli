@@ -103,21 +103,9 @@
   height: 1px;
 }
 
-.statement {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-component);
-}
-
-/* the name IS the headline — one word-line, accent, impossible to wrap
-   the supporting sentences */
-.architectName {
-  color: rgb(var(--color-hero-foreground));
-  font-family: var(--font-playful);
-  font-size: clamp(1.4rem, 2vw, 1.9rem);
-}
-
-.statementLine {
+.statementText {
+  /* sized to live inside one column */
+  font-size: clamp(1.15rem, 1.8vw, 1.6rem);
   font-style: italic;
 }
 
