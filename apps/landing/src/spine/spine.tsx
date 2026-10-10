@@ -185,20 +185,20 @@ export function Spine({
       // the convergence eases the target pane's remaining gap to its
       // stuck position — the morph's clock is the pane's own travel, so
       // it starts as the pane closes on its stick point and lands exactly
-      // when it sticks; until then the layer holds the previous shape
+      // when it sticks. The offset leans on the fire-time rect, so until
+      // the pane closes in the layer keeps the previous shape parked
+      // exactly where the fire found it — no drift while it waits.
       const p = pane.getBoundingClientRect()
       const tw = tween.current
       if (tw) {
-        const t = Math.min(
-          Math.max(0, p.top - stickyTopOf(pane)) / ((CONVERGE_VH * window.innerHeight) / 100),
-          1,
-        )
+        const g = Math.max(0, p.top - stickyTopOf(pane))
+        const t = Math.min(g / ((CONVERGE_VH * window.innerHeight) / 100), 1)
         const e = reduced ? (t <= 0 ? 1 : 0) : SCENE_EASE(1 - t)
         off.current = {
-          left: tw.from.left * (1 - e),
-          top: tw.from.top * (1 - e),
-          width: tw.from.width * (1 - e),
-          height: tw.from.height * (1 - e),
+          left: (tw.from.left - p.left) * (1 - e),
+          top: (tw.from.top - p.top) * (1 - e),
+          width: (tw.from.width - p.width) * (1 - e),
+          height: (tw.from.height - p.height) * (1 - e),
         }
         if (t <= 0) tween.current = null
       }
@@ -245,15 +245,9 @@ export function Spine({
     appliedCam.current = !!cam
     lastFire.current = { boundaryVh, dir }
     if (cam && map) applyMapTransition(map, cam)
-    const prev = lastRect.current ?? live
-    tween.current = {
-      from: {
-        left: prev.left - live.left,
-        top: prev.top - live.top,
-        width: prev.width - live.width,
-        height: prev.height - live.height,
-      },
-    }
+    // the fire-time rect, absolute — the tween leans the layer here until
+    // the pane's own travel unwinds the offset
+    tween.current = { from: lastRect.current ?? live }
   }, [timeline, mapRef])
 
   useMotionValueEvent(scrollVh, "change", (vh) => {
