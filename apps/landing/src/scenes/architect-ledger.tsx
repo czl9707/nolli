@@ -81,7 +81,7 @@ function ArchitectLedger({ entries }: { entries: ArchEntry[] }) {
           <Pane className={styles.ledgerPane} blurred>
             <div className={styles.ledger}>
               <Statement name={entry?.name ?? ""} />
-              <WorksList name={entry?.name ?? ""} works={entry?.works ?? []} />
+              <WorkList name={entry?.name ?? ""} works={entry?.works ?? []} />
               <div className={styles.ledgerFoot}>
                 <ArchitectCubes entries={entries} idx={idx} />
               </div>
@@ -207,9 +207,8 @@ const rowDelay = (slug: string) => {
   return (h / 997) * 0.24
 }
 
-/** Dossier copy — the split's left column. The architect rolls its faces
- * as the scroll pages the ledger. Kept to two short lines so the strict
- * column holds them. */
+/** Dossier copy — the pane's left column. The architect rolls its faces
+ * as the scroll pages the ledger. */
 function Statement({ name }: { name: string }) {
   return (
     <H2 className={styles.statementText}>
@@ -220,9 +219,9 @@ function Statement({ name }: { name: string }) {
   )
 }
 
-/** The works list — the split's right column. It swaps in the city's
- * blur stagger with the selection. */
-function WorksList({ name, works }: { name: string; works: ArchSummary[] }) {
+/** The works list — the pane's right column. It swaps in the city's blur
+ * stagger with the selection. */
+function WorkList({ name, works }: { name: string; works: ArchSummary[] }) {
   const reduced = useReducedMotion()
   const mobile = useIsMobile()
   if (mobile) return null
@@ -247,7 +246,7 @@ function WorksList({ name, works }: { name: string; works: ArchSummary[] }) {
 /** The architect cubes — the city ledger's cube row (same styles, no
  * timer): hover previews the name, a click scrolls the page to that
  * architect's selection spot. */
-function ArchitectCubes({ entries, idx }: { entries: ArchEntry[]; idx: number }) {
+export function ArchitectCubes({ entries, idx }: { entries: ArchEntry[]; idx: number }) {
   const { startVh } = useSceneRange("architect")
   const [hovered, setHovered] = useState<number | null>(null)
 
