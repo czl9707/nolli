@@ -12,10 +12,16 @@
 }
 
 /* one marker — anchored top-center at the projected point (left/top are
-   written from map.project in photo-markers.tsx) */
+   written from map.project in photo-markers.tsx). The box reaches 10px
+   above the card (padding + compensating margin): the brush's mask is
+   set on this element and a mask hides everything outside the border
+   box, so the pin standing on the card's top edge would lose its top
+   half without it. The anchor stays on the projected point. */
 .marker {
   position: absolute;
   transform: translateX(-50%);
+  padding-top: 10px;
+  margin-top: -10px;
 }
 
 .photoMarker {
