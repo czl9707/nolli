@@ -12,8 +12,8 @@
   box-sizing: border-box;
   pointer-events: auto;
   /* no z-index: during the boundary overlap the next section must paint
-     over this one (later sibling wins), and its veil continues the hero
-     veil's wash seamlessly — the city's photos then read above the veil */
+     over this one (later sibling wins) — the map component's veil runs
+     through both holds, so the city's photos read above the same wash */
 }
 
 /* boot: the closing rule follows the furniture phase (the hero section

@@ -338,8 +338,7 @@ export function Spine({
           {/* focus pull: the layer develops from blurred/dim to sharp
               alongside its fade-in at the map beat. Rect styles are written
               by the glue loop's rAF, not React — initial values only.
-              data-owner names the holding scene so css can attach its
-              scroll-driven motion to the layer (see global.css). */}
+              data-owner names the holding scene. */}
           <motion.div ref={layerRef} className="spine-map-layer" data-owner={ownerId} style={{
             position: "absolute",
             left: 0, top: 0, width: window.innerWidth, height: window.innerHeight,

@@ -16,7 +16,6 @@ import { MAP_APP_URL } from "@/lib/constants"
 import type { HoldScene } from "@/spine/timeline"
 import type { CollectionStats, LandingData } from "@/lib/landing-data"
 import { LandingButton } from "@/components/landing-button"
-import { MapVeil } from "@/components/map-veil"
 import { ArrowUpRight } from "lucide-react"
 import { Footer } from "./footer"
 import { Pane, Rule, Screen } from "./page-layout"
@@ -68,7 +67,6 @@ function StatsScene({ stats, photoPool, architectNames }: StatsProps) {
   const mobile = useIsMobile()
   return (
     <>
-      <MapVeil/>
       <div className={styles.stickWrap}>
         <div className={styles.stick}>
           <Screen className={styles.screen} height="auto">

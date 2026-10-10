@@ -1,8 +1,9 @@
-// Hero hold scene on the spine. The spine's map layer IS the hero map; the
-// photo markers render as a fixed overlay above it and the brush reveal
-// (canvas veil + touch catch) renders above both — the veil masks the
-// markers through the shared marks registry, so each shows only through
-// the brush's erased holes. Layout: lede bottom-left, info block
+// Hero hold scene on the spine. The spine's map layer IS the hero map,
+// under the map component's own veil canvas, which the brush paints; the
+// photo markers render as a fixed overlay above it — the veil masks them
+// through the shared marks registry, so each shows only through the
+// brush's erased holes — and the catch layer takes the touches. Layout:
+// lede bottom-left, info block
 // top-right (Note labels, serif values, live scale, the arch list whose
 // highlight follows the brush's trail). The sheet always shows the shared
 // selected city — the city ledger's cubes re-target it, and this scene
@@ -85,9 +86,9 @@ function HeroScene({ data }: { data: LandingData }) {
         className={styles.hero}
       >
         <BrushReveal trail={trail} on={phaseAtLeast(bootPhase, "reveal")} marks={marks} />
-        {/* above the veil (DOM order), below the sheet — the marker mask
+        {/* in the scene flow, above the map layer's veil — the marker mask
             still mirrors the brush trail, so each photo shows only through
-            the holes and never ghosts under the veil */}
+            the holes and never ghosts over the wash */}
         <PhotoMarkers archs={archs} on={picksLive} marks={marks} />
         <Screen className={styles.screen}>
           <HeroTree
