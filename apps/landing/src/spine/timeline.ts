@@ -1,13 +1,10 @@
+// src/spine/timeline.ts
 import type { ReactNode } from "react"
 import type { SceneCamera } from "@nolli/map"
 
 /** Selector for the pane whose measured rect defines a map shape. Shapes are
  * always measured from the DOM, never declared as coordinates. */
 export type ShapeRef = string
-
-/** The fullscreen holds' shared shape — every fixed-viewport hold anchors
- * the same selector, so adjacent fullscreen holds need no transition. */
-export const SCREEN_SHAPE: ShapeRef = "[data-spine-shape='screen']"
 
 export type PxRect = { left: number; top: number; width: number; height: number }
 
@@ -20,6 +17,9 @@ export type HoldScene = {
   /** camera this hold settles into; a function computes at fire time
    * (measured panes) and a null return defers to the next trigger */
   camera: SceneCamera | (() => SceneCamera | null)
+  /** hairlines over the map (default) or the map over the hairlines —
+   * applied as a z-index jump on the map layer when this hold takes over */
+  rulesOverMap?: boolean
   Component: () => ReactNode
 }
 
@@ -28,8 +28,8 @@ export type TransitionScene = {
   id: string
   fromShape: ShapeRef
   toShape: ShapeRef
-  /** the scroll span (vh) the morph spends — it plays across this range,
-   * scroll-driven, both directions */
+  /** the scroll runway the morph plays over — the shape is a pure function
+   * of scroll across it, so both directions replay it */
   heightVh: number
   /** visual overlay for the morph; the shape interpolation is the spine's */
   Component?: () => ReactNode
@@ -42,16 +42,10 @@ export type SpineTimeline = {
   segments: Array<{ scene: SpineScene; startVh: number; heightVh: number }>
 }
 
-/** Hysteresis: after firing on a boundary, the scroll must clear the
- * threshold by this much before the same boundary can fire again. */
-export const REARM_VH = 10
-
 /** Chains the scene list: every transition must reference the shapes of its
  * neighbours, and holds with differing shapes need a transition between
  * them. Fail loud at build time, not mid-scroll. */
 export function buildTimeline(scenes: SpineScene[]): SpineTimeline {
-  if (scenes[0]?.kind !== "hold")
-    throw new Error("the spine must open with a hold")
   const segments: SpineTimeline["segments"] = []
   let acc = 0
   for (const scene of scenes) {
@@ -65,8 +59,10 @@ export function buildTimeline(scenes: SpineScene[]): SpineTimeline {
       const next = scenes[i + 1]
       const fromErr = `transition '${s.id}': fromShape '${s.fromShape}' must match the preceding hold's shape`
       const toErr = `transition '${s.id}': toShape '${s.toShape}' must match the following hold's shape`
-      if (prev?.kind !== "hold" || prev.shape !== s.fromShape) throw new Error(fromErr)
-      if (next?.kind !== "hold" || next.shape !== s.toShape) throw new Error(toErr)
+      if (prev?.kind === "hold" && prev.shape !== s.fromShape) throw new Error(fromErr)
+      if (next?.kind === "hold" && next.shape !== s.toShape) throw new Error(toErr)
+      if (prev?.kind !== "hold") throw new Error(fromErr)
+      if (next?.kind !== "hold") throw new Error(toErr)
     } else {
       const next = scenes[i + 1]
       if (next?.kind === "hold" && next.shape !== s.shape)
@@ -78,16 +74,9 @@ export function buildTimeline(scenes: SpineScene[]): SpineTimeline {
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 
-/** Map rect at a scroll position. Holds take their pane's live rect (the
- * stats card's dwell parks it, its ride-out carries the map); transitions
- * lerp linearly between the two panes' live rects — both seams are
- * continuous by construction, and the morph lands on the card as it
- * travels, whatever the scroll-to-vh conversion does between them. */
-export function shapeAt(
-  tl: SpineTimeline,
-  vh: number,
-  live: Record<ShapeRef, PxRect>,
-): PxRect {
+/** Map rect at a scroll position. Holds are constant; transitions lerp
+ * linearly between the two measured rects. */
+export function shapeAt(tl: SpineTimeline, vh: number, rects: Record<ShapeRef, PxRect>): PxRect {
   const segs = tl.segments
   let seg = segs[0]
   for (const s of segs) {
@@ -95,9 +84,9 @@ export function shapeAt(
     else break
   }
   const scene = seg.scene
-  if (scene.kind === "hold") return live[scene.shape]
-  const from = live[scene.fromShape]
-  const to = live[scene.toShape]
+  if (scene.kind === "hold") return rects[scene.shape]
+  const from = rects[scene.fromShape]
+  const to = rects[scene.toShape]
   const t = Math.min(Math.max((vh - seg.startVh) / seg.heightVh, 0), 1)
   return {
     left: lerp(from.left, to.left, t),
@@ -107,34 +96,19 @@ export function shapeAt(
   }
 }
 
-/** The hold the spine's allegiance sits with at a scroll position: the
- * hold containing the scroll, or — inside a transition — the hold it
- * morphs toward. Derived, not fired: reverse crossings resolve
- * themselves. */
-export function targetHoldAt(tl: SpineTimeline, vh: number): string {
-  let id = tl.segments[0].scene.id
-  for (let i = 0; i < tl.segments.length; i++) {
-    const s = tl.segments[i]
-    if (vh < s.startVh) break
-    id = s.scene.kind === "hold" ? s.scene.id : tl.segments[i + 1].scene.id
+/** The hold the spine's allegiance belongs to at a scroll position —
+ * camera, layering and scene-owned map content follow it. A hold is its
+ * own; a transition belongs to the hold it is morphing toward once past
+ * its middle, to the one it came from before. */
+export function ownerHoldAt(tl: SpineTimeline, vh: number): string {
+  let seg = tl.segments[0]
+  for (const s of tl.segments) {
+    if (vh >= s.startVh) seg = s
+    else break
   }
-  return id
-}
-
-/** The boundary a fire crossed, keyed on the hold PAIR — the start of the
- * first segment after the earlier hold (a transition when one sits
- * between) — so forward and reverse fires on the same edge report the same
- * vh and hysteresis can match them. */
-export function crossedBoundary(
-  tl: SpineTimeline,
-  fromId: string | null,
-  toId: string,
-): { boundaryVh: number; dir: 1 | -1 } {
-  const idx = (id: string | null) =>
-    tl.segments.findIndex((s) => s.scene.kind === "hold" && s.scene.id === (id ?? tl.segments[0].scene.id))
-  const to = idx(toId)
-  const from = Math.max(idx(fromId), 0)
-  const earlier = Math.min(to, from)
-  const next = tl.segments[earlier + 1]
-  return { boundaryVh: next ? next.startVh : 0, dir: to > from ? 1 : -1 }
+  if (seg.scene.kind === "hold") return seg.scene.id
+  const i = tl.segments.indexOf(seg)
+  return vh >= seg.startVh + seg.heightVh / 2
+    ? (tl.segments[i + 1].scene as HoldScene).id
+    : (tl.segments[i - 1].scene as HoldScene).id
 }

@@ -14,7 +14,7 @@ import { Body2, H2, useIsMobile } from "@nolli/ui"
 import { worldCamera } from "@/lib/world-camera"
 import { type ArchEntry, type ArchSummary, type LandingData } from "@/lib/landing-data"
 import { useSceneOwnsMap, useSceneRange, useSceneScroll, useSpineMap } from "@/spine/spine"
-import { SCREEN_SHAPE, type HoldScene } from "@/spine/timeline"
+import type { HoldScene } from "@/spine/timeline"
 import { useLinger } from "@/lib/use-linger"
 import { scrollToY } from "@/lib/scroll-to"
 import { MarkerPhoto } from "@/components/photo-markers"
@@ -39,9 +39,10 @@ export const architectHold = (data: LandingData): HoldScene => {
   return {
     kind: "hold",
     id: "architect",
-    shape: SCREEN_SHAPE,
+    shape: "[data-spine-shape='architect']",
     heightVh: 100 + LEAD_VH + (n - 1) * STEP_VH,
     camera: worldCamera,
+    rulesOverMap: true,
     Component: () => <ArchitectLedger entries={data.architectLedger} />,
   }
 }
@@ -73,7 +74,7 @@ function ArchitectLedger({ entries }: { entries: ArchEntry[] }) {
 
   return (
     <>
-      <div aria-hidden data-spine-shape="screen" className={styles.mapAnchor} />
+      <div aria-hidden data-spine-shape="architect" className={styles.mapAnchor} />
       <section className={styles.architect}>
         <div aria-hidden className={styles.veil} />
         <LedgerMarkers entries={entries} idx={idx} local={local} on={ownsMap} />

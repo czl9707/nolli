@@ -16,7 +16,7 @@ import { type ArchSummary, type LandingData } from "@/lib/landing-data"
 import { CITY_LEDGER } from "@/lib/constants"
 import { selectedCity, setSelectedCity, useSelectedCity } from "@/lib/city-store"
 import { useSceneOwnsMap, useSpineMap } from "@/spine/spine"
-import { SCREEN_SHAPE, type HoldScene } from "@/spine/timeline"
+import type { HoldScene } from "@/spine/timeline"
 import { fitCamera } from "@/lib/camera"
 import { useLinger } from "@/lib/use-linger"
 import { MarkerPhoto } from "@/components/photo-markers"
@@ -56,9 +56,10 @@ export const cityCamera = (data: LandingData): SceneCamera | null => {
 export const cityHold = (data: LandingData): HoldScene => ({
   kind: "hold",
   id: "city",
-  shape: SCREEN_SHAPE,
+  shape: "[data-spine-shape='city']",
   heightVh: SCENE_VH,
   camera: () => cityCamera(data),
+  rulesOverMap: true,
   Component: () => <CityLedger data={data} />,
 })
 
@@ -81,7 +82,7 @@ function CityLedger({ data }: { data: LandingData }) {
 
   return (
     <>
-      <div aria-hidden data-spine-shape="screen" className={styles.mapAnchor} />
+      <div aria-hidden data-spine-shape="city" className={styles.mapAnchor} />
       <section className={styles.city}>
         <div aria-hidden className={styles.veil} />
         <CityMarkers archs={archs} on={ownsMap} />
