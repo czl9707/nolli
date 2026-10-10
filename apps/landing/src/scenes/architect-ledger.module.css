@@ -30,6 +30,9 @@
   inset: 0;
   overflow: hidden;
   pointer-events: none;
+  /* rides the map lean (--map-lean-x/-y, written by MapLean) — the photos
+     stay glued to their pins while the sheet drifts under the cursor */
+  transform: translate3d(calc(var(--map-lean-x) * 1px), calc(var(--map-lean-y) * 1px), 0);
 }
 
 /* one work — left/top are written from map.project (pin top-center), the
@@ -64,7 +67,7 @@
   grid-column: 3 / span 2;
   grid-row: 1;
   align-self: end;
-  margin-bottom: var(--spacing-paragraph);
+  margin-bottom: var(--spacing-component);
 }
 
 /* fills the vellum pane (frost + grass from the Pane's blurred recipe)

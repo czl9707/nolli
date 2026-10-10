@@ -8,6 +8,8 @@ import {
 import { type MapRef, type SceneCamera } from "@nolli/map"
 import { useIsMobile } from "@nolli/ui"
 import { LandingMap } from "@/components/landing-map"
+import { MapLean } from "@/components/map-lean"
+import { MAP_LEAN_OVERSCAN } from "@/lib/map-lean"
 import { applyMapTransition } from "@/lib/map-transition"
 import { phaseAtLeast, useBoot, useBootPhase } from "@/lib/boot"
 import { buildTimeline, shapeAt, ownerHoldAt, type PxRect, type SpineScene } from "./timeline"
@@ -283,6 +285,7 @@ export function Spine({
 
   return (
     <Ctx.Provider value={ctx}>
+      <MapLean />
       <div ref={wrapperRef} style={{ position: "relative", height: `${timeline.totalVh}svh` }}>
         <div
           ref={frameRef}
@@ -304,9 +307,22 @@ export function Spine({
             }}
             transition={{ duration: BOOT_FOCUS.developMs / 1000, ease: "easeOut" }}
           >
-            <LandingMap ref={setRef}>
-              <div ref={setMapPortal} style={{ position: "absolute", inset: 0, pointerEvents: "none" }} />
-            </LandingMap>
+            {/* the map leans inside the clip: MapLean publishes --map-lean-x/-y
+                from the pointer, the wrapper is oversized past the layer so the
+                lean never exposes the canvas edge */}
+            <div
+              aria-hidden
+              style={{
+                position: "absolute",
+                inset: -MAP_LEAN_OVERSCAN,
+                transform:
+                  "translate3d(calc(var(--map-lean-x) * 1px), calc(var(--map-lean-y) * 1px), 0)",
+              }}
+            >
+              <LandingMap ref={setRef}>
+                <div ref={setMapPortal} style={{ position: "absolute", inset: 0, pointerEvents: "none" }} />
+              </LandingMap>
+            </div>
           </motion.div>
         </div>
         {/* the hairline column field — one fixed overlay at --z-rules:

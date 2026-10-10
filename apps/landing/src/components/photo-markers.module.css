@@ -9,6 +9,9 @@
   position: fixed;
   inset: 0;
   pointer-events: none;
+  /* rides the map lean (--map-lean-x/-y, written by MapLean) — the photos
+     stay glued to their pins while the sheet drifts under the cursor */
+  transform: translate3d(calc(var(--map-lean-x) * 1px), calc(var(--map-lean-y) * 1px), 0);
 }
 
 /* one marker — anchored top-center at the projected point (left/top are
