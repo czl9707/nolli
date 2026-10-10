@@ -92,10 +92,29 @@ function applyLayering(el: HTMLDivElement | null, scene: SpineScene) {
 
 /** The shape convergence spends SCROLL, not time — the original spine's
  * transition segments lerped the shape by scroll position, and that
- * property stayed: after a boundary fire the offset unwinds over this
- * much scroll past the fire, so slow scrolling morphs slowly and stopping
- * the scroll stops the morph mid-way. */
+ * property stayed: the offset unwinds across the target pane's last
+ * CONVERGE_VH of travel into its stuck position. A fire whose pane is
+ * still below the fold morphs nothing yet (the map holds the previous
+ * shape on screen), and a pane already stuck — the fullscreen anchors,
+ * the stats card at its dwell — is converged from the first frame. */
 const CONVERGE_VH = 40
+
+/** A pane's stuck-position top — the original spine's sticky-aware
+ * measure: a pane inside a sticky box lands at the box's sticky top plus
+ * its offset within the box (scroll-independent); a free pane is its own
+ * stick point. */
+function stickyTopOf(el: Element): number {
+  const r = el.getBoundingClientRect()
+  let top = r.top
+  for (let a: Element | null = el; a; a = a.parentElement) {
+    if (getComputedStyle(a).position === "sticky") {
+      const s = a.getBoundingClientRect()
+      top = parseFloat(getComputedStyle(a).top) + (top - s.top)
+      break
+    }
+  }
+  return top
+}
 export function Spine({
   scenes, camera,
 }: {
@@ -145,7 +164,7 @@ export function Spine({
   const layerRef = useRef<HTMLDivElement>(null)
   const frameRef = useRef<HTMLDivElement>(null)
   const lastRect = useRef<PxRect | null>(null)
-  const tween = useRef<{ from: PxRect; startY: number } | null>(null)
+  const tween = useRef<{ from: PxRect } | null>(null)
   const off = useRef<PxRect>({ left: 0, top: 0, width: 0, height: 0 })
   const reduced = useReducedMotion()
 
@@ -163,19 +182,26 @@ export function Spine({
       }
       // the convergence eases the SCROLL traveled since the fire, so the
       // morph's clock is the user's thumb: no scrolling, no morphing
+      // the convergence eases the target pane's remaining gap to its
+      // stuck position — the morph's clock is the pane's own travel, so
+      // it starts as the pane closes on its stick point and lands exactly
+      // when it sticks; until then the layer holds the previous shape
+      const p = pane.getBoundingClientRect()
       const tw = tween.current
       if (tw) {
-        const span = (CONVERGE_VH * window.innerHeight) / 100
-        const e = SCENE_EASE(Math.min(Math.abs(window.scrollY - tw.startY) / span, 1))
+        const t = Math.min(
+          Math.max(0, p.top - stickyTopOf(pane)) / ((CONVERGE_VH * window.innerHeight) / 100),
+          1,
+        )
+        const e = reduced ? (t <= 0 ? 1 : 0) : SCENE_EASE(1 - t)
         off.current = {
           left: tw.from.left * (1 - e),
           top: tw.from.top * (1 - e),
           width: tw.from.width * (1 - e),
           height: tw.from.height * (1 - e),
         }
-        if (e >= 1) tween.current = null
+        if (t <= 0) tween.current = null
       }
-      const p = pane.getBoundingClientRect()
       // the layer is positioned inside the sticky frame; at the spine's
       // tail the frame itself rides up (wrapper bottom above the frame's),
       // so placement is pane-rect minus the frame's live offset
@@ -199,11 +225,12 @@ export function Spine({
     }
     raf = requestAnimationFrame(frame)
     return () => cancelAnimationFrame(raf)
-  }, [timeline])
+  }, [timeline, reduced])
 
   // boundary trigger: crossing into a hold's lead window flips allegiance
-  // — camera transition fires, and the layer converges onto the new pane's
-  // live rect over the same duration/curve. Reverse crossings replay it.
+  // — camera transition fires, and the layer converges onto the new pane
+  // as the pane travels its last stretch into its stuck position (the
+  // glue loop's tween). Reverse crossings replay it.
   const fire = useCallback((id: string, boundaryVh: number, dir: 1 | -1) => {
     const seg = timeline.segments.find((s) => s.scene.id === id)
     if (!seg) return
@@ -219,11 +246,6 @@ export function Spine({
     lastFire.current = { boundaryVh, dir }
     if (cam && map) applyMapTransition(map, cam)
     const prev = lastRect.current ?? live
-    if (reduced) {
-      tween.current = null
-      off.current = { left: 0, top: 0, width: 0, height: 0 }
-      return
-    }
     tween.current = {
       from: {
         left: prev.left - live.left,
@@ -231,9 +253,8 @@ export function Spine({
         width: prev.width - live.width,
         height: prev.height - live.height,
       },
-      startY: window.scrollY,
     }
-  }, [timeline, mapRef, reduced])
+  }, [timeline, mapRef])
 
   useMotionValueEvent(scrollVh, "change", (vh) => {
     if (!shapesReady) return

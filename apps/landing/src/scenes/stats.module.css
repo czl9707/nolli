@@ -1,10 +1,10 @@
-/* Stats hold — the closer, on the page grid, in normal flow: the card
-   scrolls with the page and the spine's map layer follows its shape rect,
-   so the map leaves with the card. The hero card merges the map, the
-   architecture count and the photo deck into one 2×2 pane — the frame at
-   the map scale under the spine's map layer (the scene is not sticky, so
-   the pane joins the root z scale, city-scene pattern), everything else
-   at the text level over the map. The footer band anchors to the hold's
+/* Stats hold — the closer, on the page grid: the card sticks for the
+   hold's first viewport while the map sits converged on its shape, then
+   the stick releases and the card carries the map away. The hero card
+   merges the map, the architecture count and the photo deck into one 2×2
+   pane — the frame at the map scale under the spine's map layer (the
+   scene joins the root z scale, city-scene pattern), everything else at
+   the text level over the map. The footer band anchors to the hold's
    tail. Mobile recomposes to full rows. */
 
 .screen {
@@ -16,6 +16,15 @@
   grid-template-rows: repeat(2, 35svh);
   gap: 0;
   align-items: stretch;
+}
+
+/* the card's viewport — sticky for the hold's first viewport: the map
+   lands on the card and the pair holds still while the count-ups play;
+   past the dwell the stick releases and the card carries the map away */
+.stick {
+  position: sticky;
+  top: 0;
+  height: 100svh;
 }
 
 /* ── panes ───────────────────────────────────────────────────────────── */

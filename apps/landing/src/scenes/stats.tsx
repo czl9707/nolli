@@ -1,12 +1,12 @@
-// Stats hold on the spine — the closer, on the page grid, in normal flow
-// (no stick): the hero card merges the veiled map, the architecture count
-// and the photo deck into one 2×2 pane — the frame at the map scale, the
-// text over it; countries and architects are paper cells with badge
-// marquees; the CTA cell is one LandingButton. The hold's dwell carries
-// the count-ups; the map layer lands on the card's shape under the veil,
-// and because the card scrolls with the page, the map scrolls away with
-// it — the spine ends as the card leaves. The footer rides the hold's
-// tail band, after the map is gone.
+// Stats hold on the spine — the closer, on the page grid: the hero card
+// merges the veiled map, the architecture count and the photo deck into
+// one 2×2 pane — the frame at the map scale, the text over it; countries
+// and architects are paper cells with badge marquees; the CTA cell is one
+// LandingButton. The card sticks for the hold's first viewport — the map
+// converges onto its shape and the pair holds still while the count-ups
+// play — then the stick releases and the card carries the map away as the
+// spine ends. The footer rides the hold's tail band, after the map is
+// gone.
 import { useEffect, useRef } from "react"
 import { motion, useInView, useMotionValue, useReducedMotion, useSpring, useTransform } from "framer-motion"
 import { Badge, H2, H3, H6, Note, PaperPhoto, useIsMobile } from "@nolli/ui"
@@ -69,7 +69,8 @@ function StatsScene({ stats, photoPool, architectNames }: StatsProps) {
   return (
     <>
       <MapVeil/>
-      <Screen className={styles.screen} height="auto">
+      <div className={styles.stick}>
+        <Screen className={styles.screen} height="auto">
         {/* the hero card — map, architecture count and photo deck merged
          * into one 2×2 pane, the original top-card layout: the frame sits
          * at the map scale (one step under the spine's map layer — the
@@ -118,7 +119,8 @@ function StatsScene({ stats, photoPool, architectNames }: StatsProps) {
           </LandingButton>
         </Pane>
         <Rule col="1 / -1" style={{ gridRow: 2, alignSelf: "end" }} />
-      </Screen>
+        </Screen>
+      </div>
     </>
   )
 }
