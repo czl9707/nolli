@@ -13,7 +13,7 @@ import { SiteHeader } from "@/components/site-header"
 
 /** The morph's scroll runway between two holds — the shape lerps across it
  * as a pure function of scroll, so both directions replay the morph. */
-const TRANSITION_VH = 60
+const TRANSITION_VH = 20
 
 const transition = (id: string, fromShape: string, toShape: string): SpineScene => ({
   kind: "transition",

@@ -21,7 +21,7 @@ import { HERO_FIT_PAD } from "@/lib/constants"
 import { fitCamera } from "@/lib/camera"
 import { PhotoMarkers } from "@/components/photo-markers"
 import { AT_REST_VH, BrushReveal, useTrail, useTrailArchs, type MarkRegistry } from "./hero-reveal"
-import { Pane, Rule, Screen } from "./page-layout"
+import { Pane, Screen } from "./page-layout"
 import styles from "./hero.module.css"
 
 export const heroHold = (data: LandingData): HoldScene => ({
@@ -97,7 +97,6 @@ function HeroScene({ data }: { data: LandingData }) {
             scale={scale}
             city={cityMeta(city)}
           />
-          <Rule full className={styles.closingRule}/>
         </Screen>
       </section>
     </>

@@ -67,11 +67,6 @@
   gap: var(--spacing-paragraph);
 }
 
-.closingRule {
-  grid-row: 2;
-  height: 1px;
-}
-
 .statementText {
   font-size: clamp(1.5rem, 2.5vw, 2.25rem);
   font-style: italic;

@@ -9,7 +9,7 @@
 
 .screen {
   box-sizing: border-box;
-  padding-top: 10svh;
+  padding-top: calc(var(--size-header-top) + var(--size-header-height) + 10svh);
   grid-template-areas:
     "hero hero . ctry"
     "hero hero dsg cta";
@@ -295,7 +295,6 @@
       "ctry dsg"
       "cta cta";
     grid-template-rows: 70svh auto auto;
-    margin-top: calc(var(--size-header-top) + var(--size-header-height));
     margin-bottom: var(--spacing-group);
   }
 

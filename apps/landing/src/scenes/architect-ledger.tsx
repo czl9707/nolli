@@ -1,6 +1,6 @@
 // Architect ledger on the map background. The map is the spine's
-// fullscreen layer at world scale behind the whole hold, a static paper
-// veil dims it end to end, and the vellum dossier sits bottom-right. The
+// fullscreen layer at world scale behind the whole hold, veiled by the
+// map component itself, and the vellum dossier sits bottom-right. The
 // scroll itself pages the ledger — one architect per step: the architect's
 // works ride up with the scroll at scroll speed (glued below their pins,
 // no fade) and stop dead at their true coordinates when the architect
@@ -20,7 +20,7 @@ import { scrollToY } from "@/lib/scroll-to"
 import { MarkerPhoto } from "@/components/photo-markers"
 import markerStyles from "@/components/photo-markers.module.css"
 import { RollText } from "@/components/roll-text"
-import { Pane, Rule, Screen } from "./page-layout"
+import { Pane, Screen } from "./page-layout"
 import cityStyles from "./city-ledger.module.css"
 import styles from "./architect-ledger.module.css"
 
@@ -30,9 +30,6 @@ const STEP_VH = 40
 /** Quiet lead before the first step, so the hold settles before the
  * first hand-off. */
 const LEAD_VH = 30
-
-/** The passed architects' brightness. */
-const DIM = 0.35
 
 export const architectHold = (data: LandingData): HoldScene => {
   const n = data.architectLedger.length
@@ -75,7 +72,6 @@ function ArchitectLedger({ entries }: { entries: ArchEntry[] }) {
     <>
       <div aria-hidden data-spine-shape="architect" className={styles.mapAnchor} />
       <section className={styles.architect}>
-        <div aria-hidden className={styles.veil} />
         <LedgerMarkers entries={entries} idx={idx} local={local} on={ownsMap} />
         <Screen className={styles.screen}>
           <Pane className={styles.ledgerPane} blurred>
@@ -87,7 +83,6 @@ function ArchitectLedger({ entries }: { entries: ArchEntry[] }) {
               <WorksList name={entry?.name ?? ""} works={entry?.works ?? []} />
             </div>
           </Pane>
-          <Rule full className={styles.closingRule} />
         </Screen>
       </section>
     </>

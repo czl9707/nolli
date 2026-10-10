@@ -91,11 +91,6 @@
   min-height: 0;
 }
 
-.closingRule {
-  grid-row: 2;
-  height: 1px;
-}
-
 .statementText {
   /* sized to live inside one column */
   font-size: clamp(1.15rem, 1.8vw, 1.6rem);

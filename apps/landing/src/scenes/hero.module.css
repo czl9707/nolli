@@ -33,14 +33,6 @@
   grid-template-rows: minmax(0, 1fr) auto;
 }
 
-/* closing rule closes the screen in its own hairline row: the panes fill
-   the flexible row above it, and the 1px row pulls the rule's line (drawn
-   at the element top) one pixel inside the bottom edge */
-.closingRule {
-  grid-row: 2;
-  height: 1px;
-}
-
 .ledePane {
   display: flex;
   flex-direction: column;
@@ -190,11 +182,6 @@
 
   .ledePane {
     grid-row: 2;
-  }
-
-  /* the rule closes under the lede row */
-  .closingRule {
-    grid-row: 3;
   }
 
   .ledeColumn {

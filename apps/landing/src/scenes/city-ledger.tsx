@@ -1,8 +1,8 @@
 // City ledger on the map background. The map is the spine's fullscreen
-// layer behind the whole hold; the scene lays content on it — a static
-// paper veil dims the map end to end, the photo markers sit above the
-// veil (every arch, always — no hover selection), and the dossier pane
-// takes the first column. A selection (cube pick or auto-advance) writes
+// layer behind the whole hold, veiled by the map component itself; the
+// scene lays content on it — the photo markers sit above the veil (every
+// arch, always — no hover selection), and the dossier pane takes the
+// first column. A selection (cube pick or auto-advance) writes
 // the shared selected city — the hero sheet reads the same value — and
 // flies the map to the new city's fit, focus pushed right of the column.
 // Cities advance every ADVANCE_MS; hover pauses, click jumps.
@@ -22,7 +22,7 @@ import { useLinger } from "@/lib/use-linger"
 import { MarkerPhoto } from "@/components/photo-markers"
 import markerStyles from "@/components/photo-markers.module.css"
 import { RollText } from "@/components/roll-text"
-import { Pane, Rule, Screen } from "./page-layout"
+import { Pane, Screen } from "./page-layout"
 import styles from "./city-ledger.module.css"
 
 /** Hold height in scene vh — 100 of sticky scene + 40 of stay-still
@@ -83,7 +83,6 @@ function CityLedger({ data }: { data: LandingData }) {
     <>
       <div aria-hidden data-spine-shape="city" className={styles.mapAnchor} />
       <section className={styles.city}>
-        <div aria-hidden className={styles.veil} />
         <CityMarkers archs={archs} on={ownsMap} />
         <Screen className={styles.screen}>
           <Pane className={styles.dossierPane} blurred>
@@ -92,7 +91,6 @@ function CityLedger({ data }: { data: LandingData }) {
               <CityDots selected={city} onSelect={onSelect} auto={ownsMap} />
             </div>
           </Pane>
-          <Rule full className={styles.closingRule} />
         </Screen>
       </section>
     </>
