@@ -1,9 +1,9 @@
 /* City ledger on the map background — a sticky full-viewport hold over
-   the spine's fullscreen layer: a static paper veil dims the map end to
-   end (same wash as the hero's brush veil, so the two holds read as one
-   covered run), the photo markers sit above the veil inside the section,
-   and the dossier pane takes the first column. Mobile keeps the same
-   tree full-width. */
+   the spine's fullscreen layer (the map component's own veil dims it end
+   to end, the same wash as the hero's brush veil, so the holds read as
+   one covered run): the photo markers sit above the veil inside the
+   section, and the dossier pane takes the first column. Mobile keeps the
+   same tree full-width. */
 
 /* the map's shape anchor — fixed fullscreen so the spine's glue always
    reads a viewport rect: the map never moves; the section scrolls over it
@@ -20,13 +20,6 @@
   height: 100svh;
   box-sizing: border-box;
   pointer-events: auto;
-}
-
-.veil {
-  position: absolute;
-  inset: 0;
-  background: rgb(var(--color-primary-background) / 0.92);
-  pointer-events: none;
 }
 
 /* the marker overlay is fixed over the whole viewport (a child of the

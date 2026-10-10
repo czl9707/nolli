@@ -22,17 +22,18 @@ import { fitCamera } from "@/lib/camera"
 import { PhotoMarkers } from "@/components/photo-markers"
 import { AT_REST_VH, BrushReveal, useTrail, useTrailArchs, type MarkRegistry } from "./hero-reveal"
 import { Pane, Rule, Screen } from "./page-layout"
+import { SCREEN_SHAPE } from "@/spine/timeline"
 import styles from "./hero.module.css"
 
 export const heroHold = (data: LandingData): HoldScene => ({
+  kind: "hold",
   id: "hero",
-  shape: "[data-spine-shape='hero']",
+  shape: SCREEN_SHAPE,
   heightVh: SCENE_VH,
   camera: () => {
     const archs = data.cityLedger[selectedCity()]
     return archs?.length ? heroCamera(archs) : null
   },
-  rulesOverMap: true,
   Component: () => <HeroScene data={data} />,
 })
 
@@ -80,7 +81,7 @@ function HeroScene({ data }: { data: LandingData }) {
 
   return (
     <>
-      <div aria-hidden data-spine-shape="hero" className={styles.mapAnchor} />
+      <div aria-hidden data-spine-shape="screen" className={styles.mapAnchor} />
       <section
         data-boot-phase={bootPhase}
         className={styles.hero}

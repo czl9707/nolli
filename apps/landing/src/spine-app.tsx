@@ -4,12 +4,24 @@ import { registerLenis } from "@/lib/scroll-to"
 import { landingData } from "@/lib/landing-data"
 import { useBootPhase } from "@/lib/boot"
 import { Spine } from "@/spine/spine"
-import type { SpineScene } from "@/spine/timeline"
+import { SCREEN_SHAPE, type SpineScene, type TransitionScene } from "@/spine/timeline"
 import { heroCamera, heroHold } from "@/scenes/hero"
 import { cityHold } from "@/scenes/city-ledger"
 import { architectHold } from "@/scenes/architect-ledger"
 import { statsHold } from "@/scenes/stats"
 import { SiteHeader } from "@/components/site-header"
+
+/** The ledger → stats morph: the map grows from the stats card's shape
+ * back to fullscreen across this span, scroll-driven, both directions.
+ * One viewport tall — exactly the card's approach travel, so the morph
+ * lands as the card parks. */
+const architectStatsMorph: TransitionScene = {
+  kind: "transition",
+  id: "architect-stats",
+  fromShape: SCREEN_SHAPE,
+  toShape: "[data-spine-shape='stats']",
+  heightVh: 100,
+}
 
 export function SpineApp() {
   const scenes = useMemo<SpineScene[]>(
@@ -17,6 +29,7 @@ export function SpineApp() {
       heroHold(landingData),
       cityHold(landingData),
       architectHold(landingData),
+      architectStatsMorph,
       statsHold(landingData),
     ],
     [],

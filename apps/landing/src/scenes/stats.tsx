@@ -35,12 +35,10 @@ const COUNTRY_BADGES = [
 ]
 
 export const statsHold = (data: LandingData): HoldScene => ({
+  kind: "hold",
   id: SCENE_ID,
   shape: "[data-spine-shape='stats']",
   heightVh: SCENE_VH,
-  // no lead: the handoff fires exactly at the scene boundary — the
-  // architect band's pin would still be mid-pass under the default 45vh
-  leadVh: 0,
   // same world view the architect hold parks on — this scene only verifies it
   camera: worldCamera,
   Component: () => (

@@ -43,7 +43,6 @@ body {
 
   --z-map-behind: -100;
   --z-rules: 10;
-  --z-map-above: 20;
 
   @media (--smaller-than-sm) {
     --size-page-padding: var(--spacing-paragraph);

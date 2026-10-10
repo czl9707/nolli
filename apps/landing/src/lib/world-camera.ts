@@ -7,6 +7,6 @@ import { isMobile } from "@nolli/ui"
  *  Lives apart from constants.ts so the bake script can import the decks
  *  without pulling @nolli/ui's css through tsx. */
 export function worldCamera(): SceneCamera {
-  const center = [12, 25] as [number, number]
+  const center = [12, 15] as [number, number]
   return isMobile() ? { center, zoom: -1.15 } : { center, zoom: 1.05 }
 }
