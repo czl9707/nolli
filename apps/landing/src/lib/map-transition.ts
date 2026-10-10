@@ -1,11 +1,6 @@
 import type MapLibreGL from "maplibre-gl"
 import { sceneFlightDurationMs, type SceneCamera } from "@nolli/map"
 
-/** The spine's shape-morph window — exported for the spine's placement
- * tween, which shares its timing. Every scene declares the same
- * fullscreen shape, so the tween carries no offset. */
-export const SNAPSHOT_SHAPE_MS = 500
-
 /** Match tolerance for "the view is already there" — a fire whose target
  * equals the live view (e.g. the reverse crossing back into a hold whose
  * camera never moved) has nothing to fly, so it skips the move. */

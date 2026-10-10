@@ -8,7 +8,7 @@ import {
 import { SCENE_EASE, type MapRef, type SceneCamera } from "@nolli/map"
 import { useIsMobile } from "@nolli/ui"
 import { LandingMap } from "@/components/landing-map"
-import { applyMapTransition, SNAPSHOT_SHAPE_MS } from "@/lib/map-transition"
+import { applyMapTransition } from "@/lib/map-transition"
 import { phaseAtLeast, useBoot, useBootPhase } from "@/lib/boot"
 import { buildTimeline, crossedBoundary, targetHoldAt, REARM_VH, type PxRect, type SpineScene } from "./timeline"
 import { Hairlines } from "@/scenes/page-layout"
@@ -87,9 +87,15 @@ function applyLayering(el: HTMLDivElement | null, scene: SpineScene) {
 /** Landing spine. One map layer GLUED to the active scene's shape pane —
  * stuck while the pane sticks, riding up with it when the pane scrolls
  * away. Crossing a hold's trigger boundary flips allegiance: the layer
- * converges onto the next pane (offset tween on the camera's duration and
- * curve) while its camera transitions. Hold scenes mount in flow wrappers
- * and own their camera + content. */
+ * converges onto the next pane while its camera transitions. Hold scenes
+ * mount in flow wrappers and own their camera + content. */
+
+/** The shape convergence spends SCROLL, not time — the original spine's
+ * transition segments lerped the shape by scroll position, and that
+ * property stayed: after a boundary fire the offset unwinds over this
+ * much scroll past the fire, so slow scrolling morphs slowly and stopping
+ * the scroll stops the morph mid-way. */
+const CONVERGE_VH = 40
 export function Spine({
   scenes, camera,
 }: {
@@ -128,9 +134,10 @@ export function Spine({
   // glue + fire tween, one rAF loop writing the layer's style directly:
   // every frame the layer is placed at the active pane's LIVE rect plus an
   // offset; a boundary fire sets the offset (current layer rect − the new
-  // pane's live rect) and eases it to zero over the camera's duration, so
-  // the layer converges onto a moving target. No motion values — the
-  // layer element is styled by hand here and only here.
+  // pane's live rect) and it unwinds to zero over the scroll that follows
+  // the fire, so the layer converges onto a moving target at the pace the
+  // page moves. No motion values — the layer element is styled by hand
+  // here and only here.
   const appliedId = useRef<string | null>(null)
   const [ownerId, setOwnerId] = useState<string | null>(null)
   const appliedCam = useRef(false)
@@ -138,13 +145,13 @@ export function Spine({
   const layerRef = useRef<HTMLDivElement>(null)
   const frameRef = useRef<HTMLDivElement>(null)
   const lastRect = useRef<PxRect | null>(null)
-  const tween = useRef<{ from: PxRect; start: number; durationMs: number } | null>(null)
+  const tween = useRef<{ from: PxRect; startY: number } | null>(null)
   const off = useRef<PxRect>({ left: 0, top: 0, width: 0, height: 0 })
   const reduced = useReducedMotion()
 
   useEffect(() => {
     let raf = 0
-    const frame = (t: number) => {
+    const frame = () => {
       const el = layerRef.current
       const seg = appliedId.current
         ? timeline.segments.find((s) => s.scene.id === appliedId.current)
@@ -154,16 +161,19 @@ export function Spine({
         raf = requestAnimationFrame(frame)
         return
       }
+      // the convergence eases the SCROLL traveled since the fire, so the
+      // morph's clock is the user's thumb: no scrolling, no morphing
       const tw = tween.current
       if (tw) {
-        const e = SCENE_EASE(Math.min((t - tw.start) / tw.durationMs, 1))
+        const span = (CONVERGE_VH * window.innerHeight) / 100
+        const e = SCENE_EASE(Math.min(Math.abs(window.scrollY - tw.startY) / span, 1))
         off.current = {
           left: tw.from.left * (1 - e),
           top: tw.from.top * (1 - e),
           width: tw.from.width * (1 - e),
           height: tw.from.height * (1 - e),
         }
-        if (t - tw.start >= tw.durationMs) tween.current = null
+        if (e >= 1) tween.current = null
       }
       const p = pane.getBoundingClientRect()
       // the layer is positioned inside the sticky frame; at the spine's
@@ -221,8 +231,7 @@ export function Spine({
         width: prev.width - live.width,
         height: prev.height - live.height,
       },
-      start: performance.now(),
-      durationMs: SNAPSHOT_SHAPE_MS,
+      startY: window.scrollY,
     }
   }, [timeline, mapRef, reduced])
 
