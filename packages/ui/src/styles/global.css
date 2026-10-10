@@ -4,8 +4,8 @@
 @import "@fontsource/kalam/300.css";
 @import "@fontsource/kalam/400.css";
 @import "@fontsource/kalam/700.css";
-@import "@fontsource/instrument-serif/400.css";
-@import "@fontsource/instrument-serif/400-italic.css";
+@import "@fontsource/eb-garamond/400.css";
+@import "@fontsource/eb-garamond/400-italic.css";
 
 a {
     color: inherit;
@@ -69,7 +69,7 @@ body {
 
     --font-playful: "Kalam", cursive;
     --font-sans: "Lato", sans-serif;
-    --font-serif: "Instrument Serif", Georgia, serif;
+    --font-serif: "EB Garamond", Georgia, serif;
 
     --typography-body1-fontFamily: var(--font-sans);
     --typography-body1-fontWeight: 400;
