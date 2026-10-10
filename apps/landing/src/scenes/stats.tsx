@@ -71,11 +71,12 @@ function StatsScene({ stats, photoPool, architectNames }: StatsProps) {
         <div className={styles.stick}>
           <Screen className={styles.screen} height="auto">
         {/* the hero card — map, architecture count and photo deck merged
-         * into one 2×2 pane, the original top-card layout: the frame sits
-         * at the map scale (one step under the spine's map layer — the
-         * scene is not sticky, so the pane joins the root z scale like the
-         * city scene's), and everything else lives at the text level in a
-         * twin pane over the map */}
+         * into one 2×2 pane, the original top-card layout: the frame is a
+         * paper ring with a mask window (the sticky subtree paints
+         * atomically above the spine's map frame, so the map behind shows
+         * through the window instead of the pane diving under it), and
+         * everything else lives at the text level in a twin pane over the
+         * map */}
         <Pane className={styles.mapPane} style={{ gridArea: "hero" }}>
           <div className={styles.shape} aria-hidden data-spine-shape="stats" />
         </Pane>

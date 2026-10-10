@@ -2,10 +2,10 @@
    hold's first viewport while the map sits converged on its shape, then
    releases and scrolls up away as the footer band scrolls in. The hero
    card merges the map, the architecture count and the photo deck into
-   one 2×2 pane — the frame at the map scale under the spine's map layer
-   (the scene joins the root z scale, city-scene pattern), everything
-   else at the text level over the map. The footer band anchors to the
-   hold's tail. Mobile recomposes to full rows. */
+   one 2×2 pane — the frame is a paper ring with a mask window at the
+   text level; the spine's map layer behind shows through the window,
+   landed on the shape, under the text and the photo deck. The footer
+   band anchors to the hold's tail. Mobile recomposes to full rows. */
 
 .screen {
   box-sizing: border-box;
@@ -56,15 +56,20 @@
 
 /* ── the hero card — map frame under, text over ──────────────────────── */
 
-/* the frame — the whole 2×2 card at the map scale, one step under the
-   spine's map layer; the map lands on the shape and covers the ground */
+/* the frame — the whole 2×2 card at the map scale, at the text level
+   (the sticky subtree paints atomically above the spine's map frame, so
+   the ground cannot dive under it). Instead it wears a mask window: a
+   paper ring with the center cut out, and the spine's map layer shows
+   through from behind, landed on the shape. */
 .mapPane {
   position: relative;
+  padding: 0.5rem;
   background: rgb(var(--color-paper-background));
-  z-index: calc(var(--z-map-behind) - 2);
-  /* hack to show the border... */
-  border-right: var(--border);
-  border-color: rgb(var(--color-paper-foreground)); 
+  border: var(--border);
+  border-color: rgb(var(--color-paper-foreground));
+  mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+  mask-clip: border-box, content-box;
+  mask-composite: exclude;
 }
 
 .mapPane::before {
@@ -76,12 +81,11 @@
   pointer-events: none;
 }
 
-/* shape anchor — empty in the DOM; the spine's map layer lands on its
-   rect (filling it exactly) over the secondary ground */
+/* shape anchor — geometric only: the spine's map layer lands on its
+   rect (filling it exactly) and shows through the mask window */
 .shape {
   position: absolute;
-  inset: .5rem;
-  background-color: rgb(var(--color-secondary-background));
+  inset: 0.5rem;
 }
 
 /* the text level — twin pane over the map, the original top-card layout:
