@@ -7,9 +7,9 @@ const hold = (id: string, heightVh = 100): HoldScene => ({
   id, shape: `[data-spine-shape='${id}']`, heightVh, camera: cam,
   Component: () => null,
 })
-const transition = (id: string, from: string, to: string, heightVh = 60): SpineScene => ({
+const transition = (id: string, from: string, to: string, heightVh = 60, overrunVh?: number): SpineScene => ({
   kind: "transition", id, fromShape: `[data-spine-shape='${from}']`,
-  toShape: `[data-spine-shape='${to}']`, heightVh,
+  toShape: `[data-spine-shape='${to}']`, heightVh, overrunVh,
 })
 
 const rect = (n: number): Record<string, { left: number; top: number; width: number; height: number }> => ({
@@ -45,6 +45,25 @@ describe("shapeAt", () => {
   it("clamps past the segment ends", () => {
     expect(shapeAt(t, -50, rect(0))).toEqual(rect(0)["[data-spine-shape='hero']"])
     expect(shapeAt(t, 9999, rect(0))).toEqual(rect(0)["[data-spine-shape='city']"])
+  })
+})
+
+describe("shapeAt with an overrun tail", () => {
+  // band 60 + tail 40 — the morph spans 100vh, ending inside the city hold
+  const t = buildTimeline([hold("hero", 200), transition("t", "hero", "city", 60, 40), hold("city", 200)])
+  const at = (v: number) => shapeAt(t, v, rect(0))
+  it("lerps at one rate across band and tail", () => {
+    expect(at(250)).toEqual({ left: 5, top: 5, width: 75, height: 75 })
+  })
+  it("the tail keeps morphing inside the next hold's domain", () => {
+    expect(at(261)).not.toEqual(rect(0)["[data-spine-shape='city']"])
+    expect(at(280)).toEqual({ left: 8, top: 8, width: 60, height: 60 })
+    expect(at(300)).toEqual(rect(0)["[data-spine-shape='city']"])
+    expect(at(400)).toEqual(rect(0)["[data-spine-shape='city']"])
+  })
+  it("without a tail the hold is constant from its start", () => {
+    const plain = buildTimeline([hold("hero", 200), transition("t", "hero", "city", 60), hold("city", 200)])
+    expect(shapeAt(plain, 261, rect(0))).toEqual(rect(0)["[data-spine-shape='city']"])
   })
 })
 

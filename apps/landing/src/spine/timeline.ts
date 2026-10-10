@@ -28,6 +28,9 @@ export type TransitionScene = {
   /** the scroll runway the morph plays over — the shape is a pure function
    * of scroll across it, so both directions replay it */
   heightVh: number
+  /** scroll vh of morph tail that plays over the following hold's opening —
+   * the morph ends late, inside the next scene's domain */
+  overrunVh?: number
   /** visual overlay for the morph; the shape interpolation is the spine's */
   Component?: () => ReactNode
 }
@@ -71,26 +74,40 @@ export function buildTimeline(scenes: SpineScene[]): SpineTimeline {
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 
+const lerpRect = (a: PxRect, b: PxRect, t: number): PxRect => ({
+  left: lerp(a.left, b.left, t),
+  top: lerp(a.top, b.top, t),
+  width: lerp(a.width, b.width, t),
+  height: lerp(a.height, b.height, t),
+})
+
 /** Map rect at a scroll position. Holds are constant; transitions lerp
- * linearly between the two measured rects. */
+ * linearly between the two measured rects, at one rate across the band
+ * and any overrun tail into the next hold. */
 export function shapeAt(tl: SpineTimeline, vh: number, rects: Record<ShapeRef, PxRect>): PxRect {
   const segs = tl.segments
   let seg = segs[0]
-  for (const s of segs) {
-    if (vh >= s.startVh) seg = s
-    else break
+  let idx = 0
+  for (let k = 1; k < segs.length; k++) {
+    if (vh >= segs[k].startVh) {
+      seg = segs[k]
+      idx = k
+    } else break
   }
   const scene = seg.scene
-  if (scene.kind === "hold") return rects[scene.shape]
-  const from = rects[scene.fromShape]
-  const to = rects[scene.toShape]
-  const t = Math.min(Math.max((vh - seg.startVh) / seg.heightVh, 0), 1)
-  return {
-    left: lerp(from.left, to.left, t),
-    top: lerp(from.top, to.top, t),
-    width: lerp(from.width, to.width, t),
-    height: lerp(from.height, to.height, t),
+  if (scene.kind === "transition") {
+    const span = seg.heightVh + (scene.overrunVh ?? 0)
+    const t = Math.min(Math.max((vh - seg.startVh) / span, 0), 1)
+    return lerpRect(rects[scene.fromShape], rects[scene.toShape], t)
   }
+  // a preceding transition's tail keeps morphing over this hold's opening
+  const prev = idx > 0 ? segs[idx - 1] : null
+  if (prev?.scene.kind === "transition" && prev.scene.overrunVh) {
+    const span = prev.heightVh + prev.scene.overrunVh
+    if (vh < prev.startVh + span)
+      return lerpRect(rects[prev.scene.fromShape], rects[prev.scene.toShape], (vh - prev.startVh) / span)
+  }
+  return rects[scene.shape]
 }
 
 /** The hold the spine's allegiance belongs to at a scroll position —
