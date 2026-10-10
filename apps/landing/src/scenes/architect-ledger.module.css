@@ -74,16 +74,22 @@
   margin-bottom: var(--spacing-paragraph);
 }
 
-/* fills the vellum pane (frost + grass from the Pane's blurred recipe);
-   opts back into pointer events (the spine's scene wrappers are none) */
+/* fills the vellum pane (frost + grass from the Pane's blurred recipe)
+   as a strict split — statement in one page column, works list in the
+   next, the cube row across both at the foot; opts back into pointer
+   events (the spine's scene wrappers are none) */
 .ledger {
   box-sizing: border-box;
   flex: 1 1 auto;
   min-height: 0;
   padding: var(--spacing-paragraph);
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-component);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--spacing-paragraph);
+}
+
+.ledgerFoot {
+  grid-column: 1 / -1;
 }
 
 .closingRule {
@@ -92,7 +98,7 @@
 }
 
 .statementText {
-  font-size: clamp(1.5rem, 2.5vw, 2.25rem);
+  font-size: clamp(1.2rem, 1.8vw, 1.6rem);
   font-style: italic;
 }
 
@@ -104,7 +110,6 @@
 
 .archList {
   list-style: none;
-  padding-top: var(--spacing-component);
   margin: 0;
   overflow: hidden;
   min-height: 0;
@@ -113,8 +118,8 @@
 .archList li {
   display: flex;
   align-items: baseline;
-  gap: var(--spacing-paragraph);
-  line-height: 2;
+  gap: 0.8em;
+  line-height: 1.7;
 }
 
 .archNum {
@@ -134,5 +139,9 @@
 @media (--smaller-than-sm) {
   .ledgerPane {
     grid-column: 1 / -1;
+  }
+
+  .ledger {
+    grid-template-columns: 1fr;
   }
 }
