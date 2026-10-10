@@ -208,20 +208,17 @@ const rowDelay = (slug: string) => {
 }
 
 /** Dossier copy — the left column, kept short: it shares the column
- * with the cube row. The architect's name IS the headline — standalone,
- * it can't wrap the sentence under it; the architect rolls its faces as
- * the scroll pages the ledger. */
+ * with the cube row. The name leads so the first line never wraps, and
+ * it rolls its faces as the scroll pages the ledger. */
 function Statement({ name }: { name: string }) {
   return (
-    <div className={styles.statement}>
-      <H2 className={styles.architectName}>
-        <RollText text={name} />
-      </H2>
-      <Body2 className={styles.statementLine}>You can name the works by the architect.</Body2>
-      <Body2 className={styles.statementLine}>
-        <span className={styles.accent}>Nolli</span> pins them on the map.
-      </Body2>
-    </div>
+    <H2 className={styles.statementText}>
+      <RollText text={name} />,
+      <br />
+      you can name the works.
+      <br />
+      <span className={styles.accent}>Nolli</span> pins them on the map.
+    </H2>
   )
 }
 
