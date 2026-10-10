@@ -19,11 +19,10 @@
 }
 
 /* the card's viewport — the sticky's container: one viewport of dwell,
-   then a 50svh runway past it; at the runway's end the stick releases and
-   the card scrolls up away as a normal element, its map riding with it,
-   as the footer band scrolls in */
+   then a 50svh runway for the count-ups and the reading; at its end the
+   hold ends and the card leaves with the spine's map frame */
 .stickWrap {
-  height: 150svh;
+  height: 120svh;
 }
 
 /* the card's viewport — sticky for the hold's first viewport: the map
@@ -184,21 +183,6 @@
   pointer-events: auto;
   height: 3.5rem;
   justify-content: center;
-}
-
-/* ── the footer band ─────────────────────────────────────────────────── */
-
-/* absolute at the hold's tail so the scene wrapper's 220svh box carries
-   it; opts back into pointer events (the spine's scene-flow container is
-   pointer-transparent); the footer's own 40svh margin-top is the strip
-   where the card and its map are still leaving above the footer ground */
-.footerSlot {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 2;
-  pointer-events: auto;
 }
 
 /* ── badge marquees ──────────────────────────────────────────────────── */

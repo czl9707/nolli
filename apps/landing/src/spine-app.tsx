@@ -9,11 +9,15 @@ import { heroCamera, heroHold } from "@/scenes/hero"
 import { cityHold } from "@/scenes/city-ledger"
 import { architectHold } from "@/scenes/architect-ledger"
 import { statsHold } from "@/scenes/stats"
+import { Footer } from "@/scenes/footer"
 import { SiteHeader } from "@/components/site-header"
 
 /** The morph's scroll runway between two holds — the shape lerps across it
- * as a pure function of scroll, so both directions replay the morph. */
-const TRANSITION_VH = 20
+ * as a pure function of scroll, so both directions replay the morph. The
+ * tail rides 20vh into the next hold's opening, so dense content never
+ * meets a morph that is already over. */
+const TRANSITION_VH = 30
+const TRANSITION_TAIL_VH = 30
 
 const transition = (id: string, fromShape: string, toShape: string): SpineScene => ({
   kind: "transition",
@@ -21,6 +25,7 @@ const transition = (id: string, fromShape: string, toShape: string): SpineScene 
   fromShape,
   toShape,
   heightVh: TRANSITION_VH,
+  overrunVh: TRANSITION_TAIL_VH,
 })
 
 export function SpineApp() {
@@ -50,6 +55,12 @@ export function SpineApp() {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
     const lenis = new Lenis({ lerp: 0.1 })
     registerLenis(lenis)
+    // html/body/#root are height:100%, so Lenis's own autoResize observer
+    // never sees the page grow and its scroll limit goes stale (wheel dies
+    // short of the real bottom; the native scrollbar doesn't). main is in
+    // normal flow, so its box tracks the page — re-measure on its resize.
+    const ro = new ResizeObserver(() => lenis.resize())
+    ro.observe(document.querySelector("main") ?? document.body)
     let raf = 0
     const loop = (t: number) => {
       lenis.raf(t)
@@ -58,6 +69,7 @@ export function SpineApp() {
     raf = requestAnimationFrame(loop)
     return () => {
       cancelAnimationFrame(raf)
+      ro.disconnect()
       registerLenis(null)
       lenis.destroy()
     }
@@ -75,6 +87,10 @@ export function SpineApp() {
         <SiteHeader />
       </div>
       <Spine scenes={scenes} camera={bootCamera} />
+      {/* after the spine, in normal flow: the map frame stays sticky to the
+          wrapper's end, so the footer ground covers it exactly as it
+          departs — no overlap with the scenes above */}
+      <Footer data={landingData} />
     </main>
   )
 }
