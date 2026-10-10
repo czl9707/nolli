@@ -59,7 +59,6 @@ export const cityHold = (data: LandingData): HoldScene => ({
   shape: "[data-spine-shape='city']",
   heightVh: SCENE_VH,
   camera: () => cityCamera(data),
-  rulesOverMap: true,
   Component: () => <CityLedger data={data} />,
 })
 

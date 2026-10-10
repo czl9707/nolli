@@ -76,16 +76,6 @@ function resolveCamera(scene: SpineScene): SceneCamera | null {
   return typeof scene.camera === "function" ? scene.camera() : scene.camera
 }
 
-/** Rules-vs-map layering per hold: the sticky frame jumps z at the fire —
- * a clean cut mid transition, no tween. The frame (map layer + portal)
- * sits at --z-map-behind (0, under the items by DOM order — a negative-z
- * frame blanks the map's WebGL canvas) or at --z-map-above over the rules
- * and items; the site header (z20) stays above either. */
-function applyLayering(el: HTMLDivElement | null, scene: SpineScene) {
-  const behind = scene.kind !== "hold" || scene.rulesOverMap !== false
-  if (el) el.style.zIndex = behind ? "var(--z-map-behind)" : "var(--z-map-above)"
-}
-
 /** Landing spine. One map layer whose rect is a PURE FUNCTION of scroll —
  * the original spine's shape segments: holds hold their measured shape,
  * transition scenes lerp between the two shapes across their runway, so
@@ -93,8 +83,8 @@ function applyLayering(el: HTMLDivElement | null, scene: SpineScene) {
  * Shapes are measured live each frame, clamped to their stuck position:
  * a pane still travelling toward its stick point is measured AT it (the
  * map waits there while the scene approaches) and rides for real once
- * past it. Crossing a transition's middle flips allegiance — camera,
- * layering and scene-owned map content follow. */
+ * past it. Crossing a transition's middle flips allegiance — camera and
+ * scene-owned map content follow. */
 
 /** A shape's measured rect, clamped to its stuck position — the
  * original spine's sticky-aware measure turned into a clamp: a pane
@@ -207,13 +197,12 @@ export function Spine({
   }, [timeline, shapeRefs, scrollVh])
 
   // allegiance: crossing a transition's middle hands the map to the next
-  // hold — its camera transitions and its layering applies. The shape
-  // itself never fires anything; scroll alone drives it, both ways.
+  // hold — its camera transitions. The shape itself never fires anything;
+  // scroll alone drives it, both ways.
   const fire = useCallback((id: string) => {
     const seg = timeline.segments.find((s) => s.scene.id === id)
     if (!seg) return
     const cam = resolveCamera(seg.scene)
-    applyLayering(frameRef.current, seg.scene)
     appliedId.current = id
     setOwnerId(id)
     appliedCam.current = !!cam
@@ -245,8 +234,6 @@ export function Spine({
     const id = ownerHoldAt(timeline, scrollVh.get())
     appliedId.current = id
     appliedCam.current = id === ownerHoldAt(timeline, 0)
-    const seg = timeline.segments.find((s) => s.scene.id === id)
-    if (seg) applyLayering(frameRef.current, seg.scene)
     setOwnerId(id)
   }, [shapesReady, timeline, scrollVh])
 

@@ -33,7 +33,6 @@ export const heroHold = (data: LandingData): HoldScene => ({
     const archs = data.cityLedger[selectedCity()]
     return archs?.length ? heroCamera(archs) : null
   },
-  rulesOverMap: true,
   Component: () => <HeroScene data={data} />,
 })
 

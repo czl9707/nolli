@@ -17,9 +17,6 @@ export type HoldScene = {
   /** camera this hold settles into; a function computes at fire time
    * (measured panes) and a null return defers to the next trigger */
   camera: SceneCamera | (() => SceneCamera | null)
-  /** hairlines over the map (default) or the map over the hairlines —
-   * applied as a z-index jump on the map layer when this hold takes over */
-  rulesOverMap?: boolean
   Component: () => ReactNode
 }
 

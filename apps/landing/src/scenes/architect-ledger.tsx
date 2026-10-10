@@ -42,7 +42,6 @@ export const architectHold = (data: LandingData): HoldScene => {
     shape: "[data-spine-shape='architect']",
     heightVh: 100 + LEAD_VH + (n - 1) * STEP_VH,
     camera: worldCamera,
-    rulesOverMap: true,
     Component: () => <ArchitectLedger entries={data.architectLedger} />,
   }
 }
