@@ -75,9 +75,9 @@
 }
 
 /* fills the vellum pane (frost + grass from the Pane's blurred recipe)
-   as a strict two-column split — statement in the first page column,
-   works list in the second, the cube row across the foot; opts back into
-   pointer events (the spine's scene wrappers are none) */
+   as a strict one-column-plus-one-column split: statement + cubes left,
+   works list right; opts back into pointer events (the spine's scene
+   wrappers are none) */
 .ledger {
   box-sizing: border-box;
   flex: 1 1 auto;
@@ -85,13 +85,17 @@
   padding: var(--spacing-paragraph);
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr) auto;
   gap: var(--spacing-paragraph);
+  align-items: start;
 }
 
-.ledgerFoot {
-  grid-column: 1 / -1;
-  grid-row: 2;
+/* the left column — statement over the cube row (the indicator's own
+   margin-top auto parks it at the foot) */
+.ledgerMain {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-component);
+  min-height: 0;
 }
 
 .closingRule {
@@ -100,6 +104,7 @@
 }
 
 .statementText {
+  /* sized to live inside one column */
   font-size: clamp(1.15rem, 1.8vw, 1.6rem);
   font-style: italic;
 }
@@ -112,7 +117,6 @@
 
 .archList {
   list-style: none;
-  padding-top: var(--spacing-component);
   margin: 0;
   overflow: hidden;
   min-height: 0;
@@ -145,10 +149,6 @@
   }
 
   .ledger {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .ledgerFoot {
-    grid-column: 1;
+    grid-template-columns: 1fr;
   }
 }

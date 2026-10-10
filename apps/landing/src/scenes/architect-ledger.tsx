@@ -80,11 +80,11 @@ function ArchitectLedger({ entries }: { entries: ArchEntry[] }) {
         <Screen className={styles.screen}>
           <Pane className={styles.ledgerPane} blurred>
             <div className={styles.ledger}>
-              <Statement name={entry?.name ?? ""} />
-              <WorkList name={entry?.name ?? ""} works={entry?.works ?? []} />
-              <div className={styles.ledgerFoot}>
+              <div className={styles.ledgerMain}>
+                <Statement name={entry?.name ?? ""} />
                 <ArchitectCubes entries={entries} idx={idx} />
               </div>
+              <WorksList name={entry?.name ?? ""} works={entry?.works ?? []} />
             </div>
           </Pane>
           <Rule full className={styles.closingRule} />
@@ -207,8 +207,9 @@ const rowDelay = (slug: string) => {
   return (h / 997) * 0.24
 }
 
-/** Dossier copy — the pane's left column. The architect rolls its faces
- * as the scroll pages the ledger. */
+/** Dossier copy — the left column, kept short: it shares the column
+ * with the cube row. The architect rolls its faces as the scroll pages
+ * the ledger. */
 function Statement({ name }: { name: string }) {
   return (
     <H2 className={styles.statementText}>
@@ -219,9 +220,9 @@ function Statement({ name }: { name: string }) {
   )
 }
 
-/** The works list — the pane's right column. It swaps in the city's blur
+/** The works list — the right column. It swaps in the city's blur
  * stagger with the selection. */
-function WorkList({ name, works }: { name: string; works: ArchSummary[] }) {
+function WorksList({ name, works }: { name: string; works: ArchSummary[] }) {
   const reduced = useReducedMotion()
   const mobile = useIsMobile()
   if (mobile) return null
