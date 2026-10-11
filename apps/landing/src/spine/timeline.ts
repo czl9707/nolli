@@ -1,4 +1,3 @@
-// src/spine/timeline.ts
 import type { ReactNode } from "react"
 import type { SceneCamera } from "@nolli/map"
 
@@ -59,10 +58,8 @@ export function buildTimeline(scenes: SpineScene[]): SpineTimeline {
       const next = scenes[i + 1]
       const fromErr = `transition '${s.id}': fromShape '${s.fromShape}' must match the preceding hold's shape`
       const toErr = `transition '${s.id}': toShape '${s.toShape}' must match the following hold's shape`
-      if (prev?.kind === "hold" && prev.shape !== s.fromShape) throw new Error(fromErr)
-      if (next?.kind === "hold" && next.shape !== s.toShape) throw new Error(toErr)
-      if (prev?.kind !== "hold") throw new Error(fromErr)
-      if (next?.kind !== "hold") throw new Error(toErr)
+      if (prev?.kind !== "hold" || prev.shape !== s.fromShape) throw new Error(fromErr)
+      if (next?.kind !== "hold" || next.shape !== s.toShape) throw new Error(toErr)
     } else {
       const next = scenes[i + 1]
       if (next?.kind === "hold" && next.shape !== s.shape)
@@ -115,13 +112,13 @@ export function shapeAt(tl: SpineTimeline, vh: number, rects: Record<ShapeRef, P
  * own; a transition belongs to the hold it is morphing toward once past
  * its middle, to the one it came from before. */
 export function ownerHoldAt(tl: SpineTimeline, vh: number): string {
-  let seg = tl.segments[0]
-  for (const s of tl.segments) {
-    if (vh >= s.startVh) seg = s
+  let i = 0
+  for (let k = 1; k < tl.segments.length; k++) {
+    if (vh >= tl.segments[k].startVh) i = k
     else break
   }
+  const seg = tl.segments[i]
   if (seg.scene.kind === "hold") return seg.scene.id
-  const i = tl.segments.indexOf(seg)
   return vh >= seg.startVh + seg.heightVh / 2
     ? (tl.segments[i + 1].scene as HoldScene).id
     : (tl.segments[i - 1].scene as HoldScene).id

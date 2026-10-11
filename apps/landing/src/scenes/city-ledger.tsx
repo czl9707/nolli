@@ -6,10 +6,9 @@
 // the shared selected city — the hero sheet reads the same value — and
 // flies the map to the new city's fit, focus pushed right of the column.
 // Cities advance every ADVANCE_MS; hover pauses, click jumps.
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
 import { AnimatePresence, motion, useReducedMotion, type Variants } from "framer-motion"
-import { Body2, H2 } from "@nolli/ui"
-import { useIsMobile } from "@nolli/ui"
+import { Body2, H2, isMobile, useIsMobile } from "@nolli/ui"
 import { applyMapTransition } from "@/lib/map-transition"
 import type { SceneCamera } from "@nolli/map"
 import { type ArchSummary, type LandingData } from "@/lib/landing-data"
@@ -19,10 +18,11 @@ import { useSceneOwnsMap, useSpineMap } from "@/spine/spine"
 import type { HoldScene } from "@/spine/timeline"
 import { fitCamera } from "@/lib/camera"
 import { useLinger } from "@/lib/use-linger"
-import { MarkerPhoto } from "@/components/photo-markers"
+import { MarkerPhoto, pinZ, useProjectedPins } from "@/components/photo-markers"
 import markerStyles from "@/components/photo-markers.module.css"
 import { RollText } from "@/components/roll-text"
 import { Pane, Screen } from "./page-layout"
+import layoutStyles from "./page-layout.module.css"
 import styles from "./city-ledger.module.css"
 
 /** Hold height in scene vh — 100 of sticky scene + 40 of stay-still
@@ -52,7 +52,7 @@ export const cityCamera = (data: LandingData): SceneCamera | null => {
   return fitCamera(
     archs.map((p) => p.coordinates),
     { width: window.innerWidth, height: window.innerHeight },
-    fitPad(window.innerWidth < 768),
+    fitPad(isMobile()),
   )
 }
 
@@ -84,10 +84,10 @@ function CityLedger({ data }: { data: LandingData }) {
 
   return (
     <>
-      <div aria-hidden data-spine-shape="city" className={styles.mapAnchor} />
-      <section className={styles.city}>
+      <div aria-hidden data-spine-shape="city" className="mapAnchor" />
+      <section className="spineHold">
         <CityMarkers archs={archs} on={ownsMap} />
-        <Screen className={styles.screen}>
+        <Screen className={layoutStyles.holdScreen}>
           <Pane className={styles.dossierPane} blurred>
             <div className={styles.dossier}>
               <Statement city={city} archs={archs} />
@@ -111,7 +111,6 @@ type MarkerSet = { key: string; archs: ArchSummary[]; on: boolean }
 function CityMarkers({ archs, on }: { archs: ArchSummary[]; on: boolean }) {
   const [mounted, visible] = useLinger(on, 400)
   const map = useSpineMap()
-  const els = useRef(new Map<string, HTMLDivElement>())
   const city = useSelectedCity()
 
   const [sets, setSets] = useState<MarkerSet[]>(() =>
@@ -132,30 +131,12 @@ function CityMarkers({ archs, on }: { archs: ArchSummary[]; on: boolean }) {
     return () => clearTimeout(t)
   }, [sets])
 
-  const all = sets.flatMap((s) => s.archs)
-  useEffect(() => {
-    if (!map || !mounted) return
-    const update = () => {
-      for (const a of all) {
-        const el = els.current.get(a.slug)
-        if (!el) continue
-        const p = map.project([a.coordinates.lng, a.coordinates.lat])
-        el.style.left = `${p.x}px`
-        el.style.top = `${p.y}px`
-      }
-    }
-    update()
-    map.on("move", update)
-    map.on("resize", update)
-    return () => {
-      map.off("move", update)
-      map.off("resize", update)
-    }
-  }, [map, all, mounted])
+  const all = useMemo(() => sets.flatMap((s) => s.archs), [sets])
+  const { els } = useProjectedPins(map, mounted, all)
 
   if (!mounted) return null
   return (
-    <div className={styles.markerLayer} aria-hidden>
+    <div className={markerStyles.layer} aria-hidden>
       {sets.map((s) =>
         s.archs.map((a) => (
           <div
@@ -165,7 +146,7 @@ function CityMarkers({ archs, on }: { archs: ArchSummary[]; on: boolean }) {
               else els.current.delete(a.slug)
             }}
             className={markerStyles.marker}
-            style={{ zIndex: Math.round((a.coordinates.lat + 90) * 1000) }}
+            style={{ zIndex: pinZ(a.coordinates.lat) }}
           >
             <div className={markerStyles.photoMarker} data-show={(visible && s.on) || undefined}>
               <MarkerPhoto a={a} />
@@ -179,8 +160,9 @@ function CityMarkers({ archs, on }: { archs: ArchSummary[]; on: boolean }) {
 
 /** Arch-list swap choreography: rows blur in and out in a scattered order —
  * a stable pseudo-random delay per slug, so every swap shuffles the same
- * way and a re-render never re-rolls it. */
-const itemVariants: Variants = {
+ * way and a re-render never re-rolls it. The architect ledger's works list
+ * plays the same stagger. */
+export const itemVariants: Variants = {
   hidden: { opacity: 0, filter: "blur(6px)" },
   visible: (d: number) => ({
     opacity: 1,
@@ -194,10 +176,35 @@ const itemVariants: Variants = {
   }),
 }
 
-const rowDelay = (slug: string) => {
+export const rowDelay = (slug: string) => {
   let h = 0
   for (let i = 0; i < slug.length; i++) h = (h * 31 + slug.charCodeAt(i)) % 997
   return (h / 997) * 0.24
+}
+
+/** The cube row's exit pass, shared with the architect ledger — the cube
+ * that just lost the selection plus the travel direction, the only state
+ * the css needs. Single-step moves (auto-advance, wrap included) always
+ * read forward; longer jumps take the positional direction. The flag
+ * drops once its animation has played so a later exit of the same cube
+ * re-fires. */
+export function useCubeExit(idx: number, n: number) {
+  const [exit, setExit] = useState<{ idx: number; dir: "fwd" | "back" } | null>(null)
+  const prevIdx = useRef(idx)
+  useEffect(() => {
+    const old = prevIdx.current
+    prevIdx.current = idx
+    if (old === idx) return
+    const d = (idx - old + n) % n
+    const dir = d === 1 || d === n - 1 || idx > old ? "fwd" : "back"
+    setExit({ idx: old, dir })
+  }, [idx, n])
+  useEffect(() => {
+    if (!exit) return
+    const t = setTimeout(() => setExit(null), 450)
+    return () => clearTimeout(t)
+  }, [exit])
+  return exit
 }
 
 /** Dossier copy. The city rolls its faces when the selection changes (the
@@ -217,7 +224,7 @@ function Statement({
       <H2 className={styles.statementText}>
         Travelling to <RollText text={city} />...
         <br />
-        <span className={styles.accent}>Nolli</span> has Architectures Worth Seeing.
+        <span className="accent">Nolli</span> has Architectures Worth Seeing.
       </H2>
       {
         !mobile &&
@@ -281,28 +288,7 @@ function CityDots({
     return clearTimer
   }, [running, idx, cycle, onSelect, clearTimer])
 
-  // the cube that just lost the selection + the travel direction — the
-  // only state the css needs to run the exit/entry pass
-  const [exit, setExit] = useState<{ idx: number; dir: "fwd" | "back" } | null>(null)
-  const prevIdx = useRef(idx)
-  useEffect(() => {
-    const old = prevIdx.current
-    prevIdx.current = idx
-    if (old === idx) return
-    const n = CITY_LEDGER.length
-    const d = (idx - old + n) % n
-    // single-step moves (auto-advance, wrap included) always read forward;
-    // longer jumps take the positional direction
-    const dir = d === 1 || d === n - 1 || idx > old ? "fwd" : "back"
-    setExit({ idx: old, dir })
-  }, [idx])
-  // drop the exit flag once its animation has played so a later exit of
-  // the same cube re-fires
-  useEffect(() => {
-    if (!exit) return
-    const t = setTimeout(() => setExit(null), 450)
-    return () => clearTimeout(t)
-  }, [exit])
+  const exit = useCubeExit(idx, CITY_LEDGER.length)
 
   const pick = (i: number) => {
     if (CITY_LEDGER[i] === selected) return

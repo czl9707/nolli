@@ -43,7 +43,10 @@ body {
 
   --z-map-behind: -100;
   --z-rules: 10;
-  --z-map-above: 20;
+
+  /* Kalam's ink rides ~0.06em above EB Garamond's on one baseline —
+     measured (canvas ink boxes, mixed case) optical nudge */
+  --kalam-lift: 0.06em;
 
   @media (--smaller-than-sm) {
     --size-page-padding: var(--spacing-paragraph);
@@ -87,4 +90,36 @@ body {
    :has() carries it to the body from the React-rendered element. */
 body:has(main[data-boot]) {
   overflow: hidden;
+}
+
+/* ── spine furniture — the classes every hold scene shares ────────────── */
+
+/* a hold's sticky full-viewport section over the spine's map layer. No
+   z-index: during the boundary overlap the next section must paint over
+   this one (later sibling wins) */
+.spineHold {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  box-sizing: border-box;
+  pointer-events: auto;
+}
+
+/* the map's shape anchor — fixed fullscreen so the spine's glue always
+   reads a viewport rect: the map never moves; the section scrolls over it
+   as normal content */
+.mapAnchor {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* the accent voice — the playful word at weight 600 in the accent color,
+   seated with the Kalam optical nudge */
+.accent {
+  font-family: var(--font-playful);
+  font-weight: 600;
+  color: rgb(var(--color-hero-foreground));
+  position: relative;
+  top: var(--kalam-lift);
 }

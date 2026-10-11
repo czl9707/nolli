@@ -5,36 +5,6 @@
    veil and ride the scroll onto their pins, and the vellum dossier docks
    bottom-right. */
 
-/* the map's shape anchor — fixed fullscreen so the spine's glue always
-   reads a viewport rect: the map never moves; the section scrolls over it
-   as normal content */
-.mapAnchor {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-}
-
-.architect {
-  position: sticky;
-  top: 0;
-  height: 100svh;
-  box-sizing: border-box;
-  pointer-events: auto;
-}
-
-/* the marker overlay is fixed over the whole viewport (a child of the
-   sticky section, so it unmounts with the scene); the map behind never
-   moves, so viewport projections need no scroll correction */
-.markerLayer {
-  position: fixed;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-  /* rides the map lean (--map-lean-x/-y, written by MapLean) — the photos
-     stay glued to their pins while the sheet drifts under the cursor */
-  transform: translate3d(calc(var(--map-lean-x) * 1px), calc(var(--map-lean-y) * 1px), 0);
-}
-
 /* one work — left/top are written from map.project (pin top-center), the
    transform carries the un-scrolled gap to its stick point, written per
    scroll frame (so NO transition on transform — it is glued to the
@@ -54,13 +24,7 @@
 }
 
 /* ── page-grid placement ────────────────────────────────────────────────
-   One full-height row: the vellum dossier docked bottom-right over two
-   columns, the closing rule in its own hairline row. */
-
-.screen {
-  height: 100%;
-  grid-template-rows: minmax(0, 1fr) auto;
-}
+   The vellum dossier docked bottom-right over two columns. */
 
 .ledgerPane {
   display: flex;
@@ -97,18 +61,6 @@
 .statementText {
   /* sized to live inside one column */
   font-size: clamp(1.5rem, 2.5vw, 2.25rem);
-}
-
-.accent {
-  /* the same voice as the ledger's city names (roll-text's face):
-     playful at weight 600 in the accent color */
-  font-family: var(--font-playful);
-  font-weight: 600;
-  color: rgb(var(--color-hero-foreground));
-  /* Kalam's ink rides ~0.06em above EB Garamond's on one baseline —
-     measured (canvas ink boxes, mixed case) optical nudge */
-  position: relative;
-  top: 0.06em;
 }
 
 .archList {

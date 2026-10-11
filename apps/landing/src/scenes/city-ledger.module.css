@@ -5,44 +5,8 @@
    section, and the dossier pane takes the first column. Mobile keeps the
    same tree full-width. */
 
-/* the map's shape anchor — fixed fullscreen so the spine's glue always
-   reads a viewport rect: the map never moves; the section scrolls over it
-   as normal content */
-.mapAnchor {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-}
-
-.city {
-  position: sticky;
-  top: 0;
-  height: 100svh;
-  box-sizing: border-box;
-  pointer-events: auto;
-}
-
-/* the marker overlay is fixed over the whole viewport (a child of the
-   sticky section, so it still unmounts with the scene); the map behind
-   never moves, so viewport projections need no scroll correction */
-.markerLayer {
-  position: fixed;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-  /* rides the map lean (--map-lean-x/-y, written by MapLean) — the photos
-     stay glued to their pins while the sheet drifts under the cursor */
-  transform: translate3d(calc(var(--map-lean-x) * 1px), calc(var(--map-lean-y) * 1px), 0);
-}
-
 /* ── page-grid placement ────────────────────────────────────────────────
-   One full-height row: the dossier on the first column, the closing rule
-   in its own hairline row. */
-
-.screen {
-  height: 100%;
-  grid-template-rows: minmax(0, 1fr) auto;
-}
+   The dossier on the first column, centered under the header strip. */
 
 .dossierPane {
   display: flex;
@@ -72,18 +36,6 @@
 
 .statementText {
   font-size: clamp(1.5rem, 2.5vw, 2.25rem);
-}
-
-.accent {
-  /* the same voice as the ledger's city names (roll-text's face):
-     playful at weight 600 in the accent color */
-  font-family: var(--font-playful);
-  font-weight: 600;
-  color: rgb(var(--color-hero-foreground));
-  /* Kalam's ink rides ~0.06em above EB Garamond's on one baseline —
-     measured (canvas ink boxes, mixed case) optical nudge */
-  position: relative;
-  top: 0.06em;
 }
 
 .archList {
@@ -213,7 +165,7 @@
   height: 1px;
   background: rgb(var(--color-hero-foreground));
   transform-origin: left;
-  animation: dots-wipe var(--city-period, 10s) linear forwards;
+  animation: dots-wipe var(--city-period) linear forwards;
 }
 
 /* hover holds the sweep — both the timer and the wipe restart fresh on

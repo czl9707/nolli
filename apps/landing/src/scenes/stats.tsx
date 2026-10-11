@@ -75,7 +75,7 @@ function StatsScene({ stats, photoPool, architectNames }: StatsProps) {
           <H2 className={styles.statementText}>
             A Map. A Collection.
             <br />
-            A <span className={styles.accent}>Growing Community</span>.
+            A <span className="accent">Growing Community</span>.
           </H2>
           <div className={styles.heroFoot}>
             <NumberBlock

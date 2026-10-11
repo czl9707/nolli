@@ -40,12 +40,23 @@ export function paintVeil(c: HTMLCanvasElement) {
   ctx.fillRect(0, 0, w, h)
 }
 
-// Bare map for the spine — no arch markers of its own; scenes portal
-// their marker sets in (photo-markers / index-markers). The veil canvas
-// is the component's own: always on above the canvas, under portaled
-// content, covering exactly the map layer's rect — a fullscreen hold is
+// Bare map for the spine — no arch markers of its own; scenes render
+// their marker sets as fixed overlays (photo-markers). The veil canvas
+// is the component's own: always on above the canvas, under the scenes'
+// marker overlays, covering exactly the map layer's rect — a fullscreen hold is
 // veiled end to end, the stats card only on its shape. The wrapper stands
 // pointer events down (no drag); marker css re-enables its own.
+
+/** maplibre v5 pins the camera so the world's mercator band always covers
+ * the viewport (the pole-range clamp floors the zoom at the container
+ * fit, whatever renderWorldCopies says). The mobile world camera parks
+ * BELOW that floor — the world fills the top of the viewport with the
+ * band under it left void — so the clamp is dropped there. Private API;
+ * survives resize. */
+function unlockWorldClamp(m: MapRef) {
+  ;(m.transform as unknown as { _helper: { _latRange: [number, number] | null } })._helper._latRange = null
+}
+
 export const LandingMap = forwardRef<
   MapRef,
   { children?: ReactNode }
@@ -89,16 +100,10 @@ export const LandingMap = forwardRef<
       // Forward the maplibre instance to the consumer's ref.
       if (typeof ref === "function") ref(m)
       else if (ref) ref.current = m
-      // maplibre v5 pins the camera so the world's mercator band always
-      // covers the viewport (the pole-range clamp floors the zoom at the
-      // container fit, whatever renderWorldCopies says). On mobile the
-      // world camera renders the square world at the container's WIDTH —
-      // proportional, with the void band under it — which sits below that
-      // floor, so the clamp is dropped there.
-      if (mobile) (m.transform as unknown as { _helper: { _latRange: [number, number] | null } })._helper._latRange = null
+      if (mobile) unlockWorldClamp(m)
       initialize(m)
     },
-    [initialize, ref]
+    [initialize, ref, mobile]
   )
   return (
     <div ref={wrapRef} style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
@@ -108,12 +113,11 @@ export const LandingMap = forwardRef<
         // the mobile world holds zoom out past the default floor (0) to fit
         // the whole ledger span in a narrow band
         minZoom={-2}
-        // copies:false clamps the camera inside the single world copy (zoom
-        // floored where the world spans the container, center locked) — on
-        // mobile the world camera renders the square world at the
-        // container's WIDTH (proportional, void band under it), so copies
-        // come back on there (the width-fit world never shows a second
-        // copy; the sides tile beyond the crop, not on screen)
+        // copies:false clamps the camera inside the single world copy — on
+        // mobile the world camera parks below that single-copy floor (see
+        // unlockWorldClamp), so copies come back on there; the mobile
+        // world never shows a second copy — the sides tile beyond the
+        // crop, not on screen
         renderWorldCopies={mobile}
         loading={!patternReady}
         canvasContextAttributes={{ preserveDrawingBuffer: true }}>

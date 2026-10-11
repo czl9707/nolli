@@ -159,6 +159,11 @@ export function BrushReveal({
     let ctx: CanvasRenderingContext2D | null = null
     let bound: HTMLCanvasElement | null = null
     let veil = ""
+    // the plain wash is idempotent — an idle frame (no live stamps) with
+    // the canvas already plain at the current size repaints nothing
+    let paintedPlain = false
+    // markers whose mask string already matches skip their four writes
+    const lastMask = new WeakMap<HTMLElement, string>()
 
     const frame = () => {
       raf = requestAnimationFrame(frame)
@@ -168,6 +173,7 @@ export function BrushReveal({
         bound = canvas
         ctx = canvas.getContext("2d")
         veil = veilFill(canvas)
+        paintedPlain = false
       }
       if (!ctx) return
       const now = performance.now()
@@ -176,10 +182,31 @@ export function BrushReveal({
       const w = canvas.clientWidth
       const h = canvas.clientHeight
       const dpr = Math.min(window.devicePixelRatio || 1, 2)
-      if (canvas.width !== Math.round(w * dpr)) {
-        canvas.width = Math.round(w * dpr)
-        canvas.height = Math.round(h * dpr)
+      const needsSize = canvas.width !== Math.round(w * dpr)
+      const live = onRef.current
+      const points = trail.current.points
+
+      // the veil is 0.92 — photo markers under it would ghost at 8%, so
+      // each one carries a mask mirroring the trail: the same radial
+      // gradients in marker-local px, add-composited (≈ the canvas's
+      // accumulated erase). Markers with no stroke in reach get a fully
+      // transparent mask; set via JS so the build pipeline never rewrites
+      // the -webkit- twins
+      const mask = (el: HTMLElement, layers: string) => {
+        if (lastMask.get(el) === layers) return
+        lastMask.set(el, layers)
+        el.style.maskImage = layers
+        el.style.webkitMaskImage = layers
+        el.style.maskComposite = "add"
+        el.style.webkitMaskComposite = "source-over"
       }
+      if (!live || points.length === 0) {
+        for (const el of marks.current.values()) {
+          if (el.isConnected) mask(el, MASK_HIDDEN)
+        }
+        if (paintedPlain && !needsSize) return
+      }
+
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
 
       // canvas px = client px minus the layer's live offset — the layer
@@ -194,9 +221,10 @@ export function BrushReveal({
       ctx.clearRect(0, 0, w, h)
       ctx.fillStyle = veil
       ctx.fillRect(0, 0, w, h)
-      if (onRef.current) {
+      paintedPlain = !live || points.length === 0
+      if (live) {
         ctx.globalCompositeOperation = "destination-out"
-        for (const p of trail.current.points) {
+        for (const p of points) {
           const x = p.x - rb.left
           const y = p.y - rb.top
           const a = Math.max(1 - (now - p.t) / TRAIL_MS, 0)
@@ -208,14 +236,6 @@ export function BrushReveal({
         }
       }
 
-      // the veil is 0.92 — photo markers under it would ghost at 8%, so
-      // each one carries a mask mirroring the trail: the same radial
-      // gradients in marker-local px, add-composited (≈ the canvas's
-      // accumulated erase). Markers with no stroke in reach get a fully
-      // transparent mask; set via JS so the build pipeline never rewrites
-      // the -webkit- twins
-      const live = onRef.current
-      const points = trail.current.points
       for (const el of marks.current.values()) {
         if (!el.isConnected) continue
         let layers = MASK_HIDDEN
@@ -234,10 +254,7 @@ export function BrushReveal({
           }
           if (near.length) layers = near.join(", ")
         }
-        el.style.maskImage = layers
-        el.style.webkitMaskImage = layers
-        el.style.maskComposite = "add"
-        el.style.webkitMaskComposite = "source-over"
+        mask(el, layers)
       }
     }
     let raf = requestAnimationFrame(frame)
@@ -255,11 +272,7 @@ export function BrushReveal({
   }, [snap, owns, marks, trail])
 
   if (snap) return null
-  return (
-    <div className={styles.veilWrap}>
-      <div className={styles.catch} aria-hidden />
-    </div>
-  )
+  return <div className={styles.catch} aria-hidden />
 }
 
 /** Picks currently inside the brush's live region — a pick goes active

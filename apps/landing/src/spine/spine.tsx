@@ -27,7 +27,6 @@ type SpineCtx = {
   ranges: Record<string, { startVh: number; heightVh: number }>
   ownerId: string | null
   mapRef: () => MapRef | null
-  mapPortal: HTMLElement | null
 }
 
 const Ctx = createContext<SpineCtx | null>(null)
@@ -35,12 +34,6 @@ const SceneIdCtx = createContext<string | null>(null)
 
 export function useSpineMap(): MapRef | null {
   return useContext(Ctx)?.mapRef() ?? null
-}
-
-/** Portal target for scene-owned content that must render inside the map
- * layer (markers) — null until the map mounts. */
-export function useMapPortal(): HTMLElement | null {
-  return useContext(Ctx)?.mapPortal ?? null
 }
 
 /** Scene-local scroll in vh, unclamped: negative before the scene starts
@@ -92,19 +85,26 @@ function resolveCamera(scene: SpineScene): SceneCamera | null {
  * original spine's sticky-aware measure turned into a clamp: a pane
  * approaching its stick point measures AT the stick point, past it the
  * live rect rules (the ride-out). Fixed fullscreen anchors are their own
- * clamp, so they measure identically everywhere. */
-function shapeRect(el: Element): PxRect {
+ * clamp, so they measure identically everywhere. The sticky-ancestor
+ * walk is a per-pane decision, so the caller caches it per element. */
+function shapeRect(el: Element, clamp: { sticky: Element | null; top: number }): PxRect {
   const r = el.getBoundingClientRect()
   let top = r.top
-  for (let a: Element | null = el; a; a = a.parentElement) {
-    if (getComputedStyle(a).position === "sticky") {
-      const s = a.getBoundingClientRect()
-      const stuck = parseFloat(getComputedStyle(a).top) + (top - s.top)
-      top = Math.min(top, stuck)
-      break
-    }
+  if (clamp.sticky) {
+    const s = clamp.sticky.getBoundingClientRect()
+    top = Math.min(top, clamp.top + (top - s.top))
   }
   return { left: r.left, top, width: r.width, height: r.height }
+}
+
+/** The sticky clamp for a shape pane — its nearest sticky ancestor and
+ * that ancestor's `top`. Constant while the pane is mounted. */
+function stickyClamp(el: Element): { sticky: Element | null; top: number } {
+  for (let a: Element | null = el; a; a = a.parentElement) {
+    if (getComputedStyle(a).position === "sticky")
+      return { sticky: a, top: parseFloat(getComputedStyle(a).top) }
+  }
+  return { sticky: null, top: 0 }
 }
 export function Spine({
   scenes, camera,
@@ -115,7 +115,6 @@ export function Spine({
   const wrapperRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapRef | null>(null)
   const [mapMounted, setMapMounted] = useState(false)
-  const [mapPortal, setMapPortal] = useState<HTMLElement | null>(null)
 
   const timeline = useMemo(() => buildTimeline(scenes), [scenes])
   const ranges = useMemo(() => {
@@ -167,27 +166,50 @@ export function Spine({
 
   useEffect(() => {
     let raf = 0
+    // the panes never remount while the spine lives and their sticky
+    // clamp is a mount-time fact — both cached; only the rects re-read
+    const panes = new Map<string, Element>()
+    const clamps = new WeakMap<Element, { sticky: Element | null; top: number }>()
+    // placement is a pure function of scroll — an unchanged scroll value
+    // (no resize/font reflow since) re-measures nothing
+    let lastVh = Number.NaN
+    let dirty = true
+    const invalidate = () => { dirty = true }
+    window.addEventListener("resize", invalidate)
+    document.fonts?.ready.then(invalidate)
     const frame = () => {
       const el = layerRef.current
       const frameEl = frameRef.current
-      if (!el || !frameEl) {
-        raf = requestAnimationFrame(frame)
-        return
+      const vh = scrollVh.get()
+      if (el && frameEl && (dirty || vh !== lastVh)) {
+        lastVh = vh
+        dirty = false
+        const rects: Record<string, PxRect> = {}
+        for (const ref of shapeRefs) {
+          let pane = panes.get(ref)
+          if (!pane || !pane.isConnected) {
+            pane = document.querySelector(ref) ?? undefined
+            if (!pane) continue
+            panes.set(ref, pane)
+          }
+          let clamp = clamps.get(pane)
+          if (!clamp) {
+            clamp = stickyClamp(pane)
+            clamps.set(pane, clamp)
+          }
+          rects[ref] = shapeRect(pane, clamp)
+        }
+        // the layer is positioned inside the sticky frame; at the spine's
+        // tail the frame itself rides up (wrapper bottom above the
+        // frame's), so placement is shape-rect minus the frame's live
+        // offset
+        const r = shapeAt(timeline, vh, rects)
+        const f = frameEl.getBoundingClientRect()
+        el.style.left = `${r.left - f.left}px`
+        el.style.top = `${r.top - f.top}px`
+        el.style.width = `${r.width}px`
+        el.style.height = `${r.height}px`
       }
-      const rects: Record<string, PxRect> = {}
-      for (const ref of shapeRefs) {
-        const pane = document.querySelector(ref)
-        if (pane) rects[ref] = shapeRect(pane)
-      }
-      // the layer is positioned inside the sticky frame; at the spine's
-      // tail the frame itself rides up (wrapper bottom above the frame's),
-      // so placement is shape-rect minus the frame's live offset
-      const r = shapeAt(timeline, scrollVh.get(), rects)
-      const f = frameEl.getBoundingClientRect()
-      el.style.left = `${r.left - f.left}px`
-      el.style.top = `${r.top - f.top}px`
-      el.style.width = `${r.width}px`
-      el.style.height = `${r.height}px`
       // re-registered at the END of the loop body: rAF callbacks run in
       // registration order, so the glue stays after the wheel smoother's
       // (Lenis) scroll write each frame — the layer then reads the
@@ -195,7 +217,10 @@ export function Spine({
       raf = requestAnimationFrame(frame)
     }
     raf = requestAnimationFrame(frame)
-    return () => cancelAnimationFrame(raf)
+    return () => {
+      cancelAnimationFrame(raf)
+      window.removeEventListener("resize", invalidate)
+    }
   }, [timeline, shapeRefs, scrollVh])
 
   // allegiance: crossing a transition's middle hands the map to the next
@@ -280,8 +305,8 @@ export function Spine({
   }, [mapMounted, setMapReady])
 
   const ctx = useMemo(() => ({
-    scrollVh, ranges, ownerId, mapRef: () => mapRef.current, mapPortal,
-  }), [scrollVh, ranges, ownerId, mapPortal])
+    scrollVh, ranges, ownerId, mapRef: () => mapRef.current,
+  }), [scrollVh, ranges, ownerId])
 
   return (
     <Ctx.Provider value={ctx}>
@@ -319,9 +344,7 @@ export function Spine({
                   "translate3d(calc(var(--map-lean-x) * 1px), calc(var(--map-lean-y) * 1px), 0)",
               }}
             >
-              <LandingMap ref={setRef}>
-                <div ref={setMapPortal} style={{ position: "absolute", inset: 0, pointerEvents: "none" }} />
-              </LandingMap>
+              <LandingMap ref={setRef} />
             </div>
           </motion.div>
         </div>

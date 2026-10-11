@@ -1,4 +1,5 @@
 import type { SceneCamera } from "@nolli/map"
+import { isMobile } from "@nolli/ui/use-is-mobile"
 import { MAP_LEAN_OVERSCAN } from "@/lib/map-lean"
 import { projY, invProjY } from "@/lib/camera"
 
@@ -19,7 +20,7 @@ export function worldCamera(): SceneCamera {
   const w = typeof window === "undefined" ? 1440 : window.innerWidth
   const h = typeof window === "undefined" ? 900 : window.innerHeight
   const px = Math.max(w, h) + 2 * MAP_LEAN_OVERSCAN
-  if (w < 768) {
+  if (typeof window !== "undefined" && isMobile()) {
     // mobile: the world fills the top 80% of the viewport — the minimum
     // screen the map can afford — anchored at the very top, with the band
     // under it left for the docked dossier; longitude crops ±(the rest),

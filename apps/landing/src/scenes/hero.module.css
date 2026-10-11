@@ -5,33 +5,9 @@
    cursor hides only inside the workarea (the reveal bounds) — the header
    keeps the system cursor. */
 
-.hero {
-  position: sticky;
-  top: 0;
-  height: 100svh;
-  box-sizing: border-box;
-  pointer-events: auto;
-  /* no z-index: during the boundary overlap the next section must paint
-     over this one (later sibling wins) — the map component's veil runs
-     through both holds, so the city's photos read above the same wash */
-}
-
-/* boot: the closing rule follows the furniture phase (the hero section
-   carries the live phase, data-boot-phase) */
-.hero[data-boot-phase="blank"]::after,
-.hero[data-boot-phase="headline"]::after,
-.hero[data-boot-phase="map"]::after {
-  border-color: transparent;
-}
-
 /* ── page-grid placement ────────────────────────────────────────────────
    One full-height row: lede pane on the two left columns, info pane on
    the two right ones. */
-
-.screen {
-  height: 100%;
-  grid-template-rows: minmax(0, 1fr) auto;
-}
 
 .ledePane {
   display: flex;
@@ -89,10 +65,8 @@
     color: rgb(var(--color-hero-foreground));
     font-family: var(--font-playful);
     font-style: normal;
-    /* Kalam's ink rides ~0.06em above EB Garamond's on one baseline —
-       measured (canvas ink boxes, mixed case) optical nudge */
     position: relative;
-    top: 0.06em;
+    top: var(--kalam-lift);
   }
 }
 
@@ -190,13 +164,4 @@
   .ledeColumn {
     gap: 1rem;
   }
-}
-
-/* the map's shape anchor — fixed fullscreen so the spine's glue always
-   reads a viewport rect: the map never moves; the section scrolls over
-   it as normal content */
-.mapAnchor {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
 }

@@ -9,6 +9,9 @@
 
 .screen {
   box-sizing: border-box;
+  /* the mask window's inset — the shape anchor and the photo deck clip at
+     the same line the frame's paper ring keeps */
+  --window-inset: 0.5rem;
   padding-top: calc(var(--size-header-top) + var(--size-header-height) + 10svh);
   grid-template-areas:
     "hero hero . ctry"
@@ -19,10 +22,11 @@
 }
 
 /* the card's viewport — the sticky's container: one viewport of dwell,
-   then a 50svh runway for the count-ups and the reading; at its end the
-   hold ends and the card leaves with the spine's map frame */
+   then a 20svh runway for the count-ups and the reading; at its end the
+   hold ends and the card leaves with the spine's map frame. The height is
+   the scene's heightVh (the spine's wrapper sets it); 100% rides it. */
 .stickWrap {
-  height: 120svh;
+  height: 100%;
 }
 
 /* the card's viewport — sticky for the hold's first viewport: the map
@@ -62,7 +66,7 @@
    through from behind, landed on the shape. */
 .mapPane {
   position: relative;
-  padding: 0.5rem;
+  padding: var(--window-inset);
   background: rgb(var(--color-paper-background));
   border: var(--border);
   border-color: rgb(var(--color-paper-foreground));
@@ -84,7 +88,7 @@
    rect (filling it exactly) and shows through the mask window */
 .shape {
   position: absolute;
-  inset: 0.5rem;
+  inset: var(--window-inset);
 }
 
 /* the text level — twin pane over the map, the original top-card layout:
@@ -112,7 +116,7 @@
    not the card edge */
 .heroStack {
   position: absolute;
-  inset: .5rem;
+  inset: var(--window-inset);
   overflow: hidden;
 }
 
@@ -131,10 +135,8 @@
   font-weight: 400;
   line-height: 0.95;
   letter-spacing: -0.01em;
-  /* Kalam's ink rides ~0.06em above EB Garamond's on one baseline —
-     measured (canvas ink boxes, mixed case) optical nudge */
   position: relative;
-  top: 0.06em;
+  top: var(--kalam-lift);
 }
 
 .num.m {
@@ -165,16 +167,6 @@
 
 .statementText {
   font-size: clamp(1.5rem, 2.5vw, 2.75rem);
-}
-
-.accent {
-  font-weight: 600;
-  font-family: var(--font-playful);
-  color: rgb(var(--color-hero-foreground));
-  /* Kalam's ink rides ~0.06em above EB Garamond's on one baseline —
-     measured (canvas ink boxes, mixed case) optical nudge */
-  position: relative;
-  top: 0.06em;
 }
 
 /* ── CTA cell — one full-width pane button ───────────────────────────── */

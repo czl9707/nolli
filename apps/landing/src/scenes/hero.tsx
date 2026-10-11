@@ -22,6 +22,7 @@ import { fitCamera } from "@/lib/camera"
 import { PhotoMarkers } from "@/components/photo-markers"
 import { AT_REST_VH, BrushReveal, useTrail, useTrailArchs, type MarkRegistry } from "./hero-reveal"
 import { Pane, Screen } from "./page-layout"
+import layoutStyles from "./page-layout.module.css"
 import styles from "./hero.module.css"
 
 export const heroHold = (data: LandingData): HoldScene => ({
@@ -80,17 +81,17 @@ function HeroScene({ data }: { data: LandingData }) {
 
   return (
     <>
-      <div aria-hidden data-spine-shape="hero" className={styles.mapAnchor} />
+      <div aria-hidden data-spine-shape="hero" className="mapAnchor" />
       <section
         data-boot-phase={bootPhase}
-        className={styles.hero}
+        className="spineHold"
       >
         <BrushReveal trail={trail} on={phaseAtLeast(bootPhase, "reveal")} marks={marks} />
         {/* in the scene flow, above the map layer's veil — the marker mask
             still mirrors the brush trail, so each photo shows only through
             the holes and never ghosts over the wash */}
         <PhotoMarkers archs={archs} on={picksLive} marks={marks} />
-        <Screen className={styles.screen}>
+        <Screen className={layoutStyles.holdScreen}>
           <HeroTree
             archs={archs}
             active={active}

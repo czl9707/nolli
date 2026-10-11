@@ -12,7 +12,8 @@
     "./global.css": "./src/styles/global.css",
     "./input.module.css": "./src/input.module.css",
     "./composition": "./src/composition/index.ts",
-    "./constants": "./src/constants.ts"
+    "./constants": "./src/constants.ts",
+    "./use-is-mobile": "./src/hooks/use-is-mobile.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit"

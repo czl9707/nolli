@@ -1,13 +1,14 @@
-/* Photo markers as a fixed overlay above the map (no portal). The layer
+/* Photo markers as a fixed overlay above the map. The layer
    renders inside its scene's section, below the sheet — the scene flow
    stacks above the map layer's veil canvas, and the veil's mask driver
    (hero-reveal.tsx, via the marks registry) still shows each photo only
-   through the brush's erased holes. The city ledger reuses the
-   marker/card classes for its own layer. */
+   through the brush's erased holes. Every hold's marker layer (the hero's,
+   the city's, the architect's) is this class. */
 
 .layer {
   position: fixed;
   inset: 0;
+  overflow: hidden;
   pointer-events: none;
   /* rides the map lean (--map-lean-x/-y, written by MapLean) — the photos
      stay glued to their pins while the sheet drifts under the cursor */
