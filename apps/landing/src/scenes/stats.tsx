@@ -55,6 +55,7 @@ type StatsProps = {
 }
 
 function StatsScene({ stats, photoPool, architectNames }: StatsProps) {
+  const mobile = useIsMobile()
   return (
     <>
       <div className={styles.stickWrap}>
@@ -100,14 +101,16 @@ function StatsScene({ stats, photoPool, architectNames }: StatsProps) {
           />
           <BadgeRows items={architectNames} />
         </Pane>
-        <Pane style={{ gridArea: "cta" }}>
-          <LandingButton variant="ghost" className={styles.ctaButton} asChild>
-            <a href={MAP_APP_URL} target="_blank" rel="noopener noreferrer">
-              <Note>Open the map</Note>
-              <ArrowUpRight size={16} aria-hidden />
-            </a>
-          </LandingButton>
-        </Pane>
+        {!mobile && (
+          <Pane style={{ gridArea: "cta" }}>
+            <LandingButton variant="ghost" className={styles.ctaButton} asChild>
+              <a href={MAP_APP_URL} target="_blank" rel="noopener noreferrer">
+                <Note>Open the map</Note>
+                <ArrowUpRight size={16} aria-hidden />
+              </a>
+            </LandingButton>
+          </Pane>
+        )}
         <Rule col="1 / -1" style={{ gridRow: 2, alignSelf: "end" }} />
           </Screen>
         </div>

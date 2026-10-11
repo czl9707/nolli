@@ -32,12 +32,15 @@ const SCENE_VH = 140
 /** City auto-advance period. */
 const ADVANCE_MS = 10000
 
-/** Fit padding in viewport px. The dossier owns the first column, so the
- * focus lands right of it; photo cards hang below the pin, so the
- * south-most arch needs far more room below than the north-most above. */
+/** Fit padding in viewport px. Desktop: the dossier owns the first
+ * column, so the focus lands right of it. Mobile: the dossier docks
+ * full-width at the foot, so the room moves to the bottom — the pane
+ * (~200px) plus the south-most photo card hanging under its pin. Photo
+ * cards hang below the pin either way, so the south-most arch always
+ * needs far more room below than the north-most above. */
 const fitPad = (mobile: boolean) =>
   mobile
-    ? { left: 48, right: 48, top: 96, bottom: 160 }
+    ? { left: 24, right: 24, top: 100, bottom: 470 }
     : { left: Math.round(window.innerWidth * 0.32), right: 100, top: 140, bottom: 300 }
 
 /** The hold's camera — the selected city's deck fit to the full viewport

@@ -1,5 +1,6 @@
 import { forwardRef, useCallback, useEffect, useMemo, useRef, type ReactNode } from "react"
 import { getMapStyle, Map, useMapPatterns, type MapRef } from "@nolli/map"
+import { useIsMobile } from "@nolli/ui"
 import styles from "./landing-map.module.css"
 
 /** The veil canvas lives once, inside the map container — scenes paint it
@@ -49,6 +50,7 @@ export const LandingMap = forwardRef<
   MapRef,
   { children?: ReactNode }
 >(function LandingMap({ children }, ref) {
+  const mobile = useIsMobile()
   const mapRef = useRef<MapRef | null>(null)
   const wrapRef = useRef<HTMLDivElement>(null)
   const { ready: patternReady, initialize } = useMapPatterns(mapRef)
@@ -87,6 +89,13 @@ export const LandingMap = forwardRef<
       // Forward the maplibre instance to the consumer's ref.
       if (typeof ref === "function") ref(m)
       else if (ref) ref.current = m
+      // maplibre v5 pins the camera so the world's mercator band always
+      // covers the viewport (the pole-range clamp floors the zoom at the
+      // container fit, whatever renderWorldCopies says). On mobile the
+      // world camera renders the square world at the container's WIDTH —
+      // proportional, with the void band under it — which sits below that
+      // floor, so the clamp is dropped there.
+      if (mobile) (m.transform as unknown as { _helper: { _latRange: [number, number] | null } })._helper._latRange = null
       initialize(m)
     },
     [initialize, ref]
@@ -99,6 +108,13 @@ export const LandingMap = forwardRef<
         // the mobile world holds zoom out past the default floor (0) to fit
         // the whole ledger span in a narrow band
         minZoom={-2}
+        // copies:false clamps the camera inside the single world copy (zoom
+        // floored where the world spans the container, center locked) — on
+        // mobile the world camera renders the square world at the
+        // container's WIDTH (proportional, void band under it), so copies
+        // come back on there (the width-fit world never shows a second
+        // copy; the sides tile beyond the crop, not on screen)
+        renderWorldCopies={mobile}
         loading={!patternReady}
         canvasContextAttributes={{ preserveDrawingBuffer: true }}>
         <canvas id={MAP_VEIL_ID} ref={setVeil} className={styles.veil} aria-hidden />

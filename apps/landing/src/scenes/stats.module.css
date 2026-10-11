@@ -283,7 +283,13 @@
       "hero hero"
       "ctry dsg"
       "cta cta";
-    grid-template-rows: 70svh auto auto;
+    /* the stack centers in the stick's viewport — even air above and
+       below, the header floating over the top gap — instead of pinning
+       to a big head strip and leaving the foot empty */
+    grid-template-rows: 40svh auto auto;
+    min-height: 100svh;
+    align-content: center;
+    padding-top: 0;
     margin-bottom: var(--spacing-group);
   }
 

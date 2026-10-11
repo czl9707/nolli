@@ -1,5 +1,6 @@
 import type { SceneCamera } from "@nolli/map"
 import { MAP_LEAN_OVERSCAN } from "@/lib/map-lean"
+import { projY, invProjY } from "@/lib/camera"
 
 /** World hold camera. renderWorldCopies:false floors the map's zoom where
  *  one world copy spans the map container (log2 of the longer side over
@@ -15,9 +16,19 @@ import { MAP_LEAN_OVERSCAN } from "@/lib/map-lean"
  *  the bake script can import the decks without pulling @nolli/ui's css
  *  through tsx. */
 export function worldCamera(): SceneCamera {
-  const center = [0, 15] as [number, number]
-  const px = typeof window === "undefined"
-    ? 1440 + 2 * MAP_LEAN_OVERSCAN
-    : Math.max(window.innerWidth, window.innerHeight) + 2 * MAP_LEAN_OVERSCAN
-  return { center, zoom: Math.log2(px / 512) }
+  const w = typeof window === "undefined" ? 1440 : window.innerWidth
+  const h = typeof window === "undefined" ? 900 : window.innerHeight
+  const px = Math.max(w, h) + 2 * MAP_LEAN_OVERSCAN
+  if (w < 768) {
+    // mobile: the world fills the top 80% of the viewport — the minimum
+    // screen the map can afford — anchored at the very top, with the band
+    // under it left for the docked dossier; longitude crops ±(the rest),
+    // which at 80% still spans ~±100°. The center's mercator y sits the
+    // world's top edge on the viewport's top: the camera center projects
+    // to the container's middle, and the overscan wrapper shifts that
+    // middle 24px up the page.
+    const worldH = 0.8 * h
+    return { center: [0, invProjY(0.5 * h / worldH)], zoom: Math.log2(worldH / 512) }
+  }
+  return { center: [0, 15], zoom: Math.log2(px / 512) }
 }
