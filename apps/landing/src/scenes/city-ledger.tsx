@@ -214,7 +214,7 @@ function Statement({
       <H2 className={styles.statementText}>
         Travelling to <RollText text={city} />...
         <br />
-        Nolli has Architectures Worth Seeing.
+        <span className={styles.accent}>Nolli</span> has Architectures Worth Seeing.
       </H2>
       {
         !mobile &&

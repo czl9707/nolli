@@ -18,6 +18,10 @@
   font-style: normal;
   color: rgb(var(--color-hero-foreground));
   font-weight: 600;
+  /* Kalam's ink rides ~0.06em above EB Garamond's on one baseline —
+     measured (canvas ink boxes, mixed case) optical nudge */
+  position: relative;
+  top: 0.06em;
 }
 
 .face[data-roll="in"] {

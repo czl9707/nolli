@@ -131,6 +131,10 @@
   font-weight: 400;
   line-height: 0.95;
   letter-spacing: -0.01em;
+  /* Kalam's ink rides ~0.06em above EB Garamond's on one baseline —
+     measured (canvas ink boxes, mixed case) optical nudge */
+  position: relative;
+  top: 0.06em;
 }
 
 .num.m {
@@ -143,7 +147,6 @@
 
 .label {
   font-size: clamp(1.25rem, 1.75vw, 2.5rem);
-  font-style: italic;
   opacity: 0.85;
 }
 
@@ -157,19 +160,21 @@
 .sub {
   font-size: clamp(.9rem, 1.3vw, 1.4rem);
   font-family: var(--font-serif);
-  font-style: italic;
   opacity: 0.7;
 }
 
 .statementText {
   font-size: clamp(1.5rem, 2.5vw, 2.75rem);
-  font-style: italic;
 }
 
 .accent {
   font-weight: 600;
   font-family: var(--font-playful);
   color: rgb(var(--color-hero-foreground));
+  /* Kalam's ink rides ~0.06em above EB Garamond's on one baseline —
+     measured (canvas ink boxes, mixed case) optical nudge */
+  position: relative;
+  top: 0.06em;
 }
 
 /* ── CTA cell — one full-width pane button ───────────────────────────── */

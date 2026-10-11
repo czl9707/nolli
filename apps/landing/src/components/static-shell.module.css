@@ -44,7 +44,6 @@
 
 .lead {
   margin-top: var(--spacing-paragraph);
-  font-style: italic;
   opacity: .8;
 }
 

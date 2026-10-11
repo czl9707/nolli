@@ -96,14 +96,19 @@
 
 .statementText {
   /* sized to live inside one column */
-  font-size: clamp(1.15rem, 1.8vw, 1.6rem);
-  font-style: italic;
+  font-size: clamp(1.5rem, 2.5vw, 2.25rem);
 }
 
 .accent {
-  color: rgb(var(--color-hero-foreground));
+  /* the same voice as the ledger's city names (roll-text's face):
+     playful at weight 600 in the accent color */
   font-family: var(--font-playful);
-  font-style: normal;
+  font-weight: 600;
+  color: rgb(var(--color-hero-foreground));
+  /* Kalam's ink rides ~0.06em above EB Garamond's on one baseline —
+     measured (canvas ink boxes, mixed case) optical nudge */
+  position: relative;
+  top: 0.06em;
 }
 
 .archList {
