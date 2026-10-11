@@ -18,6 +18,8 @@
   font-style: normal;
   color: rgb(var(--color-hero-foreground));
   font-weight: 600;
+  position: relative;
+  top: var(--kalam-lift);
 }
 
 .face[data-roll="in"] {

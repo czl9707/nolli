@@ -1,40 +1,47 @@
-// Hero hold scene on the spine. The spine's map layer IS the hero map; photo
-// markers render through the map portal so they ride the layer, while the
-// brush reveal (canvas veil + touch catch) renders in this tree — first
-// child of the sticky section, so it pins during the hold and rides up
-// with the page through the transition, unveiling the map. Layout: lede
-// bottom-left, info block top-right (Note labels, serif values, live
-// scale, the arch list whose highlight follows the brush's trail).
-import { useEffect, useState } from "react"
+// Hero hold scene on the spine. The spine's map layer IS the hero map,
+// under the map component's own veil canvas, which the brush paints; the
+// photo markers render as a fixed overlay above it — the veil masks them
+// through the shared marks registry, so each shows only through the
+// brush's erased holes — and the catch layer takes the touches. Layout:
+// lede bottom-left, info block
+// top-right (Note labels, serif values, live scale, the arch list whose
+// highlight follows the brush's trail). The sheet always shows the shared
+// selected city — the city ledger's cubes re-target it, and this scene
+// picks the new deck up on the way back up.
+import { useEffect, useRef, useState } from "react"
 import { motion, useMotionValueEvent, useReducedMotion, type MotionValue } from "framer-motion"
 import { Body2, H5, Note, TRANSITION_INSTANT, TRANSITION_SHORT } from "@nolli/ui"
 import { BootFade, phaseAtLeast, useBootPhase } from "@/lib/boot"
 import type { MapRef, SceneCamera } from "@nolli/map"
-import type { ArchSummary } from "@/lib/landing-data"
+import { cityMeta, type ArchSummary, type LandingData } from "@/lib/landing-data"
+import { selectedCity, useSelectedCity } from "@/lib/city-store"
 import { useSceneOwnsMap, useSceneScroll, useSpineMap } from "@/spine/spine"
 import type { HoldScene } from "@/spine/timeline"
 import { HERO_FIT_PAD } from "@/lib/constants"
 import { fitCamera } from "@/lib/camera"
-import type { LandingData } from "@/lib/landing-data"
 import { PhotoMarkers } from "@/components/photo-markers"
-import { AT_REST_VH, BrushReveal, HERO_MARKER_CLASS, useTrail, useTrailArchs } from "./hero-reveal"
-import { Pane, Rule, Screen } from "./page-layout"
+import { AT_REST_VH, BrushReveal, useTrail, useTrailArchs, type MarkRegistry } from "./hero-reveal"
+import { Pane, Screen } from "./page-layout"
+import layoutStyles from "./page-layout.module.css"
 import styles from "./hero.module.css"
 
 export const heroHold = (data: LandingData): HoldScene => ({
+  kind: "hold",
   id: "hero",
   shape: "[data-spine-shape='hero']",
   heightVh: SCENE_VH,
-  camera: heroCamera(data),
-  rulesOverMap: true,
+  camera: () => {
+    const archs = data.cityLedger[selectedCity()]
+    return archs?.length ? heroCamera(archs) : null
+  },
   Component: () => <HeroScene data={data} />,
 })
 
-export const heroCamera = (data: LandingData): SceneCamera => {
+export const heroCamera = (archs: ArchSummary[]): SceneCamera => {
   const cs = getComputedStyle(document.documentElement)
   const header = parseFloat(cs.getPropertyValue("--size-header-height")) * parseFloat(cs.fontSize)
   return fitCamera(
-    data.heroArchs.map((p) => p.coordinates),
+    archs.map((p) => p.coordinates),
     {
       width: window.innerWidth,
       height: window.innerHeight,
@@ -53,7 +60,8 @@ const SCENE_VH = 100
 function HeroScene({ data }: { data: LandingData }) {
   const map = useSpineMap()
   const bootPhase = useBootPhase()
-  const archs = data.heroArchs
+  const city = useSelectedCity()
+  const archs = data.cityLedger[city] ?? data.heroArchs
   const localScrollDist = useSceneScroll()
   const trail = useTrail(localScrollDist)
 
@@ -68,28 +76,28 @@ function HeroScene({ data }: { data: LandingData }) {
 
   const { active } = useTrailArchs(trail, archs, map, picksLive)
   const scale = useScaleText(map, trail.current.sy)
+  // the marker overlay fills this — the veil's mask driver reads it
+  const marks: MarkRegistry = useRef(new Map<string, HTMLElement>())
 
   return (
     <>
-      <BrushReveal trail={trail} on={phaseAtLeast(bootPhase, "reveal")} />
+      <div aria-hidden data-spine-shape="hero" className="mapAnchor" />
       <section
-        data-spine-shape="hero"
         data-boot-phase={bootPhase}
-        className={styles.hero}
+        className="spineHold"
       >
-        <PhotoMarkers
-          archs={archs}
-          on={picksLive}
-          className={HERO_MARKER_CLASS}
-        />
-        <Screen className={styles.screen}>
+        <BrushReveal trail={trail} on={phaseAtLeast(bootPhase, "reveal")} marks={marks} />
+        {/* in the scene flow, above the map layer's veil — the marker mask
+            still mirrors the brush trail, so each photo shows only through
+            the holes and never ghosts over the wash */}
+        <PhotoMarkers archs={archs} on={picksLive} marks={marks} />
+        <Screen className={layoutStyles.holdScreen}>
           <HeroTree
             archs={archs}
             active={active}
             scale={scale}
-            city={data.heroCity}
+            city={cityMeta(city)}
           />
-          <Rule full className={styles.closingRule}/>
         </Screen>
       </section>
     </>

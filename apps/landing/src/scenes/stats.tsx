@@ -1,10 +1,11 @@
-// Stats hold on the spine — the closer before the footer, on the page
-// grid, in normal flow (no stick): the hero card merges the veiled map,
-// the architecture count and the photo deck into one 2×2 pane — the frame
-// at the map scale, the text over it; countries and architects are paper
-// cells with badge marquees; the CTA cell is one LandingButton. The
-// hold's dwell carries the count-ups; the map layer lands on the card's
-// shape under the veil.
+// Stats hold on the spine — the closer, on the page grid: the hero card
+// merges the veiled map, the architecture count and the photo deck into
+// one 2×2 pane — the frame at the map scale, the text over it; countries
+// and architects are paper cells with badge marquees; the CTA cell is one
+// LandingButton. The card sticks for the hold — the map converges onto
+// its shape and the pair holds still while the count-ups play — then the
+// hold ends and the card leaves with the spine's map frame, the footer
+// (outside the spine, after it) covering from below.
 import { useEffect, useRef } from "react"
 import { motion, useInView, useMotionValue, useReducedMotion, useSpring, useTransform } from "framer-motion"
 import { Badge, H2, H3, H6, Note, PaperPhoto, useIsMobile } from "@nolli/ui"
@@ -14,13 +15,15 @@ import { MAP_APP_URL } from "@/lib/constants"
 import type { HoldScene } from "@/spine/timeline"
 import type { CollectionStats, LandingData } from "@/lib/landing-data"
 import { LandingButton } from "@/components/landing-button"
-import { MapVeil } from "@/components/map-veil"
 import { ArrowUpRight } from "lucide-react"
 import { Pane, Rule, Screen } from "./page-layout"
 import styles from "./stats.module.css"
 
 const SCENE_ID = "stats"
-const SCENE_VH = 100
+
+/** Hold height in scene vh — the card's viewport plus the runway the
+ * count-ups and the reading play over. */
+const SCENE_VH = 120
 
 // country badge list — real ISO codes + Intl.DisplayNames once the cities
 // data flows in; placeholder set until
@@ -30,12 +33,10 @@ const COUNTRY_BADGES = [
 ]
 
 export const statsHold = (data: LandingData): HoldScene => ({
+  kind: "hold",
   id: SCENE_ID,
   shape: "[data-spine-shape='stats']",
   heightVh: SCENE_VH,
-  // no lead: the handoff fires exactly at the scene boundary — the
-  // architect band's pin would still be mid-pass under the default 45vh
-  leadVh: 0,
   // same world view the architect hold parks on — this scene only verifies it
   camera: worldCamera,
   Component: () => (
@@ -57,14 +58,16 @@ function StatsScene({ stats, photoPool, architectNames }: StatsProps) {
   const mobile = useIsMobile()
   return (
     <>
-      <MapVeil/>
-      <Screen className={styles.screen} height="auto">
+      <div className={styles.stickWrap}>
+        <div className={styles.stick}>
+          <Screen className={styles.screen} height="auto">
         {/* the hero card — map, architecture count and photo deck merged
-         * into one 2×2 pane, the original top-card layout: the frame sits
-         * at the map scale (one step under the spine's map layer — the
-         * scene is not sticky, so the pane joins the root z scale like the
-         * city scene's), and everything else lives at the text level in a
-         * twin pane over the map */}
+         * into one 2×2 pane, the original top-card layout: the frame is a
+         * paper ring with a mask window (the sticky subtree paints
+         * atomically above the spine's map frame, so the map behind shows
+         * through the window instead of the pane diving under it), and
+         * everything else lives at the text level in a twin pane over the
+         * map */}
         <Pane className={styles.mapPane} style={{ gridArea: "hero" }}>
           <div className={styles.shape} aria-hidden data-spine-shape="stats" />
         </Pane>
@@ -72,7 +75,7 @@ function StatsScene({ stats, photoPool, architectNames }: StatsProps) {
           <H2 className={styles.statementText}>
             A Map. A Collection.
             <br />
-            A <span className={styles.accent}>Growing Community</span>.
+            A <span className="accent">Growing Community</span>.
           </H2>
           <div className={styles.heroFoot}>
             <NumberBlock
@@ -98,16 +101,20 @@ function StatsScene({ stats, photoPool, architectNames }: StatsProps) {
           />
           <BadgeRows items={architectNames} />
         </Pane>
-        <Pane style={{ gridArea: "cta" }}>
-          <LandingButton variant="ghost" className={styles.ctaButton} asChild>
-            <a href={MAP_APP_URL} target="_blank" rel="noopener noreferrer">
-              <Note>Open the map</Note>
-              <ArrowUpRight size={16} aria-hidden />
-            </a>
-          </LandingButton>
-        </Pane>
+        {!mobile && (
+          <Pane style={{ gridArea: "cta" }}>
+            <LandingButton variant="ghost" className={styles.ctaButton} asChild>
+              <a href={MAP_APP_URL} target="_blank" rel="noopener noreferrer">
+                <Note>Open the map</Note>
+                <ArrowUpRight size={16} aria-hidden />
+              </a>
+            </LandingButton>
+          </Pane>
+        )}
         <Rule col="1 / -1" style={{ gridRow: 2, alignSelf: "end" }} />
-      </Screen>
+          </Screen>
+        </div>
+      </div>
     </>
   )
 }

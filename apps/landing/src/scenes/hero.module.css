@@ -5,41 +5,9 @@
    cursor hides only inside the workarea (the reveal bounds) — the header
    keeps the system cursor. */
 
-.hero {
-  position: sticky;
-  top: 0;
-  height: 100svh;
-  box-sizing: border-box;
-  pointer-events: auto;
-  /* above the transition overlay (later sibling) so the closing rule and
-     the ride-off content stay visible as the gradient slides over */
-  z-index: 1;
-}
-
-/* boot: the closing rule follows the furniture phase (the hero section
-   carries the live phase, data-boot-phase) */
-.hero[data-boot-phase="blank"]::after,
-.hero[data-boot-phase="headline"]::after,
-.hero[data-boot-phase="map"]::after {
-  border-color: transparent;
-}
-
 /* ── page-grid placement ────────────────────────────────────────────────
    One full-height row: lede pane on the two left columns, info pane on
    the two right ones. */
-
-.screen {
-  height: 100%;
-  grid-template-rows: minmax(0, 1fr) auto;
-}
-
-/* closing rule closes the screen in its own hairline row: the panes fill
-   the flexible row above it, and the 1px row pulls the rule's line (drawn
-   at the element top) one pixel inside the bottom edge */
-.closingRule {
-  grid-row: 2;
-  height: 1px;
-}
 
 .ledePane {
   display: flex;
@@ -89,7 +57,6 @@
 .headlineLine {
   font-weight: 400;
   font-size: clamp(2.75rem, 4.6vw, 5.5rem);
-  font-style: italic;
   font-family: var(--font-serif);
   filter: drop-shadow(2px 2px 2px rgb(var(--color-paper-foreground)));
   line-height: 1.1;
@@ -98,6 +65,8 @@
     color: rgb(var(--color-hero-foreground));
     font-family: var(--font-playful);
     font-style: normal;
+    position: relative;
+    top: var(--kalam-lift);
   }
 }
 
@@ -190,11 +159,6 @@
 
   .ledePane {
     grid-row: 2;
-  }
-
-  /* the rule closes under the lede row */
-  .closingRule {
-    grid-row: 3;
   }
 
   .ledeColumn {

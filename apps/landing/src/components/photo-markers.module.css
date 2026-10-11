@@ -1,25 +1,38 @@
-/* Photo markers portalled into the spine's map layer (via useMapPortal) —
-   shared by the hero and city scenes. Each scene mounts its set across
-   scroll bounds (use-linger holds the exit around for this fade) and the
-   .on class + transition animates both directions. Targets the content
-   div, not the marker root (maplibre writes its own inline opacity
-   there). The hero's clip driver (hero-reveal.tsx) discriminates its set
-   via the inert HERO_MARKER_CLASS string instead of this module. */
+/* Photo markers as a fixed overlay above the map. The layer
+   renders inside its scene's section, below the sheet — the scene flow
+   stacks above the map layer's veil canvas, and the veil's mask driver
+   (hero-reveal.tsx, via the marks registry) still shows each photo only
+   through the brush's erased holes. Every hold's marker layer (the hero's,
+   the city's, the architect's) is this class. */
+
+.layer {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  /* rides the map lean (--map-lean-x/-y, written by MapLean) — the photos
+     stay glued to their pins while the sheet drifts under the cursor */
+  transform: translate3d(calc(var(--map-lean-x) * 1px), calc(var(--map-lean-y) * 1px), 0);
+}
+
+/* one marker — anchored top-center at the projected point (left/top are
+   written from map.project in photo-markers.tsx). The box reaches 10px
+   above the card (padding + compensating margin): the brush's mask is
+   set on this element and a mask hides everything outside the border
+   box, so the pin standing on the card's top edge would lose its top
+   half without it. The anchor stays on the projected point. */
+.marker {
+  position: absolute;
+  transform: translateX(-50%);
+  padding-top: 10px;
+  margin-top: -10px;
+}
 
 .photoMarker {
   opacity: 0;
   transition: opacity var(--transition-short) ease;
-  /* re-enable per marker: LandingMap's wrapper stands the whole map down
-     (no drag), but hover needs live markers */
-  pointer-events: auto;
 }
 
 .photoMarker[data-show] {
   opacity: 1;
-}
-
-/* the city hold's pins — framer drives their fade (animate prop); the
-   class only re-enables pointer events, like .photoMarker above */
-.cityPin {
-  pointer-events: auto;
 }

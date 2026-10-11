@@ -3,13 +3,13 @@ import type { SceneCamera } from "@nolli/map"
 /** Web-mercator world coordinates normalized to 0..1 (the projection behind
  * MapLibre's tile pyramid: world px = 512 * 2^zoom). projY DECREASES as lat
  * increases — north is smaller y. */
-const projX = (lng: number) => lng / 360 + 0.5
-const projY = (lat: number) => {
+export const projX = (lng: number) => lng / 360 + 0.5
+export const projY = (lat: number) => {
   const s = Math.sin((lat * Math.PI) / 180)
   return 0.5 - Math.log((1 + s) / (1 - s)) / (4 * Math.PI)
 }
-const invProjX = (x: number) => (x - 0.5) * 360
-const invProjY = (y: number) =>
+export const invProjX = (x: number) => (x - 0.5) * 360
+export const invProjY = (y: number) =>
   (2 * Math.atan(Math.exp(Math.PI * (1 - 2 * y))) * 180) / Math.PI - 90
 
 export type FitPadding = { left: number; right: number; top: number; bottom: number }

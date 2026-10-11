@@ -19,7 +19,7 @@ import {
   type TextScene,
 } from "../lib/scenes";
 
-/** Instrument Serif carries every text card; the logo wordmark alone rides
+/** EB Garamond carries every text card; the logo wordmark alone rides
  *  Kalam. */
 const family = (font: TextScene["font"]) => (font === "playful" ? PLAYFUL : SERIF);
 

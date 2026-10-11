@@ -1,15 +1,16 @@
-/* Footer — the page's last fold, in normal flow after the spine: brand
-   block over cols 1-2, the nav columns on 3 and 4, the photo dock piled
-   along the bottom edge (the padding-bottom reserves its zone, so the
-   columns end above the cards). The global hairline field draws over the
-   footer ground like everywhere else. Mobile recomposes to stacked full
-   rows. */
+/* Footer — the page's last block, after the spine wrapper: brand block
+   over cols 1-2, the nav columns on 3 and 4, the photo dock piled along
+   the bottom edge (the padding-bottom reserves its zone, so the columns
+   end above the cards). It abuts the wrapper, so the departing map frame
+   is covered by the arriving ground with no gap. The global hairline
+   field draws over the footer ground like everywhere else. Mobile
+   recomposes to stacked full rows. */
 
 .screen {
   box-sizing: border-box;
   background: rgb(var(--color-primary-background));
-  margin-top: 40svh;
-  padding-bottom: 12rem;
+  padding-top: 20rem;
+  padding-bottom: 5rem;
   align-items: start;
   grid-template-areas: "brand brand explore resources";
   grid-template-rows: minmax(45svh, auto);
@@ -56,7 +57,6 @@
 }
 
 .statement {
-  font-style: italic;
   opacity: .6;
 }
 

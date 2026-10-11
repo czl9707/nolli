@@ -21,7 +21,7 @@ describe("REEL_TYPE — the family rule, written down", () => {
     expect(sans.map(([name]) => name)).toEqual(["posterRowNum", "posterRowName", "cornerWorkMeta"]);
   });
 
-  it("every weight is a real shipped weight — Lato/Kalam 300/400/700, Instrument Serif 400", () => {
+  it("every weight is a real shipped weight — Lato/Kalam 300/400/700, EB Garamond 400", () => {
     for (const [name, role] of Object.entries(REEL_TYPE)) {
       if (role.fontFamily === SERIF) {
         expect(role.fontWeight, name).toBe(400);

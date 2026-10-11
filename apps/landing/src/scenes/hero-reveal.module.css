@@ -1,43 +1,11 @@
-/* Brush reveal over the spine map. The wrapper is FIXED over the hold at
-   the depth the plate veil had (between the map frame and the hairline
-   field): the canvas paints the veil and the brush's soft holes, and the
-   catch layer owns gestures so drags over the map paint instead of
-   panning it — pan-y keeps vertical scroll native. Widths stay
-   scrollbar-safe: the wrapper spans left:0/right:0 (not 100vw, which
-   would overflow under the native scrollbar). (A STICKY wrapper here —
-   masked subtree in sticky compositing — blanks the page's paint.) */
-
-.stickyWrapper {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 100svh;
-  pointer-events: none;
-  /* between --z-map-behind (-100) and --z-rules (-50) */
-  z-index: -60;
-}
-
-.root {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100svh;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-
-/* Full-root touch catch: pointer-events land here only where nothing
-   above (panes, header, rules) sits, so drags over the map reach the
-   brush and never MapLibre. */
+/* Brush reveal over the spine map. The veil itself is the map
+   component's canvas (landing-map.tsx) — the scene contributes only the
+   touch catch, which owns gestures so drags over the map paint instead
+   of panning it — pan-y keeps vertical scroll native. It spans
+   left:0/right:0 (not 100vw, which would overflow under the native
+   scrollbar). Pointer-events land here only where nothing above (panes,
+   header, rules) sits, so drags over the map reach the brush and never
+   MapLibre. */
 .catch {
   position: absolute;
   inset: 0;

@@ -1,25 +1,27 @@
-// Brush reveal over the spine's map. A 0.92 canvas veil sits above the
-// map layer; the pointer's recent history stamps soft holes into it
-// (destination-out radial gradients) that dissolve over TRAIL_MS — the
-// revealed region is literally the cursor's last moment of movement.
-// Photo markers sit UNDER that translucent veil, so each carries a CSS
-// mask mirroring the trail (same gradients, marker-local px): a marker
-// shows only through the erased region, partially — without the mask it
-// would ghost at 8% like the map does. ONE persistent rAF loop repaints
-// the canvas and rebuilds the masks per frame (expiry animates without
-// pointer input; no event plumbing needed). A full-root catch layer owns
-// touch: pan-y keeps vertical scroll native while other drags paint
-// instead of panning the map. The veil lives exactly while the scene
-// owns the spine's map (useSceneOwnsMap): the ownership flip at the
-// scene boundary is its cut in and out. Scrolling away stops the brush
-// COLLECTING — the live stroke still dissolves on its own clock. All
-// trail coordinates are client px; the root sits at (0,0) so they are
-// canvas-local too.
+// Brush reveal over the spine's map. The veil is the map component's own
+// canvas (landing-map.tsx, picked by id); the pointer's recent history
+// stamps soft holes into it (destination-out radial gradients) that
+// dissolve over TRAIL_MS — the revealed region is literally the cursor's
+// last moment of movement. The hero's photo markers (photo-markers.tsx)
+// sit above the veil in the scene flow, so each carries a CSS mask
+// mirroring the trail (same gradients, marker-local px): a marker shows
+// only through the erased region, partially — without the mask it would
+// ghost at 8% like the map does. ONE persistent rAF loop repaints the
+// veil and rebuilds the masks per frame (expiry animates without pointer
+// input; no event plumbing needed), reading the marker elements from the
+// marks registry the overlay fills. A full-root catch layer owns touch:
+// pan-y keeps vertical scroll native while other drags paint instead of
+// panning the map. The brush only COLLECTS while the hold is parked at
+// its top; a stroke left behind dissolves on its own clock. All trail
+// coordinates are client px; the veil sits in the map layer, which is
+// fullscreen and parked at (0,0) while the hold is parked, so stamps
+// taken there are canvas-local too.
 import { useEffect, useRef, useState, type RefObject } from "react"
 import { useMotionValue, useReducedMotion, type MotionValue } from "framer-motion"
 import type { MapRef } from "@nolli/map"
 import type { ArchSummary } from "@/lib/landing-data"
-import { useSceneOwnsMap, useSpineMap } from "@/spine/spine"
+import { MAP_VEIL_ID, paintVeil, veilFill } from "@/components/landing-map"
+import { useSceneOwnsMap } from "@/spine/spine"
 import styles from "./hero-reveal.module.css"
 
 /** Brush stroke lifetime — a stamped point dissolves over this window. */
@@ -40,6 +42,10 @@ export const AT_REST_VH = 0.5
 const MASK_HIDDEN = "linear-gradient(transparent, transparent)"
 
 export type TrailPoint = { x: number; y: number; t: number }
+
+/** Marker elements the veil masks, keyed by slug — filled by the hero's
+ * marker overlay and read (never written) by the veil's rAF loop. */
+export type MarkRegistry = RefObject<Map<string, HTMLElement>>
 
 /** Points still inside the brush window, oldest first. Returns the input
  * array untouched when nothing expires (the per-frame common case). */
@@ -63,19 +69,6 @@ export function trailHit(
     if ((x - p.x) ** 2 + (y - p.y) ** 2 <= r2) return true
   }
   return false
-}
-
-/** Inert class applied to every photo marker the hero mounts — the mask
- * driver matches on it to veil only the hero's set. A plain string (not
- * module css) so the shared .photoMarker class stays identical across
- * scenes. */
-export const HERO_MARKER_CLASS = "hero-pick"
-
-/** The hero's marker contents in the map — the mask driver's set. */
-function heroMarkerContents(map: MapRef): HTMLElement[] {
-  return Array.from(map.getContainer().querySelectorAll<HTMLElement>(".maplibregl-marker"))
-    .map((root) => root.firstElementChild as HTMLElement | null)
-    .filter((el): el is HTMLElement => !!el && el.classList.contains(HERO_MARKER_CLASS) && el.isConnected)
 }
 
 export type TrailStore = {
@@ -132,71 +125,94 @@ export function useTrail(localScroll?: MotionValue<number>): RefObject<TrailStor
   return store
 }
 
-/** The opaque canvas veil over the map layer (map + photo markers) with
- * the brush's soft holes — ONE persistent rAF loop repaints it per frame:
- * solid fill, then trail stamps (aged, soft, destination-out). The veil
- * lives exactly while this scene owns the spine's map — the ownership
- * flip at the scene boundary is its cut in and out, so any hold scene
- * can reuse it. Reduced motion renders nothing — the map shows open. */
+/** The brush over the map component's veil canvas — ONE persistent rAF
+ * loop repaints it per frame: solid wash, then trail stamps (aged, soft,
+ * destination-out). The loop runs exactly while this scene owns the
+ * spine's map — the ownership flip at the scene boundary is its cut in
+ * and out, and the way out hands the veil back plain (paintVeil), so the
+ * next hold never inherits dissolving stamps. Reduced motion skips the
+ * loop — the veil stands as the component painted it. */
 export function BrushReveal({
   trail,
   on = true,
+  marks,
 }: {
   trail: RefObject<TrailStore>
   /** Boot gate: before the reveal beat the veil stays solid (stamps are
    * still gathered but not painted), matching the plate's covered hole. */
   on?: boolean
+  /** The hero's marker registry — the mask driver's set. */
+  marks: MarkRegistry
 }) {
   const reduced = useReducedMotion()
   const snap = !!reduced
-  const map = useSpineMap()
-  const ownsMap = useSceneOwnsMap()
-  const rootRef = useRef<HTMLDivElement | null>(null)
-  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const owns = useSceneOwnsMap()
   const onRef = useRef(on)
   onRef.current = on
 
   useEffect(() => {
-    if (snap) return
-    // the off→on flip unmounts and re-creates the subtree, so every
-    // frame re-reads the refs and re-binds the context when the canvas
-    // element swapped — a canvas captured here would go zombie
+    if (snap || !owns) return
+    // the veil canvas mounts with the map (gated on the client instance)
+    // and can be re-created under us, so every frame re-picks it by id
+    // and re-binds the context when the element swapped — a canvas
+    // captured here would go zombie
     let ctx: CanvasRenderingContext2D | null = null
     let bound: HTMLCanvasElement | null = null
     let veil = ""
+    // the plain wash is idempotent — an idle frame (no live stamps) with
+    // the canvas already plain at the current size repaints nothing
+    let paintedPlain = false
+    // markers whose mask string already matches skip their four writes
+    const lastMask = new WeakMap<HTMLElement, string>()
 
     const frame = () => {
       raf = requestAnimationFrame(frame)
-      const root = rootRef.current
-      const canvas = canvasRef.current
-      if (!root || !canvas) return
+      const canvas = document.getElementById(MAP_VEIL_ID)
+      if (!(canvas instanceof HTMLCanvasElement)) return
       if (canvas !== bound) {
         bound = canvas
         ctx = canvas.getContext("2d")
-        // resolved per canvas from a node INSIDE the tree — the theme
-        // declares its tokens on body[data-theme], so reading off
-        // documentElement misses them; the token is an "r g b" triplet
-        const cs = getComputedStyle(root)
-        const triplet = cs.getPropertyValue("--color-primary-background").trim()
-        const bodyBg = getComputedStyle(document.body).backgroundColor
-        veil = triplet
-          ? `rgb(${triplet} / 0.92)`
-          : bodyBg !== "rgba(0, 0, 0, 0)"
-            ? bodyBg
-            : "rgba(23, 23, 23, 0.92)"
+        veil = veilFill(canvas)
+        paintedPlain = false
       }
       if (!ctx) return
       const now = performance.now()
       trail.current.points = pruneTrail(trail.current.points, now, TRAIL_MS)
 
-      const w = root.clientWidth
-      const h = root.clientHeight
+      const w = canvas.clientWidth
+      const h = canvas.clientHeight
       const dpr = Math.min(window.devicePixelRatio || 1, 2)
-      if (canvas.width !== Math.round(w * dpr)) {
-        canvas.width = Math.round(w * dpr)
-        canvas.height = Math.round(h * dpr)
+      const needsSize = canvas.width !== Math.round(w * dpr)
+      const live = onRef.current
+      const points = trail.current.points
+
+      // the veil is 0.92 — photo markers under it would ghost at 8%, so
+      // each one carries a mask mirroring the trail: the same radial
+      // gradients in marker-local px, add-composited (≈ the canvas's
+      // accumulated erase). Markers with no stroke in reach get a fully
+      // transparent mask; set via JS so the build pipeline never rewrites
+      // the -webkit- twins
+      const mask = (el: HTMLElement, layers: string) => {
+        if (lastMask.get(el) === layers) return
+        lastMask.set(el, layers)
+        el.style.maskImage = layers
+        el.style.webkitMaskImage = layers
+        el.style.maskComposite = "add"
+        el.style.webkitMaskComposite = "source-over"
       }
+      if (!live || points.length === 0) {
+        for (const el of marks.current.values()) {
+          if (el.isConnected) mask(el, MASK_HIDDEN)
+        }
+        if (paintedPlain && !needsSize) return
+      }
+
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+
+      // canvas px = client px minus the layer's live offset — the layer
+      // is parked at (0,0) while stamps are taken (collection stops at
+      // rest), so this is identity at rest.
+      const rb = canvas.getBoundingClientRect()
 
       // stamps paint from whatever history remains — collection already
       // stopped at scroll (useTrail), so the live stroke dissolves on its
@@ -205,72 +221,58 @@ export function BrushReveal({
       ctx.clearRect(0, 0, w, h)
       ctx.fillStyle = veil
       ctx.fillRect(0, 0, w, h)
-      if (onRef.current) {
+      paintedPlain = !live || points.length === 0
+      if (live) {
         ctx.globalCompositeOperation = "destination-out"
-        for (const p of trail.current.points) {
+        for (const p of points) {
+          const x = p.x - rb.left
+          const y = p.y - rb.top
           const a = Math.max(1 - (now - p.t) / TRAIL_MS, 0)
-          const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, BRUSH_R)
+          const g = ctx.createRadialGradient(x, y, 0, x, y, BRUSH_R)
           g.addColorStop(0, `rgba(0, 0, 0, ${a})`)
           g.addColorStop(1, "rgba(0, 0, 0, 0)")
           ctx.fillStyle = g
-          ctx.fillRect(p.x - BRUSH_R, p.y - BRUSH_R, BRUSH_R * 2, BRUSH_R * 2)
+          ctx.fillRect(x - BRUSH_R, y - BRUSH_R, BRUSH_R * 2, BRUSH_R * 2)
         }
       }
 
-      // the veil is 0.92 — photo markers under it would ghost at 8%, so
-      // each one carries a mask mirroring the trail: the same radial
-      // gradients in marker-local px, add-composited (≈ the canvas's
-      // accumulated erase). Markers with no stroke in reach get a fully
-      // transparent mask; set via JS so the build pipeline never rewrites
-      // the -webkit- twins
-      if (map) {
-        const live = onRef.current
-        const points = trail.current.points
-        for (const el of heroMarkerContents(map)) {
-          let layers = MASK_HIDDEN
-          if (live && points.length) {
-            const box = el.getBoundingClientRect()
-            const near: string[] = []
-            for (const p of points) {
-              const lx = p.x - box.left
-              const ly = p.y - box.top
-              if (lx < -BRUSH_R || lx > box.width + BRUSH_R || ly < -BRUSH_R || ly > box.height + BRUSH_R)
-                continue
-              const a = Math.max(1 - (now - p.t) / TRAIL_MS, 0)
-              near.push(
-                `radial-gradient(circle at ${lx}px ${ly}px, rgba(0, 0, 0, ${a}) 0px, rgba(0, 0, 0, 0) ${BRUSH_R}px)`,
-              )
-            }
-            if (near.length) layers = near.join(", ")
+      for (const el of marks.current.values()) {
+        if (!el.isConnected) continue
+        let layers = MASK_HIDDEN
+        if (live && points.length) {
+          const box = el.getBoundingClientRect()
+          const near: string[] = []
+          for (const p of points) {
+            const lx = p.x - box.left
+            const ly = p.y - box.top
+            if (lx < -BRUSH_R || lx > box.width + BRUSH_R || ly < -BRUSH_R || ly > box.height + BRUSH_R)
+              continue
+            const a = Math.max(1 - (now - p.t) / TRAIL_MS, 0)
+            near.push(
+              `radial-gradient(circle at ${lx}px ${ly}px, rgba(0, 0, 0, ${a}) 0px, rgba(0, 0, 0, 0) ${BRUSH_R}px)`,
+            )
           }
-          el.style.maskImage = layers
-          el.style.webkitMaskImage = layers
-          el.style.maskComposite = "add"
-          el.style.webkitMaskComposite = "source-over"
+          if (near.length) layers = near.join(", ")
         }
+        mask(el, layers)
       }
     }
     let raf = requestAnimationFrame(frame)
     return () => {
       cancelAnimationFrame(raf)
-      if (map) {
-        for (const el of heroMarkerContents(map)) {
-          el.style.maskImage = ""
-          el.style.webkitMaskImage = ""
-        }
+      // hand the veil back plain — the loop's last frame may carry
+      // stamps still dissolving, and the next hold takes the veil as-is
+      const canvas = document.getElementById(MAP_VEIL_ID)
+      if (canvas instanceof HTMLCanvasElement) paintVeil(canvas)
+      for (const el of marks.current.values()) {
+        el.style.maskImage = ""
+        el.style.webkitMaskImage = ""
       }
     }
-  }, [snap, map, trail])
+  }, [snap, owns, marks, trail])
 
-  if (snap || !ownsMap) return null
-  return (
-    <div className={styles.stickyWrapper}>
-      <div ref={rootRef} className={styles.root}>
-        <canvas ref={canvasRef} className={styles.canvas} />
-        <div className={styles.catch} aria-hidden />
-      </div>
-    </div>
-  )
+  if (snap) return null
+  return <div className={styles.catch} aria-hidden />
 }
 
 /** Picks currently inside the brush's live region — a pick goes active

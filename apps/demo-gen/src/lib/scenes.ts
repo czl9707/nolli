@@ -12,7 +12,7 @@ export type TextScene = {
   type: "text";
   text: string;
   size?: number;
-  /** Instrument Serif by default; "playful" is the logo wordmark's Kalam. */
+  /** EB Garamond by default; "playful" is the logo wordmark's Kalam. */
   font?: "playful" | "serif";
 };
 export type ImageScene = { type: "image"; src: string };

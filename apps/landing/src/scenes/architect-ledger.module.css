@@ -1,109 +1,102 @@
-/* Architect ledger on the page grid — two sticky panes ride the whole
-   ledger pass, parked low (center at 50svh + drift/2) and drifting up
-   --drift-vh, ending near flush at the top — the drift is centered on the
-   window's midline, so the map never leaves the viewport. The framed pane
-   sits under the spine's map layer, the statement pane over it. Mobile
-   shrinks the band. */
+/* Architect ledger on the map background — a sticky full-viewport hold
+   over the spine's fullscreen layer at world scale (the map component's
+   own veil dims the map end to end, the same wash as the hero's and
+   city's, so the holds read as one covered run): the works sit above the
+   veil and ride the scroll onto their pins, and the vellum dossier docks
+   bottom-right. */
 
-/* the framed pane, its own sticky pane at the map scale (under the spine's
-   map layer): parked low (center at 50svh + drift/2), drifting up through
-   the pass; the map paints over the ground */
-.frameSticky {
-  position: sticky;
-  top: calc(50svh + var(--drift-vh) / 2 - var(--band-vh) / 2);
-  height: var(--band-vh);
-  margin-inline: var(--size-page-padding);
-  margin-top: var(--band-margin-vh);
-  margin-bottom: var(--band-margin-vh);
-  z-index: calc(var(--z-map-behind) - 2);
-}
-
-/* the statement pane — the SAME sticky geometry as the framed pane (top,
-   height, margins), sharing the drift value, so the two never part; the
-   negative top margin pulls it back into the framed pane's flow slot, so
-   they also coincide BEFORE sticking. Sits at the item scale, over the
-   map */
-.textSticky {
-  position: sticky;
-  top: calc(50svh + var(--drift-vh) / 2 - var(--band-vh) / 2);
-  height: var(--band-vh);
-  margin-inline: var(--size-page-padding);
-  margin-top: calc(-1 * var(--band-vh) - var(--band-margin-vh));
-  margin-bottom: var(--band-margin-vh);
-  z-index: 0;
-}
-
-/* the drift wrapper — carries the framed pane through the pass. The
-   motion itself is the global arch-drift-ride class (a scroll-timeline
-   animation shared with the spine's map layer — see global.css); the
-   anchor below is the shape's untransformed twin, so the rect glue's
-   base rect holds for the whole pin */
-.anchor {
+/* one work — left/top are written from map.project (pin top-center), the
+   transform carries the un-scrolled gap to its stick point, written per
+   scroll frame (so NO transition on transform — it is glued to the
+   scroll); dim/lit is the old marquee's treatment: brightness only */
+.slot {
   position: absolute;
-  inset: var(--spacing-paragraph);
+  will-change: transform;
+  transition: filter 0.65s ease;
 }
 
-.drift {
-  position: absolute;
-  inset: 0;
+.slot[data-state="lit"] {
+  filter: brightness(1);
 }
 
-/* the framed pane the map rides — paper frame always present; the
-   contrast grass pattern washes it, and the shape grounds in the
-   secondary color — the map layer lands on its rect and covers it */
-.frame {
-  position: absolute;
-  inset: 0;
-  background: rgb(var(--color-paper-background));
+.slot[data-state="dim"] {
+  filter: brightness(0.35);
 }
 
-.frame::before {
-  content: "";
-  inset: 0;
-  position: absolute;
-  opacity: .75;
-  background-image: var(--pattern-grass-oppo);
+/* ── page-grid placement ────────────────────────────────────────────────
+   The vellum dossier docked bottom-right over two columns. */
+
+.ledgerPane {
+  display: flex;
+  grid-column: 3 / span 2;
+  grid-row: 1;
+  align-self: end;
+  margin-bottom: var(--spacing-component);
 }
 
-/* shape anchor — empty in the DOM; the spine's map layer lands on its
-   rect (filling it exactly) over the secondary ground */
-.shape {
-  position: absolute;
-  inset: var(--spacing-paragraph);
-  background-color: rgb(var(--color-secondary-background));
+/* fills the vellum pane (frost + grass from the Pane's blurred recipe)
+   as a strict one-column-plus-one-column split: statement + cubes left,
+   works list right; opts back into pointer events (the spine's scene
+   wrappers are none) */
+.ledger {
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: var(--spacing-paragraph);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--spacing-paragraph);
+  align-items: start;
 }
 
-/* statement on the band's bottom-left — its own drift mirror (the drift
-   wrapper sits under the map; this one rides above it) */
-.bandText {
-  position: absolute;
-  left: var(--spacing-component);
-  bottom: var(--spacing-component);
+/* the left column — statement over the cube row (the indicator's own
+   margin-top auto parks it at the foot) */
+.ledgerMain {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-component);
+  min-height: 0;
 }
 
 .statementText {
+  /* sized to live inside one column */
   font-size: clamp(1.5rem, 2.5vw, 2.25rem);
-  font-style: italic;
 }
 
-.accent {
-  font-family: var(--font-playful);
-  font-style: normal;
-  font-weight: 600;
-  color: rgb(var(--color-hero-foreground));
+.archList {
+  list-style: none;
+  margin: 0;
+  overflow: hidden;
+  min-height: 0;
 }
 
-/* ── mobile — thin frame, the paragraph inset eats the map ─────────── */
+.archList li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-paragraph);
+  line-height: 2;
+}
+
+.archNum {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  opacity: 0.5;
+}
+
+.archName {
+  opacity: 0.75;
+}
+
+/* ── mobile: the same tree full-width ───────────────────────────────────
+   Kept AFTER the base rules — equal specificity means a media block
+   placed earlier loses the cascade. */
 
 @media (--smaller-than-sm) {
-  .shape {
-    inset: .5rem;
+  .ledgerPane {
+    grid-column: 1 / -1;
   }
 
-  .anchor {
-    inset: .5rem;
+  .ledger {
+    grid-template-columns: 1fr;
   }
 }

@@ -1,7 +1,7 @@
-// Footer — the last part of the page, in normal flow after the spine (no
-// hold, no map of its own: the map rides the stats card off-screen). Brand
-// block and the two nav columns sit on the page grid; the photo dock piles
-// along the bottom edge.
+// Footer — the page's last block, after the spine wrapper (the sticky map
+// frame rides out under its arriving ground). Brand block and the two nav
+// columns sit on the page grid; the photo dock piles along the bottom
+// edge.
 import { siInstagram, siThreads, type SimpleIcon } from "simple-icons"
 import { Body1, Body3, Button, H4, Note, PaperPhoto } from "@nolli/ui"
 import {

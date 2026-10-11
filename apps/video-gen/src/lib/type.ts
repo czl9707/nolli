@@ -2,10 +2,10 @@ import type { CSSProperties } from "react";
 import { KALAM_NUDGE, NOLLI_WORDMARK_NUDGE, PLAYFUL, SANS, SERIF } from "@nolli/remotion";
 
 /** The reel's type scale — single font authority, no component-local constants.
- *  Poster set: Instrument Serif display (architect name, corner lockup, quote)
+ *  Poster set: EB Garamond display (architect name, corner lockup, quote)
  *  over Lato reading text (the app's --font-sans); Kalam for the brand
  *  moments (wordmark + CTA). Every weight is a real shipped weight: Lato and
- *  Kalam load 300/400/700, Instrument Serif only 400 — no role asks for one
+ *  Kalam load 300/400/700, EB Garamond only 400 — no role asks for one
  *  a family doesn't have. Font tokens + optical nudges live in @nolli/remotion. */
 export type TypeRole = Pick<
   CSSProperties,

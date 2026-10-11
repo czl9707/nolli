@@ -1,55 +1,62 @@
 import { describe, expect, it, vi } from "vitest"
-import { applyMapTransition, SNAPSHOT_SHAPE_MS } from "./map-transition"
+import { applyMapTransition } from "./map-transition"
 
 const cam = { center: [0, 0] as [number, number], zoom: 3.4 }
 
-// node env: stub the DOM surface the sequence touches — the veil <img>
-// (with the reflow read), the snapshot <canvas>, and the container
-const ctx = new Proxy({}, { get: () => vi.fn() }) as never
-const fakeDocument = {
-  createElement: (tag: string) => {
-    const el: Record<string, unknown> = {
-      style: {}, src: "", remove: () => {},
-      getBoundingClientRect: () => ({}),
-    }
-    if (tag === "canvas")
-      return Object.assign(el, { width: 0, height: 0, getContext: () => ctx, toDataURL: () => "data:" })
-    return el
-  },
-}
-;(globalThis as never as { document?: unknown }).document ??= fakeDocument
-
-function fakeMap() {
-  const canvas = { width: 100, height: 80 }
-  const container = { clientWidth: 1000, clientHeight: 800, appendChild: vi.fn() }
+function fakeMap(center: [number, number], zoom: number) {
+  const handlers: Record<string, () => void> = {}
   const map = {
-    project: () => ({ x: 10, y: 10 }),
-    getZoom: () => 3,
+    getCenter: () => ({ lng: center[0], lat: center[1] }),
+    getZoom: () => zoom,
     getBounds: () => ({ contains: () => true }),
-    getContainer: () => container,
-    getCanvas: () => canvas,
+    stop: vi.fn(),
+    easeTo: vi.fn(),
     jumpTo: vi.fn(),
-    once: () => {}, off: () => {},
+    once: vi.fn((ev: string, fn: () => void) => { handlers[ev] = fn }),
   }
-  return { map, jumpTo: map.jumpTo }
+  return { map, easeTo: map.easeTo, jumpTo: map.jumpTo, stop: map.stop, moveend: () => handlers.moveend?.() }
 }
 
 describe("applyMapTransition", () => {
-  it("runs the jump flow on the shape morph's clock", async () => {
-    const { map, jumpTo } = fakeMap()
+  it("eases to the target camera", () => {
+    const { map, easeTo, stop } = fakeMap([10, 10], 3)
     applyMapTransition(map as never, cam)
-    expect(jumpTo).not.toHaveBeenCalled()
-    await new Promise((res) => setTimeout(res, SNAPSHOT_SHAPE_MS + 100))
-    expect(jumpTo).toHaveBeenCalledWith({ center: cam.center, zoom: cam.zoom })
-  }, 10_000)
+    expect(stop).toHaveBeenCalled()
+    expect(easeTo).toHaveBeenCalledWith(
+      expect.objectContaining({
+        center: cam.center,
+        zoom: cam.zoom,
+        duration: expect.any(Number),
+        easing: expect.any(Function),
+      }),
+    )
+  })
 
-  it("superseded sequences never jump to their stale target", async () => {
-    const { map, jumpTo } = fakeMap()
+  it("is a no-op when the view already sits at the target", () => {
+    const { map, easeTo, stop } = fakeMap(cam.center, cam.zoom)
     applyMapTransition(map as never, cam)
-    const later = { center: [9, 9] as [number, number], zoom: 5 }
-    applyMapTransition(map as never, later)
-    await new Promise((res) => setTimeout(res, SNAPSHOT_SHAPE_MS + 100))
-    const calls = jumpTo.mock.calls.map((c) => c[0])
-    expect(calls).toEqual([{ center: later.center, zoom: later.zoom }])
-  }, 10_000)
+    expect(stop).not.toHaveBeenCalled()
+    expect(easeTo).not.toHaveBeenCalled()
+  })
+
+  it("pins the camera when the flight lands off-target", () => {
+    // a landed camera short of the target (the clamp / a resize during the
+    // flight) snaps to it at moveend
+    const { map, easeTo, jumpTo, moveend } = fakeMap([10, 10], 3)
+    easeTo.mockImplementation(() => {})
+    applyMapTransition(map as never, cam)
+    map.getCenter = () => ({ lng: 0.5, lat: 0.5 })
+    map.getZoom = () => 3.2
+    moveend()
+    expect(jumpTo).toHaveBeenCalledWith({ center: cam.center, zoom: cam.zoom })
+  })
+
+  it("leaves a correctly landed camera alone", () => {
+    const { map, easeTo, jumpTo, moveend } = fakeMap([10, 10], 3)
+    applyMapTransition(map as never, cam)
+    map.getCenter = () => ({ lng: cam.center[0], lat: cam.center[1] })
+    map.getZoom = () => cam.zoom
+    moveend()
+    expect(jumpTo).not.toHaveBeenCalled()
+  })
 })

@@ -11,6 +11,14 @@
   padding-inline: var(--size-page-padding);
 }
 
+/* a hold's screen — fills its sticky section's height; the content row
+   flexes and the second row stays free (rules place there when a scene
+   closes with one) */
+.holdScreen {
+  height: 100%;
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+
 /* ── pane ────────────────────────────────────────────────────────────────
    Pure placement: col/row map to grid-column/grid-row. Surfaces are the
    two props — filled (the paper pane: paper ground + contrast grass wash)
