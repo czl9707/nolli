@@ -25,5 +25,6 @@
   "r2_buckets": [
     { "binding": "IMAGES", "bucket_name": "nolli-map-images", "remote" : true },
     { "binding": "IMAGE_STAGING", "bucket_name": "nolli-map-images-staging", "remote" : true }
-  ]
+  ],
+  "previews": {}
 }
